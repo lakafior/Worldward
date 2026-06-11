@@ -78,6 +78,7 @@ struct ContentView: View {
     @State private var countryPaths: [String: [CGPath]] = [:]
     @State private var countryBoundingRects: [String: MKMapRect] = [:]
     @State private var isLoadingMapData = true
+    @State private var mapUpdateTrigger = UUID()
 
     private var countryListSummary: CountryListSummary {
         CountryListSummary(
@@ -158,9 +159,12 @@ struct ContentView: View {
                     Map(position: $cameraPosition) {
                         ForEach(visibleCountries) { country in
                             CountryMapPolygons(
-                                country: country, polygons: countryPolygons[country.id] ?? [])
+                                country: country,
+                                status: country.status,
+                                polygons: countryPolygons[country.id] ?? [])
                         }
                     }
+                    .id(mapUpdateTrigger)
                     .mapStyle(.standard)
                     .mapControls {
                         MapZoomStepper()
@@ -300,9 +304,17 @@ struct ContentView: View {
                 var featurePolygons: [MKPolygon] = []
                 for geometry in feature.geometry {
                     if let polygon = geometry as? MKPolygon {
-                        featurePolygons.append(polygon)
+                        // Optimization: Only use the exterior ring (points) and skip interior holes.
+                        // This drastically reduces Metal drawing complexity for complex borders.
+                        let simplePolygon = MKPolygon(
+                            points: polygon.points(), count: polygon.pointCount)
+                        featurePolygons.append(simplePolygon)
                     } else if let multiPolygon = geometry as? MKMultiPolygon {
-                        featurePolygons.append(contentsOf: multiPolygon.polygons)
+                        for poly in multiPolygon.polygons {
+                            let simplePolygon = MKPolygon(
+                                points: poly.points(), count: poly.pointCount)
+                            featurePolygons.append(simplePolygon)
+                        }
                     }
                 }
 
@@ -370,13 +382,14 @@ struct CountryRow: View {
 /// observe changes to that specific country's status and redraw only these polygons.
 struct CountryMapPolygons: MapContent {
     let country: Country
+    let status: CountryStatus
     let polygons: [MKPolygon]
 
     var body: some MapContent {
         ForEach(polygons.indices, id: \.self) { index in
             MapPolygon(polygons[index])
-                .foregroundStyle(country.status.fillColor)
-                .stroke(country.status.strokeColor, lineWidth: 0.5)
+                .foregroundStyle(status.fillColor)
+                .stroke(status.strokeColor, lineWidth: 0.5)
         }
     }
 }
