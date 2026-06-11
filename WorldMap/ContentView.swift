@@ -298,8 +298,20 @@ struct ContentView: View {
                 guard let propsData = feature.properties,
                     let props = try? JSONSerialization.jsonObject(with: propsData)
                         as? [String: Any],
-                    let id = props["ISO3166-1-Alpha-2"] as? String
+                    var id = props["ISO3166-1-Alpha-2"] as? String,
+                    let name = props["name"] as? String
                 else { continue }
+
+                if id == "-99" {
+                    let fallbacks: [String: String] = [
+                        "France": "FR",
+                        "Norway": "NO",
+                        "Kosovo": "XK",
+                        "Indian Ocean Territories": "IO",
+                        "Clipperton Island": "CP"
+                    ]
+                    id = fallbacks[name] ?? name
+                }
 
                 var featurePolygons: [MKPolygon] = []
                 for geometry in feature.geometry {
@@ -337,16 +349,13 @@ struct ContentView: View {
                     }
                     paths[id] = (paths[id] ?? []) + featurePaths
 
-                    // Calculate bounding rect
-                    var rect = featurePolygons[0].boundingMapRect
-                    for p in featurePolygons.dropFirst() {
-                        rect = rect.union(p.boundingMapRect)
-                    }
-
-                    if let existingRect = rects[id] {
-                        rects[id] = existingRect.union(rect)
-                    } else {
-                        rects[id] = rect
+                    // Calculate bounding rect using ONLY the largest polygon to avoid global zooming
+                    if let largestPoly = featurePolygons.max(by: { $0.pointCount < $1.pointCount }) {
+                        let currentMax = maxPoints[id] ?? 0
+                        if largestPoly.pointCount > currentMax {
+                            maxPoints[id] = largestPoly.pointCount
+                            rects[id] = largestPoly.boundingMapRect
+                        }
                     }
                 }
             }
