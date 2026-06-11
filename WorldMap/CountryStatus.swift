@@ -2,7 +2,7 @@ import SwiftUI
 
 /// A country's single travel relationship. The cases are mutually exclusive and
 /// ordered from the strongest bond (`living`) to the weakest (`crossed`); this
-/// ordering drives the green shade used on the map.
+/// ordering drives the yellow-to-orange shade used on the map.
 enum CountryStatus: String, CaseIterable, Identifiable, Codable {
     case notVisited
     case crossed
@@ -37,20 +37,21 @@ enum CountryStatus: String, CaseIterable, Identifiable, Codable {
     /// Whether the country counts as "been there" for statistics and filtering.
     var isVisited: Bool { self != .notVisited }
 
-    /// Representative green. `living` is the darkest, `crossed` the palest;
+    /// Warm yellow-to-orange scale, chosen to stand out against the green map.
+    /// `living` is the deepest orange, `crossed` the palest yellow;
     /// `notVisited` is clear so unvisited countries show the bare map.
     var color: Color {
         switch self {
         case .notVisited: .clear
-        case .crossed:    Color(red: 0.62, green: 0.87, blue: 0.62)
-        case .visited:    Color(red: 0.35, green: 0.72, blue: 0.38)
-        case .lived:      Color(red: 0.15, green: 0.50, blue: 0.20)
-        case .living:     Color(red: 0.00, green: 0.30, blue: 0.08)
+        case .crossed:    Color(red: 1.00, green: 0.87, blue: 0.40)
+        case .visited:    Color(red: 1.00, green: 0.72, blue: 0.20)
+        case .lived:      Color(red: 0.96, green: 0.51, blue: 0.09)
+        case .living:     Color(red: 0.84, green: 0.30, blue: 0.05)
         }
     }
 
-    /// Fill style for the map polygon (translucent so the map stays legible).
-    var fillColor: Color { color.opacity(self == .notVisited ? 0 : 0.6) }
+    /// Fill style for the map polygon (a touch more opaque so it reads on the map).
+    var fillColor: Color { color.opacity(self == .notVisited ? 0 : 0.7) }
 
     /// Outline for the map polygon.
     var strokeColor: Color { self == .notVisited ? Color.gray.opacity(0.25) : color }

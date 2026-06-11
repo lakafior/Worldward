@@ -7,15 +7,16 @@ import Foundation
 /// This covers every country in `countries.geojson`, which is why no record
 /// is left without a continent.
 enum Continents {
-    static let unknown = "Unknown"
+    nonisolated static let unknown = "Unknown"
 
     /// Looks up the English continent name for an ISO alpha-2 code,
     /// returning `Unknown` for codes that are not recognised.
-    static func name(for isoAlpha2: String) -> String {
+    /// `nonisolated` so the background seeding task can call it.
+    nonisolated static func name(for isoAlpha2: String) -> String {
         byISO[isoAlpha2] ?? unknown
     }
 
-    static let byISO: [String: String] = [
+    nonisolated static let byISO: [String: String] = [
         // Europe (48)
         "AD": "Europe", "AL": "Europe", "AT": "Europe", "AX": "Europe",
         "BA": "Europe", "BE": "Europe", "BG": "Europe", "BY": "Europe",

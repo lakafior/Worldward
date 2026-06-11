@@ -3,7 +3,10 @@ import SwiftData
 import MapKit
 
 struct CountryPolygon: Identifiable {
-    let id = UUID()
+    // Deterministic and status-dependent: stable across rebuilds for unchanged
+    // countries, but changes the instant a country's status changes, so the Map
+    // restyles only that polygon instead of reusing its cached overlay.
+    let id: String
     let country: Country
     let polygon: MKPolygon
 }
@@ -55,7 +58,6 @@ private struct CountryListSummary {
 }
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
     @Query(sort: [SortDescriptor(\Country.continent), SortDescriptor(\Country.name)]) private var allCountries: [Country]
     
     @State private var searchText = ""
@@ -63,7 +65,8 @@ struct ContentView: View {
     @State private var showInspector = false
     @State private var showStats = false
     @State private var cameraPosition: MapCameraPosition = .automatic
-    
+    @State private var hasCenteredOnHome = false
+
     // Filters
     @State private var filterVisited: Bool? = nil // nil = all, true = visited, false = unvisited
     @State private var selectedContinent: String? = nil
@@ -145,8 +148,8 @@ struct ContentView: View {
                     Map(position: $cameraPosition) {
                         ForEach(mapPolygons) { item in
                             MapPolygon(item.polygon)
-                                .foregroundStyle(item.country.isVisited ? .green.opacity(0.5) : .clear)
-                                .stroke(item.country.isVisited ? .green : .gray.opacity(0.2), lineWidth: 0.5)
+                                .foregroundStyle(item.country.status.fillColor)
+                                .stroke(item.country.status.strokeColor, lineWidth: 0.5)
                         }
                     }
                     .mapStyle(.standard)
@@ -184,6 +187,10 @@ struct ContentView: View {
                     .padding()
                     .background(.ultraThinMaterial)
                     .cornerRadius(10)
+                } else {
+                    MapLegend()
+                        .padding()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 }
             }
             .navigationTitle("World Map")
@@ -217,55 +224,76 @@ struct ContentView: View {
         .onChange(of: selectedCountry) {
             if let country = selectedCountry {
                 showInspector = true
-                
+
                 // Center the map on the selected country
-                if let polys = countryPolygons[country.id], !polys.isEmpty {
-                    var mapRect = polys.first!.boundingMapRect
-                    for poly in polys.dropFirst() {
-                        mapRect = mapRect.union(poly.boundingMapRect)
-                    }
-                    // Add a small margin around the country outline
-                    let padding = mapRect.width * 0.2
-                    let paddedRect = mapRect.insetBy(dx: -padding, dy: -padding)
-                    
+                if let rect = mapRect(for: country) {
                     withAnimation {
-                        cameraPosition = .rect(paddedRect)
+                        cameraPosition = .rect(rect)
                     }
                 }
             }
         }
-        .onChange(of: allCountries) { _, _ in
-            updateMapPolygons()
+        .onChange(of: allCountries.map(\.status)) {
+            // Fires on initial load and whenever any country's status changes,
+            // keeping the map colors in sync in real time.
+            rebuildMapPolygons()
         }
         .task {
             await loadGeoJSON()
         }
     }
     
-    private func updateMapPolygons() {
-        // Generate polygons once both source lists are loaded and mapPolygons is empty
-        guard !allCountries.isEmpty, !countryPolygons.isEmpty, mapPolygons.isEmpty else { return }
-        
+    /// Rewraps the cached geometry into renderable polygons using each country's
+    /// current status. Cheap (no GeoJSON decoding), so it is safe to call whenever
+    /// a status changes — only the affected country's polygons get a new identity.
+    private func rebuildMapPolygons() {
+        guard !allCountries.isEmpty, !countryPolygons.isEmpty else { return }
+
         var results: [CountryPolygon] = []
         for country in allCountries {
-            if let polys = countryPolygons[country.id] {
-                for poly in polys {
-                    results.append(CountryPolygon(country: country, polygon: poly))
-                }
+            guard let polys = countryPolygons[country.id] else { continue }
+            for (index, poly) in polys.enumerated() {
+                results.append(CountryPolygon(
+                    id: "\(country.id)#\(index)#\(country.status.rawValue)",
+                    country: country,
+                    polygon: poly
+                ))
             }
         }
         self.mapPolygons = results
+        focusOnHomeIfNeeded()
+    }
+
+    /// The padded map rectangle enclosing all of a country's polygons.
+    private func mapRect(for country: Country) -> MKMapRect? {
+        guard let polys = countryPolygons[country.id], !polys.isEmpty else { return nil }
+
+        var rect = polys.first!.boundingMapRect
+        for poly in polys.dropFirst() {
+            rect = rect.union(poly.boundingMapRect)
+        }
+        // Add a small margin around the country outline
+        let padding = rect.width * 0.2
+        return rect.insetBy(dx: -padding, dy: -padding)
+    }
+
+    /// On first load, open the map centered on the country the user lives in, if any.
+    private func focusOnHomeIfNeeded() {
+        guard !hasCenteredOnHome, !mapPolygons.isEmpty else { return }
+        hasCenteredOnHome = true
+
+        guard let home = allCountries.first(where: { $0.status == .living }),
+              let rect = mapRect(for: home) else { return }
+        cameraPosition = .rect(rect)
     }
     
     private func loadGeoJSON() async {
         // Decode the 14 MB GeoJSON in the background so the main thread stays responsive
         let extractedPolygons = await Task.detached(priority: .userInitiated) { () -> [String: [MKPolygon]] in
             var extracted: [String: [MKPolygon]] = [:]
-            
-            let geoJSONPath = "/Volumes/wew/Git/WorldMap/WorldMap/countries.geojson"
-            let geoUrl = Bundle.main.url(forResource: "countries", withExtension: "geojson") ?? URL(fileURLWithPath: geoJSONPath)
-            
-            guard let data = try? Data(contentsOf: geoUrl) else { return [:] }
+
+            guard let geoUrl = Bundle.main.url(forResource: "countries", withExtension: "geojson"),
+                  let data = try? Data(contentsOf: geoUrl) else { return [:] }
             
             let decoder = MKGeoJSONDecoder()
             guard let features = try? decoder.decode(data) as? [MKGeoJSONFeature] else { return [:] }
@@ -295,7 +323,7 @@ struct ContentView: View {
         
         self.countryPolygons = extractedPolygons
         self.isLoadingMapData = false
-        updateMapPolygons()
+        rebuildMapPolygons()
     }
 }
 
@@ -307,11 +335,30 @@ struct CountryRow: View {
             Text(country.flagEmoji)
             Text(country.name)
             Spacer()
-            if country.isVisited {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
+            if country.status.isVisited {
+                Image(systemName: country.status.symbolName)
+                    .foregroundStyle(country.status.color)
             }
         }
+    }
+}
+
+/// Compact key explaining the green shades shown on the map.
+struct MapLegend: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(CountryStatus.visitedCases) { status in
+                HStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(status.color)
+                        .frame(width: 12, height: 12)
+                    Text(status.label)
+                        .font(.caption2)
+                }
+            }
+        }
+        .padding(8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -331,10 +378,14 @@ struct CountryDetailView: View {
                 }
                 .padding(.vertical)
                 
-                Toggle("Visited", isOn: $country.isVisited)
-                    .toggleStyle(.switch)
-                
-                if country.isVisited {
+                Picker("Status", selection: $country.status) {
+                    ForEach(CountryStatus.allCases) { status in
+                        Label(status.label, systemImage: status.symbolName)
+                            .tag(status)
+                    }
+                }
+
+                if country.status.isVisited {
                     DatePicker("Visit date",
                                selection: Binding(
                                 get: { country.visitDate ?? Date() },
@@ -348,80 +399,5 @@ struct CountryDetailView: View {
         }
         .padding()
         .frame(minWidth: 300)
-    }
-}
-
-struct StatisticsView: View {
-    var countries: [Country]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Travel Statistics")
-                .font(.title2)
-                .bold()
-                .padding(.bottom, 4)
-            
-            // Overall
-            let visited = countries.filter { $0.isVisited }.count
-            let total = countries.count
-            let percent = total > 0 ? Double(visited) / Double(total) * 100 : 0
-            
-            StatRow(title: "Visited countries", value: "\(visited) / \(total)", percent: percent)
-            
-            // Continents overall
-            let allContinents = Set(countries.map { $0.continent })
-            let visitedContinents = Set(countries.filter { $0.isVisited }.map { $0.continent })
-            let contPercent = allContinents.count > 0 ? Double(visitedContinents.count) / Double(allContinents.count) * 100 : 0
-            
-            StatRow(title: "Visited continents", value: "\(visitedContinents.count) / \(allContinents.count)", percent: contPercent)
-            
-            Divider()
-            
-            // By continent
-            Text("By continent")
-                .font(.headline)
-            
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(allContinents.sorted(), id: \.self) { continent in
-                        let cCountries = countries.filter { $0.continent == continent }
-                        let cVisited = cCountries.filter { $0.isVisited }.count
-                        let cTotal = cCountries.count
-                        let cPercent = cTotal > 0 ? Double(cVisited) / Double(cTotal) * 100 : 0
-                        
-                        StatRow(title: continent, value: "\(cVisited) / \(cTotal)", percent: cPercent)
-                    }
-                }
-                .padding(.trailing, 8)
-            }
-        }
-        .padding()
-        .frame(width: 350, height: 450)
-    }
-}
-
-struct StatRow: View {
-    var title: String
-    var value: String
-    var percent: Double
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(title)
-                    .fontWeight(.medium)
-                Spacer()
-                Text(value)
-                    .foregroundStyle(.secondary)
-            }
-            HStack {
-                ProgressView(value: percent, total: 100)
-                    .tint(.green)
-                Text(String(format: "%.1f%%", percent))
-                    .font(.caption)
-                    .monospacedDigit()
-                    .frame(width: 45, alignment: .trailing)
-            }
-        }
     }
 }

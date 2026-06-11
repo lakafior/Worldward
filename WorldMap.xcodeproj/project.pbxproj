@@ -10,9 +10,22 @@
 		000000000000000000000120 /* WorldMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorldMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		48AED7772FDAC8E30052D713 /* Exceptions for "WorldMap" folder in "WorldMap" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				gemini.md,
+			);
+			target = 000000000000000100000000 /* WorldMap */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* WorldMap */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				48AED7772FDAC8E30052D713 /* Exceptions for "WorldMap" folder in "WorldMap" target */,
+			);
 			path = WorldMap;
 			sourceTree = "<group>";
 		};
