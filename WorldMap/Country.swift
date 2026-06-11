@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 final class Country {
-    @Attribute(.unique) var id: String // ISO 2
+    @Attribute(.unique) var id: String  // ISO 2
     var iso3: String
     var name: String
     var continent: String
@@ -31,18 +31,22 @@ final class Country {
         Country.flagEmoji(for: id)
     }
 
-    init(id: String, iso3: String = "", name: String, continent: String = "Unknown", status: CountryStatus = .notVisited, visitDate: Date? = nil, notes: String = "") {
+    init(
+        id: String, iso3: String = "", name: String, continent: String = "Unknown",
+        status: CountryStatus = .notVisited, visitDate: Date? = nil, notes: String = ""
+    ) {
         self.id = id
         self.iso3 = iso3
         self.name = name
         self.continent = continent
-        self.status = status
+        self.statusRaw = status.rawValue
         self.visitDate = visitDate
         self.notes = notes
     }
 
     private static func flagEmoji(for countryCode: String) -> String {
-        let scalars = countryCode
+        let scalars =
+            countryCode
             .uppercased()
             .unicodeScalars
             .filter { $0.value >= 65 && $0.value <= 90 }
