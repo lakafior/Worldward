@@ -17,11 +17,12 @@ enum Continents {
     }
 
     nonisolated static let byISO: [String: String] = [
-        // Europe (48)
+        // Europe (50)
         "AD": "Europe", "AL": "Europe", "AT": "Europe", "AX": "Europe",
         "BA": "Europe", "BE": "Europe", "BG": "Europe", "BY": "Europe",
         "CH": "Europe", "CY": "Europe", "CZ": "Europe", "DE": "Europe",
         "DK": "Europe", "EE": "Europe", "ES": "Europe", "FI": "Europe",
+        "FR": "Europe", "NO": "Europe",
         "FO": "Europe", "GB": "Europe", "GG": "Europe", "GI": "Europe",
         "GR": "Europe", "HR": "Europe", "HU": "Europe", "IE": "Europe",
         "IM": "Europe", "IS": "Europe", "IT": "Europe", "JE": "Europe",
@@ -30,8 +31,8 @@ enum Continents {
         "MT": "Europe", "NL": "Europe", "PL": "Europe", "PT": "Europe",
         "RO": "Europe", "RS": "Europe", "SE": "Europe", "SI": "Europe",
         "SK": "Europe", "SM": "Europe", "UA": "Europe", "VA": "Europe",
-        // Asia (53)
-        "-99": "Asia", "AE": "Asia", "AF": "Asia", "AM": "Asia",
+        // Asia (52)
+        "AE": "Asia", "AF": "Asia", "AM": "Asia",
         "AZ": "Asia", "BD": "Asia", "BH": "Asia", "BN": "Asia",
         "BT": "Asia", "CN": "Asia", "CN-TW": "Asia", "GE": "Asia",
         "HK": "Asia", "ID": "Asia", "IL": "Asia", "IN": "Asia",
@@ -86,5 +87,8 @@ enum Continents {
         "WS": "Australia and Oceania",
         // Antarctica (4)
         "AQ": "Antarctica", "GS": "Antarctica", "HM": "Antarctica", "TF": "Antarctica",
+        // Fallback alpha-2 codes for records the dataset ships with `-99`.
+        "XK": "Europe",                  // Kosovo
+        "CP": "Australia and Oceania",   // Clipperton Island
     ]
 }

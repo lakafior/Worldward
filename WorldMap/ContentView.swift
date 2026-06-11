@@ -294,70 +294,73 @@ struct ContentView: View {
                 return ([:], [:], [:])
             }
 
+            // Pass 1: collect each country's raw exterior-ring polygons. Interior
+            // holes are dropped here, since they don't affect a flat country fill.
+            var rawPolygons: [String: [MKPolygon]] = [:]
             for feature in features {
                 guard let propsData = feature.properties,
                     let props = try? JSONSerialization.jsonObject(with: propsData)
                         as? [String: Any],
-                    var id = props["ISO3166-1-Alpha-2"] as? String,
+                    let rawID = props["ISO3166-1-Alpha-2"] as? String,
                     let name = props["name"] as? String
                 else { continue }
 
-                if id == "-99" {
-                    let fallbacks: [String: String] = [
-                        "France": "FR",
-                        "Norway": "NO",
-                        "Kosovo": "XK",
-                        "Indian Ocean Territories": "IO",
-                        "Clipperton Island": "CP"
-                    ]
-                    id = fallbacks[name] ?? name
-                }
+                guard let id = WorldMap.resolvedID(isoA2: rawID, name: name) else { continue }
 
-                var featurePolygons: [MKPolygon] = []
                 for geometry in feature.geometry {
                     if let polygon = geometry as? MKPolygon {
-                        // Optimization: Only use the exterior ring (points) and skip interior holes.
-                        // This drastically reduces Metal drawing complexity for complex borders.
-                        let simplePolygon = MKPolygon(
-                            points: polygon.points(), count: polygon.pointCount)
-                        featurePolygons.append(simplePolygon)
+                        rawPolygons[id, default: []].append(
+                            MKPolygon(points: polygon.points(), count: polygon.pointCount))
                     } else if let multiPolygon = geometry as? MKMultiPolygon {
                         for poly in multiPolygon.polygons {
-                            let simplePolygon = MKPolygon(
-                                points: poly.points(), count: poly.pointCount)
-                            featurePolygons.append(simplePolygon)
+                            rawPolygons[id, default: []].append(
+                                MKPolygon(points: poly.points(), count: poly.pointCount))
                         }
                     }
                 }
+            }
 
-                if !featurePolygons.isEmpty {
-                    polys[id] = (polys[id] ?? []) + featurePolygons
+            // Pass 2: for each country, drop insignificant islands and decimate the
+            // remaining outlines with Douglas-Peucker. Archipelago nations (Canada,
+            // Norway, Indonesia…) collapse from thousands of rings/points down to a
+            // handful — which is what keeps Metal from choking when many countries
+            // are colored at once. Hit-test paths are built from the same simplified
+            // points so tapping still matches what's drawn.
+            for (id, countryPolygons) in rawPolygons {
+                guard let largest = countryPolygons.max(by: {
+                    $0.boundingMapRect.area < $1.boundingMapRect.area
+                }) else { continue }
 
-                    // Generate CGPaths for fast hit testing
-                    var featurePaths: [CGPath] = []
-                    for polygon in featurePolygons {
-                        let path = CGMutablePath()
-                        let points = polygon.points()
-                        if polygon.pointCount > 0 {
-                            path.move(to: CGPoint(x: points[0].x, y: points[0].y))
-                            for i in 1..<polygon.pointCount {
-                                path.addLine(to: CGPoint(x: points[i].x, y: points[i].y))
-                            }
-                            path.closeSubpath()
-                        }
-                        featurePaths.append(path)
+                // Keep the mainland plus any island at least 0.5% of its size.
+                let minIslandArea = largest.boundingMapRect.area * 0.005
+
+                var simplifiedPolygons: [MKPolygon] = []
+                var simplifiedPaths: [CGPath] = []
+                for polygon in countryPolygons {
+                    if polygon !== largest, polygon.boundingMapRect.area < minIslandArea {
+                        continue
                     }
-                    paths[id] = (paths[id] ?? []) + featurePaths
 
-                    // Calculate bounding rect using ONLY the largest polygon to avoid global zooming
-                    if let largestPoly = featurePolygons.max(by: { $0.pointCount < $1.pointCount }) {
-                        let currentMax = maxPoints[id] ?? 0
-                        if largestPoly.pointCount > currentMax {
-                            maxPoints[id] = largestPoly.pointCount
-                            rects[id] = largestPoly.boundingMapRect
-                        }
+                    let points = simplifiedOutline(of: polygon)
+                    guard points.count >= 3 else { continue }
+
+                    simplifiedPolygons.append(MKPolygon(points: points, count: points.count))
+
+                    let path = CGMutablePath()
+                    path.move(to: CGPoint(x: points[0].x, y: points[0].y))
+                    for point in points.dropFirst() {
+                        path.addLine(to: CGPoint(x: point.x, y: point.y))
                     }
+                    path.closeSubpath()
+                    simplifiedPaths.append(path)
                 }
+
+                guard !simplifiedPolygons.isEmpty else { continue }
+                polys[id] = simplifiedPolygons
+                paths[id] = simplifiedPaths
+                // Bounding rect uses only the largest polygon, so selecting a country
+                // zooms to its mainland rather than a far-flung territory.
+                rects[id] = largest.boundingMapRect
             }
             return (polys, paths, rects)
         }.value
@@ -401,6 +404,80 @@ struct CountryMapPolygons: MapContent {
                 .stroke(status.strokeColor, lineWidth: 0.5)
         }
     }
+}
+
+/// The simplified exterior outline of a polygon, as map points. Applies
+/// Douglas-Peucker with a tolerance proportional to the polygon's own size, so a
+/// large country is thinned more aggressively than a small one while every
+/// outline stays recognizable.
+private nonisolated func simplifiedOutline(of polygon: MKPolygon) -> [MKMapPoint] {
+    let count = polygon.pointCount
+    let points = Array(UnsafeBufferPointer(start: polygon.points(), count: count))
+    guard count > 2 else { return points }
+
+    let rect = polygon.boundingMapRect
+    let diagonal = (rect.width * rect.width + rect.height * rect.height).squareRoot()
+    let tolerance = diagonal * 0.005
+    return douglasPeucker(points, tolerance: tolerance)
+}
+
+/// Iterative Douglas-Peucker line simplification. Keeps the endpoints and any
+/// vertex whose perpendicular distance from the current segment exceeds
+/// `tolerance`. Iterative (explicit stack) to avoid deep recursion on the very
+/// large rings that make this simplification worthwhile in the first place.
+private nonisolated func douglasPeucker(_ points: [MKMapPoint], tolerance: Double) -> [MKMapPoint] {
+    let n = points.count
+    guard n > 2 else { return points }
+
+    var keep = [Bool](repeating: false, count: n)
+    keep[0] = true
+    keep[n - 1] = true
+
+    var stack: [(Int, Int)] = [(0, n - 1)]
+    while let (first, last) = stack.popLast() {
+        guard last > first + 1 else { continue }
+
+        let start = points[first]
+        let end = points[last]
+        var maxDistance = 0.0
+        var farthest = first
+
+        for i in (first + 1)..<last {
+            let distance = perpendicularDistance(points[i], from: start, to: end)
+            if distance > maxDistance {
+                maxDistance = distance
+                farthest = i
+            }
+        }
+
+        if maxDistance > tolerance {
+            keep[farthest] = true
+            stack.append((first, farthest))
+            stack.append((farthest, last))
+        }
+    }
+
+    return (0..<n).compactMap { keep[$0] ? points[$0] : nil }
+}
+
+/// Perpendicular distance from `point` to the infinite line through `a` and `b`.
+private nonisolated func perpendicularDistance(
+    _ point: MKMapPoint, from a: MKMapPoint, to b: MKMapPoint
+) -> Double {
+    let dx = b.x - a.x
+    let dy = b.y - a.y
+    let magnitude = (dx * dx + dy * dy).squareRoot()
+    guard magnitude > 0 else {
+        return ((point.x - a.x) * (point.x - a.x) + (point.y - a.y) * (point.y - a.y))
+            .squareRoot()
+    }
+    let cross = abs((point.x - a.x) * dy - (point.y - a.y) * dx)
+    return cross / magnitude
+}
+
+private extension MKMapRect {
+    /// Area in squared map points; a cheap proxy for comparing landmass sizes.
+    nonisolated var area: Double { width * height }
 }
 
 /// Compact key explaining the green shades shown on the map.
