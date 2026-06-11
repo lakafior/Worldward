@@ -50,6 +50,10 @@ enum CountryStatus: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    /// A always-visible tint for badges and chips. Mirrors `color`, but falls back
+    /// to a neutral gray for `notVisited` (whose `color` is intentionally clear).
+    var tint: Color { self == .notVisited ? .gray : color }
+
     /// Fill style for the map polygon (a touch more opaque so it reads on the map).
     var fillColor: Color { color.opacity(self == .notVisited ? 0 : 0.7) }
 

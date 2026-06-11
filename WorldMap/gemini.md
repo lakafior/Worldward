@@ -45,3 +45,4 @@ The app has one main data model: `Country`. The database should initially contai
 - Avoid overengineering. Do not introduce complex architectural patterns when standard SwiftUI approaches such as `@Query` and `@Environment(\.modelContext)` are enough.
 - Use the latest recommended APIs, including declarative MapKit and current SwiftData definitions in SwiftUI.
 - Remember that the app targets **macOS**, so account for Mac-specific elements such as windows, `NavigationSplitView`, and mouse/keyboard interaction.
+// Test
