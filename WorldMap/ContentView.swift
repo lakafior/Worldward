@@ -67,6 +67,7 @@ struct ContentView: View {
     @State private var showStats = false
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
+    @State private var expandedContinents: Set<String> = []
 
     // Filters
     @State private var filterVisited: Bool? = nil  // nil = all, true = visited, false = unvisited
@@ -94,6 +95,16 @@ struct ContentView: View {
         allCountries.filter { $0.isVisited || $0 == selectedCountry }
     }
 
+    private var countriesGroupedByContinent: [String: [Country]] {
+        Dictionary(grouping: countryListSummary.filteredCountries, by: { $0.continent })
+    }
+
+    private func initializeExpandedContinents() {
+        if expandedContinents.isEmpty {
+            expandedContinents = Set(countriesGroupedByContinent.keys)
+        }
+    }
+
     var body: some View {
         NavigationSplitView {
             let countryList = countryListSummary
@@ -110,15 +121,37 @@ struct ContentView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding()
-                }
+                } else {
+                    ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
+                        let countries = countriesGroupedByContinent[continent] ?? []
+                        let isExpanded = Binding(
+                            get: { expandedContinents.contains(continent) },
+                            set: { newValue in
+                                if newValue {
+                                    expandedContinents.insert(continent)
+                                } else {
+                                    expandedContinents.remove(continent)
+                                }
+                            }
+                        )
 
-                ForEach(countryList.filteredCountries) { country in
-                    CountryRow(country: country)
-                        .tag(country)
+                        DisclosureGroup(isExpanded: isExpanded) {
+                            ForEach(countries) { country in
+                                CountryRow(country: country)
+                                    .tag(country)
+                            }
+                        } label: {
+                            Text(continent)
+                                .font(.headline)
+                        }
+                    }
                 }
             }
             .searchable(text: $searchText, prompt: "Search countries")
             .navigationTitle("Countries")
+            .onAppear {
+                initializeExpandedContinents()
+            }
             .toolbar {
                 ToolbarItem {
                     Menu {
@@ -327,9 +360,11 @@ struct ContentView: View {
             // are colored at once. Hit-test paths are built from the same simplified
             // points so tapping still matches what's drawn.
             for (id, countryPolygons) in rawPolygons {
-                guard let largest = countryPolygons.max(by: {
-                    $0.boundingMapRect.area < $1.boundingMapRect.area
-                }) else { continue }
+                guard
+                    let largest = countryPolygons.max(by: {
+                        $0.boundingMapRect.area < $1.boundingMapRect.area
+                    })
+                else { continue }
 
                 // Keep the mainland plus any island at least 0.5% of its size.
                 let minIslandArea = largest.boundingMapRect.area * 0.005
@@ -475,9 +510,9 @@ private nonisolated func perpendicularDistance(
     return cross / magnitude
 }
 
-private extension MKMapRect {
+extension MKMapRect {
     /// Area in squared map points; a cheap proxy for comparing landmass sizes.
-    nonisolated var area: Double { width * height }
+    fileprivate nonisolated var area: Double { width * height }
 }
 
 /// Compact key explaining the green shades shown on the map.
