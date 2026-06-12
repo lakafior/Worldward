@@ -1,4 +1,5 @@
 import MapKit
+import Photos
 import SwiftData
 import SwiftUI
 
@@ -82,6 +83,9 @@ struct ContentView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
     @State private var expandedContinents: Set<String> = []
+
+    @State private var photoImporter = PhotoImporter()
+    @Environment(\.modelContext) private var modelContext
 
     // Filters
     @State private var filterVisited: Bool? = nil  // nil = all, true = visited, false = unvisited
@@ -282,7 +286,13 @@ struct ContentView: View {
                     } label: {
                         Label("Details", systemImage: "info.circle")
                     }
-                    .disabled(selectedCountry == nil)
+
+                    Button {
+                        photoImporter.presentConfiguration()
+                    } label: {
+                        Label("Import from Photos", systemImage: "photo.on.rectangle")
+                    }
+                    .disabled(!photoImporter.isReady || photoImporter.isImporting)
                 }
             }
         }
@@ -300,6 +310,9 @@ struct ContentView: View {
         }
         .task {
             await loadGeoJSON()
+        }
+        .sheet(isPresented: $photoImporter.showImporterSheet) {
+            ImportPreviewView(importer: photoImporter, modelContext: modelContext)
         }
     }
 
@@ -418,6 +431,16 @@ struct ContentView: View {
         self.countryPaths = extractedPaths
         self.countryBoundingRects = extractedRects
         self.isLoadingMapData = false
+
+        // Hand the geographic data to the photo importer now that it's ready.
+        // Doing this here (rather than via onChange) guarantees it runs exactly
+        // once, so the "Import from Photos" button reliably enables.
+        photoImporter.configure(
+            countryBoundingRects: extractedRects,
+            countryPaths: extractedPaths,
+            allCountries: allCountries
+        )
+
         focusOnHomeIfNeeded()
     }
 }
@@ -548,9 +571,9 @@ struct MapLegend: View {
     }
 }
 
-
 struct CountryDetailView: View {
     @Bindable var country: Country
+    @Environment(\.modelContext) private var modelContext
     @State private var newVisitDate = Date()
     @State private var newVisitNotes = ""
     @State private var showingAddVisit = false
@@ -585,9 +608,10 @@ struct CountryDetailView: View {
                             description: Text("Add your first visit to this country")
                         )
                     } else {
-                        ForEach(country.visits) { visit in
-                            VisitRow(visit: visit)
+                        ForEach(country.visits.sorted { $0.date > $1.date }) { visit in
+                            VisitRow(visit: visit) { delete(visit) }
                         }
+                        .onDelete(perform: deleteVisits)
                     }
 
                     if showingAddVisit {
@@ -621,21 +645,36 @@ struct CountryDetailView: View {
     private func addVisit() {
         let visit = Visit(date: newVisitDate, notes: newVisitNotes, country: country)
         country.visits.append(visit)
-        
+
         showingAddVisit = false
         newVisitDate = Date()
         newVisitNotes = ""
+    }
+
+    /// Delete a single visit (used by the row's trash button).
+    private func delete(_ visit: Visit) {
+        modelContext.delete(visit)
+    }
+
+    /// Delete via swipe, matching the same date-sorted order shown in the list.
+    private func deleteVisits(at offsets: IndexSet) {
+        let sorted = country.visits.sorted { $0.date > $1.date }
+        for index in offsets {
+            modelContext.delete(sorted[index])
+        }
     }
 }
 
 struct VisitRow: View {
     @Bindable var visit: Visit
+    let onDelete: () -> Void
     @State private var isEditing = false
     @State private var editDate: Date
     @State private var editNotes: String
 
-    init(visit: Visit) {
+    init(visit: Visit, onDelete: @escaping () -> Void) {
         self.visit = visit
+        self.onDelete = onDelete
         _editDate = State(initialValue: visit.date)
         _editNotes = State(initialValue: visit.notes)
     }
@@ -664,7 +703,7 @@ struct VisitRow: View {
                     Text(visit.date, style: .date)
                         .font(.subheadline)
                         .monospacedDigit()
-                    
+
                     if !visit.notes.isEmpty {
                         Text(visit.notes)
                             .font(.caption)
@@ -676,9 +715,13 @@ struct VisitRow: View {
                     Image(systemName: "pencil")
                 }
                 .buttonStyle(.plain)
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.red)
             }
             .padding(.vertical, 4)
         }
     }
 }
-

@@ -13,6 +13,12 @@ final class Country {
     /// migration), while `status` exposes it as the typed enum.
     var statusRaw: String
 
+    /// `true` when the current `status` was assigned by the photo importer rather
+    /// than set by hand. Lets an "Overwrite" re-scan clear statuses it previously
+    /// imported (e.g. a country you no longer have photos from) without touching
+    /// statuses the user chose manually.
+    var statusIsImported: Bool = false
+
     /// Legacy fields - kept for backward compatibility with existing data
     /// New code should use the `visits` relationship instead
     var visitDate: Date?
