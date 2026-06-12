@@ -80,6 +80,7 @@ struct ContentView: View {
     @State private var selectedCountry: Country?
     @State private var showInspector = false
     @State private var showStats = false
+    @State private var showSettings = false
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
     @State private var expandedContinents: Set<String> = []
@@ -171,6 +172,17 @@ struct ContentView: View {
                 initializeExpandedContinents()
             }
             .toolbar {
+                #if !os(macOS)
+                    // macOS reaches Settings through the app menu (⌘,) instead.
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+                    }
+                #endif
+
                 ToolbarItem {
                     Menu {
                         Section("Status") {
@@ -218,7 +230,10 @@ struct ContentView: View {
                     .id(mapUpdateTrigger)
                     .mapStyle(.standard)
                     .mapControls {
-                        MapZoomStepper()
+                        // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
+                        #if os(macOS)
+                            MapZoomStepper()
+                        #endif
                         MapCompass()
                     }
                     .onTapGesture { location in
@@ -314,6 +329,20 @@ struct ContentView: View {
         .sheet(isPresented: $photoImporter.showImporterSheet) {
             ImportPreviewView(importer: photoImporter, modelContext: modelContext)
         }
+        #if !os(macOS)
+            .sheet(isPresented: $showSettings) {
+                NavigationStack {
+                    SettingsView()
+                        .navigationTitle("Settings")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showSettings = false }
+                            }
+                        }
+                }
+            }
+        #endif
     }
 
     /// The padded map rectangle enclosing all of a country's polygons.

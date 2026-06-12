@@ -1,0 +1,160 @@
+import SwiftData
+import SwiftUI
+import UniformTypeIdentifiers
+
+/// The app-wide appearance preference. Stored as a raw `String` so it persists
+/// directly via `@AppStorage`. `.system` defers to the device's Light/Dark setting.
+enum AppTheme: String, CaseIterable, Identifiable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    /// The `ColorScheme` to force, or `nil` to follow the system appearance.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
+/// The shared settings content. Rendered natively inside the macOS `Settings`
+/// scene (⌘,) and inside a sheet on iOS/iPadOS — the same `Form` for both.
+struct SettingsView: View {
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var exportDocument: JSONDocument?
+    @State private var showExporter = false
+    @State private var showImporter = false
+    @State private var transferAlert: TransferAlert?
+
+    var body: some View {
+        Form {
+            appearanceSection
+            dataSection
+        }
+        .formStyle(.grouped)
+        #if os(macOS)
+            .frame(width: 460, height: 320)
+        #endif
+        .fileExporter(
+            isPresented: $showExporter,
+            document: exportDocument,
+            contentType: .json,
+            defaultFilename: "WorldMap Backup",
+            onCompletion: handleExport
+        )
+        .fileImporter(
+            isPresented: $showImporter,
+            allowedContentTypes: [.json],
+            onCompletion: handleImport
+        )
+        .alert(
+            transferAlert?.title ?? "",
+            isPresented: alertIsPresented,
+            presenting: transferAlert
+        ) { _ in
+            Button("OK", role: .cancel) {}
+        } message: { alert in
+            Text(alert.message)
+        }
+    }
+
+    @ViewBuilder private var appearanceSection: some View {
+        Section("Appearance") {
+            Picker("Theme", selection: $appTheme) {
+                ForEach(AppTheme.allCases) { theme in
+                    Text(theme.label).tag(theme)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var dataSection: some View {
+        Section {
+            Button("Export Travel Data…", action: startExport)
+            Button("Import Travel Data…") { showImporter = true }
+        } header: {
+            Text("Data")
+        } footer: {
+            Text(
+                "Export saves your country statuses and visits to a JSON file. Importing matches that file to your countries and replaces their travel data."
+            )
+        }
+    }
+
+    private var alertIsPresented: Binding<Bool> {
+        Binding(
+            get: { transferAlert != nil },
+            set: { if !$0 { transferAlert = nil } }
+        )
+    }
+
+    private func handleExport(_ result: Result<URL, Error>) {
+        if case .failure(let error) = result {
+            transferAlert = TransferAlert(
+                title: "Export Failed", message: error.localizedDescription)
+        }
+    }
+
+    private func handleImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url): performImport(from: url)
+        case .failure(let error):
+            transferAlert = TransferAlert(
+                title: "Import Failed", message: error.localizedDescription)
+        }
+    }
+
+    private func startExport() {
+        do {
+            let data = try TravelDataTransfer.export(from: modelContext)
+            exportDocument = JSONDocument(data: data)
+            showExporter = true
+        } catch {
+            transferAlert = TransferAlert(
+                title: "Export Failed", message: error.localizedDescription)
+        }
+    }
+
+    private func performImport(from url: URL) {
+        // A file returned by the system picker is security-scoped on iOS; bracket
+        // the read so we keep access for exactly as long as we need it.
+        let needsAccess = url.startAccessingSecurityScopedResource()
+        defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
+
+        do {
+            let data = try Data(contentsOf: url)
+            let count = try TravelDataTransfer.importData(data, into: modelContext)
+            transferAlert = TransferAlert(
+                title: "Import Complete",
+                message: "Updated \(count) countr\(count == 1 ? "y" : "ies") from the backup.")
+        } catch {
+            transferAlert = TransferAlert(
+                title: "Import Failed", message: error.localizedDescription)
+        }
+    }
+}
+
+/// A one-shot alert payload for export/import results.
+private struct TransferAlert: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+}
+
+#Preview {
+    SettingsView()
+}

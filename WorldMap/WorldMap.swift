@@ -4,6 +4,9 @@ import SwiftUI
 
 @main
 struct WorldMap: App {
+    /// The user's appearance choice, shared with `SettingsView` via the same key.
+    @AppStorage("appTheme") private var appTheme: AppTheme = .system
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Country.self, Visit.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -134,7 +137,18 @@ struct WorldMap: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(appTheme.colorScheme)
         }
         .modelContainer(sharedModelContainer)
+
+        #if os(macOS)
+            // Adds the standard "WorldMap ▸ Settings…" menu item (⌘,). The Settings
+            // scene is separate from the WindowGroup, so it needs the same model
+            // container attached for export/import to read and write the store.
+            Settings {
+                SettingsView()
+            }
+            .modelContainer(sharedModelContainer)
+        #endif
     }
 }
