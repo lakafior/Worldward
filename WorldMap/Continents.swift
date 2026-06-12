@@ -17,13 +17,13 @@ enum Continents {
     }
 
     nonisolated static let byISO: [String: String] = [
-        // Europe (50)
+        // Europe (52)
         "AD": "Europe", "AL": "Europe", "AT": "Europe", "AX": "Europe",
         "BA": "Europe", "BE": "Europe", "BG": "Europe", "BY": "Europe",
         "CH": "Europe", "CY": "Europe", "CZ": "Europe", "DE": "Europe",
         "DK": "Europe", "EE": "Europe", "ES": "Europe", "FI": "Europe",
         "FR": "Europe", "NO": "Europe",
-        "FO": "Europe", "GB": "Europe", "GG": "Europe", "GI": "Europe",
+        "FO": "Europe", "GB": "Europe", "GG": "Europe", "GI": "Europe", "GL": "Europe",
         "GR": "Europe", "HR": "Europe", "HU": "Europe", "IE": "Europe",
         "IM": "Europe", "IS": "Europe", "IT": "Europe", "JE": "Europe",
         "LI": "Europe", "LT": "Europe", "LU": "Europe", "LV": "Europe",
@@ -61,11 +61,11 @@ enum Continents {
         "SO": "Africa", "SS": "Africa", "ST": "Africa", "SZ": "Africa",
         "TD": "Africa", "TG": "Africa", "TN": "Africa", "TZ": "Africa",
         "UG": "Africa", "ZA": "Africa", "ZM": "Africa", "ZW": "Africa",
-        // North America (38)
+        // North America (37)
         "AG": "North America", "AI": "North America", "AW": "North America", "BB": "North America",
         "BL": "North America", "BM": "North America", "BS": "North America", "BZ": "North America",
         "CA": "North America", "CR": "North America", "CU": "North America", "CW": "North America",
-        "DM": "North America", "DO": "North America", "GD": "North America", "GL": "North America",
+        "DM": "North America", "DO": "North America", "GD": "North America",
         "GT": "North America", "HN": "North America", "HT": "North America", "JM": "North America",
         "KN": "North America", "KY": "North America", "LC": "North America", "MF": "North America",
         "MS": "North America", "MX": "North America", "NI": "North America", "PA": "North America",
