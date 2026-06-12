@@ -698,28 +698,34 @@ struct VisitRow: View {
                 }
             }
         } else {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(visit.date, style: .date)
-                        .font(.subheadline)
-                        .monospacedDigit()
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(visit.date, style: .date)
+                            .font(.subheadline)
+                            .monospacedDigit()
 
-                    if !visit.notes.isEmpty {
-                        Text(visit.notes)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if !visit.notes.isEmpty {
+                            Text(visit.notes)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    Spacer()
+                    Button(action: { isEditing = true }) {
+                        Image(systemName: "pencil")
+                    }
+                    .buttonStyle(.plain)
+                    Button(role: .destructive, action: onDelete) {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.red)
                 }
-                Spacer()
-                Button(action: { isEditing = true }) {
-                    Image(systemName: "pencil")
+
+                if !visit.photoIdentifiers.isEmpty {
+                    VisitPhotosView(identifiers: visit.photoIdentifiers)
                 }
-                .buttonStyle(.plain)
-                Button(role: .destructive, action: onDelete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.red)
             }
             .padding(.vertical, 4)
         }

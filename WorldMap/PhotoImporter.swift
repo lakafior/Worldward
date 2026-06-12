@@ -46,6 +46,8 @@ struct ProposedTrip: Identifiable {
     let endDate: Date
     let distinctDays: Int
     let photoCount: Int
+    /// Capped PhotoKit identifiers backing this trip (for thumbnails later).
+    let photoIdentifiers: [String]
 
     /// Inclusive length of the stay in calendar days.
     var durationDays: Int {
@@ -95,6 +97,10 @@ class PhotoImporter {
     @ObservationIgnored private var countryBoundingRects: [String: MKMapRect] = [:]
     @ObservationIgnored private var countryPaths: [String: [CGPath]] = [:]
     @ObservationIgnored private var allCountries: [Country] = []
+
+    /// Upper bound on photo identifiers stored per visit, so a long stay (or your
+    /// home country) doesn't bloat the database with thousands of references.
+    @ObservationIgnored private let maxStoredIdentifiers = 30
 
     /// Whether the geographic data has been loaded and the importer is ready to run.
     var isReady: Bool { !countryBoundingRects.isEmpty }
@@ -171,8 +177,8 @@ class PhotoImporter {
             self.importProgress = "Scanning \(fetchResult.count) photos..."
         }
 
-        // Collect every photo date that falls inside each country.
-        var datesByCountry: [String: [Date]] = [:]
+        // Collect every photo (date + identifier) that falls inside each country.
+        var photosByCountry: [String: [(date: Date, id: String)]] = [:]
         var countriesByID: [String: Country] = [:]
 
         fetchResult.enumerateObjects { [weak self] asset, index, _ in
@@ -196,7 +202,8 @@ class PhotoImporter {
                 for path in self.countryPaths[country.id] ?? [] {
                     if path.contains(cgPoint) {
                         let date = asset.creationDate ?? Date()
-                        datesByCountry[country.id, default: []].append(date)
+                        photosByCountry[country.id, default: []].append(
+                            (date, asset.localIdentifier))
                         countriesByID[country.id] = country
                         return
                     }
@@ -206,10 +213,10 @@ class PhotoImporter {
 
         // Build merged trips and a derived status for each country.
         var proposed: [ProposedCountry] = []
-        for (id, dates) in datesByCountry {
+        for (id, photos) in photosByCountry {
             guard let country = countriesByID[id] else { continue }
 
-            let trips = makeTrips(from: dates, mergeGapDays: settings.mergeGapDays)
+            let trips = makeTrips(from: photos, mergeGapDays: settings.mergeGapDays)
             guard !trips.isEmpty else { continue }
 
             var status: CountryStatus = .notVisited
@@ -267,7 +274,9 @@ class PhotoImporter {
             ProposedTrip(
                 startDate: first, endDate: last,
                 distinctDays: trips.reduce(0) { $0 + $1.distinctDays },
-                photoCount: trips.reduce(0) { $0 + $1.photoCount })
+                photoCount: trips.reduce(0) { $0 + $1.photoCount },
+                photoIdentifiers: Array(
+                    trips.flatMap(\.photoIdentifiers).prefix(maxStoredIdentifiers)))
         ]
     }
 
@@ -280,40 +289,43 @@ class PhotoImporter {
             .max()
     }
 
-    /// Split a country's photo dates into trips separated by gaps larger than `mergeGapDays`.
-    private func makeTrips(from dates: [Date], mergeGapDays: Int) -> [ProposedTrip] {
+    /// Split a country's photos into trips separated by gaps larger than `mergeGapDays`.
+    private func makeTrips(
+        from photos: [(date: Date, id: String)], mergeGapDays: Int
+    ) -> [ProposedTrip] {
         let calendar = Calendar.current
-        guard !dates.isEmpty else { return [] }
+        guard !photos.isEmpty else { return [] }
 
-        var photosPerDay: [Date: Int] = [:]
-        for date in dates {
-            photosPerDay[calendar.startOfDay(for: date), default: 0] += 1
-        }
-        let days = photosPerDay.keys.sorted()
+        let sorted = photos.sorted { $0.date < $1.date }
 
         var trips: [ProposedTrip] = []
-        var startDay = days[0]
-        var previousDay = days[0]
-        var distinctDays = 1
-        var photoCount = photosPerDay[days[0]] ?? 0
+        var startDay = calendar.startOfDay(for: sorted[0].date)
+        var previousDay = startDay
+        var days: Set<Date> = []
+        var photoCount = 0
+        var ids: [String] = []
 
         func closeTrip() {
             trips.append(
                 ProposedTrip(
                     startDate: startDay, endDate: previousDay,
-                    distinctDays: distinctDays, photoCount: photoCount))
+                    distinctDays: days.count, photoCount: photoCount,
+                    photoIdentifiers: ids))
         }
 
-        for day in days.dropFirst() {
+        for photo in sorted {
+            let day = calendar.startOfDay(for: photo.date)
             let gap = calendar.dateComponents([.day], from: previousDay, to: day).day ?? 0
-            if gap > mergeGapDays {
+            if !days.isEmpty, gap > mergeGapDays {
                 closeTrip()
                 startDay = day
-                distinctDays = 0
+                days = []
                 photoCount = 0
+                ids = []
             }
-            distinctDays += 1
-            photoCount += photosPerDay[day] ?? 0
+            days.insert(day)
+            photoCount += 1
+            if ids.count < maxStoredIdentifiers { ids.append(photo.id) }
             previousDay = day
         }
         closeTrip()
@@ -355,14 +367,16 @@ class PhotoImporter {
                 }
 
                 if let existing, scanMode != .overwrite {
-                    if existing.isImported, !existing.notes.contains(note) {
+                    if existing.isImported {
                         existing.notes = note
+                        existing.photoIdentifiers = trip.photoIdentifiers
                     }
                     continue
                 }
 
                 let visit = Visit(
                     date: trip.startDate, notes: note, country: country, isImported: true)
+                visit.photoIdentifiers = trip.photoIdentifiers
                 modelContext.insert(visit)
                 country.visits.append(visit)
             }
