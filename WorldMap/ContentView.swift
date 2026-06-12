@@ -97,6 +97,7 @@ struct ContentView: View {
     @State private var countryPolygons: [String: [MKPolygon]] = [:]
     @State private var countryPaths: [String: [CGPath]] = [:]
     @State private var countryBoundingRects: [String: MKMapRect] = [:]
+    @State private var countryCentroids: [String: CLLocationCoordinate2D] = [:]
     @State private var isLoadingMapData = true
     @State private var mapUpdateTrigger = UUID()
 
@@ -288,12 +289,9 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItemGroup {
                     Button {
-                        showStats.toggle()
+                        showStats = true
                     } label: {
                         Label("Statistics", systemImage: "chart.pie")
-                    }
-                    .popover(isPresented: $showStats, arrowEdge: .bottom) {
-                        StatisticsView(countries: allCountries)
                     }
 
                     Button {
@@ -328,6 +326,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $photoImporter.showImporterSheet) {
             ImportPreviewView(importer: photoImporter, modelContext: modelContext)
+        }
+        .sheet(isPresented: $showStats) {
+            StatisticsView(countries: allCountries, centroids: countryCentroids)
         }
         #if !os(macOS)
             .sheet(isPresented: $showSettings) {
@@ -459,6 +460,14 @@ struct ContentView: View {
         self.countryPolygons = extractedPolygons
         self.countryPaths = extractedPaths
         self.countryBoundingRects = extractedRects
+        // Derive a centroid per country from its bounding rect so the statistics
+        // page can rank the nearest unvisited countries by real proximity.
+        self.countryCentroids = extractedRects.mapValues { rect in
+            MKMapPoint(
+                x: rect.origin.x + rect.size.width / 2,
+                y: rect.origin.y + rect.size.height / 2
+            ).coordinate
+        }
         self.isLoadingMapData = false
 
         // Hand the geographic data to the photo importer now that it's ready.
