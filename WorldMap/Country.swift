@@ -13,8 +13,13 @@ final class Country {
     /// migration), while `status` exposes it as the typed enum.
     var statusRaw: String
 
+    /// Legacy fields - kept for backward compatibility with existing data
+    /// New code should use the `visits` relationship instead
     var visitDate: Date?
     var notes: String
+
+    @Relationship(deleteRule: .cascade, inverse: \Visit.country)
+    var visits: [Visit] = []
 
     /// The country's travel status. Writing it updates `statusRaw`, which SwiftData
     /// persists and publishes — driving live map and list updates.

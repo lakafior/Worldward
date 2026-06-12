@@ -5,7 +5,7 @@ import SwiftUI
 @main
 struct WorldMap: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([Country.self])
+        let schema = Schema([Country.self, Visit.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
@@ -40,7 +40,7 @@ struct WorldMap: App {
         "Norway": "NO",
         "Kosovo": "XK",
         "Indian Ocean Territories": "IO",
-        "Clipperton Island": "CP"
+        "Clipperton Island": "CP",
     ]
 
     /// The usable id for a GeoJSON feature, or `nil` for records that should be

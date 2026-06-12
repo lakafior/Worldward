@@ -27,6 +27,11 @@ private struct CountryListSummary {
                 visitedCount += 1
             }
 
+            // Collect visit years from all visits
+            for visit in country.visits {
+                visitYears.insert(calendar.component(.year, from: visit.date))
+            }
+            // Also check legacy visitDate for backward compatibility
             if let visitDate = country.visitDate {
                 visitYears.insert(calendar.component(.year, from: visitDate))
             }
@@ -41,8 +46,17 @@ private struct CountryListSummary {
             }
 
             if let selectedYear {
-                guard let visitDate = country.visitDate else { continue }
-                guard calendar.component(.year, from: visitDate) == selectedYear else { continue }
+                // Check if any visit matches the selected year
+                let hasMatchingVisit = country.visits.contains { visit in
+                    calendar.component(.year, from: visit.date) == selectedYear
+                }
+                // Also check legacy visitDate for backward compatibility
+                let legacyYearMatch =
+                    country.visitDate.map {
+                        calendar.component(.year, from: $0) == selectedYear
+                    } ?? false
+
+                guard hasMatchingVisit || legacyYearMatch else { continue }
             }
 
             filteredCountries.append(country)
@@ -534,8 +548,12 @@ struct MapLegend: View {
     }
 }
 
+
 struct CountryDetailView: View {
     @Bindable var country: Country
+    @State private var newVisitDate = Date()
+    @State private var newVisitNotes = ""
+    @State private var showingAddVisit = false
 
     var body: some View {
         Form {
@@ -556,21 +574,111 @@ struct CountryDetailView: View {
                             .tag(status)
                     }
                 }
+            }
 
-                if country.status.isVisited {
-                    DatePicker(
-                        "Visit date",
-                        selection: Binding(
-                            get: { country.visitDate ?? Date() },
-                            set: { country.visitDate = $0 }
-                        ), displayedComponents: .date)
+            if country.status.isVisited {
+                Section("Visits") {
+                    if country.visits.isEmpty {
+                        ContentUnavailableView(
+                            "No visits yet",
+                            systemImage: "calendar",
+                            description: Text("Add your first visit to this country")
+                        )
+                    } else {
+                        ForEach(country.visits) { visit in
+                            VisitRow(visit: visit)
+                        }
+                    }
 
-                    TextField("Notes", text: $country.notes, axis: .vertical)
-                        .lineLimit(3...10)
+                    if showingAddVisit {
+                        DatePicker("Date", selection: $newVisitDate, displayedComponents: .date)
+                        TextField("Notes", text: $newVisitNotes, axis: .vertical)
+                            .lineLimit(3...5)
+
+                        HStack {
+                            Spacer()
+                            Button("Cancel") {
+                                showingAddVisit = false
+                                newVisitDate = Date()
+                                newVisitNotes = ""
+                            }
+                            Button("Add Visit") {
+                                addVisit()
+                            }
+                        }
+                    } else {
+                        Button("Add Visit") {
+                            showingAddVisit = true
+                        }
+                    }
                 }
             }
         }
         .padding()
         .frame(minWidth: 300)
     }
+
+    private func addVisit() {
+        let visit = Visit(date: newVisitDate, notes: newVisitNotes, country: country)
+        country.visits.append(visit)
+        
+        showingAddVisit = false
+        newVisitDate = Date()
+        newVisitNotes = ""
+    }
 }
+
+struct VisitRow: View {
+    @Bindable var visit: Visit
+    @State private var isEditing = false
+    @State private var editDate: Date
+    @State private var editNotes: String
+
+    init(visit: Visit) {
+        self.visit = visit
+        _editDate = State(initialValue: visit.date)
+        _editNotes = State(initialValue: visit.notes)
+    }
+
+    var body: some View {
+        if isEditing {
+            VStack(alignment: .leading, spacing: 8) {
+                DatePicker("Date", selection: $editDate, displayedComponents: .date)
+                TextField("Notes", text: $editNotes, axis: .vertical)
+                    .lineLimit(3...5)
+                HStack {
+                    Spacer()
+                    Button("Cancel") {
+                        isEditing = false
+                    }
+                    Button("Save") {
+                        visit.date = editDate
+                        visit.notes = editNotes
+                        isEditing = false
+                    }
+                }
+            }
+        } else {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(visit.date, style: .date)
+                        .font(.subheadline)
+                        .monospacedDigit()
+                    
+                    if !visit.notes.isEmpty {
+                        Text(visit.notes)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+                Button(action: { isEditing = true }) {
+                    Image(systemName: "pencil")
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
