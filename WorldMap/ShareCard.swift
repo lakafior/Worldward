@@ -2,7 +2,7 @@ import SwiftUI
 
 /// What the user can tweak about their share card. Defaults reproduce the
 /// original card exactly, so callers that don't customize get the same output.
-struct ShareCardConfig {
+struct ShareCardConfig: Equatable {
     /// Overrides the default headline when non-empty.
     var headline: String = ""
     /// The small footer line. Hidden when empty.

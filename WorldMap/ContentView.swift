@@ -80,6 +80,7 @@ struct ContentView: View {
     @State private var selectedCountry: Country?
     @State private var detailCountry: Country?
     @State private var showStats = false
+    @State private var showChat = false
     @State private var showSettings = false
     @State private var showCountryList = false
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -246,6 +247,14 @@ struct ContentView: View {
 
                 ToolbarItem {
                     Button {
+                        showChat = true
+                    } label: {
+                        Label("Ask About Your Travels", systemImage: "sparkles")
+                    }
+                }
+
+                ToolbarItem {
+                    Button {
                         showStats = true
                     } label: {
                         Label("Statistics", systemImage: "chart.pie")
@@ -299,6 +308,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showStats) {
             StatisticsView(countries: allCountries, centroids: countryCentroids)
+        }
+        .sheet(isPresented: $showChat) {
+            TravelChatView()
         }
         #if !os(macOS)
             .sheet(isPresented: $showCountryList) {
