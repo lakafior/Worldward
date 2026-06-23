@@ -23,7 +23,9 @@ struct ImportPreviewView: View {
                 }
             }
             .navigationTitle("Import from Photos")
+            #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
         }
         #if os(macOS)
             .frame(minWidth: 460, minHeight: 420)

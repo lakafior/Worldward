@@ -29,7 +29,7 @@ enum ImportScanMode: String, CaseIterable, Identifiable {
 }
 
 /// User-tunable settings for a photo import run.
-struct ImportSettings {
+struct ImportSettings: Sendable {
     var scanMode: ImportScanMode = .fillBlanks
     /// Photos within this many days of each other belong to the same trip.
     var mergeGapDays: Int = 7
@@ -40,7 +40,7 @@ struct ImportSettings {
 }
 
 /// A single merged trip to one country, derived from a run of nearby photo dates.
-struct ProposedTrip: Identifiable {
+struct ProposedTrip: Identifiable, Sendable {
     let id = UUID()
     let startDate: Date
     let endDate: Date
@@ -50,12 +50,12 @@ struct ProposedTrip: Identifiable {
     let photoIdentifiers: [String]
 
     /// Inclusive length of the stay in calendar days.
-    var durationDays: Int {
+    nonisolated var durationDays: Int {
         (Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0) + 1
     }
 
     /// Status this trip alone would imply.
-    func impliedStatus(livedThresholdDays: Int) -> CountryStatus {
+    nonisolated func impliedStatus(livedThresholdDays: Int) -> CountryStatus {
         if durationDays >= livedThresholdDays { return .lived }
         if distinctDays > 1 { return .visited }
         return .crossed
@@ -85,6 +85,12 @@ enum ImportPhase {
 
 /// Handles importing visit data from Apple Photos based on location metadata.
 /// Uses the existing country polygon data to map photo coordinates to countries.
+///
+/// The scan itself runs off the main actor on `Sendable` value types only — no
+/// SwiftData model is ever touched from a background context. Coordinate matching
+/// is done against country *ids*; the resulting ids are resolved back to `Country`
+/// objects on the main actor in `finalizeScan`.
+@MainActor
 @Observable
 class PhotoImporter {
     var phase: ImportPhase = .config
@@ -94,19 +100,21 @@ class PhotoImporter {
     var homeWarning: String?
     var showImporterSheet = false
 
-    @ObservationIgnored private var countryBoundingRects: [String: MKMapRect] = [:]
-    @ObservationIgnored private var countryPaths: [String: [CGPath]] = [:]
+    // Set once by `configure` and only read during a scan, so they're safe to
+    // access from the nonisolated scan without crossing the main actor.
+    @ObservationIgnored nonisolated(unsafe) private var countryBoundingRects: [String: MKMapRect] = [:]
+    @ObservationIgnored nonisolated(unsafe) private var countryPaths: [String: [CGPath]] = [:]
     @ObservationIgnored private var allCountries: [Country] = []
 
     /// Upper bound on photo identifiers stored per visit, so a long stay (or your
     /// home country) doesn't bloat the database with thousands of references.
-    @ObservationIgnored private let maxStoredIdentifiers = 30
+    nonisolated private static let maxStoredIdentifiers = 30
 
     /// Whether the geographic data has been loaded and the importer is ready to run.
     var isReady: Bool { !countryBoundingRects.isEmpty }
 
     /// Status ordering used to ensure imports only ever raise a country's status.
-    private func rank(_ status: CountryStatus) -> Int {
+    nonisolated private static func rank(_ status: CountryStatus) -> Int {
         CountryStatus.allCases.firstIndex(of: status) ?? 0
     }
 
@@ -141,70 +149,86 @@ class PhotoImporter {
         proposedCountries = []
         homeWarning = nil
 
-        PHPhotoLibrary.requestAuthorization { [weak self] status in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
+        // Computed on the main actor (reads SwiftData) before going off-main.
+        let addNewSince = settings.scanMode == .addNew ? newestImportedDate() : nil
 
-                if status == .authorized || status == .limited {
-                    // Run the scan off the main thread so the UI stays responsive.
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        self.fetchPhotosAndImport(settings: settings)
-                    }
-                } else {
-                    self.isImporting = false
-                    self.phase = .config
-                    self.importProgress = "Photo access denied"
-                }
+        Task {
+            let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            guard status == .authorized || status == .limited else {
+                isImporting = false
+                phase = .config
+                importProgress = "Photo access denied"
+                return
             }
+
+            importProgress = "Fetching photos..."
+            // Runs off the main actor; returns only Sendable value types.
+            let result = await scanPhotos(
+                settings: settings,
+                addNewSince: addNewSince,
+                onProgress: { text in self.importProgress = text })
+
+            finalizeScan(result, settings: settings)
         }
     }
 
-    /// Fetch photos with location data and turn them into proposed trips.
-    private func fetchPhotosAndImport(settings: ImportSettings) {
-        DispatchQueue.main.async { self.importProgress = "Fetching photos..." }
+    /// Outcome of an off-main photo scan, expressed purely in value types so no
+    /// SwiftData model is touched off the main actor.
+    private struct ScanResult: Sendable {
+        struct Entry: Sendable {
+            let id: String
+            let trips: [ProposedTrip]
+            let status: CountryStatus
+            let totalDistinctDays: Int
+        }
+        var entries: [Entry]
+        var homeCandidateID: String?
+        var photoCount: Int
+    }
 
+    /// Fetch photos with location data and turn them into proposed trips, matching
+    /// coordinates to countries by id. Runs entirely off the main actor over
+    /// `Sendable` data — it reads only the immutable geographic dictionaries.
+    nonisolated private func scanPhotos(
+        settings: ImportSettings,
+        addNewSince: Date?,
+        onProgress: @MainActor @Sendable @escaping (String) -> Void
+    ) async -> ScanResult {
         // PhotoKit can't filter on `location` in a fetch predicate, but it *can*
         // filter on `creationDate` — which is exactly what "Add new only" needs.
         let fetchOptions = PHFetchOptions()
         fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        if settings.scanMode == .addNew, let since = newestImportedDate() {
+        if settings.scanMode == .addNew, let since = addNewSince {
             fetchOptions.predicate = NSPredicate(format: "creationDate > %@", since as NSDate)
         }
 
         let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+        let total = fetchResult.count
+        Task { @MainActor in onProgress("Scanning \(total) photos...") }
 
-        DispatchQueue.main.async {
-            self.importProgress = "Scanning \(fetchResult.count) photos..."
-        }
+        let countryIDs = Array(countryBoundingRects.keys)
 
         // Collect every photo (date + identifier) that falls inside each country.
         var photosByCountry: [String: [(date: Date, id: String)]] = [:]
-        var countriesByID: [String: Country] = [:]
 
-        fetchResult.enumerateObjects { [weak self] asset, index, _ in
-            guard let self = self else { return }
-
+        fetchResult.enumerateObjects { asset, index, _ in
             if index % 200 == 0 {
-                DispatchQueue.main.async {
-                    self.importProgress = "Scanning photo \(index + 1)/\(fetchResult.count)..."
-                }
+                Task { @MainActor in onProgress("Scanning photo \(index + 1)/\(total)...") }
             }
 
             guard let location = asset.location else { return }
             let mapPoint = MKMapPoint(location.coordinate)
             let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
 
-            for country in self.allCountries {
-                guard let countryRect = self.countryBoundingRects[country.id],
+            for id in countryIDs {
+                guard let countryRect = self.countryBoundingRects[id],
                     countryRect.contains(mapPoint)
                 else { continue }
 
-                for path in self.countryPaths[country.id] ?? [] {
+                for path in self.countryPaths[id] ?? [] {
                     if path.contains(cgPoint) {
                         let date = asset.creationDate ?? Date()
-                        photosByCountry[country.id, default: []].append(
-                            (date, asset.localIdentifier))
-                        countriesByID[country.id] = country
+                        photosByCountry[id, default: []].append((date, asset.localIdentifier))
                         return
                     }
                 }
@@ -212,31 +236,50 @@ class PhotoImporter {
         }
 
         // Build merged trips and a derived status for each country.
-        var proposed: [ProposedCountry] = []
+        var entries: [ScanResult.Entry] = []
         for (id, photos) in photosByCountry {
-            guard let country = countriesByID[id] else { continue }
-
-            let trips = makeTrips(from: photos, mergeGapDays: settings.mergeGapDays)
+            let trips = Self.makeTrips(from: photos, mergeGapDays: settings.mergeGapDays)
             guard !trips.isEmpty else { continue }
 
             var status: CountryStatus = .notVisited
             for trip in trips {
                 let s = trip.impliedStatus(livedThresholdDays: settings.livedThresholdDays)
-                if rank(s) > rank(status) { status = s }
+                if Self.rank(s) > Self.rank(status) { status = s }
             }
 
+            entries.append(
+                .init(
+                    id: id, trips: trips, status: status,
+                    totalDistinctDays: trips.reduce(0) { $0 + $1.distinctDays }))
+        }
+
+        // The most-present country is the candidate for "home"; the existing-home
+        // reconciliation needs SwiftData, so it happens on the main actor.
+        let homeCandidateID = settings.markHome
+            ? entries.max(by: { $0.totalDistinctDays < $1.totalDistinctDays })?.id
+            : nil
+
+        return ScanResult(entries: entries, homeCandidateID: homeCandidateID, photoCount: total)
+    }
+
+    /// Resolve scanned ids back to `Country` objects and finish the run. Runs on
+    /// the main actor, the only place SwiftData models may be touched.
+    private func finalizeScan(_ result: ScanResult, settings: ImportSettings) {
+        let byID = Dictionary(allCountries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+
+        var proposed: [ProposedCountry] = []
+        for entry in result.entries {
+            guard let country = byID[entry.id] else { continue }
             proposed.append(
                 ProposedCountry(
-                    id: id, country: country, trips: trips,
-                    proposedStatus: status, isHome: false))
+                    id: entry.id, country: country, trips: entry.trips,
+                    proposedStatus: entry.status, isHome: false))
         }
 
         // Optionally crown the most-present country as home.
         var warning: String?
-        if settings.markHome,
-            let homeIdx = proposed.indices.max(by: {
-                proposed[$0].totalDistinctDays < proposed[$1].totalDistinctDays
-            })
+        if settings.markHome, let homeID = result.homeCandidateID,
+            let homeIdx = proposed.firstIndex(where: { $0.id == homeID })
         {
             let existingHome = allCountries.first { $0.status == .living }
             if let existingHome, existingHome.id != proposed[homeIdx].id {
@@ -249,24 +292,21 @@ class PhotoImporter {
                 // You don't "visit" where you live: collapse every trip into a
                 // single entry dated at the earliest photo, rather than emitting
                 // hundreds of weekly visits.
-                proposed[homeIdx].trips = collapsed(proposed[homeIdx].trips)
+                proposed[homeIdx].trips = Self.collapsed(proposed[homeIdx].trips)
             }
         }
 
         proposed.sort { $0.totalDistinctDays > $1.totalDistinctDays }
 
-        DispatchQueue.main.async {
-            self.proposedCountries = proposed
-            self.homeWarning = warning
-            self.isImporting = false
-            self.phase = .results
-            self.importProgress =
-                "Found \(proposed.count) countries across \(fetchResult.count) photos"
-        }
+        proposedCountries = proposed
+        homeWarning = warning
+        isImporting = false
+        phase = .results
+        importProgress = "Found \(proposed.count) countries across \(result.photoCount) photos"
     }
 
     /// Merge a set of trips into a single span (used for the home country).
-    private func collapsed(_ trips: [ProposedTrip]) -> [ProposedTrip] {
+    nonisolated private static func collapsed(_ trips: [ProposedTrip]) -> [ProposedTrip] {
         guard let first = trips.map(\.startDate).min(),
             let last = trips.map(\.endDate).max()
         else { return trips }
@@ -290,7 +330,7 @@ class PhotoImporter {
     }
 
     /// Split a country's photos into trips separated by gaps larger than `mergeGapDays`.
-    private func makeTrips(
+    nonisolated private static func makeTrips(
         from photos: [(date: Date, id: String)], mergeGapDays: Int
     ) -> [ProposedTrip] {
         let calendar = Calendar.current
@@ -384,7 +424,7 @@ class PhotoImporter {
             // Only ever raise the status, so a manual `living`/`lived` is preserved.
             // Mark the status as imported only when we're not raising a status the
             // user set by hand, so a later Overwrite never clears their data.
-            if rank(proposed.proposedStatus) > rank(country.status) {
+            if Self.rank(proposed.proposedStatus) > Self.rank(country.status) {
                 let wasManual = country.status != .notVisited && !country.statusIsImported
                 country.status = proposed.proposedStatus
                 if !wasManual { country.statusIsImported = true }

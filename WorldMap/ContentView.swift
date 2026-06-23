@@ -180,8 +180,7 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(10)
+                    .background(.ultraThinMaterial, in: .rect(cornerRadius: 10))
                 } else {
                     MapLegend()
                         .padding()
@@ -794,7 +793,9 @@ private struct CountryListSheet: View {
             }
             .searchable(text: $searchText, prompt: "Search countries")
             .navigationTitle("Countries")
-            .navigationBarTitleDisplayMode(.inline)
+            #if !os(macOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { isPresented = false }
@@ -852,7 +853,9 @@ private struct CountryDetailSheet: View {
         NavigationStack {
             CountryDetailView(country: country)
                 .navigationTitle(country.name)
+                #if !os(macOS)
                 .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }
