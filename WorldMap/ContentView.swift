@@ -78,7 +78,7 @@ struct ContentView: View {
 
     @State private var searchText = ""
     @State private var selectedCountry: Country?
-    @State private var showInspector = false
+    @State private var detailCountry: Country?
     @State private var showStats = false
     @State private var showSettings = false
     @State private var showCountryList = false
@@ -190,15 +190,6 @@ struct ContentView: View {
             #if os(macOS)
                 .navigationSubtitle("Tap a country to see details")
             #endif
-            .inspector(isPresented: $showInspector) {
-                if let country = selectedCountry {
-                    CountryDetailView(country: country)
-                } else {
-                    ContentUnavailableView(
-                        "Select a country", systemImage: "map",
-                        description: Text("Tap a country on the map or add one from the list."))
-                }
-            }
             .toolbar {
                 #if !os(macOS)
                     // macOS reaches Settings through the app menu (⌘,) instead.
@@ -229,10 +220,11 @@ struct ContentView: View {
 
                 ToolbarItem {
                     Button {
-                        showInspector.toggle()
+                        detailCountry = selectedCountry
                     } label: {
                         Label("Details", systemImage: "info.circle")
                     }
+                    .disabled(selectedCountry == nil)
                 }
 
                 ToolbarItem {
@@ -247,7 +239,7 @@ struct ContentView: View {
         }
         .onChange(of: selectedCountry) {
             if let country = selectedCountry {
-                showInspector = true
+                detailCountry = country
 
                 // Center the map on the selected country
                 if let rect = mapRect(for: country) {
@@ -278,6 +270,9 @@ struct ContentView: View {
                 isPresented: $showCountryList,
                 onAppear: initializeExpandedContinents
             )
+        }
+        .sheet(item: $detailCountry) { country in
+            CountryDetailSheet(country: country)
         }
         #if !os(macOS)
             .sheet(isPresented: $showSettings) {
@@ -837,6 +832,29 @@ private struct CountryListSheet: View {
             .onAppear {
                 onAppear()
             }
+        }
+    }
+}
+
+// MARK: - Country Detail Sheet
+
+/// A sheet that wraps CountryDetailView so the map doesn't resize and Metal
+/// doesn't need to re-acquire drawables. iOS-native sheet avoids the black
+/// rendering artifacts that the inspector produces when overlaid on a Map.
+private struct CountryDetailSheet: View {
+    @Bindable var country: Country
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            CountryDetailView(country: country)
+                .navigationTitle(country.name)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
+                }
         }
     }
 }
