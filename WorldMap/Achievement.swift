@@ -21,20 +21,21 @@ struct Achievement: Identifiable {
     static func all(for stats: TravelStats) -> [Achievement] {
         var achievements: [Achievement] = []
 
-        // Country-count milestones: a classic escalating ladder.
-        let countryMilestones: [(Int, String, String, String)] = [
-            (1, "First Steps", "Visit your first country", "figure.walk"),
-            (5, "Getting Around", "Visit 5 countries", "airplane"),
-            (10, "Seasoned Traveler", "Visit 10 countries", "suitcase.fill"),
-            (25, "Globetrotter", "Visit 25 countries", "globe.americas.fill"),
-            (50, "World Wanderer", "Visit 50 countries", "globe.europe.africa.fill"),
-            (100, "Centurion", "Visit 100 countries", "crown.fill"),
+        // Country-count milestones: a classic escalating ladder. The tint deepens
+        // sky → royal as the milestones get rarer, staying within the brand family.
+        let countryMilestones: [(Int, String, String, String, Color)] = [
+            (1, "First Steps", "Visit your first country", "figure.walk", .brandSky),
+            (5, "Getting Around", "Visit 5 countries", "airplane", .brandSky),
+            (10, "Seasoned Traveler", "Visit 10 countries", "suitcase.fill", .brandAzure),
+            (25, "Globetrotter", "Visit 25 countries", "globe.americas.fill", .brandAzure),
+            (50, "World Wanderer", "Visit 50 countries", "globe.europe.africa.fill", .brandRoyal),
+            (100, "Centurion", "Visit 100 countries", "crown.fill", .brandRoyal),
         ]
-        for (threshold, title, detail, symbol) in countryMilestones {
+        for (threshold, title, detail, symbol, tint) in countryMilestones {
             achievements.append(
                 countMilestone(
                     id: "countries-\(threshold)", title: title, detail: detail,
-                    symbol: symbol, tint: .orange,
+                    symbol: symbol, tint: tint,
                     value: stats.visitedCountries, target: threshold))
         }
 
@@ -42,7 +43,7 @@ struct Achievement: Identifiable {
         achievements.append(
             countMilestone(
                 id: "continents-3", title: "Continental",
-                detail: "Set foot on 3 continents", symbol: "globe", tint: .teal,
+                detail: "Set foot on 3 continents", symbol: "globe", tint: .brandTeal,
                 value: stats.visitedContinents, target: 3))
 
         let everyContinent = TravelStats.canonicalContinents.allSatisfy { name in
@@ -55,7 +56,7 @@ struct Achievement: Identifiable {
             Achievement(
                 id: "continents-all", title: "Seven Summits",
                 detail: "Set foot on every continent", symbol: "globe.desk.fill",
-                tint: .purple, isUnlocked: everyContinent,
+                tint: .brandIndigo, isUnlocked: everyContinent,
                 progress: Double(continentsTouched) / 7,
                 progressLabel: "\(continentsTouched) / 7"))
 
@@ -65,14 +66,14 @@ struct Achievement: Identifiable {
             Achievement(
                 id: "settled", title: "Put Down Roots",
                 detail: "Mark a country as lived in", symbol: "house.fill",
-                tint: .brown, isUnlocked: hasLived, progress: hasLived ? 1 : 0,
+                tint: .brandAzure, isUnlocked: hasLived, progress: hasLived ? 1 : 0,
                 progressLabel: hasLived ? "Done" : "Locked"))
 
         // Frequency: keeping a travel log.
         achievements.append(
             countMilestone(
                 id: "visits-25", title: "Frequent Flyer",
-                detail: "Record 25 visits", symbol: "calendar", tint: .blue,
+                detail: "Record 25 visits", symbol: "calendar", tint: .brandRoyal,
                 value: stats.totalVisits, target: 25))
 
         // Per-continent completion, only for continents already started so the grid
@@ -83,7 +84,7 @@ struct Achievement: Identifiable {
                     id: "complete-\(continent.name)",
                     title: "\(continent.name) Complete",
                     detail: "Visit every country in \(continent.name)",
-                    symbol: "checkmark.seal.fill", tint: .green,
+                    symbol: "checkmark.seal.fill", tint: .brandTeal,
                     isUnlocked: continent.isComplete, progress: continent.fraction,
                     progressLabel: "\(continent.visited) / \(continent.total)"))
         }

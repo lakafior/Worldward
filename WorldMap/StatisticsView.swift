@@ -15,7 +15,7 @@ struct StatisticsView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedYear: Int?
-    @State private var summaryImage: Image?
+    @State private var showShareSheet = false
 
     /// Computed once per view instance. `TravelStats` is a full O(n) pass, and the
     /// body, the year picker, and the share-image render all read it — recomputing
@@ -71,33 +71,29 @@ struct StatisticsView: View {
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
+                #if os(macOS)
+                    ToolbarItem(placement: .cancellationAction) { shareButton }
+                #else
+                    ToolbarItem(placement: .topBarLeading) { shareButton }
+                #endif
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
-                }
-                ToolbarItem {
-                    Menu {
-                        if let summaryImage {
-                            ShareLink(
-                                item: summaryImage,
-                                preview: SharePreview(
-                                    "My WorldMap travels", image: summaryImage)
-                            ) {
-                                Label("Share Image", systemImage: "photo")
-                            }
-                        }
-                        ShareLink(item: stats.shareText) {
-                            Label("Share Text", systemImage: "text.quote")
-                        }
-                    } label: {
-                        Label("Share", systemImage: "square.and.arrow.up")
-                    }
                 }
             }
         }
         .frame(minWidth: 380, minHeight: 520)
-        .onAppear {
-            summaryImage = renderShareImage(ShareCard(stats: stats))
+        .sheet(isPresented: $showShareSheet) {
+            ShareCustomizationView(stats: stats)
         }
+    }
+
+    private var shareButton: some View {
+        Button {
+            showShareSheet = true
+        } label: {
+            Label("Share", systemImage: "square.and.arrow.up")
+        }
+        .disabled(!stats.hasTravel)
     }
 }
 
@@ -112,7 +108,7 @@ private struct HeroSection: View {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("\(stats.visitedCountries)")
                         .font(.system(size: 56, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(.brandGradient)
                     VStack(alignment: .leading) {
                         Text("of \(stats.totalCountries) countries")
                             .font(.headline)
@@ -152,7 +148,7 @@ private struct AchievementsSection: View {
             SectionHeader(
                 title: "Achievements", trailing: "\(unlocked) / \(achievements.count)")
 
-            LazyVGrid(columns: columns, spacing: 12) {
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
                 ForEach(achievements) { achievement in
                     AchievementBadge(achievement: achievement)
                 }
@@ -189,17 +185,14 @@ private struct AchievementBadge: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2, reservesSpace: true)
 
-            if achievement.isUnlocked {
-                Text("Unlocked")
-                    .font(.caption2)
-                    .foregroundStyle(achievement.tint)
-            } else {
-                ProgressView(value: achievement.progress)
-                    .tint(achievement.tint)
-                Text(achievement.progressLabel)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            // Every badge shares this footer — a progress bar (full once unlocked)
+            // plus one status line — so locked and unlocked tiles have identical
+            // height and the grid stays even across all columns.
+            ProgressView(value: achievement.progress)
+                .tint(achievement.tint)
+            Text(achievement.isUnlocked ? "Unlocked" : achievement.progressLabel)
+                .font(.caption2)
+                .foregroundStyle(achievement.isUnlocked ? achievement.tint : .secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(8)
@@ -220,20 +213,20 @@ private struct StatCardsSection: View {
         LazyVGrid(columns: columns, spacing: 12) {
             StatCard(
                 title: "Recorded visits", value: "\(stats.totalVisits)",
-                symbol: "calendar", tint: .blue)
+                symbol: "calendar", tint: .brandRoyal)
             StatCard(
                 title: "Years traveling", value: "\(stats.activeYears)",
-                symbol: "clock.arrow.circlepath", tint: .teal)
+                symbol: "clock.arrow.circlepath", tint: .brandTeal)
             if let most = stats.mostVisited {
                 StatCard(
                     title: "Most visited", value: "\(most.flag) ×\(most.count)",
-                    symbol: "star.fill", tint: .orange)
+                    symbol: "star.fill", tint: .brandAzure)
             }
             if let busiest = stats.busiestYear, busiest.countries > 0 {
                 StatCard(
                     title: "Busiest year",
                     value: "\(busiest.year) · \(busiest.countries)",
-                    symbol: "flame.fill", tint: .red)
+                    symbol: "flame.fill", tint: .brandIndigo)
             }
         }
     }
@@ -277,7 +270,7 @@ private struct YearChartSection: View {
                 BarMark(
                     x: .value("Year", String(year.year)),
                     y: .value("Countries", year.countries))
-                .foregroundStyle(.orange.gradient)
+                .foregroundStyle(Color.brand.gradient)
                 .cornerRadius(4)
             }
             .frame(height: 200)
@@ -417,7 +410,7 @@ struct StatRow: View {
             }
             HStack {
                 ProgressView(value: percent, total: 100)
-                    .tint(.orange)
+                    .tint(.brand)
                 Text(String(format: "%.0f%%", percent))
                     .font(.caption)
                     .monospacedDigit()

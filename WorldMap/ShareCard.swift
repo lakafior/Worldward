@@ -1,13 +1,31 @@
 import SwiftUI
 
+/// What the user can tweak about their share card. Defaults reproduce the
+/// original card exactly, so callers that don't customize get the same output.
+struct ShareCardConfig {
+    /// Overrides the default headline when non-empty.
+    var headline: String = ""
+    /// The small footer line. Hidden when empty.
+    var caption: String = "Tracked with WorldMap"
+    var showContinents = true
+    /// The middle metric: busiest year (all-time card) or visits (year card).
+    var showSecondMetric = true
+    var showMostVisited = true
+    var showCountryList = true
+}
+
 /// A self-contained, fixed-size card summarizing the user's travels, designed to
 /// be rasterized by `ImageRenderer` and shared. It takes no environment so it
 /// renders identically off-screen; pass a `year` to produce a year-in-review card.
 struct ShareCard: View {
     let stats: TravelStats
     var year: TravelStats.YearStat? = nil
+    var config = ShareCardConfig()
+    var theme: ShareCardTheme = .ocean
 
     private var headline: String {
+        let custom = config.headline.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !custom.isEmpty { return custom }
         if let year { return "\(year.year) in Travel" }
         return "My World"
     }
@@ -25,6 +43,10 @@ struct ShareCard: View {
     private var countryList: [(flag: String, name: String)] {
         if let year { return stats.countries(inYear: year.year) }
         return stats.visitedList
+    }
+
+    private var caption: String {
+        config.caption.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var body: some View {
@@ -47,18 +69,22 @@ struct ShareCard: View {
             }
 
             HStack(spacing: 24) {
-                metric(value: "\(stats.visitedContinents)", label: "continents")
-                if let busiest = stats.busiestYear, year == nil {
-                    metric(value: "\(busiest.year)", label: "busiest year")
-                } else if year != nil {
-                    metric(value: "\(year?.visits ?? 0)", label: "visits")
+                if config.showContinents {
+                    metric(value: "\(stats.visitedContinents)", label: "continents")
                 }
-                if let most = stats.mostVisited {
+                if config.showSecondMetric {
+                    if let busiest = stats.busiestYear, year == nil {
+                        metric(value: "\(busiest.year)", label: "busiest year")
+                    } else if year != nil {
+                        metric(value: "\(year?.visits ?? 0)", label: "visits")
+                    }
+                }
+                if config.showMostVisited, let most = stats.mostVisited {
                     metric(value: most.flag, label: "most visited")
                 }
             }
 
-            if !countryList.isEmpty {
+            if config.showCountryList, !countryList.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(year == nil ? "Countries visited" : "Visited this year")
                         .font(.caption.weight(.semibold))
@@ -70,21 +96,16 @@ struct ShareCard: View {
                 }
             }
 
-            Text("Tracked with WorldMap")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.7))
-                .padding(.top, 4)
+            if !caption.isEmpty {
+                Text(caption)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .padding(.top, 4)
+            }
         }
         .padding(28)
         .frame(width: 380, alignment: .topLeading)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 0.96, green: 0.51, blue: 0.09),
-                    Color(red: 0.84, green: 0.30, blue: 0.05),
-                ],
-                startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
+        .background(theme.gradient)
         .foregroundStyle(.white)
     }
 
