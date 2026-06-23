@@ -94,6 +94,12 @@ struct ContentView: View {
     @State private var selectedContinent: String? = nil
     @State private var selectedYear: Int? = nil
 
+    // Current-location marking
+    @State private var isLocating = false
+    @State private var locationCountry: Country?
+    @State private var showLocationPicker = false
+    @State private var locationStatus: CountryStatusOption = .visited
+
     // Geographic data
     @State private var countryPolygons: [String: [MKPolygon]] = [:]
     @State private var countryPaths: [String: [CGPath]] = [:]
@@ -206,6 +212,19 @@ struct ContentView: View {
 
                 ToolbarItem {
                     Button {
+                        Task { await markCurrentLocation() }
+                    } label: {
+                        if isLocating {
+                            ProgressView()
+                        } else {
+                            Label("Mark Location", systemImage: "location.fill.viewfinder")
+                        }
+                    }
+                    .disabled(isLocating || isLoadingMapData)
+                }
+
+                ToolbarItem {
+                    Button {
                         showCountryList = true
                     } label: {
                         Label("Countries", systemImage: "plus")
@@ -290,6 +309,16 @@ struct ContentView: View {
                 }
             }
         #endif
+        .sheet(isPresented: $showLocationPicker) {
+            if let country = locationCountry {
+                LocationStatusSheet(
+                    country: country,
+                    status: $locationStatus,
+                    onConfirm: { applyLocationStatus() },
+                    onCancel: { showLocationPicker = false }
+                )
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .worldMapOpenStats)) { _ in
             showStats = true
         }
@@ -306,6 +335,33 @@ struct ContentView: View {
         // Add a small margin around the country outline
         let padding = rect.width * 0.2
         return rect.insetBy(dx: -padding, dy: -padding)
+    }
+
+    /// Requests the user's location, reverse‑geocodes it to a country, and presents
+    /// a status picker. Called from the toolbar button.
+    private func markCurrentLocation() async {
+        isLocating = true
+        defer { isLocating = false }
+
+        guard let isoCode = try? await LocationService.currentISOCountryCode() else { return }
+        guard
+            let country = allCountries.first(where: {
+                $0.id == isoCode || $0.iso3 == isoCode
+            })
+        else { return }
+
+        locationCountry = country
+        locationStatus = .visited
+        showLocationPicker = true
+    }
+
+    /// Persists the user's chosen status and dismisses the location picker.
+    private func applyLocationStatus() {
+        guard let country = locationCountry else { return }
+        country.status = locationStatus.domainStatus
+        country.statusIsImported = false
+        showLocationPicker = false
+        locationCountry = nil
     }
 
     /// On first load, open the map centered on the country the user lives in, if any.
@@ -1116,6 +1172,65 @@ private struct CountryDetailSheet: View {
                         Button("Done") { dismiss() }
                     }
                 }
+        }
+    }
+}
+
+// MARK: - Location Status Sheet
+
+/// A compact sheet that appears after the "Mark Location" toolbar button resolves
+/// the current country. Shows the flag, name, and a status picker.
+private struct LocationStatusSheet: View {
+    @Bindable var country: Country
+    @Binding var status: CountryStatusOption
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    HStack(spacing: 12) {
+                        Text(country.flagEmoji)
+                            .font(.largeTitle)
+                        VStack(alignment: .leading) {
+                            Text(country.name)
+                                .font(.headline)
+                            Text(country.continent)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                Section("Travel Status") {
+                    Picker("Status", selection: $status) {
+                        ForEach(CountryStatusOption.allCases) { option in
+                            HStack {
+                                Image(
+                                    systemName: option.domainStatus.symbolName
+                                )
+                                .foregroundStyle(option.domainStatus.tint)
+                                Text(option.domainStatus.label)
+                            }
+                            .tag(option)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                }
+            }
+            .navigationTitle("Mark Location")
+            #if !os(macOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Mark", action: onConfirm)
+                }
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ import SwiftData
 /// An `AppEnum` mirror of `CountryStatus` that Shortcuts and Siri can display.
 /// "Not visited" is deliberately absent from the public cases — shortcuts that
 /// mark a country always move it *into* a visited state.
-enum CountryStatusOption: String, AppEnum {
+enum CountryStatusOption: String, AppEnum, Identifiable {
     case crossed
     case visited
     case lived
@@ -26,6 +26,8 @@ enum CountryStatusOption: String, AppEnum {
     var domainStatus: CountryStatus {
         CountryStatus(rawValue: rawValue) ?? .visited
     }
+
+    var id: String { rawValue }
 }
 
 // MARK: - Continent Names (AppEnum)
@@ -76,6 +78,7 @@ struct MarkCountryStatusIntent: AppIntent {
         Summary("Mark \(\.$country) as \(\.$status)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let context = ModelContext(WorldMap.sharedModelContainer)
         let targetID = country.id
@@ -169,6 +172,7 @@ struct GetVisitCountIntent: AppIntent {
         searchKeywords: ["visited", "countries", "count", "stats", "summary"]
     )
 
+    @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let context = ModelContext(WorldMap.sharedModelContainer)
         let descriptor = FetchDescriptor<Country>()
@@ -224,6 +228,7 @@ struct LogVisitIntent: AppIntent {
         }
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let context = ModelContext(WorldMap.sharedModelContainer)
         let targetID = country.id
@@ -276,6 +281,7 @@ struct GetContinentProgressIntent: AppIntent {
         Summary("My progress in \(\.$continent)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
         let context = ModelContext(WorldMap.sharedModelContainer)
         let continentName = continent.rawValue
@@ -300,6 +306,66 @@ struct GetContinentProgressIntent: AppIntent {
                 \(visitedFlags)
                 """
         )
+    }
+}
+
+// MARK: - 7. Mark Current Location
+
+/// Resolves the device's current location to a country and sets its travel status.
+/// Designed for "Mark where I am as visited" — no manual country picker needed.
+struct MarkCurrentLocationIntent: AppIntent {
+    static let title: LocalizedStringResource = "Mark Current Location"
+    static let description = IntentDescription(
+        "Detects your current country and marks it with the chosen travel status.",
+        categoryName: "Travel",
+        searchKeywords: ["current", "location", "here", "gps", "mark"]
+    )
+
+    @Parameter(title: "Status")
+    var status: CountryStatusOption
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Mark where I am as \(\.$status)")
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        guard let isoCode = try await LocationService.currentISOCountryCode() else {
+            throw Error.couldNotDetermineCountry
+        }
+
+        let context = ModelContext(WorldMap.sharedModelContainer)
+        let descriptor = FetchDescriptor<Country>(
+            predicate: #Predicate {
+                $0.id == isoCode || $0.iso3 == isoCode
+            }
+        )
+        guard let model = try context.fetch(descriptor).first else {
+            throw Error.countryNotInCatalog(code: isoCode)
+        }
+
+        model.status = status.domainStatus
+        model.statusIsImported = false
+        try context.save()
+
+        return .result(
+            value:
+                "\(model.flagEmoji) \(model.name) marked as \(status.domainStatus.label.lowercased())."
+        )
+    }
+
+    enum Error: Swift.Error, CustomLocalizedStringResourceConvertible {
+        case couldNotDetermineCountry
+        case countryNotInCatalog(code: String)
+
+        var localizedStringResource: LocalizedStringResource {
+            switch self {
+            case .couldNotDetermineCountry:
+                "Could not determine your current country from your location."
+            case .countryNotInCatalog(let code):
+                "Country code \(code) was found but is not in the WorldMap catalog."
+            }
+        }
     }
 }
 
@@ -350,6 +416,16 @@ struct WorldMapShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Continent Progress",
             systemImageName: "map"
+        )
+
+        AppShortcut(
+            intent: MarkCurrentLocationIntent(),
+            phrases: [
+                "Mark where I am in \(.applicationName)",
+                "Record my current location with \(.applicationName)",
+            ],
+            shortTitle: "Mark Location",
+            systemImageName: "location.fill"
         )
     }
 }

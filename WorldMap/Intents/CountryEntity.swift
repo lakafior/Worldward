@@ -46,7 +46,7 @@ struct CountryEntityQuery: EntityQuery {
     /// Look up a handful of countries by ISO id — used when a shortcut is run with
     /// a pre‑selected country.
     func entities(for identifiers: [CountryEntity.ID]) async throws -> [CountryEntity] {
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = await ModelContext(WorldMap.sharedModelContainer)
         let all = try context.fetch(FetchDescriptor<Country>())
         return all.filter { identifiers.contains($0.id) }.map(CountryEntity.init)
     }
@@ -54,7 +54,7 @@ struct CountryEntityQuery: EntityQuery {
     /// Return every country for the Shortcuts picker, with visited countries first
     /// so the most relevant destinations are immediately visible.
     func suggestedEntities() async throws -> [CountryEntity] {
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = await ModelContext(WorldMap.sharedModelContainer)
         let descriptor = FetchDescriptor<Country>(
             sortBy: [SortDescriptor(\.name)]
         )
