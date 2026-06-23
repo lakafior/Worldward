@@ -100,7 +100,7 @@ struct ContentView: View {
     @State private var countryBoundingRects: [String: MKMapRect] = [:]
     @State private var countryCentroids: [String: CLLocationCoordinate2D] = [:]
     @State private var isLoadingMapData = true
-    @State private var mapUpdateTrigger = UUID()
+    @State private var mapLoadingMessage = "Loading map…"
 
     private var countryListSummary: CountryListSummary {
         CountryListSummary(
@@ -126,62 +126,63 @@ struct ContentView: View {
         }
     }
 
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                MapReader { proxy in
-                    Map(position: $cameraPosition) {
-                        ForEach(visibleCountries) { country in
-                            CountryMapPolygons(
-                                country: country,
-                                status: country.status,
-                                polygons: countryPolygons[country.id] ?? [])
-                        }
-                    }
-                    .id(mapUpdateTrigger)
-                    .mapStyle(.standard)
-                    .mapControls {
-                        // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
-                        #if os(macOS)
-                            MapZoomStepper()
-                        #endif
-                        MapCompass()
-                    }
-                    .onTapGesture { location in
-                        if let coordinate = proxy.convert(location, from: .local) {
-                            let mapPoint = MKMapPoint(coordinate)
-                            let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
+    /// The interactive world map. Extracted so the body can withhold it (and the
+    /// cost of bringing up MapKit) until the country geometry has loaded.
+    private var mapView: some View {
+        MapReader { proxy in
+            Map(position: $cameraPosition) {
+                ForEach(visibleCountries) { country in
+                    CountryMapPolygons(
+                        country: country,
+                        status: country.status,
+                        polygons: countryPolygons[country.id] ?? [])
+                }
+            }
+            .mapStyle(.standard)
+            .mapControls {
+                // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
+                #if os(macOS)
+                    MapZoomStepper()
+                #endif
+                MapCompass()
+            }
+            .onTapGesture { location in
+                if let coordinate = proxy.convert(location, from: .local) {
+                    let mapPoint = MKMapPoint(coordinate)
+                    let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
 
-                            // Optimized lookup: check country bounding rects first, then individual paths.
-                            for country in allCountries {
-                                guard let countryRect = countryBoundingRects[country.id],
-                                    countryRect.contains(mapPoint)
-                                else { continue }
+                    // Optimized lookup: check country bounding rects first, then individual paths.
+                    for country in allCountries {
+                        guard let countryRect = countryBoundingRects[country.id],
+                            countryRect.contains(mapPoint)
+                        else { continue }
 
-                                for path in countryPaths[country.id] ?? [] {
-                                    if path.contains(cgPoint) {
-                                        selectedCountry = country
-                                        return
-                                    }
-                                }
+                        for path in countryPaths[country.id] ?? [] {
+                            if path.contains(cgPoint) {
+                                selectedCountry = country
+                                return
                             }
                         }
                     }
-                    // Prevent CAMetalLayer zero-size warnings during sheet transitions.
-                    .frame(minWidth: 1, minHeight: 1)
                 }
+            }
+            // Prevent CAMetalLayer zero-size warnings during sheet transitions.
+            .frame(minWidth: 1, minHeight: 1)
+        }
+    }
 
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                // Render only the splash while loading, so it paints on the first
+                // frame without MapKit/Metal initialization competing for it. The
+                // map is built once the geometry is ready.
                 if isLoadingMapData {
-                    VStack {
-                        ProgressView()
-                            .padding(.bottom, 5)
-                        Text("Loading map data...")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding()
-                    .background(.ultraThinMaterial, in: .rect(cornerRadius: 10))
+                    MapLoadingView(message: mapLoadingMessage)
+                        .transition(.opacity)
                 } else {
+                    mapView
+
                     MapLegend()
                         .padding()
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
@@ -311,96 +312,52 @@ struct ContentView: View {
     }
 
     private func loadGeoJSON() async {
-        // Decode the 14 MB GeoJSON in the background so the main thread stays responsive
-        let (extractedPolygons, extractedPaths, extractedRects) = await Task.detached(
+        // Decide what database work is needed up front, on the main context, so the
+        // background decode knows whether it must also produce seed metadata. The
+        // store needs seeding when it's empty or holds stale ids from an old build.
+        let existing = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
+        let stale = WorldMap.hasStaleIDs(existing)
+        let needsSeed = existing.isEmpty || stale
+
+        // First run (or a reseed) pays the one-time decode, so say so rather than
+        // leaving a bare spinner; warm launches just rebuild from the cache.
+        mapLoadingMessage =
+            (geoCacheExists() && !needsSeed)
+            ? "Loading map…"
+            : "Setting up your map…\nThis only happens once."
+
+        // Build the simplified country geometry off the main thread, decoding the
+        // 14 MB GeoJSON only when the cache is missing or the store still needs
+        // seeding — and at most once. The same decode yields the seed metadata, so
+        // the file is never parsed twice. Warm launches rebuild from the small
+        // cached rings in well under a second, which keeps cold starts fast.
+        let (extractedPolygons, extractedPaths, extractedRects, seeds) = await Task.detached(
             priority: .userInitiated
         ) {
-            () -> ([String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect]) in
-            var polys: [String: [MKPolygon]] = [:]
-            var paths: [String: [CGPath]] = [:]
-            var rects: [String: MKMapRect] = [:]
+            () -> (
+                [String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect], [CountrySeed]?
+            ) in
+            let fingerprint = geoFingerprint()
 
-            guard let geoUrl = Bundle.main.url(forResource: "countries", withExtension: "geojson"),
-                let data = try? Data(contentsOf: geoUrl)
-            else { return ([:], [:], [:]) }
-
-            let decoder = MKGeoJSONDecoder()
-            guard let features = try? decoder.decode(data) as? [MKGeoJSONFeature] else {
-                return ([:], [:], [:])
+            // Cache is enough only when we don't also need seed metadata.
+            if !needsSeed, let cached = loadGeoCache(fingerprint: fingerprint) {
+                let geo = buildGeo(from: cached)
+                return (geo.0, geo.1, geo.2, nil)
             }
 
-            // Pass 1: collect each country's raw exterior-ring polygons. Interior
-            // holes are dropped here, since they don't affect a flat country fill.
-            var rawPolygons: [String: [MKPolygon]] = [:]
-            for feature in features {
-                guard let propsData = feature.properties,
-                    let props = try? JSONSerialization.jsonObject(with: propsData)
-                        as? [String: Any],
-                    let rawID = props["ISO3166-1-Alpha-2"] as? String,
-                    let name = props["name"] as? String
-                else { continue }
-
-                guard let id = WorldMap.resolvedID(isoA2: rawID, name: name) else { continue }
-
-                for geometry in feature.geometry {
-                    if let polygon = geometry as? MKPolygon {
-                        rawPolygons[id, default: []].append(
-                            MKPolygon(points: polygon.points(), count: polygon.pointCount))
-                    } else if let multiPolygon = geometry as? MKMultiPolygon {
-                        for poly in multiPolygon.polygons {
-                            rawPolygons[id, default: []].append(
-                                MKPolygon(points: poly.points(), count: poly.pointCount))
-                        }
-                    }
-                }
-            }
-
-            // Pass 2: for each country, drop insignificant islands and decimate the
-            // remaining outlines with Douglas-Peucker. Archipelago nations (Canada,
-            // Norway, Indonesia…) collapse from thousands of rings/points down to a
-            // handful — which is what keeps Metal from choking when many countries
-            // are colored at once. Hit-test paths are built from the same simplified
-            // points so tapping still matches what's drawn.
-            for (id, countryPolygons) in rawPolygons {
-                guard
-                    let largest = countryPolygons.max(by: {
-                        $0.boundingMapRect.area < $1.boundingMapRect.area
-                    })
-                else { continue }
-
-                // Keep the mainland plus any island at least 0.5% of its size.
-                let minIslandArea = largest.boundingMapRect.area * 0.005
-
-                var simplifiedPolygons: [MKPolygon] = []
-                var simplifiedPaths: [CGPath] = []
-                for polygon in countryPolygons {
-                    if polygon !== largest, polygon.boundingMapRect.area < minIslandArea {
-                        continue
-                    }
-
-                    let points = simplifiedOutline(of: polygon)
-                    guard points.count >= 3 else { continue }
-
-                    simplifiedPolygons.append(MKPolygon(points: points, count: points.count))
-
-                    let path = CGMutablePath()
-                    path.move(to: CGPoint(x: points[0].x, y: points[0].y))
-                    for point in points.dropFirst() {
-                        path.addLine(to: CGPoint(x: point.x, y: point.y))
-                    }
-                    path.closeSubpath()
-                    simplifiedPaths.append(path)
-                }
-
-                guard !simplifiedPolygons.isEmpty else { continue }
-                polys[id] = simplifiedPolygons
-                paths[id] = simplifiedPaths
-                // Bounding rect uses only the largest polygon, so selecting a country
-                // zooms to its mainland rather than a far-flung territory.
-                rects[id] = largest.boundingMapRect
-            }
-            return (polys, paths, rects)
+            guard let decoded = decodeGeoJSON() else { return ([:], [:], [:], nil) }
+            saveGeoCache(decoded.rings, fingerprint: fingerprint)
+            let geo = buildGeo(from: decoded.rings)
+            return (geo.0, geo.1, geo.2, decoded.seeds)
         }.value
+
+        // Reconcile the database on the main actor — the only place SwiftData
+        // models are touched. Seeding and reconciliation are mutually exclusive.
+        if needsSeed {
+            if let seeds { seedDatabase(seeds, wiping: stale ? existing : []) }
+        } else {
+            reconcileDatabase(existing)
+        }
 
         self.countryPolygons = extractedPolygons
         self.countryPaths = extractedPaths
@@ -413,18 +370,58 @@ struct ContentView: View {
                 y: rect.origin.y + rect.size.height / 2
             ).coordinate
         }
-        self.isLoadingMapData = false
+        withAnimation(.easeInOut(duration: 0.4)) {
+            self.isLoadingMapData = false
+        }
 
         // Hand the geographic data to the photo importer now that it's ready.
-        // Doing this here (rather than via onChange) guarantees it runs exactly
-        // once, so the "Import from Photos" button reliably enables.
+        // Re-fetch so the importer gets every seeded country even if the `@Query`
+        // hasn't refreshed yet this run loop. Doing this here (rather than via
+        // onChange) guarantees it runs exactly once, so the "Import from Photos"
+        // button reliably enables.
+        let seededCountries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? allCountries
         photoImporter.configure(
             countryBoundingRects: extractedRects,
             countryPaths: extractedPaths,
-            allCountries: allCountries
+            allCountries: seededCountries
         )
 
         focusOnHomeIfNeeded()
+    }
+
+    /// Seed an empty (or freshly wiped) store from decoded GeoJSON metadata. Drops
+    /// any stale rows first, and skips non-countries the dataset ships without a
+    /// real continent (reefs, military bases, disputed zones).
+    private func seedDatabase(_ seeds: [CountrySeed], wiping stale: [Country]) {
+        for country in stale {
+            modelContext.delete(country)
+        }
+        for seed in seeds where Continents.byISO[seed.id] != nil {
+            modelContext.insert(
+                Country(
+                    id: seed.id, iso3: seed.iso3, name: seed.name,
+                    continent: Continents.name(for: seed.id)))
+        }
+        try? modelContext.save()
+    }
+
+    /// Reconcile an already-seeded store: drop non-countries an earlier seed stored
+    /// and fix continents written by an older build. Idempotent and cheap.
+    private func reconcileDatabase(_ existing: [Country]) {
+        var changed = false
+        for country in existing {
+            if Continents.byISO[country.id] == nil {
+                modelContext.delete(country)
+                changed = true
+                continue
+            }
+            let continent = Continents.name(for: country.id)
+            if country.continent != continent {
+                country.continent = continent
+                changed = true
+            }
+        }
+        if changed { try? modelContext.save() }
     }
 }
 
@@ -536,6 +533,213 @@ extension MKMapRect {
     fileprivate nonisolated var area: Double { width * height }
 }
 
+// MARK: - Geometry cache
+
+/// On-disk cache of the simplified country outlines. Storing the decimated rings
+/// (rather than the raw 14 MB GeoJSON) lets a cold launch skip both the decode
+/// and the Douglas-Peucker pass. Bump `geoCacheVersion` whenever the simplification
+/// changes; the bundled file's byte size is the fingerprint, so shipping new map
+/// data automatically invalidates a stale cache.
+private nonisolated let geoCacheVersion = 1
+
+private nonisolated struct GeoRingCache: Codable {
+    let version: Int
+    let fingerprint: Int
+    /// Country id → rings → flat `[x0, y0, x1, y1, …]` map-point coordinates.
+    let rings: [String: [[Double]]]
+}
+
+/// Cheap fingerprint of the bundled GeoJSON: its byte size, read from the file's
+/// metadata without loading the 14 MB into memory.
+private nonisolated func geoFingerprint() -> Int {
+    guard let url = Bundle.main.url(forResource: "countries", withExtension: "geojson"),
+        let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+        let size = attrs[.size] as? Int
+    else { return 0 }
+    return size
+}
+
+private nonisolated func geoCacheURL() -> URL? {
+    guard
+        let dir = try? FileManager.default.url(
+            for: .applicationSupportDirectory, in: .userDomainMask,
+            appropriateFor: nil, create: true)
+    else { return nil }
+    return dir.appendingPathComponent("WorldMapGeoCache.json")
+}
+
+/// Whether a cache file exists at all — a cheap check (no decode) used only to
+/// pick the right loading message, not to validate the cache contents.
+private nonisolated func geoCacheExists() -> Bool {
+    guard let url = geoCacheURL() else { return false }
+    return FileManager.default.fileExists(atPath: url.path)
+}
+
+/// The cached simplified rings, or `nil` if there's no cache, it's the wrong
+/// version, or the bundled GeoJSON has changed since it was written.
+private nonisolated func loadGeoCache(fingerprint: Int) -> [String: [[MKMapPoint]]]? {
+    guard let url = geoCacheURL(),
+        let data = try? Data(contentsOf: url),
+        let cache = try? JSONDecoder().decode(GeoRingCache.self, from: data),
+        cache.version == geoCacheVersion, cache.fingerprint == fingerprint
+    else { return nil }
+
+    return cache.rings.mapValues { ringList in
+        ringList.map { flat -> [MKMapPoint] in
+            var points: [MKMapPoint] = []
+            points.reserveCapacity(flat.count / 2)
+            var i = 0
+            while i + 1 < flat.count {
+                points.append(MKMapPoint(x: flat[i], y: flat[i + 1]))
+                i += 2
+            }
+            return points
+        }
+    }
+}
+
+private nonisolated func saveGeoCache(_ rings: [String: [[MKMapPoint]]], fingerprint: Int) {
+    let flatRings = rings.mapValues { ringList in
+        ringList.map { points -> [Double] in
+            var flat: [Double] = []
+            flat.reserveCapacity(points.count * 2)
+            for point in points {
+                flat.append(point.x)
+                flat.append(point.y)
+            }
+            return flat
+        }
+    }
+    let cache = GeoRingCache(version: geoCacheVersion, fingerprint: fingerprint, rings: flatRings)
+    guard let url = geoCacheURL(), let data = try? JSONEncoder().encode(cache) else { return }
+    try? data.write(to: url, options: .atomic)
+}
+
+/// Decodes the bundled GeoJSON and produces the simplified exterior rings per
+/// country. This is the expensive path, run only when the cache is missing or
+/// stale. Mirrors the original two-pass build: collect raw exterior rings, then
+/// drop insignificant islands and decimate the rest with Douglas-Peucker.
+private nonisolated func decodeGeoJSON()
+    -> (rings: [String: [[MKMapPoint]]], seeds: [CountrySeed])?
+{
+    guard let geoUrl = Bundle.main.url(forResource: "countries", withExtension: "geojson"),
+        let data = try? Data(contentsOf: geoUrl)
+    else { return nil }
+
+    let decoder = MKGeoJSONDecoder()
+    guard let features = try? decoder.decode(data) as? [MKGeoJSONFeature] else { return nil }
+
+    // Pass 1: collect each country's raw exterior-ring polygons and its seed
+    // metadata (id/iso3/name) in the same sweep, so the database and the map are
+    // both fed by this single decode. Interior holes are dropped here, since they
+    // don't affect a flat country fill.
+    var rawPolygons: [String: [MKPolygon]] = [:]
+    var seedByID: [String: CountrySeed] = [:]
+    for feature in features {
+        guard let propsData = feature.properties,
+            let props = try? JSONSerialization.jsonObject(with: propsData) as? [String: Any],
+            let rawID = props["ISO3166-1-Alpha-2"] as? String,
+            let name = props["name"] as? String
+        else { continue }
+
+        guard let id = WorldMap.resolvedID(isoA2: rawID, name: name) else { continue }
+
+        if seedByID[id] == nil {
+            seedByID[id] = CountrySeed(
+                id: id, iso3: props["ISO3166-1-Alpha-3"] as? String ?? "", name: name)
+        }
+
+        for geometry in feature.geometry {
+            if let polygon = geometry as? MKPolygon {
+                rawPolygons[id, default: []].append(
+                    MKPolygon(points: polygon.points(), count: polygon.pointCount))
+            } else if let multiPolygon = geometry as? MKMultiPolygon {
+                for poly in multiPolygon.polygons {
+                    rawPolygons[id, default: []].append(
+                        MKPolygon(points: poly.points(), count: poly.pointCount))
+                }
+            }
+        }
+    }
+
+    // Pass 2: for each country, drop insignificant islands and decimate the
+    // remaining outlines. Archipelago nations (Canada, Norway, Indonesia…)
+    // collapse from thousands of points down to a handful.
+    var result: [String: [[MKMapPoint]]] = [:]
+    for (id, countryPolygons) in rawPolygons {
+        guard
+            let largest = countryPolygons.max(by: {
+                $0.boundingMapRect.area < $1.boundingMapRect.area
+            })
+        else { continue }
+
+        // Keep the mainland plus any island at least 0.5% of its size.
+        let minIslandArea = largest.boundingMapRect.area * 0.005
+
+        var rings: [[MKMapPoint]] = []
+        for polygon in countryPolygons {
+            if polygon !== largest, polygon.boundingMapRect.area < minIslandArea { continue }
+            let points = simplifiedOutline(of: polygon)
+            guard points.count >= 3 else { continue }
+            rings.append(points)
+        }
+
+        guard !rings.isEmpty else { continue }
+        result[id] = rings
+    }
+    return (result, Array(seedByID.values))
+}
+
+/// One country's seed metadata, parsed from the GeoJSON alongside its geometry.
+struct CountrySeed: Sendable {
+    let id: String
+    let iso3: String
+    let name: String
+}
+
+/// Rebuilds the drawable polygons, hit-test paths, and per-country bounding rects
+/// from simplified rings. Shared by both the cache and fresh-decode paths so the
+/// map and tap targets are identical whichever produced the rings.
+private nonisolated func buildGeo(
+    from rings: [String: [[MKMapPoint]]]
+) -> ([String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect]) {
+    var polys: [String: [MKPolygon]] = [:]
+    var paths: [String: [CGPath]] = [:]
+    var rects: [String: MKMapRect] = [:]
+
+    for (id, ringList) in rings {
+        var polygons: [MKPolygon] = []
+        var cgPaths: [CGPath] = []
+        var largestRect: MKMapRect?
+
+        for points in ringList {
+            guard points.count >= 3 else { continue }
+
+            let polygon = MKPolygon(points: points, count: points.count)
+            polygons.append(polygon)
+
+            let path = CGMutablePath()
+            path.move(to: CGPoint(x: points[0].x, y: points[0].y))
+            for point in points.dropFirst() {
+                path.addLine(to: CGPoint(x: point.x, y: point.y))
+            }
+            path.closeSubpath()
+            cgPaths.append(path)
+
+            let rect = polygon.boundingMapRect
+            if largestRect == nil || rect.area > largestRect!.area { largestRect = rect }
+        }
+
+        guard !polygons.isEmpty, let largestRect else { continue }
+        polys[id] = polygons
+        paths[id] = cgPaths
+        // Bounding rect uses only the largest polygon, so selecting a country
+        // zooms to its mainland rather than a far-flung territory.
+        rects[id] = largestRect
+    }
+    return (polys, paths, rects)
+}
+
 /// Compact key explaining the green shades shown on the map.
 struct MapLegend: View {
     var body: some View {
@@ -552,6 +756,50 @@ struct MapLegend: View {
         }
         .padding(8)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+/// Full-screen launch splash shown while the country geometry is being built.
+/// A branded, opaque cover (rather than a bare spinner over an empty gray map)
+/// makes the one-time first-run setup read as deliberate progress, not a freeze.
+struct MapLoadingView: View {
+    let message: String
+
+    var body: some View {
+        ZStack {
+            // Matches the app icon's blue gradient (Display P3) to keep launch and
+            // home screen in one color scheme.
+            LinearGradient(
+                colors: [
+                    Color(.displayP3, red: 0.52287, green: 0.80649, blue: 0.98183),
+                    Color(.displayP3, red: 0.16138, green: 0.35032, blue: 0.83176),
+                ],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                Image(systemName: "globe.europe.africa.fill")
+                    .font(.system(size: 76))
+                    .foregroundStyle(.white)
+                    .symbolEffect(.pulse)
+
+                Text("WorldMap")
+                    .font(.largeTitle.weight(.heavy))
+                    .foregroundStyle(.white)
+
+                ProgressView()
+                    .tint(.white)
+                    .controlSize(.large)
+
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+            .padding()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

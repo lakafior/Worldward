@@ -10,24 +10,30 @@ struct StatisticsView: View {
     /// Country centroids (id → coordinate) used for the "next closest" suggestions.
     /// Empty until the map's GeoJSON has finished loading, in which case that
     /// section is simply hidden.
-    var centroids: [String: CLLocationCoordinate2D] = [:]
+    let centroids: [String: CLLocationCoordinate2D]
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedYear: Int?
     @State private var summaryImage: Image?
 
-    private var stats: TravelStats { TravelStats(countries: countries) }
+    /// Computed once per view instance. `TravelStats` is a full O(n) pass, and the
+    /// body, the year picker, and the share-image render all read it — recomputing
+    /// it as a stored `let` instead of a computed property avoids repeating that work.
+    private let stats: TravelStats
+
+    init(countries: [Country], centroids: [String: CLLocationCoordinate2D] = [:]) {
+        self.countries = countries
+        self.centroids = centroids
+        self.stats = TravelStats(countries: countries)
+    }
 
     private var selectedYearStat: TravelStats.YearStat? {
-        let stats = stats
         if let selectedYear { return stats.years.first { $0.year == selectedYear } }
         return stats.busiestYear ?? stats.years.last
     }
 
     var body: some View {
-        let stats = stats
-
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
