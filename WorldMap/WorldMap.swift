@@ -14,8 +14,9 @@ struct WorldMap: App {
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
 
-            // Seed (or reconcile) the database in the background so the UI stays responsive.
-            Task.detached(priority: .userInitiated) {
+            // Seed (or reconcile) the database. Runs on the main actor to avoid
+            // sendability warnings with SwiftData types; the GeoJSON parse is brief.
+            Task { @MainActor in
                 WorldMap.prepareDatabase(in: container)
             }
             return container

@@ -167,6 +167,8 @@ struct ContentView: View {
                             }
                         }
                     }
+                    // Prevent CAMetalLayer zero-size warnings during sheet transitions.
+                    .frame(minWidth: 1, minHeight: 1)
                 }
 
                 if isLoadingMapData {
@@ -426,6 +428,7 @@ struct ContentView: View {
         focusOnHomeIfNeeded()
     }
 }
+
 
 struct CountryRow: View {
     let country: Country
