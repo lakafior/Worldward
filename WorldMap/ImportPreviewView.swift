@@ -23,55 +23,61 @@ struct ImportPreviewView: View {
                 }
             }
             .navigationTitle("Import from Photos")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .frame(minWidth: 460, minHeight: 420)
+        #if os(macOS)
+            .frame(minWidth: 460, minHeight: 420)
+        #endif
     }
 
     // MARK: - Configuration
 
     private var configForm: some View {
-        VStack(spacing: 0) {
-            Form {
-                Section("Scan mode") {
-                    Picker("Scan mode", selection: $settings.scanMode) {
-                        ForEach(ImportScanMode.allCases) { mode in
-                            Text(mode.label).tag(mode)
-                        }
+        Form {
+            Section("Scan mode") {
+                Picker("Scan mode", selection: $settings.scanMode) {
+                    ForEach(ImportScanMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
                     }
-                    .pickerStyle(.segmented)
-                    Text(settings.scanMode.detail)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
-
-                Section("Trips") {
-                    Stepper(value: $settings.mergeGapDays, in: 1...60) {
-                        LabeledContent(
-                            "Merge gap",
-                            value: "\(settings.mergeGapDays) day\(settings.mergeGapDays == 1 ? "" : "s")")
-                    }
-                    Text("Photos closer together than this are treated as one trip.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Stepper(value: $settings.livedThresholdDays, in: 7...365) {
-                        LabeledContent("\u{201C}Lived\u{201D} threshold", value: "\(settings.livedThresholdDays) days")
-                    }
-                    Text("A single trip at least this long marks the country as \u{201C}Lived\u{201D}.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("Home") {
-                    Toggle("Mark most-visited country as home", isOn: $settings.markHome)
-                    Text("Sets your most-present country to \u{201C}Living\u{201D}. An existing home is never overwritten.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                .pickerStyle(.segmented)
+                Text(settings.scanMode.detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .formStyle(.grouped)
 
-            Divider()
+            Section("Trips") {
+                Stepper(value: $settings.mergeGapDays, in: 1...60) {
+                    LabeledContent(
+                        "Merge gap",
+                        value:
+                            "\(settings.mergeGapDays) day\(settings.mergeGapDays == 1 ? "" : "s")")
+                }
+                Text("Photos closer together than this are treated as one trip.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Stepper(value: $settings.livedThresholdDays, in: 7...365) {
+                    LabeledContent(
+                        "\u{201C}Lived\u{201D} threshold",
+                        value: "\(settings.livedThresholdDays) days")
+                }
+                Text("A single trip at least this long marks the country as \u{201C}Lived\u{201D}.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("Home") {
+                Toggle("Mark most-visited country as home", isOn: $settings.markHome)
+                Text(
+                    "Sets your most-present country to \u{201C}Living\u{201D}. An existing home is never overwritten."
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .safeAreaInset(edge: .bottom) {
             HStack {
                 Button("Cancel") {
                     importer.cancelImport()
@@ -88,6 +94,7 @@ struct ImportPreviewView: View {
                 .keyboardShortcut(.defaultAction)
             }
             .padding()
+            .background(.bar)
         }
     }
 
@@ -108,34 +115,30 @@ struct ImportPreviewView: View {
     // MARK: - Results
 
     private var resultsView: some View {
-        VStack(spacing: 0) {
+        List {
             if let warning = importer.homeWarning {
                 Label(warning, systemImage: "house")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
             }
 
-            List {
-                if importer.proposedCountries.isEmpty {
-                    ContentUnavailableView(
-                        "No visits found",
-                        systemImage: "photo",
-                        description: Text(
-                            "No photos with location data matched a country, or everything is already imported."
-                        )
+            if importer.proposedCountries.isEmpty {
+                ContentUnavailableView(
+                    "No visits found",
+                    systemImage: "photo",
+                    description: Text(
+                        "No photos with location data matched a country, or everything is already imported."
                     )
-                    .listRowBackground(Color.clear)
-                } else {
-                    ForEach(importer.proposedCountries) { proposed in
-                        countryRow(proposed)
-                    }
+                )
+                .listRowBackground(Color.clear)
+            } else {
+                ForEach(importer.proposedCountries) { proposed in
+                    countryRow(proposed)
                 }
             }
-
-            Divider()
+        }
+        .safeAreaInset(edge: .bottom) {
             HStack {
                 Button("Back") {
                     importer.phase = .config
@@ -154,6 +157,7 @@ struct ImportPreviewView: View {
                 }
             }
             .padding()
+            .background(.bar)
         }
     }
 
