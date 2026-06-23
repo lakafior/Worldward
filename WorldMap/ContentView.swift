@@ -81,6 +81,7 @@ struct ContentView: View {
     @State private var showInspector = false
     @State private var showStats = false
     @State private var showSettings = false
+    @State private var showCountryList = false
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
     @State private var expandedContinents: Set<String> = []
@@ -126,98 +127,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
-            let countryList = countryListSummary
-
-            List(selection: $selectedCountry) {
-                Section(header: Text("Statistics")) {
-                    Text("Visited countries: \(countryList.visitedCount) / \(allCountries.count)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                if allCountries.isEmpty {
-                    Text("Preparing database...")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding()
-                } else {
-                    ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
-                        let countries = countriesGroupedByContinent[continent] ?? []
-                        let isExpanded = Binding(
-                            get: { expandedContinents.contains(continent) },
-                            set: { newValue in
-                                if newValue {
-                                    expandedContinents.insert(continent)
-                                } else {
-                                    expandedContinents.remove(continent)
-                                }
-                            }
-                        )
-
-                        DisclosureGroup(isExpanded: isExpanded) {
-                            ForEach(countries) { country in
-                                CountryRow(country: country)
-                                    .tag(country)
-                            }
-                        } label: {
-                            Text(continent)
-                                .font(.headline)
-                        }
-                    }
-                }
-            }
-            .searchable(text: $searchText, prompt: "Search countries")
-            .navigationTitle("Countries")
-            .onAppear {
-                initializeExpandedContinents()
-            }
-            .toolbar {
-                #if !os(macOS)
-                    // macOS reaches Settings through the app menu (⌘,) instead.
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Label("Settings", systemImage: "gearshape")
-                        }
-                    }
-                #endif
-
-                ToolbarItem {
-                    Menu {
-                        Section("Status") {
-                            Button("All") { filterVisited = nil }
-                            Button("Visited") { filterVisited = true }
-                            Button("Unvisited") { filterVisited = false }
-                        }
-
-                        Section("Continent") {
-                            Button("All") { selectedContinent = nil }
-                            ForEach(countryList.continents, id: \.self) { continent in
-                                Button(continent) { selectedContinent = continent }
-                            }
-                        }
-
-                        if !countryList.visitYears.isEmpty {
-                            Section("Visit year") {
-                                Button("All years") { selectedYear = nil }
-                                ForEach(countryList.visitYears, id: \.self) { year in
-                                    Button(String(year)) { selectedYear = year }
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(
-                            "Filter",
-                            systemImage: countryList.hasActiveFilters
-                                ? "line.3.horizontal.decrease.circle.fill"
-                                : "line.3.horizontal.decrease.circle")
-                    }
-                }
-            }
-
-        } detail: {
+        NavigationStack {
             ZStack {
                 MapReader { proxy in
                     Map(position: $cameraPosition) {
@@ -277,29 +187,55 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("World Map")
+            #if os(macOS)
+                .navigationSubtitle("Tap a country to see details")
+            #endif
             .inspector(isPresented: $showInspector) {
                 if let country = selectedCountry {
                     CountryDetailView(country: country)
                 } else {
                     ContentUnavailableView(
                         "Select a country", systemImage: "map",
-                        description: Text("Select a country from the list to see details."))
+                        description: Text("Tap a country on the map or add one from the list."))
                 }
             }
             .toolbar {
-                ToolbarItemGroup {
+                #if !os(macOS)
+                    // macOS reaches Settings through the app menu (⌘,) instead.
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+                    }
+                #endif
+
+                ToolbarItem {
+                    Button {
+                        showCountryList = true
+                    } label: {
+                        Label("Countries", systemImage: "plus")
+                    }
+                }
+
+                ToolbarItem {
                     Button {
                         showStats = true
                     } label: {
                         Label("Statistics", systemImage: "chart.pie")
                     }
+                }
 
+                ToolbarItem {
                     Button {
                         showInspector.toggle()
                     } label: {
                         Label("Details", systemImage: "info.circle")
                     }
+                }
 
+                ToolbarItem {
                     Button {
                         photoImporter.presentConfiguration()
                     } label: {
@@ -330,17 +266,30 @@ struct ContentView: View {
         .sheet(isPresented: $showStats) {
             StatisticsView(countries: allCountries, centroids: countryCentroids)
         }
+        .sheet(isPresented: $showCountryList) {
+            CountryListSheet(
+                allCountries: allCountries,
+                searchText: $searchText,
+                filterVisited: $filterVisited,
+                selectedContinent: $selectedContinent,
+                selectedYear: $selectedYear,
+                expandedContinents: $expandedContinents,
+                selectedCountry: $selectedCountry,
+                isPresented: $showCountryList,
+                onAppear: initializeExpandedContinents
+            )
+        }
         #if !os(macOS)
             .sheet(isPresented: $showSettings) {
                 NavigationStack {
                     SettingsView()
-                        .navigationTitle("Settings")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .confirmationAction) {
-                                Button("Done") { showSettings = false }
-                            }
+                    .navigationTitle("Settings")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { showSettings = false }
                         }
+                    }
                 }
             }
         #endif
@@ -766,6 +715,128 @@ struct VisitRow: View {
                 }
             }
             .padding(.vertical, 4)
+        }
+    }
+}
+
+// MARK: - Country List Sheet
+
+/// A bottom sheet that presents the full country list with search and filters.
+/// Tapping a country selects it on the map and dismisses the sheet.
+private struct CountryListSheet: View {
+    let allCountries: [Country]
+
+    @Binding var searchText: String
+    @Binding var filterVisited: Bool?
+    @Binding var selectedContinent: String?
+    @Binding var selectedYear: Int?
+    @Binding var expandedContinents: Set<String>
+    @Binding var selectedCountry: Country?
+    @Binding var isPresented: Bool
+
+    let onAppear: () -> Void
+
+    private var summary: CountryListSummary {
+        CountryListSummary(
+            countries: allCountries,
+            searchText: searchText,
+            filterVisited: filterVisited,
+            selectedContinent: selectedContinent,
+            selectedYear: selectedYear
+        )
+    }
+
+    private var countriesGroupedByContinent: [String: [Country]] {
+        Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if allCountries.isEmpty {
+                    Text("Preparing database...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding()
+                } else {
+                    ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
+                        let countries = countriesGroupedByContinent[continent] ?? []
+                        let isExpanded = Binding(
+                            get: { expandedContinents.contains(continent) },
+                            set: { newValue in
+                                if newValue {
+                                    expandedContinents.insert(continent)
+                                } else {
+                                    expandedContinents.remove(continent)
+                                }
+                            }
+                        )
+
+                        DisclosureGroup(isExpanded: isExpanded) {
+                            ForEach(countries) { country in
+                                Button {
+                                    selectedCountry = country
+                                    isPresented = false
+                                } label: {
+                                    CountryRow(country: country)
+                                }
+                            }
+                        } label: {
+                            Text(continent)
+                                .font(.headline)
+                        }
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search countries")
+            .navigationTitle("Countries")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { isPresented = false }
+                }
+
+                ToolbarItem(placement: .cancellationAction) {
+                    Menu {
+                        Section("Status") {
+                            Button("All") { filterVisited = nil }
+                            Button("Visited") { filterVisited = true }
+                            Button("Unvisited") { filterVisited = false }
+                        }
+
+                        Section("Continent") {
+                            Button("All") { selectedContinent = nil }
+                            ForEach(summary.continents, id: \.self) { continent in
+                                Button(continent) { selectedContinent = continent }
+                            }
+                        }
+
+                        if !summary.visitYears.isEmpty {
+                            Section("Visit year") {
+                                Button("All years") { selectedYear = nil }
+                                ForEach(summary.visitYears, id: \.self) { year in
+                                    Button(String(year)) { selectedYear = year }
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(
+                            "Filter",
+                            systemImage: summary.hasActiveFilters
+                                ? "line.3.horizontal.decrease.circle.fill"
+                                : "line.3.horizontal.decrease.circle")
+                    }
+                }
+            }
+            .onAppear {
+                onAppear()
+            }
         }
     }
 }
