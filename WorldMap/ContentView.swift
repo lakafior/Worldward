@@ -212,28 +212,37 @@ struct ContentView: View {
                 #endif
 
                 ToolbarItem {
-                    Button {
-                        Task { await markCurrentLocation() }
+                    Menu {
+                        Button {
+                            Task { await markCurrentLocation() }
+                        } label: {
+                            Label("From Current Location", systemImage: "location.fill.viewfinder")
+                        }
+                        .disabled(isLocating || isLoadingMapData)
+
+                        Button {
+                            photoImporter.presentConfiguration()
+                        } label: {
+                            Label("From Photos", systemImage: "photo.on.rectangle")
+                        }
+                        .disabled(!photoImporter.isReady || photoImporter.isImporting)
+
+                        #if !os(macOS)
+                            // macOS shows the country list in the always-present sidebar.
+                            Button {
+                                showCountryList = true
+                            } label: {
+                                Label("From List", systemImage: "list.bullet")
+                            }
+                        #endif
                     } label: {
                         if isLocating {
                             ProgressView()
                         } else {
-                            Label("Mark Location", systemImage: "location.fill.viewfinder")
+                            Label("Add", systemImage: "plus")
                         }
                     }
-                    .disabled(isLocating || isLoadingMapData)
                 }
-
-                #if !os(macOS)
-                    // macOS shows the country list in the always-present sidebar.
-                    ToolbarItem {
-                        Button {
-                            showCountryList = true
-                        } label: {
-                            Label("Countries", systemImage: "plus")
-                        }
-                    }
-                #endif
 
                 ToolbarItem {
                     Button {
@@ -241,24 +250,6 @@ struct ContentView: View {
                     } label: {
                         Label("Statistics", systemImage: "chart.pie")
                     }
-                }
-
-                ToolbarItem {
-                    Button {
-                        detailCountry = selectedCountry
-                    } label: {
-                        Label("Details", systemImage: "info.circle")
-                    }
-                    .disabled(selectedCountry == nil)
-                }
-
-                ToolbarItem {
-                    Button {
-                        photoImporter.presentConfiguration()
-                    } label: {
-                        Label("Import from Photos", systemImage: "photo.on.rectangle")
-                    }
-                    .disabled(!photoImporter.isReady || photoImporter.isImporting)
                 }
             }
     }
