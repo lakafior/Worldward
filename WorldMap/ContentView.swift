@@ -177,8 +177,9 @@ struct ContentView: View {
         }
     }
 
-    var body: some View {
-        NavigationStack {
+    /// The map (with its toolbar), shared by both platforms. On iOS it's the root
+    /// of a `NavigationStack`; on macOS it's the detail pane of a split view.
+    private var mapContent: some View {
             ZStack {
                 // Render only the splash while loading, so it paints on the first
                 // frame without MapKit/Metal initialization competing for it. The
@@ -223,13 +224,16 @@ struct ContentView: View {
                     .disabled(isLocating || isLoadingMapData)
                 }
 
-                ToolbarItem {
-                    Button {
-                        showCountryList = true
-                    } label: {
-                        Label("Countries", systemImage: "plus")
+                #if !os(macOS)
+                    // macOS shows the country list in the always-present sidebar.
+                    ToolbarItem {
+                        Button {
+                            showCountryList = true
+                        } label: {
+                            Label("Countries", systemImage: "plus")
+                        }
                     }
-                }
+                #endif
 
                 ToolbarItem {
                     Button {
@@ -257,7 +261,33 @@ struct ContentView: View {
                     .disabled(!photoImporter.isReady || photoImporter.isImporting)
                 }
             }
-        }
+    }
+
+    /// The root layout: a sidebar + map split on macOS (so the full country list
+    /// is always visible), and the map alone on iOS (the list arrives as a sheet).
+    @ViewBuilder private var rootView: some View {
+        #if os(macOS)
+            NavigationSplitView {
+                CountrySidebar(
+                    allCountries: allCountries,
+                    searchText: $searchText,
+                    filterVisited: $filterVisited,
+                    selectedContinent: $selectedContinent,
+                    selectedYear: $selectedYear,
+                    selectedCountry: $selectedCountry
+                )
+            } detail: {
+                mapContent
+            }
+        #else
+            NavigationStack {
+                mapContent
+            }
+        #endif
+    }
+
+    var body: some View {
+        rootView
         .onChange(of: selectedCountry) {
             if let country = selectedCountry {
                 detailCountry = country
@@ -279,19 +309,21 @@ struct ContentView: View {
         .sheet(isPresented: $showStats) {
             StatisticsView(countries: allCountries, centroids: countryCentroids)
         }
-        .sheet(isPresented: $showCountryList) {
-            CountryListSheet(
-                allCountries: allCountries,
-                searchText: $searchText,
-                filterVisited: $filterVisited,
-                selectedContinent: $selectedContinent,
-                selectedYear: $selectedYear,
-                expandedContinents: $expandedContinents,
-                selectedCountry: $selectedCountry,
-                isPresented: $showCountryList,
-                onAppear: initializeExpandedContinents
-            )
-        }
+        #if !os(macOS)
+            .sheet(isPresented: $showCountryList) {
+                CountryListSheet(
+                    allCountries: allCountries,
+                    searchText: $searchText,
+                    filterVisited: $filterVisited,
+                    selectedContinent: $selectedContinent,
+                    selectedYear: $selectedYear,
+                    expandedContinents: $expandedContinents,
+                    selectedCountry: $selectedCountry,
+                    isPresented: $showCountryList,
+                    onAppear: initializeExpandedContinents
+                )
+            }
+        #endif
         .sheet(item: $detailCountry) { country in
             CountryDetailSheet(country: country)
         }
@@ -1028,6 +1060,93 @@ struct VisitRow: View {
 }
 
 // MARK: - Country List Sheet
+
+/// The macOS sidebar listing every country grouped by continent. Selecting a row
+/// drives the same `selectedCountry` binding the map uses, so list and map stay in
+/// sync. iOS shows `CountryListSheet` instead, because a sheet reads better there.
+private struct CountrySidebar: View {
+    let allCountries: [Country]
+
+    @Binding var searchText: String
+    @Binding var filterVisited: Bool?
+    @Binding var selectedContinent: String?
+    @Binding var selectedYear: Int?
+    @Binding var selectedCountry: Country?
+
+    private var summary: CountryListSummary {
+        CountryListSummary(
+            countries: allCountries,
+            searchText: searchText,
+            filterVisited: filterVisited,
+            selectedContinent: selectedContinent,
+            selectedYear: selectedYear
+        )
+    }
+
+    private var countriesGroupedByContinent: [String: [Country]] {
+        Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
+    }
+
+    var body: some View {
+        List(selection: $selectedCountry) {
+            Section {
+                Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if allCountries.isEmpty {
+                Text("Preparing database...")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
+                    Section(continent) {
+                        ForEach(countriesGroupedByContinent[continent] ?? []) { country in
+                            CountryRow(country: country)
+                                .tag(country)
+                        }
+                    }
+                }
+            }
+        }
+        .searchable(text: $searchText, prompt: "Search countries")
+        .navigationTitle("Countries")
+        .toolbar {
+            ToolbarItem {
+                Menu {
+                    Section("Status") {
+                        Button("All") { filterVisited = nil }
+                        Button("Visited") { filterVisited = true }
+                        Button("Unvisited") { filterVisited = false }
+                    }
+
+                    Section("Continent") {
+                        Button("All") { selectedContinent = nil }
+                        ForEach(summary.continents, id: \.self) { continent in
+                            Button(continent) { selectedContinent = continent }
+                        }
+                    }
+
+                    if !summary.visitYears.isEmpty {
+                        Section("Visit year") {
+                            Button("All years") { selectedYear = nil }
+                            ForEach(summary.visitYears, id: \.self) { year in
+                                Button(String(year)) { selectedYear = year }
+                            }
+                        }
+                    }
+                } label: {
+                    Label(
+                        "Filter",
+                        systemImage: summary.hasActiveFilters
+                            ? "line.3.horizontal.decrease.circle.fill"
+                            : "line.3.horizontal.decrease.circle")
+                }
+            }
+        }
+    }
+}
 
 /// A bottom sheet that presents the full country list with search and filters.
 /// Tapping a country selects it on the map and dismisses the sheet.
