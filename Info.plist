@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+<dict>
+	<key>UILaunchScreen</key>
 	<dict>
-		<key>UILaunchScreen</key>
-		<dict>
-			<key>UIColorName</key>
-			<string>LaunchBackground</string>
-		</dict>
-		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>WorldMap uses your current location to automatically detect which country you are in so you can mark it with one tap.</string>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
 	</dict>
+</dict>
 </plist>
