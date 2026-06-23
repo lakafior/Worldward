@@ -290,6 +290,14 @@ struct ContentView: View {
                 }
             }
         #endif
+        .onReceive(NotificationCenter.default.publisher(for: .worldMapOpenStats)) { _ in
+            showStats = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .worldMapOpenCountry)) {
+            notification in
+            guard let id = notification.object as? String else { return }
+            selectedCountry = allCountries.first { $0.id == id }
+        }
     }
 
     /// The padded map rectangle enclosing all of a country's polygons.
@@ -424,7 +432,6 @@ struct ContentView: View {
         if changed { try? modelContext.save() }
     }
 }
-
 
 struct CountryRow: View {
     let country: Country
@@ -1102,7 +1109,7 @@ private struct CountryDetailSheet: View {
             CountryDetailView(country: country)
                 .navigationTitle(country.name)
                 #if !os(macOS)
-                .navigationBarTitleDisplayMode(.inline)
+                    .navigationBarTitleDisplayMode(.inline)
                 #endif
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {

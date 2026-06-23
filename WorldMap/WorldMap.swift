@@ -7,7 +7,7 @@ struct WorldMap: App {
     /// The user's appearance choice, shared with `SettingsView` via the same key.
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
-    var sharedModelContainer: ModelContainer = {
+    static let sharedModelContainer: ModelContainer = {
         let schema = Schema([Country.self, Visit.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -73,7 +73,7 @@ struct WorldMap: App {
             ContentView()
                 .preferredColorScheme(appTheme.colorScheme)
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(Self.sharedModelContainer)
 
         #if os(macOS)
             // Adds the standard "WorldMap ▸ Settings…" menu item (⌘,). The Settings
@@ -82,7 +82,7 @@ struct WorldMap: App {
             Settings {
                 SettingsView()
             }
-            .modelContainer(sharedModelContainer)
+            .modelContainer(Self.sharedModelContainer)
         #endif
     }
 }
