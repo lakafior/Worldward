@@ -62,3 +62,6 @@ fastlane/test_output/
 # Logs
 *.log
 *.trace
+
+# AI
+gemini.md
