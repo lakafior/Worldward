@@ -19,6 +19,8 @@ final class TravelIntelligence {
     enum Phase: Equatable {
         case idle
         case thinking
+        /// The model is producing text; the payload is the answer so far.
+        case streaming(String)
         case answered(String)
         case failed(String)
     }
@@ -67,8 +69,15 @@ final class TravelIntelligence {
         let session = activeSession()
         phase = .thinking
         do {
-            let response = try await session.respond(to: question)
-            phase = .answered(response.content)
+            // Stream snapshots so the answer appears token-by-token. While the
+            // model is calling tools the snapshots are empty, so "Thinking…"
+            // stays up until the first real text arrives.
+            var latest = ""
+            for try await snapshot in session.streamResponse(to: question) {
+                latest = snapshot.content
+                if !latest.isEmpty { phase = .streaming(latest) }
+            }
+            phase = .answered(latest.isEmpty ? "I couldn't find an answer to that." : latest)
         } catch let error as LanguageModelSession.ToolCallError {
             phase = .failed("I couldn't read your travel data: \(error.underlyingError.localizedDescription)")
         } catch {

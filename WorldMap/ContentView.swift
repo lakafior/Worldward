@@ -81,6 +81,9 @@ struct ContentView: View {
     @State private var detailCountry: Country?
     @State private var showStats = false
     @State private var showChat = false
+    @State private var showLogVisits = false
+    @State private var logVisitsText = ""
+    @State private var intentRouter = IntentRouter.shared
     @State private var showSettings = false
     @State private var showCountryList = false
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -228,6 +231,13 @@ struct ContentView: View {
                         }
                         .disabled(!photoImporter.isReady || photoImporter.isImporting)
 
+                        Button {
+                            logVisitsText = ""
+                            showLogVisits = true
+                        } label: {
+                            Label("From Description", systemImage: "text.bubble")
+                        }
+
                         #if !os(macOS)
                             // macOS shows the country list in the always-present sidebar.
                             Button {
@@ -312,6 +322,9 @@ struct ContentView: View {
         .sheet(isPresented: $showChat) {
             TravelChatView()
         }
+        .sheet(isPresented: $showLogVisits) {
+            LogVisitsView(initialText: logVisitsText)
+        }
         #if !os(macOS)
             .sheet(isPresented: $showCountryList) {
                 CountryListSheet(
@@ -354,13 +367,17 @@ struct ContentView: View {
                 )
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .worldMapOpenStats)) { _ in
-            showStats = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .worldMapOpenCountry)) {
-            notification in
-            guard let id = notification.object as? String else { return }
-            selectedCountry = allCountries.first { $0.id == id }
+        .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
+        .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
+        .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
+        // The catalog arrives after `loadGeoJSON`; re-try a pending country
+        // selection once it does, so a cold-launched intent still resolves.
+        .onChange(of: allCountries.count) { consumePendingOpenCountry() }
+        .onAppear {
+            // Cold launch: an intent may have set these before the view existed.
+            consumePendingLogVisits()
+            consumePendingOpenStats()
+            consumePendingOpenCountry()
         }
     }
 
@@ -370,6 +387,30 @@ struct ContentView: View {
         // Add a small margin around the country outline
         let padding = rect.width * 0.2
         return rect.insetBy(dx: -padding, dy: -padding)
+    }
+
+    /// Presents the log-visits sheet with any text an intent left pending, then
+    /// clears it so it's consumed exactly once. Safe to call repeatedly.
+    private func consumePendingLogVisits() {
+        guard let text = intentRouter.pendingLogVisitsText else { return }
+        intentRouter.pendingLogVisitsText = nil
+        logVisitsText = text
+        showLogVisits = true
+    }
+
+    /// Presents the stats dashboard if an intent requested it.
+    private func consumePendingOpenStats() {
+        guard intentRouter.pendingOpenStats else { return }
+        intentRouter.pendingOpenStats = false
+        showStats = true
+    }
+
+    /// Selects a country an intent requested. Waits for the catalog to load
+    /// before clearing the request, so a cold-launched intent isn't dropped.
+    private func consumePendingOpenCountry() {
+        guard let id = intentRouter.pendingOpenCountryID, !allCountries.isEmpty else { return }
+        intentRouter.pendingOpenCountryID = nil
+        selectedCountry = allCountries.first { $0.id == id }
     }
 
     /// Requests the user's location, reverse‑geocodes it to a country, and presents

@@ -81,6 +81,9 @@ struct TravelChatView: View {
                     .foregroundStyle(.secondary)
             }
 
+        case .streaming(let text):
+            answerBubble(text)
+
         case .answered(let text):
             answerBubble(text)
 
@@ -149,10 +152,12 @@ struct TravelChatView: View {
     }
 
     private var canSend: Bool {
-        guard case .thinking = intelligence.phase else {
+        switch intelligence.phase {
+        case .thinking, .streaming:
+            return false
+        default:
             return !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
-        return false
     }
 
     private func submit(_ text: String) {

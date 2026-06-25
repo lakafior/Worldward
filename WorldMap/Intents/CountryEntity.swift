@@ -86,12 +86,3 @@ extension CountryEntity {
         self.continent = country.continent
     }
 }
-
-// MARK: - Intent Notification Names
-
-extension Notification.Name {
-    /// Posted by `OpenTravelStatsIntent` when the app should navigate to Statistics.
-    static let worldMapOpenStats = Notification.Name("WorldMapOpenStats")
-    /// Posted by `OpenCountryMapIntent`; the notification's `object` carries the ISO alpha‑2 country id.
-    static let worldMapOpenCountry = Notification.Name("WorldMapOpenCountry")
-}

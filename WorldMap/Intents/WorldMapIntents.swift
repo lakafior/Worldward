@@ -113,8 +113,8 @@ struct MarkCountryStatusIntent: AppIntent {
 // MARK: - 2. Show Travel Stats
 
 /// Opens the app to the Statistics dashboard — the achievements grid, continent
-/// breakdown, and per‑year chart. The actual navigation is handled by
-/// posts a notification that ContentView observes to navigate.
+/// breakdown, and per‑year chart. Navigation is handled by `ContentView`, which
+/// observes `IntentRouter` and presents the dashboard.
 struct OpenTravelStatsIntent: AppIntent {
     static let title: LocalizedStringResource = "Show Travel Stats"
     static let description = IntentDescription(
@@ -125,8 +125,7 @@ struct OpenTravelStatsIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        NotificationCenter.default.post(
-            name: .worldMapOpenStats, object: nil)
+        IntentRouter.shared.pendingOpenStats = true
         return .result()
     }
 }
@@ -152,8 +151,7 @@ struct OpenCountryMapIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        NotificationCenter.default.post(
-            name: .worldMapOpenCountry, object: country.id)
+        IntentRouter.shared.pendingOpenCountryID = country.id
         return .result()
     }
 }
@@ -259,6 +257,62 @@ struct LogVisitIntent: AppIntent {
             value:
                 "📅 Visit to \(country.flagEmoji) \(country.name) logged on \(formatter.string(from: visitDate))."
         )
+    }
+}
+
+// MARK: - Intent Router
+
+/// A tiny app-wide hand-off point for intents that open the app and need to pass
+/// data to the UI. A notification is lost when an intent cold-launches the app
+/// (it fires before any view subscribes), so intents stash values here instead;
+/// the view both observes changes (warm launch) and reads any pending value when
+/// it appears (cold launch), guaranteeing the value is never missed.
+@MainActor
+@Observable
+final class IntentRouter {
+    static let shared = IntentRouter()
+    private init() {}
+
+    /// Free-text trip description awaiting the log-visits sheet, set by
+    /// `LogVisitsFromDescriptionIntent`. The view clears it once consumed.
+    var pendingLogVisitsText: String?
+
+    /// Set by `OpenTravelStatsIntent` to request the stats dashboard.
+    var pendingOpenStats = false
+
+    /// ISO alpha-2 id of a country to select on the map, set by
+    /// `OpenCountryMapIntent`. Held until the catalog is loaded so a cold launch
+    /// can still resolve it once `@Query` populates.
+    var pendingOpenCountryID: String?
+}
+
+// MARK: - 5b. Log Visits from a Description
+
+/// Captures a free-text description ("I went to Japan and Korea last spring"),
+/// opens the app, and hands the text to the log-visits sheet, which parses it
+/// on-device with Apple Intelligence and lets the user confirm before saving.
+/// Going through a confirmation step (rather than writing directly) keeps a
+/// misheard or misparsed phrase from silently creating wrong visits.
+struct LogVisitsFromDescriptionIntent: AppIntent {
+    static let title: LocalizedStringResource = "Log Visits from a Description"
+    static let description = IntentDescription(
+        "Describe a trip in your own words and WorldMap extracts the countries and dates for you to confirm.",
+        categoryName: "Travel",
+        searchKeywords: ["log", "describe", "trip", "dictate", "visits", "ai"]
+    )
+    static let openAppWhenRun: Bool = true
+
+    @Parameter(title: "Description", requestValueDialog: "What trip would you like to log?")
+    var text: String
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Log visits from \(\.$text)")
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        IntentRouter.shared.pendingLogVisitsText = text
+        return .result()
     }
 }
 
@@ -406,6 +460,17 @@ struct WorldMapShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Log Visit",
             systemImageName: "calendar.badge.plus"
+        )
+
+        AppShortcut(
+            intent: LogVisitsFromDescriptionIntent(),
+            phrases: [
+                "Log a trip in \(.applicationName)",
+                "Describe my travels to \(.applicationName)",
+                "Log visits from a description in \(.applicationName)",
+            ],
+            shortTitle: "Log from Description",
+            systemImageName: "text.bubble"
         )
 
         AppShortcut(
