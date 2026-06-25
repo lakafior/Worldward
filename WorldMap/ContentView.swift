@@ -185,93 +185,94 @@ struct ContentView: View {
     /// The map (with its toolbar), shared by both platforms. On iOS it's the root
     /// of a `NavigationStack`; on macOS it's the detail pane of a split view.
     private var mapContent: some View {
-            ZStack {
-                // Render only the splash while loading, so it paints on the first
-                // frame without MapKit/Metal initialization competing for it. The
-                // map is built once the geometry is ready.
-                if isLoadingMapData {
-                    MapLoadingView(message: mapLoadingMessage)
-                        .transition(.opacity)
-                } else {
-                    mapView
+        ZStack {
+            // Render only the splash while loading, so it paints on the first
+            // frame without MapKit/Metal initialization competing for it. The
+            // map is built once the geometry is ready.
+            if isLoadingMapData {
+                MapLoadingView(message: mapLoadingMessage)
+                    .transition(.opacity)
+            } else {
+                mapView
 
-                    MapLegend()
-                        .padding()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                }
+                MapLegend()
+                    .padding([.horizontal, .top])
+                    .padding(.bottom, 40)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
-            .navigationTitle("World Map")
-            #if os(macOS)
-                .navigationSubtitle("Tap a country to see details")
+        }
+        .navigationTitle("World Map")
+        #if os(macOS)
+            .navigationSubtitle("Tap a country to see details")
+        #endif
+        .toolbar {
+            #if !os(macOS)
+                // macOS reaches Settings through the app menu (⌘,) instead.
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                }
             #endif
-            .toolbar {
-                #if !os(macOS)
-                    // macOS reaches Settings through the app menu (⌘,) instead.
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Label("Settings", systemImage: "gearshape")
-                        }
-                    }
-                #endif
 
-                ToolbarItem {
-                    Menu {
-                        Button {
-                            Task { await markCurrentLocation() }
-                        } label: {
-                            Label("From Current Location", systemImage: "location.fill.viewfinder")
-                        }
-                        .disabled(isLocating || isLoadingMapData)
-
-                        Button {
-                            photoImporter.presentConfiguration()
-                        } label: {
-                            Label("From Photos", systemImage: "photo.on.rectangle")
-                        }
-                        .disabled(!photoImporter.isReady || photoImporter.isImporting)
-
-                        Button {
-                            logVisitsText = ""
-                            showLogVisits = true
-                        } label: {
-                            Label("From Description", systemImage: "text.bubble")
-                        }
-
-                        #if !os(macOS)
-                            // macOS shows the country list in the always-present sidebar.
-                            Button {
-                                showCountryList = true
-                            } label: {
-                                Label("From List", systemImage: "list.bullet")
-                            }
-                        #endif
-                    } label: {
-                        if isLocating {
-                            ProgressView()
-                        } else {
-                            Label("Add", systemImage: "plus")
-                        }
-                    }
-                }
-
-                ToolbarItem {
+            ToolbarItem {
+                Menu {
                     Button {
-                        showChat = true
+                        Task { await markCurrentLocation() }
                     } label: {
-                        Label("Ask About Your Travels", systemImage: "sparkles")
+                        Label("From Current Location", systemImage: "location.fill.viewfinder")
                     }
-                }
+                    .disabled(isLocating || isLoadingMapData)
 
-                ToolbarItem {
                     Button {
-                        showStats = true
+                        photoImporter.presentConfiguration()
                     } label: {
-                        Label("Statistics", systemImage: "chart.pie")
+                        Label("From Photos", systemImage: "photo.on.rectangle")
+                    }
+                    .disabled(!photoImporter.isReady || photoImporter.isImporting)
+
+                    Button {
+                        logVisitsText = ""
+                        showLogVisits = true
+                    } label: {
+                        Label("From Description", systemImage: "text.bubble")
+                    }
+
+                    #if !os(macOS)
+                        // macOS shows the country list in the always-present sidebar.
+                        Button {
+                            showCountryList = true
+                        } label: {
+                            Label("From List", systemImage: "list.bullet")
+                        }
+                    #endif
+                } label: {
+                    if isLocating {
+                        ProgressView()
+                    } else {
+                        Label("Add", systemImage: "plus")
                     }
                 }
             }
+
+            ToolbarItem {
+                Button {
+                    showChat = true
+                } label: {
+                    Label("Ask About Your Travels", systemImage: "sparkles")
+                }
+            }
+
+            ToolbarItem {
+                Button {
+                    showStats = true
+                } label: {
+                    Label("Statistics", systemImage: "chart.pie")
+                }
+            }
+        }
     }
 
     /// The root layout: a sidebar + map split on macOS (so the full country list
@@ -299,89 +300,89 @@ struct ContentView: View {
 
     var body: some View {
         rootView
-        .onChange(of: selectedCountry) {
-            if let country = selectedCountry {
-                detailCountry = country
+            .onChange(of: selectedCountry) {
+                if let country = selectedCountry {
+                    detailCountry = country
 
-                // Center the map on the selected country
-                if let rect = mapRect(for: country) {
-                    withAnimation {
-                        cameraPosition = .rect(rect)
-                    }
-                }
-            }
-        }
-        .task {
-            await loadGeoJSON()
-        }
-        .sheet(isPresented: $photoImporter.showImporterSheet) {
-            ImportPreviewView(importer: photoImporter, modelContext: modelContext)
-        }
-        .sheet(isPresented: $showStats) {
-            StatisticsView(countries: allCountries, centroids: countryCentroids)
-        }
-        .sheet(isPresented: $showChat) {
-            TravelChatView()
-        }
-        .sheet(isPresented: $showLogVisits) {
-            LogVisitsView(initialText: logVisitsText)
-        }
-        #if !os(macOS)
-            .sheet(isPresented: $showCountryList) {
-                CountryListSheet(
-                    allCountries: allCountries,
-                    searchText: $searchText,
-                    filterVisited: $filterVisited,
-                    selectedContinent: $selectedContinent,
-                    selectedYear: $selectedYear,
-                    expandedContinents: $expandedContinents,
-                    selectedCountry: $selectedCountry,
-                    isPresented: $showCountryList,
-                    onAppear: initializeExpandedContinents
-                )
-            }
-        #endif
-        .sheet(item: $detailCountry) { country in
-            CountryDetailSheet(country: country)
-        }
-        #if !os(macOS)
-            .sheet(isPresented: $showSettings) {
-                NavigationStack {
-                    SettingsView()
-                    .navigationTitle("Settings")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Done") { showSettings = false }
+                    // Center the map on the selected country
+                    if let rect = mapRect(for: country) {
+                        withAnimation {
+                            cameraPosition = .rect(rect)
                         }
                     }
                 }
             }
-        #endif
-        .sheet(isPresented: $showLocationPicker) {
-            if let country = locationCountry {
-                LocationStatusSheet(
-                    country: country,
-                    status: $locationStatus,
-                    onConfirm: { applyLocationStatus() },
-                    onCancel: { showLocationPicker = false }
-                )
+            .task {
+                await loadGeoJSON()
             }
-        }
-        .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
-        .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
-        .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
-        .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
-        // The catalog arrives after `loadGeoJSON`; re-try a pending country
-        // selection once it does, so a cold-launched intent still resolves.
-        .onChange(of: allCountries.count) { consumePendingOpenCountry() }
-        .onAppear {
-            // Cold launch: an intent may have set these before the view existed.
-            consumePendingLogVisits()
-            consumePendingOpenStats()
-            consumePendingOpenCountry()
-            consumePendingSearch()
-        }
+            .sheet(isPresented: $photoImporter.showImporterSheet) {
+                ImportPreviewView(importer: photoImporter, modelContext: modelContext)
+            }
+            .sheet(isPresented: $showStats) {
+                StatisticsView(countries: allCountries, centroids: countryCentroids)
+            }
+            .sheet(isPresented: $showChat) {
+                TravelChatView()
+            }
+            .sheet(isPresented: $showLogVisits) {
+                LogVisitsView(initialText: logVisitsText)
+            }
+            #if !os(macOS)
+                .sheet(isPresented: $showCountryList) {
+                    CountryListSheet(
+                        allCountries: allCountries,
+                        searchText: $searchText,
+                        filterVisited: $filterVisited,
+                        selectedContinent: $selectedContinent,
+                        selectedYear: $selectedYear,
+                        expandedContinents: $expandedContinents,
+                        selectedCountry: $selectedCountry,
+                        isPresented: $showCountryList,
+                        onAppear: initializeExpandedContinents
+                    )
+                }
+            #endif
+            .sheet(item: $detailCountry) { country in
+                CountryDetailSheet(country: country)
+            }
+            #if !os(macOS)
+                .sheet(isPresented: $showSettings) {
+                    NavigationStack {
+                        SettingsView()
+                        .navigationTitle("Settings")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button("Done") { showSettings = false }
+                            }
+                        }
+                    }
+                }
+            #endif
+            .sheet(isPresented: $showLocationPicker) {
+                if let country = locationCountry {
+                    LocationStatusSheet(
+                        country: country,
+                        status: $locationStatus,
+                        onConfirm: { applyLocationStatus() },
+                        onCancel: { showLocationPicker = false }
+                    )
+                }
+            }
+            .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
+            .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
+            .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
+            .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
+            // The catalog arrives after `loadGeoJSON`; re-try a pending country
+            // selection once it does, so a cold-launched intent still resolves.
+            .onChange(of: allCountries.count) { consumePendingOpenCountry() }
+            .onAppear {
+                // Cold launch: an intent may have set these before the view existed.
+                consumePendingLogVisits()
+                consumePendingOpenStats()
+                consumePendingOpenCountry()
+                consumePendingSearch()
+            }
     }
 
     /// The padded map rectangle enclosing all of a country's polygons.
