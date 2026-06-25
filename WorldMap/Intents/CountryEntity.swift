@@ -39,6 +39,11 @@ struct CountryEntity: IndexedEntity {
     }
 
     static let defaultQuery = CountryEntityQuery()
+
+    /// `NSUserActivity` type used to advertise the country a person is currently
+    /// viewing, so Siri and Apple Intelligence can answer questions about it
+    /// ("have I been here?", "when did I visit?").
+    static let viewingActivityType = "ovh.mar.WorldMap.ViewingCountry"
 }
 
 // MARK: - Entity Query

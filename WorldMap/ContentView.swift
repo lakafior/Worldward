@@ -1,3 +1,4 @@
+import AppIntents
 import MapKit
 import Photos
 import SwiftData
@@ -1028,6 +1029,14 @@ struct CountryDetailView: View {
         }
         .padding()
         .frame(minWidth: 300)
+        // Advertise the country on screen so Siri and Apple Intelligence can
+        // answer questions about it ("have I been here?"). Keyed on the stable
+        // ISO id; the entity is rebuilt in the closure from the live model.
+        .userActivity(CountryEntity.viewingActivityType, element: country.id) { _, activity in
+            let entity = CountryEntity(from: country)
+            activity.title = "Viewing \(entity.flagEmoji) \(entity.name)"
+            activity.appEntityIdentifier = EntityIdentifier(for: entity)
+        }
     }
 
     private func addVisit() {
