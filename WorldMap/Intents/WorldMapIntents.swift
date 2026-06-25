@@ -134,24 +134,33 @@ struct OpenTravelStatsIntent: AppIntent {
 
 /// Opens the app and selects a specific country on the world map, centering the
 /// camera on its bounding rect. Useful for "show me where I went in Japan".
-struct OpenCountryMapIntent: AppIntent {
-    static let title: LocalizedStringResource = "Show Country on Map"
-    static let description = IntentDescription(
-        "Opens the world map and focuses on a specific country.",
-        categoryName: "Travel"
-    )
-    static let openAppWhenRun: Bool = true
-
+@AppIntent(schema: .system.open)
+struct OpenCountryMapIntent: OpenIntent {
     @Parameter(title: "Country")
-    var country: CountryEntity
-
-    static var parameterSummary: some ParameterSummary {
-        Summary("Show \(\.$country) on the map")
-    }
+    var target: CountryEntity
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        IntentRouter.shared.pendingOpenCountryID = country.id
+        IntentRouter.shared.pendingOpenCountryID = target.id
+        return .result()
+    }
+}
+
+// MARK: - 3b. Search Countries (system.search schema)
+
+/// Routes a free-text query into the app's country list, conforming to the
+/// `system.search` assistant schema so Siri and Apple Intelligence understand
+/// "search WorldMap for…" as a genuine in-app search.
+@AppIntent(schema: .system.search)
+struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
+    static let searchScopes: [StringSearchScope] = [.general]
+
+    @Parameter(title: "Search")
+    var criteria: StringSearchCriteria
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        IntentRouter.shared.pendingSearchText = criteria.term
         return .result()
     }
 }
@@ -284,6 +293,9 @@ final class IntentRouter {
     /// `OpenCountryMapIntent`. Held until the catalog is loaded so a cold launch
     /// can still resolve it once `@Query` populates.
     var pendingOpenCountryID: String?
+
+    /// A search term to apply to the country list, set by `SearchCountriesIntent`.
+    var pendingSearchText: String?
 }
 
 // MARK: - 5b. Log Visits from a Description

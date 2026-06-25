@@ -1,5 +1,7 @@
 import AppIntents
+import CoreSpotlight
 import SwiftData
+import UniformTypeIdentifiers
 
 /// A lightweight, `Codable` / `Sendable` representation of a `Country` suitable as
 /// an `AppEntity`.  The struct carries only identity and display fields; the
@@ -7,7 +9,7 @@ import SwiftData
 ///
 /// Keying on the ISO alpha‑2 `id` keeps identities stable across launches and
 /// import/export cycles — the same id that `TravelDataTransfer` already uses.
-struct CountryEntity: AppEntity {
+struct CountryEntity: IndexedEntity {
 
     /// ISO 3166‑1 alpha‑2 code (e.g. "JP", "FR").  Stable, universal, and already
     /// the `Country.@Attribute(.unique)` key in SwiftData.
@@ -84,5 +86,43 @@ extension CountryEntity {
         self.name = country.name
         self.flagEmoji = country.flagEmoji
         self.continent = country.continent
+    }
+}
+
+// MARK: - Spotlight indexing
+
+extension CountryEntity {
+    /// Augments the default (title/subtitle) attributes with keywords so a search
+    /// for the country name or its continent surfaces the entry in Spotlight.
+    var attributeSet: CSSearchableItemAttributeSet {
+        let attributes = CSSearchableItemAttributeSet(contentType: .content)
+        attributes.title = "\(flagEmoji) \(name)"
+        attributes.contentDescription = continent
+        attributes.keywords = [name, continent, "country", "travel"]
+        return attributes
+    }
+}
+
+/// Publishes the country catalog to Spotlight so countries are findable in
+/// system search and reasoned over by Apple Intelligence. Indexing is gated on a
+/// signature (version + count) so the ~250-entry catalog is only re-indexed when
+/// it actually changes, not on every launch.
+enum CountrySpotlightIndexer {
+    private static let stateKey = "CountrySpotlightIndexSignature"
+    private static let version = 1
+
+    @MainActor
+    static func indexIfNeeded(_ countries: [Country]) async {
+        let signature = version * 1_000_000 + countries.count
+        guard UserDefaults.standard.integer(forKey: stateKey) != signature else { return }
+
+        let entities = countries.map(CountryEntity.init(from:))
+        do {
+            try await CSSearchableIndex.default().indexAppEntities(entities)
+            UserDefaults.standard.set(signature, forKey: stateKey)
+        } catch {
+            // Best-effort: a failure just leaves the signature unset, so the next
+            // launch retries. Nothing user-facing depends on the index.
+        }
     }
 }

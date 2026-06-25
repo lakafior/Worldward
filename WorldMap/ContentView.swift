@@ -370,6 +370,7 @@ struct ContentView: View {
         .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
         .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
         .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
+        .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
         // The catalog arrives after `loadGeoJSON`; re-try a pending country
         // selection once it does, so a cold-launched intent still resolves.
         .onChange(of: allCountries.count) { consumePendingOpenCountry() }
@@ -378,6 +379,7 @@ struct ContentView: View {
             consumePendingLogVisits()
             consumePendingOpenStats()
             consumePendingOpenCountry()
+            consumePendingSearch()
         }
     }
 
@@ -411,6 +413,17 @@ struct ContentView: View {
         guard let id = intentRouter.pendingOpenCountryID, !allCountries.isEmpty else { return }
         intentRouter.pendingOpenCountryID = nil
         selectedCountry = allCountries.first { $0.id == id }
+    }
+
+    /// Applies a search term an intent requested. On iOS the country list is a
+    /// sheet, so present it; on macOS the sidebar is always visible.
+    private func consumePendingSearch() {
+        guard let term = intentRouter.pendingSearchText else { return }
+        intentRouter.pendingSearchText = nil
+        searchText = term
+        #if !os(macOS)
+            showCountryList = true
+        #endif
     }
 
     /// Requests the user's location, reverse‑geocodes it to a country, and presents
@@ -525,6 +538,10 @@ struct ContentView: View {
             countryPaths: extractedPaths,
             allCountries: seededCountries
         )
+
+        // Publish the catalog to Spotlight (and Apple Intelligence) once it's
+        // settled. Gated internally, so this is a no-op on warm launches.
+        Task { await CountrySpotlightIndexer.indexIfNeeded(seededCountries) }
 
         focusOnHomeIfNeeded()
     }
