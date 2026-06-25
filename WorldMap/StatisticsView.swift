@@ -16,6 +16,7 @@ struct StatisticsView: View {
 
     @State private var selectedYear: Int?
     @State private var showShareSheet = false
+    @State private var insights = TravelInsights()
 
     /// Computed once per view instance. `TravelStats` is a full O(n) pass, and the
     /// body, the year picker, and the share-image render all read it — recomputing
@@ -52,6 +53,10 @@ struct StatisticsView: View {
                     let suggestions = nearestUnvisited(countries: countries, centroids: centroids)
                     if !suggestions.isEmpty {
                         NextClosestSection(suggestions: suggestions)
+
+                        if insights.isAvailable {
+                            SmartSuggestionsSection(insights: insights, candidates: suggestions)
+                        }
                     }
 
                     if let yearStat = selectedYearStat {
@@ -62,6 +67,10 @@ struct StatisticsView: View {
                                 get: { yearStat.year },
                                 set: { selectedYear = $0 }),
                             yearStat: yearStat)
+
+                        if insights.isAvailable {
+                            AIRecapSection(insights: insights, stats: stats, yearStat: yearStat)
+                        }
                     }
                 }
                 .padding()
@@ -369,6 +378,175 @@ private struct YearInReviewSection: View {
             }
             .padding()
             .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+}
+
+// MARK: - Smart suggestions (Apple Intelligence)
+
+/// Opt-in next-destination picks with a one-line rationale, generated on-device
+/// from the closest-unvisited candidates. The model only phrases and ranks — the
+/// candidate set and flags come from real data, so it can't invent a country.
+private struct SmartSuggestionsSection: View {
+    let insights: TravelInsights
+    let candidates: [(country: Country, distanceKM: Double)]
+
+    @State private var picks: [ResolvedPick] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+
+    private struct ResolvedPick: Identifiable {
+        let id: String
+        let flag: String
+        let name: String
+        let reason: String
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Suggested for you")
+
+            if isLoading {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Thinking about where to go next…")
+                        .foregroundStyle(.secondary)
+                }
+            } else if let errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            } else if picks.isEmpty {
+                Button(action: generate) {
+                    Label("Suggest with Apple Intelligence", systemImage: "sparkles")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brand)
+            }
+
+            if !picks.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(Array(picks.enumerated()), id: \.element.id) { index, pick in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text(pick.flag)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(pick.name).fontWeight(.medium)
+                                Text(pick.reason)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
+                        if index < picks.count - 1 { Divider() }
+                    }
+                }
+                .padding(.horizontal)
+                .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+
+                Button("Suggest again", action: generate)
+                    .font(.caption)
+                    .disabled(isLoading)
+            }
+        }
+    }
+
+    private func generate() {
+        isLoading = true
+        errorMessage = nil
+        let top = Array(candidates.prefix(8))
+        let descriptions = top.map { item in
+            "\(item.country.name) (\(item.country.continent), ~\(Int(item.distanceKM.rounded())) km away)"
+        }
+        Task {
+            defer { isLoading = false }
+            do {
+                let raw = try await insights.suggestDestinations(candidates: descriptions)
+                picks = raw.compactMap { pick in
+                    guard let match = top.first(where: { matches(pick.country, $0.country.name) })
+                    else { return nil }
+                    return ResolvedPick(
+                        id: match.country.id, flag: match.country.flagEmoji,
+                        name: match.country.name, reason: pick.reason)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    /// Loose name match so a model paraphrase still resolves to a candidate.
+    private func matches(_ a: String, _ b: String) -> Bool {
+        a.localizedCaseInsensitiveContains(b) || b.localizedCaseInsensitiveContains(a)
+    }
+}
+
+// MARK: - AI year recap (Apple Intelligence)
+
+/// Opt-in, on-device prose recap of the selected year. Regenerated per year; the
+/// model phrases facts already computed by `TravelStats` and never adds figures.
+private struct AIRecapSection: View {
+    let insights: TravelInsights
+    let stats: TravelStats
+    let yearStat: TravelStats.YearStat
+
+    @State private var recap = ""
+    @State private var generatedYear: Int?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+
+    /// The shown recap is valid only for the year it was generated for.
+    private var hasCurrentRecap: Bool {
+        !recap.isEmpty && generatedYear == yearStat.year
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "AI recap")
+
+            if isLoading {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Writing your \(String(yearStat.year)) recap…")
+                        .foregroundStyle(.secondary)
+                }
+            } else if let errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            } else if hasCurrentRecap {
+                Text(recap)
+                    .font(.callout)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color.brand.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                Button("Rewrite", action: generate)
+                    .font(.caption)
+            } else {
+                Button(action: generate) {
+                    Label("Write \(String(yearStat.year)) recap", systemImage: "sparkles")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brand)
+            }
+        }
+    }
+
+    private func generate() {
+        isLoading = true
+        errorMessage = nil
+        let year = yearStat.year
+        let countries = stats.countries(inYear: year).map { "\($0.flag) \($0.name)" }
+        let visits = yearStat.visits
+        Task {
+            defer { isLoading = false }
+            do {
+                recap = try await insights.yearInReview(
+                    year: year, countries: countries, visits: visits)
+                generatedYear = year
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }
