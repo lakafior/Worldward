@@ -1,6 +1,7 @@
 import AppIntents
 import Foundation
 import SwiftData
+import SwiftUI
 
 // MARK: - Country Status (AppEnum)
 
@@ -180,34 +181,40 @@ struct GetVisitCountIntent: AppIntent {
     )
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws
+        -> some IntentResult & ReturnsValue<String> & ProvidesDialog & ShowsSnippetView
+    {
         let context = ModelContext(WorldMap.sharedModelContainer)
-        let descriptor = FetchDescriptor<Country>()
-        let stats = TravelStats(countries: try context.fetch(descriptor))
+        let stats = TravelStats(countries: try context.fetch(FetchDescriptor<Country>()))
 
         guard stats.hasTravel else {
+            let message = "You haven't recorded any travels yet. Open WorldMap to get started. 🌍"
             return .result(
-                value: "You haven't recorded any travels yet. 🌍 Open WorldMap to get started.")
+                value: message,
+                dialog: IntentDialog("\(message)"),
+                view: Text("🌍 No travels logged yet").font(.headline).padding())
         }
 
-        let statusLines =
-            CountryStatus.allCases
-            .filter { $0.isVisited }
-            .map { status in
-                let count = stats.statusCounts[status] ?? 0
-                return "• \(status.label): \(count)"
-            }
-            .joined(separator: "\n")
+        let statuses = CountryStatus.visitedCases.compactMap {
+            status -> (label: String, count: Int, color: Color)? in
+            let count = stats.statusCounts[status] ?? 0
+            return count > 0 ? (status.label, count, status.tint) : nil
+        }
 
-        return .result(
-            value: """
-                🌍 You've visited \(stats.visitedCountries) of \(stats.totalCountries) countries.
+        let value =
+            "You've visited \(stats.visitedCountries) of \(stats.totalCountries) countries "
+            + "across \(stats.visitedContinents) continent\(stats.visitedContinents == 1 ? "" : "s")."
 
-                \(statusLines)
+        let dialog = IntentDialog(full: "🌍 \(value)", supporting: "Here's your travel summary.")
 
-                You've set foot on \(stats.visitedContinents) continent\(stats.visitedContinents == 1 ? "" : "s").
-                """
-        )
+        let snippet = VisitCountSnippet(
+            visited: stats.visitedCountries,
+            total: stats.totalCountries,
+            continents: stats.visitedContinents,
+            statuses: statuses,
+            flags: stats.visitedFlags)
+
+        return .result(value: value, dialog: dialog, view: snippet)
     }
 }
 
@@ -348,7 +355,9 @@ struct GetContinentProgressIntent: AppIntent {
     }
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws
+        -> some IntentResult & ReturnsValue<String> & ProvidesDialog & ShowsSnippetView
+    {
         let context = ModelContext(WorldMap.sharedModelContainer)
         let continentName = continent.rawValue
         let descriptor = FetchDescriptor<Country>(
@@ -356,22 +365,22 @@ struct GetContinentProgressIntent: AppIntent {
         )
         let countries = try context.fetch(descriptor)
 
-        let visited = countries.count { $0.isVisited }
+        let visitedCountries = countries.filter { $0.isVisited }
+        let visited = visitedCountries.count
         let total = countries.count
         let pct = total > 0 ? Int(Double(visited) / Double(total) * 100) : 0
 
-        let visitedFlags =
-            countries
-            .filter { $0.isVisited }
-            .map { $0.flagEmoji }
-            .joined(separator: " ")
+        let value = "\(continent.rawValue): \(visited) of \(total) countries visited (\(pct)%)."
+        let dialog = IntentDialog(
+            full: "\(value)", supporting: "Here's your progress in \(continent.rawValue).")
 
-        return .result(
-            value: """
-                \(continent.rawValue): \(visited) of \(total) countries visited (\(pct)%).
-                \(visitedFlags)
-                """
-        )
+        let snippet = ContinentProgressSnippet(
+            continent: continent.rawValue,
+            visited: visited,
+            total: total,
+            flags: visitedCountries.map(\.flagEmoji))
+
+        return .result(value: value, dialog: dialog, view: snippet)
     }
 }
 
