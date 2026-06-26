@@ -4,7 +4,7 @@ import SwiftUI
 /// Import sheet that walks through configuring, scanning, and reviewing a
 /// photo-based visit import before anything is written to the database.
 struct ImportPreviewView: View {
-    var importer: PhotoImporter
+    @Bindable var importer: PhotoImporter
     @Environment(\.dismiss) private var dismiss
     let modelContext: ModelContext
 
@@ -135,14 +135,14 @@ struct ImportPreviewView: View {
                 )
                 .listRowBackground(Color.clear)
             } else {
-                ForEach(importer.proposedCountries) { proposed in
+                ForEach($importer.proposedCountries) { proposed in
                     countryRow(proposed)
                 }
 
                 if !importer.unresolvedLocations.isEmpty {
                     Section {
-                        ForEach(importer.unresolvedLocations.indices, id: \.self) { index in
-                            unresolvedRow(index)
+                        ForEach($importer.unresolvedLocations) { location in
+                            unresolvedRow(location)
                         }
                     } header: {
                         Text("Unmatched locations")
@@ -189,73 +189,81 @@ struct ImportPreviewView: View {
 
     /// A photo cluster that matched no country, with a menu to assign it to one of
     /// the nearest countries (or any country), or to skip it.
-    private func unresolvedRow(_ index: Int) -> some View {
-        let location = importer.unresolvedLocations[index]
+    private func unresolvedRow(_ locationBinding: Binding<UnresolvedLocation>) -> some View {
+        let location = locationBinding.wrappedValue
         let assigned = location.assignedCountryID.flatMap { id in
             (location.suggestedCountries + importer.pickableCountries).first { $0.id == id }
         }
 
-        return HStack(spacing: 12) {
-            Image(systemName: assigned == nil ? "mappin.slash" : "mappin.and.ellipse")
-                .font(.title3)
-                .foregroundStyle(assigned == nil ? Color.secondary : Color.accentColor)
-                .frame(width: 28)
+        let thumbnailIDs = Array(location.trips.flatMap(\.photoIdentifiers).prefix(12))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(locationDateText(location))
-                    .font(.subheadline)
-                Text(
-                    "\(location.totalPhotos) photo\(location.totalPhotos == 1 ? "" : "s") · \(location.totalDistinctDays) day\(location.totalDistinctDays == 1 ? "" : "s")"
-                )
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            }
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Image(systemName: assigned == nil ? "mappin.slash" : "mappin.and.ellipse")
+                    .font(.title3)
+                    .foregroundStyle(assigned == nil ? Color.secondary : Color.accentColor)
+                    .frame(width: 28)
 
-            Spacer()
-
-            Menu {
-                if assigned != nil {
-                    Button(role: .destructive) {
-                        importer.unresolvedLocations[index].assignedCountryID = nil
-                    } label: {
-                        Label("Skip these photos", systemImage: "xmark")
-                    }
-                    Divider()
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(locationDateText(location))
+                        .font(.subheadline)
+                    Text(
+                        "\(location.totalPhotos) photo\(location.totalPhotos == 1 ? "" : "s") · \(location.totalDistinctDays) day\(location.totalDistinctDays == 1 ? "" : "s")"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
 
-                if !location.suggestedCountries.isEmpty {
-                    Section("Nearby") {
-                        ForEach(location.suggestedCountries) { country in
+                Spacer()
+
+                Menu {
+                    if assigned != nil {
+                        Button(role: .destructive) {
+                            locationBinding.wrappedValue.assignedCountryID = nil
+                        } label: {
+                            Label("Skip these photos", systemImage: "xmark")
+                        }
+                        Divider()
+                    }
+
+                    if !location.suggestedCountries.isEmpty {
+                        Section("Nearby") {
+                            ForEach(location.suggestedCountries) { country in
+                                Button {
+                                    locationBinding.wrappedValue.assignedCountryID = country.id
+                                } label: {
+                                    Text("\(country.flagEmoji)  \(country.name)")
+                                }
+                            }
+                        }
+                    }
+
+                    Menu("All countries") {
+                        ForEach(importer.pickableCountries) { country in
                             Button {
-                                importer.unresolvedLocations[index].assignedCountryID = country.id
+                                locationBinding.wrappedValue.assignedCountryID = country.id
                             } label: {
                                 Text("\(country.flagEmoji)  \(country.name)")
                             }
                         }
                     }
-                }
-
-                Menu("All countries") {
-                    ForEach(importer.pickableCountries) { country in
-                        Button {
-                            importer.unresolvedLocations[index].assignedCountryID = country.id
-                        } label: {
-                            Text("\(country.flagEmoji)  \(country.name)")
-                        }
+                } label: {
+                    if let assigned {
+                        Text("\(assigned.flagEmoji) \(assigned.name)")
+                            .font(.caption.weight(.semibold))
+                            .lineLimit(1)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.accentColor.opacity(0.18), in: Capsule())
+                    } else {
+                        Label("Assign", systemImage: "plus.circle")
+                            .font(.caption.weight(.semibold))
                     }
                 }
-            } label: {
-                if let assigned {
-                    Text("\(assigned.flagEmoji) \(assigned.name)")
-                        .font(.caption.weight(.semibold))
-                        .lineLimit(1)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.accentColor.opacity(0.18), in: Capsule())
-                } else {
-                    Label("Assign", systemImage: "plus.circle")
-                        .font(.caption.weight(.semibold))
-                }
+            }
+
+            if !thumbnailIDs.isEmpty {
+                VisitPhotosView(identifiers: thumbnailIDs)
             }
         }
     }
@@ -272,8 +280,9 @@ struct ImportPreviewView: View {
         return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
     }
 
-    private func countryRow(_ proposed: ProposedCountry) -> some View {
-        DisclosureGroup {
+    private func countryRow(_ proposedBinding: Binding<ProposedCountry>) -> some View {
+        let proposed = proposedBinding.wrappedValue
+        return DisclosureGroup {
             ForEach(proposed.trips) { trip in
                 HStack {
                     Text(tripDateText(trip))
@@ -301,9 +310,26 @@ struct ImportPreviewView: View {
 
                 Spacer()
 
-                statusBadge(proposed.proposedStatus, isHome: proposed.isHome)
+                statusMenu(proposedBinding)
             }
         }
+    }
+
+    /// The status chip, tappable to override the auto-assigned status (e.g. promote
+    /// a "Crossed" to "Visited"). A home country also offers "Living".
+    private func statusMenu(_ proposed: Binding<ProposedCountry>) -> some View {
+        Menu {
+            ForEach(CountryStatus.visitedCases) { status in
+                Button {
+                    proposed.wrappedValue.proposedStatus = status
+                } label: {
+                    Label(status.label, systemImage: status.symbolName)
+                }
+            }
+        } label: {
+            statusBadge(proposed.wrappedValue.proposedStatus, isHome: proposed.wrappedValue.isHome)
+        }
+        .buttonStyle(.plain)
     }
 
     private func statusBadge(_ status: CountryStatus, isHome: Bool) -> some View {
