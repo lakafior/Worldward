@@ -380,6 +380,11 @@ struct ContentView: View {
                 consumePendingOpenCountry()
                 deduplicateCountries()
             }
+            // Keep the Home/Lock Screen widgets in sync. `widgetSnapshotKey`
+            // changes whenever a country is added, removed, or its status edited
+            // (by hand, by an intent, or by the photo importer); `initial` also
+            // writes once on launch so a fresh install populates the widget.
+            .onChange(of: widgetSnapshotKey, initial: true) { updateWidgetSnapshot() }
             .onAppear {
                 // Cold launch: an intent may have set these before the view existed.
                 consumePendingLogVisits()
@@ -606,6 +611,32 @@ struct ContentView: View {
             }
         }
         if changed { try? modelContext.save() }
+    }
+
+    /// A cheap signature of every country's id and status. Recomputed each render
+    /// (≈250 hashes, negligible) and watched by `onChange` so the widget snapshot
+    /// is rewritten only when something the widgets show actually changes.
+    private var widgetSnapshotKey: Int {
+        var hasher = Hasher()
+        for country in allCountries {
+            hasher.combine(country.id)
+            hasher.combine(country.statusRaw)
+        }
+        return hasher.finalize()
+    }
+
+    /// Recompute the travel summary and hand it to the shared App Group store,
+    /// which redraws the widgets. Reuses `TravelStats` so the figures always match
+    /// the dashboard.
+    private func updateWidgetSnapshot() {
+        let stats = TravelStats(countries: allCountries)
+        WidgetSnapshotStore.write(
+            WidgetSnapshot(
+                visitedCountries: stats.visitedCountries,
+                totalCountries: stats.totalCountries,
+                visitedContinents: stats.visitedContinents,
+                totalContinents: stats.totalContinents,
+                flags: stats.visitedFlags))
     }
 
     /// Fold a duplicate country's user data into the row that will survive

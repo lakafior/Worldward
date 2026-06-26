@@ -6,8 +6,40 @@
 	objectVersion = 100;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		48BF24FE2FEEFFAD00A75A0D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48BF24FD2FEEFFAD00A75A0D /* WidgetKit.framework */; };
+		48BF25002FEEFFAD00A75A0D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48BF24FF2FEEFFAD00A75A0D /* SwiftUI.framework */; };
+		48BF250B2FEEFFAE00A75A0D /* WorldwardWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 48BF24FB2FEEFFAD00A75A0D /* WorldwardWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		48BF25092FEEFFAE00A75A0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 48BF24FA2FEEFFAD00A75A0D;
+			remoteInfo = WorldwardWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		48BF25102FEEFFAE00A75A0D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				48BF250B2FEEFFAE00A75A0D /* WorldwardWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Worldward.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Worldward.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		48BF24FB2FEEFFAD00A75A0D /* WorldwardWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorldwardWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		48BF24FD2FEEFFAD00A75A0D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = /System/Library/Frameworks/WidgetKit.framework; sourceTree = "<absolute>"; };
+		48BF24FF2FEEFFAD00A75A0D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = /System/Library/Frameworks/SwiftUI.framework; sourceTree = "<absolute>"; };
+		48BF25132FEF003D00A75A0D /* WorldwardWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorldwardWidgetsExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -18,6 +50,20 @@
 			);
 			target = 000000000000000100000000 /* Worldward */;
 		};
+		48BF250F2FEEFFAE00A75A0D /* Exceptions for "WorldwardWidgets" folder in "WorldwardWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 48BF24FA2FEEFFAD00A75A0D /* WorldwardWidgetsExtension */;
+		};
+		48BF25122FEEFFEC00A75A0D /* Exceptions for "Worldward" folder in "WorldwardWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Worldward/WidgetSharedSnapshot.swift,
+			);
+			target = 48BF24FA2FEEFFAD00A75A0D /* WorldwardWidgetsExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -25,8 +71,17 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				48AED7772FDAC8E30052D713 /* Exceptions for "Worldward" folder in "Worldward" target */,
+				48BF25122FEEFFEC00A75A0D /* Exceptions for "Worldward" folder in "WorldwardWidgetsExtension" target */,
 			);
 			path = Worldward;
+			sourceTree = "<group>";
+		};
+		48BF25012FEEFFAD00A75A0D /* WorldwardWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				48BF250F2FEEFFAE00A75A0D /* Exceptions for "WorldwardWidgets" folder in "WorldwardWidgetsExtension" target */,
+			);
+			path = WorldwardWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -37,13 +92,23 @@
 			files = (
 			);
 		};
+		48BF24F82FEEFFAD00A75A0D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				48BF25002FEEFFAD00A75A0D /* SwiftUI.framework in Frameworks */,
+				48BF24FE2FEEFFAD00A75A0D /* WidgetKit.framework in Frameworks */,
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				48BF25132FEF003D00A75A0D /* WorldwardWidgetsExtension.entitlements */,
 				000000000000000000000010 /* Worldward */,
+				48BF25012FEEFFAD00A75A0D /* WorldwardWidgets */,
+				48BF24FC2FEEFFAD00A75A0D /* Frameworks */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,8 +117,18 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* Worldward.app */,
+				48BF24FB2FEEFFAD00A75A0D /* WorldwardWidgetsExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		48BF24FC2FEEFFAD00A75A0D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				48BF24FD2FEEFFAD00A75A0D /* WidgetKit.framework */,
+				48BF24FF2FEEFFAD00A75A0D /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -66,8 +141,12 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
+				48BF25102FEEFFAE00A75A0D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
+			);
+			dependencies = (
+				48BF250A2FEEFFAE00A75A0D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* Worldward */,
@@ -77,6 +156,24 @@
 			productReference = 000000000000000000000120 /* Worldward.app */;
 			productType = "com.apple.product-type.application";
 		};
+		48BF24FA2FEEFFAD00A75A0D /* WorldwardWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 48BF250C2FEEFFAE00A75A0D /* Build configuration list for PBXNativeTarget "WorldwardWidgetsExtension" */;
+			buildPhases = (
+				48BF24F72FEEFFAD00A75A0D /* Sources */,
+				48BF24F82FEEFFAD00A75A0D /* Frameworks */,
+				48BF24F92FEEFFAD00A75A0D /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				48BF25012FEEFFAD00A75A0D /* WorldwardWidgets */,
+			);
+			name = WorldwardWidgetsExtension;
+			productName = WorldwardWidgetsExtension;
+			productReference = 48BF24FB2FEEFFAD00A75A0D /* WorldwardWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -84,11 +181,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2630;
+				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					000000000000000100000000 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					48BF24FA2FEEFFAD00A75A0D = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -107,12 +207,18 @@
 			projectRoot = "";
 			targets = (
 				000000000000000100000000 /* Worldward */,
+				48BF24FA2FEEFFAD00A75A0D /* WorldwardWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000140000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		48BF24F92FEEFFAD00A75A0D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -125,7 +231,20 @@
 			files = (
 			);
 		};
+		48BF24F72FEEFFAD00A75A0D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		48BF250A2FEEFFAE00A75A0D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 48BF24FA2FEEFFAD00A75A0D /* WorldwardWidgetsExtension */;
+			targetProxy = 48BF25092FEEFFAE00A75A0D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		000000000000000011000000 /* Debug configuration for PBXProject "Worldward" */ = {
@@ -266,6 +385,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_ENTITLEMENTS = Worldward/Worldward.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
@@ -325,6 +445,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_ENTITLEMENTS = Worldward/Worldward.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
@@ -378,6 +499,94 @@
 			};
 			name = Release;
 		};
+		48BF250D2FEEFFAE00A75A0D /* Debug configuration for PBXNativeTarget "WorldwardWidgetsExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorldwardWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5TA8RF548P;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorldwardWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorldwardWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.worldward.WorldwardWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 27.0;
+			};
+			name = Debug;
+		};
+		48BF250E2FEEFFAE00A75A0D /* Release configuration for PBXNativeTarget "WorldwardWidgetsExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorldwardWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5TA8RF548P;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorldwardWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorldwardWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.smigi.worldward.WorldwardWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 27.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -394,6 +603,14 @@
 			buildConfigurations = (
 				000000000000000111000000 /* Debug configuration for PBXNativeTarget "Worldward" */,
 				000000000000000112000000 /* Release configuration for PBXNativeTarget "Worldward" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		48BF250C2FEEFFAE00A75A0D /* Build configuration list for PBXNativeTarget "WorldwardWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				48BF250D2FEEFFAE00A75A0D /* Debug configuration for PBXNativeTarget "WorldwardWidgetsExtension" */,
+				48BF250E2FEEFFAE00A75A0D /* Release configuration for PBXNativeTarget "WorldwardWidgetsExtension" */,
 			);
 			defaultConfigurationName = Release;
 		};
