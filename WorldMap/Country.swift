@@ -3,15 +3,19 @@ import SwiftData
 
 @Model
 final class Country {
-    @Attribute(.unique) var id: String  // ISO 2
-    var iso3: String
-    var name: String
-    var continent: String
+    /// ISO 3166-1 alpha-2 id. Not marked `@Attribute(.unique)` because CloudKit
+    /// can't enforce uniqueness — `ContentView.deduplicateCountries` keeps the
+    /// catalog single-per-id instead. Every stored property has a default value,
+    /// another CloudKit requirement.
+    var id: String = ""  // ISO 2
+    var iso3: String = ""
+    var name: String = ""
+    var continent: String = "Unknown"
 
     /// Travel status persisted as a primitive `String`. A stored primitive
     /// migrates and observes reliably in SwiftData (a stored enum can crash on
     /// migration), while `status` exposes it as the typed enum.
-    var statusRaw: String
+    var statusRaw: String = CountryStatus.notVisited.rawValue
 
     /// `true` when the current `status` was assigned by the photo importer rather
     /// than set by hand. Lets an "Overwrite" re-scan clear statuses it previously
@@ -22,10 +26,18 @@ final class Country {
     /// Legacy fields - kept for backward compatibility with existing data
     /// New code should use the `visits` relationship instead
     var visitDate: Date?
-    var notes: String
+    var notes: String = ""
 
     @Relationship(deleteRule: .cascade, inverse: \Visit.country)
     var visits: [Visit] = []
+
+    /// A per-row token assigned once when the country is inserted. CloudKit can't
+    /// enforce a unique `id`, so two devices that both seed offline produce two
+    /// rows for the same ISO id. `deduplicateCountries` resolves that by keeping
+    /// the row with the smallest `dedupID` — a value every device sees identically
+    /// after sync, so they all converge on the same winner instead of each
+    /// deleting a different copy.
+    var dedupID: String = UUID().uuidString
 
     /// The country's travel status. Writing it updates `statusRaw`, which SwiftData
     /// persists and publishes — driving live map and list updates.

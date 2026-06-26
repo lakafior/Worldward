@@ -375,7 +375,12 @@ struct ContentView: View {
             .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
             // The catalog arrives after `loadGeoJSON`; re-try a pending country
             // selection once it does, so a cold-launched intent still resolves.
-            .onChange(of: allCountries.count) { consumePendingOpenCountry() }
+            // The count also changes as iCloud syncs rows in, so collapse any
+            // duplicates that arrive from another device that seeded offline.
+            .onChange(of: allCountries.count) {
+                consumePendingOpenCountry()
+                deduplicateCountries()
+            }
             .onAppear {
                 // Cold launch: an intent may have set these before the view existed.
                 consumePendingLogVisits()
@@ -468,42 +473,33 @@ struct ContentView: View {
 
     private func loadGeoJSON() async {
         // Decide what database work is needed up front, on the main context, so the
-        // background decode knows whether it must also produce seed metadata. The
+        // background build knows whether it must also produce seed metadata. The
         // store needs seeding when it's empty or holds stale ids from an old build.
         let existing = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
         let stale = WorldMap.hasStaleIDs(existing)
         let needsSeed = existing.isEmpty || stale
 
-        // First run (or a reseed) pays the one-time decode, so say so rather than
-        // leaving a bare spinner; warm launches just rebuild from the cache.
+        // First run seeds the database, so say so rather than leaving a bare
+        // spinner; later launches just rebuild the drawable geometry.
         mapLoadingMessage =
-            (geoCacheExists() && !needsSeed)
-            ? "Loading map…"
-            : "Setting up your map…\nThis only happens once."
+            needsSeed
+            ? "Setting up your map…\nThis only happens once."
+            : "Loading map…"
 
-        // Build the simplified country geometry off the main thread, decoding the
-        // 14 MB GeoJSON only when the cache is missing or the store still needs
-        // seeding — and at most once. The same decode yields the seed metadata, so
-        // the file is never parsed twice. Warm launches rebuild from the small
-        // cached rings in well under a second, which keeps cold starts fast.
+        // Build the drawable country geometry off the main thread from the bundled
+        // pre-simplified binary (countries.wmgb). The heavy GeoJSON decode and
+        // Douglas-Peucker simplification happen once per release in
+        // Tools/generate_geo.swift, not on-device — so this is fast on every launch,
+        // including the first. The same file carries the seed metadata.
         let (extractedPolygons, extractedPaths, extractedRects, seeds) = await Task.detached(
             priority: .userInitiated
         ) {
             () -> (
                 [String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect], [CountrySeed]?
             ) in
-            let fingerprint = geoFingerprint()
-
-            // Cache is enough only when we don't also need seed metadata.
-            if !needsSeed, let cached = loadGeoCache(fingerprint: fingerprint) {
-                let geo = buildGeo(from: cached)
-                return (geo.0, geo.1, geo.2, nil)
-            }
-
-            guard let decoded = decodeGeoJSON() else { return ([:], [:], [:], nil) }
-            saveGeoCache(decoded.rings, fingerprint: fingerprint)
-            let geo = buildGeo(from: decoded.rings)
-            return (geo.0, geo.1, geo.2, decoded.seeds)
+            guard let bundled = loadBundledGeo() else { return ([:], [:], [:], nil) }
+            let geo = buildGeo(from: bundled.rings)
+            return (geo.0, geo.1, geo.2, needsSeed ? bundled.seeds : nil)
         }.value
 
         // Reconcile the database on the main actor — the only place SwiftData
@@ -513,6 +509,10 @@ struct ContentView: View {
         } else {
             reconcileDatabase(existing)
         }
+
+        // Collapse any duplicate rows iCloud may have produced (two devices that
+        // both seeded offline). Cheap and idempotent on a clean store.
+        deduplicateCountries()
 
         self.countryPolygons = extractedPolygons
         self.countryPaths = extractedPaths
@@ -582,6 +582,60 @@ struct ContentView: View {
         }
         if changed { try? modelContext.save() }
     }
+
+    /// Merge duplicate `Country` rows that share an ISO id into a single row.
+    ///
+    /// CloudKit can't enforce a unique `id`, so if two devices each seed the
+    /// catalog while offline, syncing leaves two rows per country. For each id
+    /// this keeps the row with the smallest `dedupID` — a deterministic choice
+    /// every device makes identically once synced, so they converge on the same
+    /// winner rather than each deleting a different copy. User data from the
+    /// losing rows (status, visits, notes) is folded into the winner first so
+    /// nothing entered on either device is lost.
+    private func deduplicateCountries() {
+        let all = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
+        let groups = Dictionary(grouping: all, by: \.id)
+
+        var changed = false
+        for (_, rows) in groups where rows.count > 1 {
+            let ordered = rows.sorted { $0.dedupID < $1.dedupID }
+            let winner = ordered[0]
+            for loser in ordered.dropFirst() {
+                merge(loser, into: winner)
+                modelContext.delete(loser)
+                changed = true
+            }
+        }
+        if changed { try? modelContext.save() }
+    }
+
+    /// Fold a duplicate country's user data into the row that will survive
+    /// de-duplication. Visits are re-parented; a real status wins over
+    /// `.notVisited` and a hand-set status wins over an imported one; notes are
+    /// combined when they differ; the legacy `visitDate` fills in if missing.
+    private func merge(_ loser: Country, into winner: Country) {
+        for visit in Array(loser.visits) {
+            visit.country = winner
+        }
+
+        if winner.status == .notVisited && loser.status != .notVisited {
+            winner.status = loser.status
+            winner.statusIsImported = loser.statusIsImported
+        } else if winner.status != .notVisited && loser.status != .notVisited
+            && winner.statusIsImported && !loser.statusIsImported {
+            // Prefer the hand-set status over an imported one.
+            winner.status = loser.status
+            winner.statusIsImported = false
+        }
+
+        if winner.notes.isEmpty {
+            winner.notes = loser.notes
+        } else if !loser.notes.isEmpty && !winner.notes.contains(loser.notes) {
+            winner.notes += "\n" + loser.notes
+        }
+
+        if winner.visitDate == nil { winner.visitDate = loser.visitDate }
+    }
 }
 
 struct CountryRow: View {
@@ -617,235 +671,101 @@ struct CountryMapPolygons: MapContent {
     }
 }
 
-/// The simplified exterior outline of a polygon, as map points. Applies
-/// Douglas-Peucker with a tolerance proportional to the polygon's own size, so a
-/// large country is thinned more aggressively than a small one while every
-/// outline stays recognizable.
-private nonisolated func simplifiedOutline(of polygon: MKPolygon) -> [MKMapPoint] {
-    let count = polygon.pointCount
-    let points = Array(UnsafeBufferPointer(start: polygon.points(), count: count))
-    guard count > 2 else { return points }
-
-    let rect = polygon.boundingMapRect
-    let diagonal = (rect.width * rect.width + rect.height * rect.height).squareRoot()
-    let tolerance = diagonal * 0.005
-    return douglasPeucker(points, tolerance: tolerance)
-}
-
-/// Iterative Douglas-Peucker line simplification. Keeps the endpoints and any
-/// vertex whose perpendicular distance from the current segment exceeds
-/// `tolerance`. Iterative (explicit stack) to avoid deep recursion on the very
-/// large rings that make this simplification worthwhile in the first place.
-private nonisolated func douglasPeucker(_ points: [MKMapPoint], tolerance: Double) -> [MKMapPoint] {
-    let n = points.count
-    guard n > 2 else { return points }
-
-    var keep = [Bool](repeating: false, count: n)
-    keep[0] = true
-    keep[n - 1] = true
-
-    var stack: [(Int, Int)] = [(0, n - 1)]
-    while let (first, last) = stack.popLast() {
-        guard last > first + 1 else { continue }
-
-        let start = points[first]
-        let end = points[last]
-        var maxDistance = 0.0
-        var farthest = first
-
-        for i in (first + 1)..<last {
-            let distance = perpendicularDistance(points[i], from: start, to: end)
-            if distance > maxDistance {
-                maxDistance = distance
-                farthest = i
-            }
-        }
-
-        if maxDistance > tolerance {
-            keep[farthest] = true
-            stack.append((first, farthest))
-            stack.append((farthest, last))
-        }
-    }
-
-    return (0..<n).compactMap { keep[$0] ? points[$0] : nil }
-}
-
-/// Perpendicular distance from `point` to the infinite line through `a` and `b`.
-private nonisolated func perpendicularDistance(
-    _ point: MKMapPoint, from a: MKMapPoint, to b: MKMapPoint
-) -> Double {
-    let dx = b.x - a.x
-    let dy = b.y - a.y
-    let magnitude = (dx * dx + dy * dy).squareRoot()
-    guard magnitude > 0 else {
-        return ((point.x - a.x) * (point.x - a.x) + (point.y - a.y) * (point.y - a.y))
-            .squareRoot()
-    }
-    let cross = abs((point.x - a.x) * dy - (point.y - a.y) * dx)
-    return cross / magnitude
-}
-
 extension MKMapRect {
     /// Area in squared map points; a cheap proxy for comparing landmass sizes.
     fileprivate nonisolated var area: Double { width * height }
 }
 
-// MARK: - Geometry cache
+// MARK: - Bundled geometry
 
-/// On-disk cache of the simplified country outlines. Storing the decimated rings
-/// (rather than the raw 14 MB GeoJSON) lets a cold launch skip both the decode
-/// and the Douglas-Peucker pass. Bump `geoCacheVersion` whenever the simplification
-/// changes; the bundled file's byte size is the fingerprint, so shipping new map
-/// data automatically invalidates a stale cache.
-private nonisolated let geoCacheVersion = 1
-
-private nonisolated struct GeoRingCache: Codable {
-    let version: Int
-    let fingerprint: Int
-    /// Country id → rings → flat `[x0, y0, x1, y1, …]` map-point coordinates.
-    let rings: [String: [[Double]]]
-}
-
-/// Cheap fingerprint of the bundled GeoJSON: its byte size, read from the file's
-/// metadata without loading the 14 MB into memory.
-private nonisolated func geoFingerprint() -> Int {
-    guard let url = Bundle.main.url(forResource: "countries", withExtension: "geojson"),
-        let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
-        let size = attrs[.size] as? Int
-    else { return 0 }
-    return size
-}
-
-private nonisolated func geoCacheURL() -> URL? {
-    guard
-        let dir = try? FileManager.default.url(
-            for: .applicationSupportDirectory, in: .userDomainMask,
-            appropriateFor: nil, create: true)
-    else { return nil }
-    return dir.appendingPathComponent("WorldMapGeoCache.json")
-}
-
-/// Whether a cache file exists at all — a cheap check (no decode) used only to
-/// pick the right loading message, not to validate the cache contents.
-private nonisolated func geoCacheExists() -> Bool {
-    guard let url = geoCacheURL() else { return false }
-    return FileManager.default.fileExists(atPath: url.path)
-}
-
-/// The cached simplified rings, or `nil` if there's no cache, it's the wrong
-/// version, or the bundled GeoJSON has changed since it was written.
-private nonisolated func loadGeoCache(fingerprint: Int) -> [String: [[MKMapPoint]]]? {
-    guard let url = geoCacheURL(),
-        let data = try? Data(contentsOf: url),
-        let cache = try? JSONDecoder().decode(GeoRingCache.self, from: data),
-        cache.version == geoCacheVersion, cache.fingerprint == fingerprint
-    else { return nil }
-
-    return cache.rings.mapValues { ringList in
-        ringList.map { flat -> [MKMapPoint] in
-            var points: [MKMapPoint] = []
-            points.reserveCapacity(flat.count / 2)
-            var i = 0
-            while i + 1 < flat.count {
-                points.append(MKMapPoint(x: flat[i], y: flat[i + 1]))
-                i += 2
-            }
-            return points
-        }
-    }
-}
-
-private nonisolated func saveGeoCache(_ rings: [String: [[MKMapPoint]]], fingerprint: Int) {
-    let flatRings = rings.mapValues { ringList in
-        ringList.map { points -> [Double] in
-            var flat: [Double] = []
-            flat.reserveCapacity(points.count * 2)
-            for point in points {
-                flat.append(point.x)
-                flat.append(point.y)
-            }
-            return flat
-        }
-    }
-    let cache = GeoRingCache(version: geoCacheVersion, fingerprint: fingerprint, rings: flatRings)
-    guard let url = geoCacheURL(), let data = try? JSONEncoder().encode(cache) else { return }
-    try? data.write(to: url, options: .atomic)
-}
-
-/// Decodes the bundled GeoJSON and produces the simplified exterior rings per
-/// country. This is the expensive path, run only when the cache is missing or
-/// stale. Mirrors the original two-pass build: collect raw exterior rings, then
-/// drop insignificant islands and decimate the rest with Douglas-Peucker.
-private nonisolated func decodeGeoJSON()
-    -> (rings: [String: [[MKMapPoint]]], seeds: [CountrySeed])?
+/// Decodes the bundled `countries.wmgb` — the pre-simplified country outlines and
+/// seed metadata produced once per release by `Tools/generate_geo.swift`. Because
+/// the heavy GeoJSON decode and Douglas-Peucker simplification happen at build
+/// time (not on-device), the app ships ~340 KB instead of a 14 MB GeoJSON and the
+/// first launch is as fast as every later one — no download, no on-device decode.
+///
+/// Binary format ("WMGB" v1), little-endian — kept in sync with the writer in
+/// `Tools/generate_geo.swift`:
+///   magic 'WMGB' · UInt32 version · UInt32 country count, then per country:
+///   UInt8-prefixed id · UInt8-prefixed iso3 · UInt16-prefixed name ·
+///   UInt16 ring count, then per ring: UInt32 point count · point × (Float32 x, y).
+private nonisolated func loadBundledGeo() -> (rings: [String: [[MKMapPoint]]], seeds: [CountrySeed])?
 {
-    guard let geoUrl = Bundle.main.url(forResource: "countries", withExtension: "geojson"),
-        let data = try? Data(contentsOf: geoUrl)
+    guard let url = Bundle.main.url(forResource: "countries", withExtension: "wmgb"),
+        let data = try? Data(contentsOf: url)
     else { return nil }
 
-    let decoder = MKGeoJSONDecoder()
-    guard let features = try? decoder.decode(data) as? [MKGeoJSONFeature] else { return nil }
+    return data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> (
+        rings: [String: [[MKMapPoint]]], seeds: [CountrySeed]
+    )? in
+        var offset = 0
+        let total = raw.count
 
-    // Pass 1: collect each country's raw exterior-ring polygons and its seed
-    // metadata (id/iso3/name) in the same sweep, so the database and the map are
-    // both fed by this single decode. Interior holes are dropped here, since they
-    // don't affect a flat country fill.
-    var rawPolygons: [String: [MKPolygon]] = [:]
-    var seedByID: [String: CountrySeed] = [:]
-    for feature in features {
-        guard let propsData = feature.properties,
-            let props = try? JSONSerialization.jsonObject(with: propsData) as? [String: Any],
-            let rawID = props["ISO3166-1-Alpha-2"] as? String,
-            let name = props["name"] as? String
-        else { continue }
-
-        guard let id = WorldMap.resolvedID(isoA2: rawID, name: name) else { continue }
-
-        if seedByID[id] == nil {
-            seedByID[id] = CountrySeed(
-                id: id, iso3: props["ISO3166-1-Alpha-3"] as? String ?? "", name: name)
+        func need(_ count: Int) -> Bool { offset + count <= total }
+        func readU8() -> UInt8? {
+            guard need(1) else { return nil }
+            defer { offset += 1 }
+            return raw.load(fromByteOffset: offset, as: UInt8.self)
+        }
+        func readU16() -> UInt16? {
+            guard need(2) else { return nil }
+            defer { offset += 2 }
+            return UInt16(littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: UInt16.self))
+        }
+        func readU32() -> UInt32? {
+            guard need(4) else { return nil }
+            defer { offset += 4 }
+            return UInt32(littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        }
+        func readFloat() -> Float? {
+            guard let bits = readU32() else { return nil }
+            return Float(bitPattern: bits)
+        }
+        func readString(_ length: Int) -> String? {
+            guard need(length) else { return nil }
+            defer { offset += length }
+            return String(
+                bytes: UnsafeRawBufferPointer(rebasing: raw[offset..<offset + length]),
+                encoding: .utf8)
         }
 
-        for geometry in feature.geometry {
-            if let polygon = geometry as? MKPolygon {
-                rawPolygons[id, default: []].append(
-                    MKPolygon(points: polygon.points(), count: polygon.pointCount))
-            } else if let multiPolygon = geometry as? MKMultiPolygon {
-                for poly in multiPolygon.polygons {
-                    rawPolygons[id, default: []].append(
-                        MKPolygon(points: poly.points(), count: poly.pointCount))
+        guard let m0 = readU8(), let m1 = readU8(), let m2 = readU8(), let m3 = readU8(),
+            m0 == 0x57, m1 == 0x4D, m2 == 0x47, m3 == 0x42,  // "WMGB"
+            let version = readU32(), version == 1,
+            let count = readU32()
+        else { return nil }
+
+        var rings: [String: [[MKMapPoint]]] = [:]
+        var seeds: [CountrySeed] = []
+        rings.reserveCapacity(Int(count))
+        seeds.reserveCapacity(Int(count))
+
+        for _ in 0..<count {
+            guard let idLen = readU8(), let id = readString(Int(idLen)),
+                let iso3Len = readU8(), let iso3 = readString(Int(iso3Len)),
+                let nameLen = readU16(), let name = readString(Int(nameLen)),
+                let ringCount = readU16()
+            else { return nil }
+
+            var countryRings: [[MKMapPoint]] = []
+            countryRings.reserveCapacity(Int(ringCount))
+            for _ in 0..<ringCount {
+                guard let pointCount = readU32() else { return nil }
+                var points: [MKMapPoint] = []
+                points.reserveCapacity(Int(pointCount))
+                for _ in 0..<pointCount {
+                    guard let x = readFloat(), let y = readFloat() else { return nil }
+                    points.append(MKMapPoint(x: Double(x), y: Double(y)))
                 }
+                countryRings.append(points)
             }
-        }
-    }
 
-    // Pass 2: for each country, drop insignificant islands and decimate the
-    // remaining outlines. Archipelago nations (Canada, Norway, Indonesia…)
-    // collapse from thousands of points down to a handful.
-    var result: [String: [[MKMapPoint]]] = [:]
-    for (id, countryPolygons) in rawPolygons {
-        guard
-            let largest = countryPolygons.max(by: {
-                $0.boundingMapRect.area < $1.boundingMapRect.area
-            })
-        else { continue }
-
-        // Keep the mainland plus any island at least 0.5% of its size.
-        let minIslandArea = largest.boundingMapRect.area * 0.005
-
-        var rings: [[MKMapPoint]] = []
-        for polygon in countryPolygons {
-            if polygon !== largest, polygon.boundingMapRect.area < minIslandArea { continue }
-            let points = simplifiedOutline(of: polygon)
-            guard points.count >= 3 else { continue }
-            rings.append(points)
+            rings[id] = countryRings
+            seeds.append(CountrySeed(id: id, iso3: iso3, name: name))
         }
 
-        guard !rings.isEmpty else { continue }
-        result[id] = rings
+        return (rings, seeds)
     }
-    return (result, Array(seedByID.values))
 }
 
 /// One country's seed metadata, parsed from the GeoJSON alongside its geometry.

@@ -7,6 +7,15 @@ struct WorldMap: App {
     /// The user's appearance choice, shared with `SettingsView` via the same key.
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
+    /// Identifier for the CloudKit container that would back iCloud sync. Sync is
+    /// not enabled yet: it needs a paid Apple Developer Program membership (the
+    /// current free Personal team can't provision iCloud/Push). The schema is
+    /// already CloudKit-compatible — to turn sync on later, add the iCloud + Push
+    /// capabilities and pass `cloudKitDatabase: .private(cloudKitContainerID)` to
+    /// the `ModelConfiguration` below. Local JSON export/import is the backup path
+    /// in the meantime.
+    static let cloudKitContainerID = "iCloud.eu.lakafior.worldmap.001"
+
     static let sharedModelContainer: ModelContainer = {
         let schema = Schema([Country.self, Visit.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -14,9 +23,9 @@ struct WorldMap: App {
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
 
-            // Seeding and reconciliation happen once in `ContentView`, sharing the
-            // single GeoJSON decode that also builds the map geometry — so the 14 MB
-            // file is never parsed twice on first launch.
+            // Seeding and reconciliation happen once in `ContentView`, fed by the
+            // same bundled geometry file (`countries.wmgb`) that builds the map — so
+            // the catalog and the map are always keyed by the same ids.
             return container
         } catch {
             // During development, schema changes can make the existing store incompatible.

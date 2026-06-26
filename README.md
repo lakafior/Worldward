@@ -49,7 +49,7 @@ WorldMap is a native macOS / iOS app that visualises every country you've visite
 
 ### Data Portability
 - **Export / Import** your travel data as a portable JSON file.
-- Only your personal data is exported (statuses, visits, notes) — the country catalog re-seeds from the bundled GeoJSON.
+- Only your personal data is exported (statuses, visits, notes) — the country catalog re-seeds from the bundled geometry file.
 
 ### Appearance
 - System / Light / Dark theme preference.
@@ -64,7 +64,7 @@ WorldMap is a native macOS / iOS app that visualises every country you've visite
 | UI | SwiftUI |
 | Mapping | MapKit (`MKPolygon`, `MKMapView`) |
 | Persistence | SwiftData (`ModelContainer`, `@Model`) |
-| Geo data | Natural Earth `countries.geojson` (~14 MB) |
+| Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~340 KB) |
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
 | Intents | `AppIntents` framework |
@@ -78,7 +78,7 @@ WorldMap is a native macOS / iOS app that visualises every country you've visite
 ```
 WorldMap/
 ├── WorldMap.swift              # App entry point, ModelContainer, ISO fallbacks
-├── ContentView.swift           # Main map view, sidebar, GeoJSON decoder, map cache
+├── ContentView.swift           # Main map view, sidebar, bundled-geometry reader
 ├── Country.swift               # SwiftData model for a country
 ├── Visit.swift                 # SwiftData model for a dated visit
 ├── CountryStatus.swift         # Travel status enum (notVisited → living)
@@ -105,7 +105,7 @@ WorldMap/
 │   ├── TravelIntelligence.swift # Conversational travel Q&A service
 │   └── VisitLogParser.swift    # Natural-language visit parser
 ├── Assets.xcassets/            # App icon, launch screen, brand colors
-├── countries.geojson           # Natural Earth country boundaries (~250 countries)
+├── countries.wmgb             # Pre-simplified country geometry (~239 countries)
 └── Info.plist                  # Launch screen config
 ```
 
@@ -116,7 +116,7 @@ WorldMap/
 1. Open `WorldMap.xcodeproj` in Xcode 16+.
 2. Select your target (macOS or iOS).
 3. Build and run.
-4. The first launch seeds the database from the bundled GeoJSON — this happens once.
+4. The first launch seeds the database from the bundled geometry file — this happens once.
 5. Tap a country on the map, set its status, and start tracking your travels.
 
 > **Note**: Photo Import requires Photo Library access. AI features require Apple Intelligence on a supported device.
@@ -127,7 +127,7 @@ WorldMap/
 
 - All travel data is stored locally on-device via SwiftData. Nothing is sent to a server.
 - AI inference runs entirely on-device via `FoundationModels` — no network calls.
-- Country geometry is loaded from the bundled `countries.geojson` (Natural Earth, public domain).
+- Country geometry is loaded from the bundled `countries.wmgb` — Natural Earth data (public domain), pre-simplified at build time by `Tools/generate_geo.swift` so the app ships ~340 KB instead of a 14 MB GeoJSON and never decodes map data on-device.
 - Photo identifiers (`PHAsset.localIdentifier`) are stored instead of image data, so the library is the source of truth and the app stays lightweight.
 
 ---

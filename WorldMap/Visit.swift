@@ -3,8 +3,8 @@ import SwiftData
 
 @Model
 final class Visit {
-    var date: Date
-    var notes: String
+    var date: Date = Date()
+    var notes: String = ""
     var country: Country?
 
     /// `true` when this visit was created by the photo importer rather than
