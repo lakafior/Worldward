@@ -85,8 +85,14 @@ enum Continents {
         "PN": "Australia and Oceania", "PW": "Australia and Oceania", "SB": "Australia and Oceania", "TO": "Australia and Oceania",
         "TV": "Australia and Oceania", "UM": "Australia and Oceania", "VU": "Australia and Oceania", "WF": "Australia and Oceania",
         "WS": "Australia and Oceania",
-        // Antarctica (4)
-        "AQ": "Antarctica", "GS": "Antarctica", "HM": "Antarctica", "TF": "Antarctica",
+        // Antarctica (1)
+        // Only the continent itself. Natural Earth also ships three sub-antarctic
+        // territories here (South Georgia, Heard Island, French Southern Lands);
+        // they're intentionally omitted so Antarctica reads as one country on one
+        // continent. Dropping them from this table also removes them from the
+        // catalog — `seedDatabase` skips ids absent here, and `reconcileDatabase`
+        // deletes any an older build already stored.
+        "AQ": "Antarctica",
         // Fallback alpha-2 codes for records the dataset ships with `-99`.
         "XK": "Europe",                  // Kosovo
         "CP": "Australia and Oceania",   // Clipperton Island

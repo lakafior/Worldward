@@ -125,7 +125,7 @@ struct ImportPreviewView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            if importer.proposedCountries.isEmpty {
+            if importer.proposedCountries.isEmpty && importer.unresolvedLocations.isEmpty {
                 ContentUnavailableView(
                     "No visits found",
                     systemImage: "photo",
@@ -138,6 +138,20 @@ struct ImportPreviewView: View {
                 ForEach(importer.proposedCountries) { proposed in
                     countryRow(proposed)
                 }
+
+                if !importer.unresolvedLocations.isEmpty {
+                    Section {
+                        ForEach(importer.unresolvedLocations.indices, id: \.self) { index in
+                            unresolvedRow(index)
+                        }
+                    } header: {
+                        Text("Unmatched locations")
+                    } footer: {
+                        Text(
+                            "These photos didn't fall inside any country — often a small island. Assign each to a country, or leave it to skip those photos."
+                        )
+                    }
+                }
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -149,8 +163,8 @@ struct ImportPreviewView: View {
 
                 Spacer()
 
-                if !importer.proposedCountries.isEmpty {
-                    Button("Import \(importer.proposedCountries.count) Countries") {
+                if !affectedCountryIDs.isEmpty {
+                    Button("Import \(affectedCountryIDs.count) Countries") {
                         importer.applyImport(to: modelContext, scanMode: settings.scanMode)
                         dismiss()
                     }
@@ -161,6 +175,101 @@ struct ImportPreviewView: View {
             .padding()
             .background(.bar)
         }
+    }
+
+    /// Distinct countries the import will touch: scan-matched plus any the user
+    /// assigned to an unmatched cluster. Drives the import button's count + state.
+    private var affectedCountryIDs: Set<String> {
+        var ids = Set(importer.proposedCountries.map(\.id))
+        for location in importer.unresolvedLocations {
+            if let id = location.assignedCountryID { ids.insert(id) }
+        }
+        return ids
+    }
+
+    /// A photo cluster that matched no country, with a menu to assign it to one of
+    /// the nearest countries (or any country), or to skip it.
+    private func unresolvedRow(_ index: Int) -> some View {
+        let location = importer.unresolvedLocations[index]
+        let assigned = location.assignedCountryID.flatMap { id in
+            (location.suggestedCountries + importer.pickableCountries).first { $0.id == id }
+        }
+
+        return HStack(spacing: 12) {
+            Image(systemName: assigned == nil ? "mappin.slash" : "mappin.and.ellipse")
+                .font(.title3)
+                .foregroundStyle(assigned == nil ? Color.secondary : Color.accentColor)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(locationDateText(location))
+                    .font(.subheadline)
+                Text(
+                    "\(location.totalPhotos) photo\(location.totalPhotos == 1 ? "" : "s") · \(location.totalDistinctDays) day\(location.totalDistinctDays == 1 ? "" : "s")"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Menu {
+                if assigned != nil {
+                    Button(role: .destructive) {
+                        importer.unresolvedLocations[index].assignedCountryID = nil
+                    } label: {
+                        Label("Skip these photos", systemImage: "xmark")
+                    }
+                    Divider()
+                }
+
+                if !location.suggestedCountries.isEmpty {
+                    Section("Nearby") {
+                        ForEach(location.suggestedCountries) { country in
+                            Button {
+                                importer.unresolvedLocations[index].assignedCountryID = country.id
+                            } label: {
+                                Text("\(country.flagEmoji)  \(country.name)")
+                            }
+                        }
+                    }
+                }
+
+                Menu("All countries") {
+                    ForEach(importer.pickableCountries) { country in
+                        Button {
+                            importer.unresolvedLocations[index].assignedCountryID = country.id
+                        } label: {
+                            Text("\(country.flagEmoji)  \(country.name)")
+                        }
+                    }
+                }
+            } label: {
+                if let assigned {
+                    Text("\(assigned.flagEmoji) \(assigned.name)")
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.accentColor.opacity(0.18), in: Capsule())
+                } else {
+                    Label("Assign", systemImage: "plus.circle")
+                        .font(.caption.weight(.semibold))
+                }
+            }
+        }
+    }
+
+    private func locationDateText(_ location: UnresolvedLocation) -> String {
+        guard let start = location.trips.map(\.startDate).min(),
+            let end = location.trips.map(\.endDate).max()
+        else { return "Unknown date" }
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        if Calendar.current.isDate(start, inSameDayAs: end) {
+            return formatter.string(from: start)
+        }
+        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
     }
 
     private func countryRow(_ proposed: ProposedCountry) -> some View {

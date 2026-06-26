@@ -76,6 +76,34 @@ struct ProposedCountry: Identifiable {
     var totalPhotos: Int { trips.reduce(0) { $0 + $1.photoCount } }
 }
 
+/// A cluster of photos that fell outside every country polygon — typically a
+/// small island the map simplification dropped (Corfu, the Canaries, …) or a GPS
+/// reading just offshore. Rather than guessing or silently discarding them, the
+/// import surfaces each cluster so the user can assign it to a country, choosing
+/// from the nearest few or, failing that, any country.
+struct UnresolvedLocation: Identifiable {
+    let id = UUID()
+    let trips: [ProposedTrip]
+    /// Nearby countries, nearest first — the picker's quick suggestions.
+    let suggestedCountries: [Country]
+    /// The country the user assigned, or `nil` while still unresolved (skipped).
+    var assignedCountryID: String?
+
+    var totalPhotos: Int { trips.reduce(0) { $0 + $1.photoCount } }
+    var totalDistinctDays: Int { trips.reduce(0) { $0 + $1.distinctDays } }
+
+    /// Status these photos would imply, taking the strongest across their trips.
+    func proposedStatus(livedThresholdDays: Int) -> CountryStatus {
+        var status: CountryStatus = .notVisited
+        for trip in trips {
+            let s = trip.impliedStatus(livedThresholdDays: livedThresholdDays)
+            if (CountryStatus.allCases.firstIndex(of: s) ?? 0)
+                > (CountryStatus.allCases.firstIndex(of: status) ?? 0) { status = s }
+        }
+        return status
+    }
+}
+
 /// Drives the import sheet through its stages.
 enum ImportPhase {
     case config
@@ -97,8 +125,17 @@ class PhotoImporter {
     var isImporting = false
     var importProgress: String = ""
     var proposedCountries: [ProposedCountry] = []
+    /// Photo clusters that matched no country, awaiting a manual assignment.
+    var unresolvedLocations: [UnresolvedLocation] = []
     var homeWarning: String?
     var showImporterSheet = false
+
+    /// Settings of the most recent scan, kept so `applyImport` can derive a status
+    /// for user-resolved locations with the same thresholds the scan used.
+    private var lastSettings = ImportSettings()
+
+    /// The full catalog, sorted by name — backs the picker's "any country" list.
+    var pickableCountries: [Country] { allCountries.sorted { $0.name < $1.name } }
 
     // Set once by `configure` and only read during a scan, so they're safe to
     // access from the nonisolated scan without crossing the main actor.
@@ -133,6 +170,7 @@ class PhotoImporter {
     func presentConfiguration() {
         phase = .config
         proposedCountries = []
+        unresolvedLocations = []
         homeWarning = nil
         importProgress = ""
         isImporting = false
@@ -147,7 +185,9 @@ class PhotoImporter {
         phase = .scanning
         importProgress = "Requesting access..."
         proposedCountries = []
+        unresolvedLocations = []
         homeWarning = nil
+        lastSettings = settings
 
         // Computed on the main actor (reads SwiftData) before going off-main.
         let addNewSince = settings.scanMode == .addNew ? newestImportedDate() : nil
@@ -181,7 +221,14 @@ class PhotoImporter {
             let status: CountryStatus
             let totalDistinctDays: Int
         }
+        /// A spatial cluster of photos that matched no country, with the ids of the
+        /// nearest countries to offer as suggestions (nearest first).
+        struct UnmatchedCluster: Sendable {
+            let trips: [ProposedTrip]
+            let suggestedCountryIDs: [String]
+        }
         var entries: [Entry]
+        var unmatched: [UnmatchedCluster]
         var homeCandidateID: String?
         var photoCount: Int
     }
@@ -210,6 +257,8 @@ class PhotoImporter {
 
         // Collect every photo (date + identifier) that falls inside each country.
         var photosByCountry: [String: [(date: Date, id: String)]] = [:]
+        // Photos with a location that landed inside no country polygon.
+        var unmatched: [(date: Date, point: MKMapPoint, id: String)] = []
 
         fetchResult.enumerateObjects { asset, index, _ in
             if index % 200 == 0 {
@@ -219,6 +268,7 @@ class PhotoImporter {
             guard let location = asset.location else { return }
             let mapPoint = MKMapPoint(location.coordinate)
             let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
+            let date = asset.creationDate ?? Date()
 
             for id in countryIDs {
                 guard let countryRect = self.countryBoundingRects[id],
@@ -227,12 +277,14 @@ class PhotoImporter {
 
                 for path in self.countryPaths[id] ?? [] {
                     if path.contains(cgPoint) {
-                        let date = asset.creationDate ?? Date()
                         photosByCountry[id, default: []].append((date, asset.localIdentifier))
                         return
                     }
                 }
             }
+
+            // No polygon matched — keep it for the user to resolve manually.
+            unmatched.append((date, mapPoint, asset.localIdentifier))
         }
 
         // Build merged trips and a derived status for each country.
@@ -253,13 +305,101 @@ class PhotoImporter {
                     totalDistinctDays: trips.reduce(0) { $0 + $1.distinctDays }))
         }
 
+        // Turn unmatched photos into a handful of resolvable, suggestion-tagged
+        // clusters rather than leaving them silently dropped.
+        let unmatchedClusters = Self.clusterUnmatched(
+            unmatched, mergeGapDays: settings.mergeGapDays, rects: countryBoundingRects)
+
         // The most-present country is the candidate for "home"; the existing-home
         // reconciliation needs SwiftData, so it happens on the main actor.
         let homeCandidateID = settings.markHome
             ? entries.max(by: { $0.totalDistinctDays < $1.totalDistinctDays })?.id
             : nil
 
-        return ScanResult(entries: entries, homeCandidateID: homeCandidateID, photoCount: total)
+        return ScanResult(
+            entries: entries, unmatched: unmatchedClusters,
+            homeCandidateID: homeCandidateID, photoCount: total)
+    }
+
+    /// Group photos that matched no country by spatial proximity, then tag each
+    /// cluster with the nearest countries (nearest first) to suggest. Greedy
+    /// single-pass clustering — cheap, and exact grouping doesn't matter since the
+    /// user makes the final call.
+    nonisolated private static func clusterUnmatched(
+        _ photos: [(date: Date, point: MKMapPoint, id: String)],
+        mergeGapDays: Int,
+        rects: [String: MKMapRect]
+    ) -> [ScanResult.UnmatchedCluster] {
+        guard !photos.isEmpty else { return [] }
+
+        // ~200 km at the equator, in projected map points. Generous on purpose:
+        // over-merging just means one picker row for nearby spots.
+        let threshold = MKMapPointsPerMeterAtLatitude(0) * 200_000
+        let maxClusters = 30
+
+        struct Cluster {
+            var x: Double
+            var y: Double
+            var count: Int
+            var photos: [(date: Date, id: String)]
+        }
+        var clusters: [Cluster] = []
+
+        for photo in photos {
+            // Nearest existing cluster within the radius (or any, once capped).
+            var bestIndex = -1
+            var bestDistance = Double.greatestFiniteMagnitude
+            for index in clusters.indices {
+                let dx = clusters[index].x - photo.point.x
+                let dy = clusters[index].y - photo.point.y
+                let distance = (dx * dx + dy * dy).squareRoot()
+                if distance < bestDistance {
+                    bestDistance = distance
+                    bestIndex = index
+                }
+            }
+
+            if bestIndex >= 0, bestDistance <= threshold || clusters.count >= maxClusters {
+                let n = Double(clusters[bestIndex].count)
+                clusters[bestIndex].x = (clusters[bestIndex].x * n + photo.point.x) / (n + 1)
+                clusters[bestIndex].y = (clusters[bestIndex].y * n + photo.point.y) / (n + 1)
+                clusters[bestIndex].count += 1
+                clusters[bestIndex].photos.append((photo.date, photo.id))
+            } else {
+                clusters.append(
+                    Cluster(x: photo.point.x, y: photo.point.y, count: 1,
+                        photos: [(photo.date, photo.id)]))
+            }
+        }
+
+        return clusters.compactMap { cluster in
+            let trips = makeTrips(from: cluster.photos, mergeGapDays: mergeGapDays)
+            guard !trips.isEmpty else { return nil }
+            let center = MKMapPoint(x: cluster.x, y: cluster.y)
+            let nearest = nearestCountryIDs(to: center, rects: rects, limit: 8)
+            return ScanResult.UnmatchedCluster(trips: trips, suggestedCountryIDs: nearest)
+        }
+        // Most photos first, so the biggest gaps surface at the top.
+        .sorted { $0.trips.reduce(0) { $0 + $1.photoCount } > $1.trips.reduce(0) { $0 + $1.photoCount } }
+    }
+
+    /// The `limit` countries whose bounding box is closest to `point`, nearest
+    /// first. Distance is point-to-rectangle in projected map points (0 if inside).
+    nonisolated private static func nearestCountryIDs(
+        to point: MKMapPoint, rects: [String: MKMapRect], limit: Int
+    ) -> [String] {
+        rects
+            .map { (id: $0.key, distance: distance(from: point, to: $0.value)) }
+            .sorted { $0.distance < $1.distance }
+            .prefix(limit)
+            .map(\.id)
+    }
+
+    /// Shortest distance from a point to a map rectangle, in map points.
+    nonisolated private static func distance(from point: MKMapPoint, to rect: MKMapRect) -> Double {
+        let dx = max(rect.minX - point.x, 0, point.x - rect.maxX)
+        let dy = max(rect.minY - point.y, 0, point.y - rect.maxY)
+        return (dx * dx + dy * dy).squareRoot()
     }
 
     /// Resolve scanned ids back to `Country` objects and finish the run. Runs on
@@ -298,7 +438,14 @@ class PhotoImporter {
 
         proposed.sort { $0.totalDistinctDays > $1.totalDistinctDays }
 
+        // Resolve each unmatched cluster's suggestion ids back to `Country` objects.
+        let unresolved: [UnresolvedLocation] = result.unmatched.map { cluster in
+            let suggestions = cluster.suggestedCountryIDs.compactMap { byID[$0] }
+            return UnresolvedLocation(trips: cluster.trips, suggestedCountries: suggestions)
+        }
+
         proposedCountries = proposed
+        unresolvedLocations = unresolved
         homeWarning = warning
         isImporting = false
         phase = .results
@@ -396,44 +543,67 @@ class PhotoImporter {
         }
 
         for proposed in proposedCountries {
-            let country = proposed.country
+            apply(
+                trips: proposed.trips, to: proposed.country,
+                proposedStatus: proposed.proposedStatus, scanMode: scanMode, calendar: calendar,
+                modelContext: modelContext)
+        }
 
-            for trip in proposed.trips {
-                let note = noteText(for: trip)
-
-                // Fill-blanks / add-new skip a trip whose start day already exists.
-                let existing = country.visits.first {
-                    calendar.isDate($0.date, inSameDayAs: trip.startDate)
-                }
-
-                if let existing, scanMode != .overwrite {
-                    if existing.isImported {
-                        existing.notes = note
-                        existing.photoIdentifiers = trip.photoIdentifiers
-                    }
-                    continue
-                }
-
-                let visit = Visit(
-                    date: trip.startDate, notes: note, country: country, isImported: true)
-                visit.photoIdentifiers = trip.photoIdentifiers
-                modelContext.insert(visit)
-                country.visits.append(visit)
-            }
-
-            // Only ever raise the status, so a manual `living`/`lived` is preserved.
-            // Mark the status as imported only when we're not raising a status the
-            // user set by hand, so a later Overwrite never clears their data.
-            if Self.rank(proposed.proposedStatus) > Self.rank(country.status) {
-                let wasManual = country.status != .notVisited && !country.statusIsImported
-                country.status = proposed.proposedStatus
-                if !wasManual { country.statusIsImported = true }
-            }
+        // Fold in any unmatched clusters the user assigned to a country.
+        let byID = Dictionary(
+            allCountries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        for location in unresolvedLocations {
+            guard let id = location.assignedCountryID, let country = byID[id] else { continue }
+            apply(
+                trips: location.trips, to: country,
+                proposedStatus: location.proposedStatus(
+                    livedThresholdDays: lastSettings.livedThresholdDays),
+                scanMode: scanMode, calendar: calendar, modelContext: modelContext)
         }
 
         proposedCountries = []
+        unresolvedLocations = []
         showImporterSheet = false
         phase = .config
+    }
+
+    /// Add a set of trips as visits to one country and raise its status, honoring
+    /// the scan mode. Shared by scan-matched countries and user-resolved clusters.
+    private func apply(
+        trips: [ProposedTrip], to country: Country, proposedStatus: CountryStatus,
+        scanMode: ImportScanMode, calendar: Calendar, modelContext: ModelContext
+    ) {
+        for trip in trips {
+            let note = noteText(for: trip)
+
+            // Fill-blanks / add-new skip a trip whose start day already exists.
+            let existing = country.visits.first {
+                calendar.isDate($0.date, inSameDayAs: trip.startDate)
+            }
+
+            if let existing, scanMode != .overwrite {
+                if existing.isImported {
+                    existing.notes = note
+                    existing.photoIdentifiers = trip.photoIdentifiers
+                }
+                continue
+            }
+
+            let visit = Visit(
+                date: trip.startDate, notes: note, country: country, isImported: true)
+            visit.photoIdentifiers = trip.photoIdentifiers
+            modelContext.insert(visit)
+            country.visits.append(visit)
+        }
+
+        // Only ever raise the status, so a manual `living`/`lived` is preserved.
+        // Mark the status as imported only when we're not raising a status the
+        // user set by hand, so a later Overwrite never clears their data.
+        if Self.rank(proposedStatus) > Self.rank(country.status) {
+            let wasManual = country.status != .notVisited && !country.statusIsImported
+            country.status = proposedStatus
+            if !wasManual { country.statusIsImported = true }
+        }
     }
 
     /// Human-readable note describing a trip.
@@ -457,6 +627,7 @@ class PhotoImporter {
     func cancelImport() {
         isImporting = false
         proposedCountries = []
+        unresolvedLocations = []
         homeWarning = nil
         showImporterSheet = false
         phase = .config
