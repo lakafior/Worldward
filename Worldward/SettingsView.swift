@@ -53,7 +53,7 @@ struct SettingsView: View {
             isPresented: $showExporter,
             document: exportDocument,
             contentType: .json,
-            defaultFilename: "WorldMap Backup",
+            defaultFilename: "Worldward Backup",
             onCompletion: handleExport
         )
         .fileImporter(

@@ -1,8 +1,8 @@
-# WorldMap 🌍
+# Worldward 🌍
 
 **Track your travels. Explore your world.**
 
-WorldMap is a native macOS / iOS app that visualises every country you've visited — crossed, lived in, or simply passed through — on an interactive world map. Built entirely with SwiftUI, MapKit, and SwiftData.
+Worldward is a native macOS / iOS app that visualises every country you've visited — crossed, lived in, or simply passed through — on an interactive world map. Built entirely with SwiftUI, MapKit, and SwiftData.
 
 ---
 
@@ -76,8 +76,8 @@ WorldMap is a native macOS / iOS app that visualises every country you've visite
 ## Project Structure
 
 ```
-WorldMap/
-├── WorldMap.swift              # App entry point, ModelContainer, ISO fallbacks
+Worldward/
+├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
 ├── ContentView.swift           # Main map view, sidebar, bundled-geometry reader
 ├── Country.swift               # SwiftData model for a country
 ├── Visit.swift                 # SwiftData model for a dated visit
@@ -95,7 +95,7 @@ WorldMap/
 ├── VisitPhotosView.swift       # Photo thumbnail strip + full-size viewer
 ├── TravelDataTransfer.swift    # JSON backup/restore
 ├── Intents/
-│   ├── WorldMapIntents.swift   # AppIntents + Shortcuts provider
+│   ├── WorldwardIntents.swift   # AppIntents + Shortcuts provider
 │   ├── CountryEntity.swift     # AppEntity for countries
 │   ├── IntentSnippets.swift    # Snippet views for intent results
 │   ├── LocationService.swift   # CoreLocation helper for MarkCurrentLocation
@@ -113,7 +113,7 @@ WorldMap/
 
 ## Getting Started
 
-1. Open `WorldMap.xcodeproj` in Xcode 16+.
+1. Open `Worldward.xcodeproj` in Xcode 16+.
 2. Select your target (macOS or iOS).
 3. Build and run.
 4. The first launch seeds the database from the bundled geometry file — this happens once.

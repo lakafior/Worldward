@@ -6,7 +6,7 @@ struct ShareCardConfig: Equatable {
     /// Overrides the default headline when non-empty.
     var headline: String = ""
     /// The small footer line. Hidden when empty.
-    var caption: String = "Tracked with WorldMap"
+    var caption: String = "Tracked with Worldward"
     var showContinents = true
     /// The middle metric: busiest year (all-time card) or visits (year card).
     var showSecondMetric = true

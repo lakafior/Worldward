@@ -71,7 +71,7 @@ final class VisitLogParser {
     private let container: ModelContainer
 
     init(container: ModelContainer? = nil) {
-        self.container = container ?? WorldMap.sharedModelContainer
+        self.container = container ?? Worldward.sharedModelContainer
     }
 
     var isAvailable: Bool {

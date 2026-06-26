@@ -3,7 +3,7 @@ import SwiftData
 import SwiftUI
 
 @main
-struct WorldMap: App {
+struct Worldward: App {
     /// The user's appearance choice, shared with `SettingsView` via the same key.
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
@@ -14,7 +14,7 @@ struct WorldMap: App {
     /// capabilities and pass `cloudKitDatabase: .private(cloudKitContainerID)` to
     /// the `ModelConfiguration` below. Local JSON export/import is the backup path
     /// in the meantime.
-    static let cloudKitContainerID = "iCloud.eu.lakafior.worldmap.001"
+    static let cloudKitContainerID = "iCloud.net.smigi.worldward"
 
     static let sharedModelContainer: ModelContainer = {
         let schema = Schema([Country.self, Visit.self])
@@ -85,7 +85,7 @@ struct WorldMap: App {
         .modelContainer(Self.sharedModelContainer)
 
         #if os(macOS)
-            // Adds the standard "WorldMap ▸ Settings…" menu item (⌘,). The Settings
+            // Adds the standard "Worldward ▸ Settings…" menu item (⌘,). The Settings
             // scene is separate from the WindowGroup, so it needs the same model
             // container attached for export/import to read and write the store.
             Settings {

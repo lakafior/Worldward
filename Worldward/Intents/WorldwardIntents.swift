@@ -81,7 +81,7 @@ struct MarkCountryStatusIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = ModelContext(Worldward.sharedModelContainer)
         let targetID = country.id
         let descriptor = FetchDescriptor<Country>(
             predicate: #Predicate { $0.id == targetID }
@@ -151,7 +151,7 @@ struct OpenCountryMapIntent: OpenIntent {
 
 /// Routes a free-text query into the app's country list, conforming to the
 /// `system.search` assistant schema so Siri and Apple Intelligence understand
-/// "search WorldMap for…" as a genuine in-app search.
+/// "search Worldward for…" as a genuine in-app search.
 @AppIntent(schema: .system.search)
 struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
     static let searchScopes: [StringSearchScope] = [.general]
@@ -184,11 +184,11 @@ struct GetVisitCountIntent: AppIntent {
     func perform() async throws
         -> some IntentResult & ReturnsValue<String> & ProvidesDialog & ShowsSnippetView
     {
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = ModelContext(Worldward.sharedModelContainer)
         let stats = TravelStats(countries: try context.fetch(FetchDescriptor<Country>()))
 
         guard stats.hasTravel else {
-            let message = "You haven't recorded any travels yet. Open WorldMap to get started. 🌍"
+            let message = "You haven't recorded any travels yet. Open Worldward to get started. 🌍"
             return .result(
                 value: message,
                 dialog: IntentDialog("\(message)"),
@@ -244,7 +244,7 @@ struct LogVisitIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = ModelContext(Worldward.sharedModelContainer)
         let targetID = country.id
         let descriptor = FetchDescriptor<Country>(
             predicate: #Predicate { $0.id == targetID }
@@ -315,7 +315,7 @@ final class IntentRouter {
 struct LogVisitsFromDescriptionIntent: AppIntent {
     static let title: LocalizedStringResource = "Log Visits from a Description"
     static let description = IntentDescription(
-        "Describe a trip in your own words and WorldMap extracts the countries and dates for you to confirm.",
+        "Describe a trip in your own words and Worldward extracts the countries and dates for you to confirm.",
         categoryName: "Travel",
         searchKeywords: ["log", "describe", "trip", "dictate", "visits", "ai"]
     )
@@ -358,7 +358,7 @@ struct GetContinentProgressIntent: AppIntent {
     func perform() async throws
         -> some IntentResult & ReturnsValue<String> & ProvidesDialog & ShowsSnippetView
     {
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = ModelContext(Worldward.sharedModelContainer)
         let continentName = continent.rawValue
         let descriptor = FetchDescriptor<Country>(
             predicate: #Predicate { $0.continent == continentName }
@@ -409,7 +409,7 @@ struct MarkCurrentLocationIntent: AppIntent {
             throw Error.couldNotDetermineCountry
         }
 
-        let context = ModelContext(WorldMap.sharedModelContainer)
+        let context = ModelContext(Worldward.sharedModelContainer)
         let descriptor = FetchDescriptor<Country>(
             predicate: #Predicate {
                 $0.id == isoCode || $0.iso3 == isoCode
@@ -438,7 +438,7 @@ struct MarkCurrentLocationIntent: AppIntent {
             case .couldNotDetermineCountry:
                 "Could not determine your current country from your location."
             case .countryNotInCatalog(let code):
-                "Country code \(code) was found but is not in the WorldMap catalog."
+                "Country code \(code) was found but is not in the Worldward catalog."
             }
         }
     }
@@ -448,8 +448,8 @@ struct MarkCurrentLocationIntent: AppIntent {
 
 /// Registers every intent with the system and promotes the most useful ones to
 /// the Shortcuts app and Siri. Intents not listed here are still available in
-/// Shortcuts under "WorldMap" but won't appear as first‑class suggestions.
-struct WorldMapShortcuts: AppShortcutsProvider {
+/// Shortcuts under "Worldward" but won't appear as first‑class suggestions.
+struct WorldwardShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: MarkCountryStatusIntent(),

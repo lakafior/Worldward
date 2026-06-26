@@ -10,7 +10,7 @@ struct ShareCustomizationView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var headline = ""
-    @State private var caption = "Tracked with WorldMap"
+    @State private var caption = "Tracked with Worldward"
     @State private var showContinents = true
     @State private var showSecondMetric = true
     @State private var showMostVisited = true
@@ -68,7 +68,7 @@ struct ShareCustomizationView: View {
                     if let renderedImage {
                         ShareLink(
                             item: renderedImage,
-                            preview: SharePreview("My WorldMap travels", image: renderedImage)
+                            preview: SharePreview("My Worldward travels", image: renderedImage)
                         ) {
                             Label("Share Image", systemImage: "photo")
                         }

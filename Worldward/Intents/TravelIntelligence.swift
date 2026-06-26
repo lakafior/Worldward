@@ -41,7 +41,7 @@ final class TravelIntelligence {
     private let container: ModelContainer
 
     init(container: ModelContainer? = nil) {
-        self.container = container ?? WorldMap.sharedModelContainer
+        self.container = container ?? Worldward.sharedModelContainer
     }
 
     /// Whether the on-device model is ready to use right now.
@@ -103,7 +103,7 @@ final class TravelIntelligence {
         ]
         let session = LanguageModelSession(tools: tools) {
             """
-            You are WorldMap's travel assistant. You help the user understand \
+            You are Worldward's travel assistant. You help the user understand \
             their own travel history: which countries they have visited, when, \
             and how far along they are on each continent.
             """

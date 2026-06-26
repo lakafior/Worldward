@@ -173,11 +173,11 @@ struct TravelStats {
     /// A friendly summary for sharing as plain text, leading with the headline
     /// figures and then listing every country visited.
     var shareText: String {
-        guard hasTravel else { return "Just getting started exploring the world with WorldMap 🌍" }
+        guard hasTravel else { return "Just getting started exploring the world with Worldward 🌍" }
         let continentWord = visitedContinents == 1 ? "continent" : "continents"
         let list = visitedList.map { "\($0.flag) \($0.name)" }.joined(separator: ", ")
         return """
-            🌍 I've visited \(visitedCountries) countries across \(visitedContinents) \(continentWord), tracked with WorldMap:
+            🌍 I've visited \(visitedCountries) countries across \(visitedContinents) \(continentWord), tracked with Worldward:
             \(list)
             """
     }

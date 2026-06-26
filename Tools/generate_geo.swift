@@ -12,7 +12,7 @@
 //
 //  Borders change rarely, so re-run this only when you want fresh map data or
 //  change the simplification, then drop the new `countries.wmgb` into
-//  WorldMap/WorldMap/ (the synchronized folder bundles it automatically).
+//  Worldward/Worldward/ (the synchronized folder bundles it automatically).
 //
 //  Usage:
 //      swift Tools/generate_geo.swift                       # download from nvkelso
@@ -51,7 +51,7 @@ let defaultURL =
 
 var localPath: String?
 var urlString = defaultURL
-var outPath = "WorldMap/countries.wmgb"
+var outPath = "Worldward/countries.wmgb"
 
 var argIterator = CommandLine.arguments.dropFirst().makeIterator()
 while let arg = argIterator.next() {
@@ -65,7 +65,7 @@ while let arg = argIterator.next() {
     }
 }
 
-// MARK: - ID resolution (mirrors WorldMap.swift)
+// MARK: - ID resolution (mirrors Worldward.swift)
 
 let isoFallbacks: [String: String] = [
     "France": "FR",

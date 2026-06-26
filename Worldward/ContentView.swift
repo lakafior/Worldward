@@ -476,7 +476,7 @@ struct ContentView: View {
         // background build knows whether it must also produce seed metadata. The
         // store needs seeding when it's empty or holds stale ids from an old build.
         let existing = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
-        let stale = WorldMap.hasStaleIDs(existing)
+        let stale = Worldward.hasStaleIDs(existing)
         let needsSeed = existing.isEmpty || stale
 
         // First run seeds the database, so say so rather than leaving a bare
@@ -862,7 +862,7 @@ struct MapLoadingView: View {
                     .foregroundStyle(.white)
                     .symbolEffect(.pulse)
 
-                Text("WorldMap")
+                Text("Worldward")
                     .font(.largeTitle.weight(.heavy))
                     .foregroundStyle(.white)
 
