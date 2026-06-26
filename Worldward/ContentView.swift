@@ -201,7 +201,6 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
         }
-        .navigationTitle("World Map")
         #if os(macOS)
             .navigationSubtitle("Tap a country to see details")
         #endif
@@ -622,7 +621,8 @@ struct ContentView: View {
             winner.status = loser.status
             winner.statusIsImported = loser.statusIsImported
         } else if winner.status != .notVisited && loser.status != .notVisited
-            && winner.statusIsImported && !loser.statusIsImported {
+            && winner.statusIsImported && !loser.statusIsImported
+        {
             // Prefer the hand-set status over an imported one.
             winner.status = loser.status
             winner.statusIsImported = false
@@ -689,15 +689,17 @@ extension MKMapRect {
 ///   magic 'WMGB' · UInt32 version · UInt32 country count, then per country:
 ///   UInt8-prefixed id · UInt8-prefixed iso3 · UInt16-prefixed name ·
 ///   UInt16 ring count, then per ring: UInt32 point count · point × (Float32 x, y).
-private nonisolated func loadBundledGeo() -> (rings: [String: [[MKMapPoint]]], seeds: [CountrySeed])?
-{
+private nonisolated func loadBundledGeo() -> (
+    rings: [String: [[MKMapPoint]]], seeds: [CountrySeed]
+)? {
     guard let url = Bundle.main.url(forResource: "countries", withExtension: "wmgb"),
         let data = try? Data(contentsOf: url)
     else { return nil }
 
-    return data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) -> (
-        rings: [String: [[MKMapPoint]]], seeds: [CountrySeed]
-    )? in
+    return data.withUnsafeBytes {
+        (raw: UnsafeRawBufferPointer) -> (
+            rings: [String: [[MKMapPoint]]], seeds: [CountrySeed]
+        )? in
         var offset = 0
         let total = raw.count
 
