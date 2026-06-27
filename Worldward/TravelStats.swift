@@ -29,6 +29,11 @@ struct TravelStats {
     let visitedCountries: Int
     let statusCounts: [CountryStatus: Int]
 
+    /// Visited country id → its status's index in `CountryStatus.allCases`
+    /// (1 = crossed … 4 = living). Drives the tinted map on the widget and the
+    /// shareable card.
+    let statusTints: [String: Int]
+
     let totalContinents: Int
     let visitedContinents: Int
     let continents: [ContinentStat]
@@ -75,6 +80,7 @@ struct TravelStats {
         var best: (name: String, flag: String, count: Int)?
         var flagged: [(status: CountryStatus, name: String, flag: String)] = []
         var labels: [String: (flag: String, name: String)] = [:]
+        var statusTints: [String: Int] = [:]
 
         for country in countries {
             let status = country.status
@@ -88,6 +94,7 @@ struct TravelStats {
                 bucket.visited += 1
                 flagged.append((status, country.name, country.flagEmoji))
                 labels[country.id] = (country.flagEmoji, country.name)
+                statusTints[country.id] = CountryStatus.allCases.firstIndex(of: status) ?? 0
             }
             buckets[country.continent] = bucket
 
@@ -126,6 +133,7 @@ struct TravelStats {
         self.totalCountries = countries.count
         self.visitedCountries = visited
         self.statusCounts = statusCounts
+        self.statusTints = statusTints
         self.totalContinents = continents.count
         self.visitedContinents = continents.lazy.filter { $0.visited > 0 }.count
         self.continents = continents

@@ -92,7 +92,7 @@ struct StatisticsView: View {
         }
         .frame(minWidth: 380, minHeight: 520)
         .sheet(isPresented: $showShareSheet) {
-            ShareCustomizationView(stats: stats)
+            ShareCustomizationView(stats: stats, tints: stats.statusTints)
         }
     }
 

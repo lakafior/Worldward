@@ -12,6 +12,8 @@ struct ShareCardConfig: Equatable {
     var showSecondMetric = true
     var showMostVisited = true
     var showCountryList = true
+    /// The tinted world map, featured below the headline.
+    var showMap = true
 }
 
 /// A self-contained, fixed-size card summarizing the user's travels, designed to
@@ -22,6 +24,9 @@ struct ShareCard: View {
     var year: TravelStats.YearStat? = nil
     var config = ShareCardConfig()
     var theme: ShareCardTheme = .ocean
+    /// ISO 3166-1 alpha-2 id → status rank for visited countries, used to tint the
+    /// map. Empty leaves the map off even when `config.showMap` is set.
+    var tints: [String: Int] = [:]
 
     private var headline: String {
         let custom = config.headline.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -57,6 +62,14 @@ struct ShareCard: View {
                 Spacer()
                 Text("🌍")
                     .font(.title)
+            }
+
+            if config.showMap, !tints.isEmpty, WorldMapStore.shared != nil {
+                WorldMapCanvas(tints: tints)
+                    .frame(height: 190)
+                    .frame(maxWidth: .infinity)
+                    .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
             }
 
             VStack(alignment: .leading, spacing: 2) {

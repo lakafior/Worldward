@@ -3,7 +3,7 @@ import WidgetKit
 
 // MARK: - Timeline
 
-/// A single entry carrying the latest travel snapshot. Both widgets share it
+/// A single entry carrying the latest travel snapshot. The widgets share it
 /// because they read the same data; only their presentation differs.
 struct WorldwardEntry: TimelineEntry {
     let date: Date
@@ -101,8 +101,8 @@ struct FlagStripView: View {
     }
 }
 
-/// Wraps flag emoji into rows that fill the available width. Falls back to a
-/// gentle prompt when nothing has been visited yet.
+/// Wraps flag emoji into a grid. Falls back to a gentle prompt when nothing has
+/// been visited yet.
 private struct FlagCloud: View {
     let flags: [String]
     let limit: Int
@@ -127,6 +127,41 @@ private struct FlagCloud: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        }
+    }
+}
+
+// MARK: - World Map
+
+private let oceanGradient = LinearGradient(
+    colors: [Color(red: 0.07, green: 0.15, blue: 0.25), Color(red: 0.03, green: 0.08, blue: 0.15)],
+    startPoint: .top, endPoint: .bottom)
+
+/// A flat world map tinted by where you've been, over a deep-ocean background.
+/// The drawing itself lives in the shared `WorldMapCanvas` so the share card can
+/// reuse it.
+struct MiniMapView: View {
+    let snapshot: WidgetSnapshot
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            WorldMapCanvas(tints: snapshot.tints)
+            .overlay {
+                // No geometry cached yet — e.g. the app hasn't run since install.
+                if WorldMapStore.shared == nil {
+                    Image(systemName: "globe")
+                        .font(.largeTitle)
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+            }
+
+            Text("\(snapshot.visitedCountries) countries")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.black.opacity(0.35), in: Capsule())
+                .padding(8)
         }
     }
 }
@@ -157,6 +192,18 @@ struct FlagStripWidget: Widget {
     }
 }
 
+struct MiniMapWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "WorldwardMiniMap", provider: WorldwardProvider()) { entry in
+            MiniMapView(snapshot: entry.snapshot)
+                .containerBackground(for: .widget) { oceanGradient }
+        }
+        .configurationDisplayName("World Map")
+        .description("A map of the world, tinted by the countries you've visited.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    }
+}
+
 // MARK: - Previews
 
 #Preview("Snapshot", as: .systemMedium) {
@@ -168,6 +215,12 @@ struct FlagStripWidget: Widget {
 
 #Preview("Flags", as: .systemMedium) {
     FlagStripWidget()
+} timeline: {
+    WorldwardEntry(date: .now, snapshot: .sample)
+}
+
+#Preview("Map", as: .systemMedium) {
+    MiniMapWidget()
 } timeline: {
     WorldwardEntry(date: .now, snapshot: .sample)
 }

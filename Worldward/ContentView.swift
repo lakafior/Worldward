@@ -502,6 +502,9 @@ struct ContentView: View {
                 [String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect], [CountrySeed]?
             ) in
             guard let bundled = loadBundledGeo() else { return ([:], [:], [:], nil) }
+            // Copy the bundled outline into the shared App Group container (once)
+            // so the map widget can draw it — the extension can't read this bundle.
+            WorldMapStore.cacheFromAppBundle()
             let geo = buildGeo(from: bundled.rings)
             return (geo.0, geo.1, geo.2, needsSeed ? bundled.seeds : nil)
         }.value
@@ -532,6 +535,12 @@ struct ContentView: View {
         withAnimation(.easeInOut(duration: 0.4)) {
             self.isLoadingMapData = false
         }
+
+        // The map geometry has now been cached into the App Group (inside the
+        // detached task above). Rewrite the snapshot so the reload it triggers
+        // happens *after* the geometry file exists — the map widget then finds it
+        // on its next refresh and fills in.
+        updateWidgetSnapshot()
 
         // Hand the geographic data to the photo importer now that it's ready.
         // Re-fetch so the importer gets every seeded country even if the `@Query`
@@ -636,7 +645,8 @@ struct ContentView: View {
                 totalCountries: stats.totalCountries,
                 visitedContinents: stats.visitedContinents,
                 totalContinents: stats.totalContinents,
-                flags: stats.visitedFlags))
+                flags: stats.visitedFlags,
+                tints: stats.statusTints))
     }
 
     /// Fold a duplicate country's user data into the row that will survive

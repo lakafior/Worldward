@@ -6,11 +6,15 @@ import SwiftUI
 /// lightweight: a single rendered card drives both the preview and the share.
 struct ShareCustomizationView: View {
     let stats: TravelStats
+    /// ISO 3166-1 alpha-2 id → status rank for visited countries, used to tint the
+    /// optional map on the card.
+    let tints: [String: Int]
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var headline = ""
     @State private var caption = "Tracked with Worldward"
+    @State private var showMap = true
     @State private var showContinents = true
     @State private var showSecondMetric = true
     @State private var showMostVisited = true
@@ -19,8 +23,9 @@ struct ShareCustomizationView: View {
     @State private var messageText: String
     @State private var renderedImage: Image?
 
-    init(stats: TravelStats) {
+    init(stats: TravelStats, tints: [String: Int] = [:]) {
         self.stats = stats
+        self.tints = tints
         _messageText = State(initialValue: stats.shareText)
     }
 
@@ -28,7 +33,8 @@ struct ShareCustomizationView: View {
         ShareCardConfig(
             headline: headline, caption: caption,
             showContinents: showContinents, showSecondMetric: showSecondMetric,
-            showMostVisited: showMostVisited, showCountryList: showCountryList)
+            showMostVisited: showMostVisited, showCountryList: showCountryList,
+            showMap: showMap)
     }
 
     var body: some View {
@@ -53,6 +59,9 @@ struct ShareCustomizationView: View {
                 }
 
                 Section("Include") {
+                    if !tints.isEmpty {
+                        Toggle("World map", isOn: $showMap)
+                    }
                     Toggle("Continents", isOn: $showContinents)
                     Toggle("Busiest year", isOn: $showSecondMetric)
                     Toggle("Most visited", isOn: $showMostVisited)
@@ -111,6 +120,7 @@ struct ShareCustomizationView: View {
     }
 
     private func regenerate() {
-        renderedImage = renderShareImage(ShareCard(stats: stats, config: config, theme: theme))
+        renderedImage = renderShareImage(
+            ShareCard(stats: stats, config: config, theme: theme, tints: tints))
     }
 }
