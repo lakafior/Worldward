@@ -9,5 +9,9 @@ struct WorldwardWidgetsBundle: WidgetBundle {
         TravelSnapshotWidget()
         FlagStripWidget()
         MiniMapWidget()
+        // Lock Screen accessories are iOS-only (see WorldwardWidgets.swift).
+        #if os(iOS)
+            AccessoryWidget()
+        #endif
     }
 }

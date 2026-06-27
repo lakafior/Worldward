@@ -204,6 +204,74 @@ struct MiniMapWidget: Widget {
     }
 }
 
+// MARK: - Lock Screen accessories
+
+// Accessory families exist only on iOS/watchOS — they're unavailable on macOS and
+// visionOS, so the whole accessory widget is gated to iOS to keep the extension
+// compiling for every platform it ships on.
+#if os(iOS)
+
+    /// A glanceable travel summary for the Lock Screen. Accessory widgets render in
+    /// a monochrome "vibrant" mode, so this leans on counts, a gauge, and SF Symbols
+    /// rather than the colour flags/map the home-screen widgets use.
+    struct AccessoryView: View {
+        @Environment(\.widgetFamily) private var family
+        let snapshot: WidgetSnapshot
+
+        private var percent: Int { Int((snapshot.fraction * 100).rounded()) }
+
+        var body: some View {
+            switch family {
+            case .accessoryInline:
+                // Sits next to the clock: one symbol + one line of text.
+                Label("\(snapshot.visitedCountries) countries", systemImage: "globe")
+
+            case .accessoryCircular:
+                // A ring of "share of the world" with the country count in the centre.
+                Gauge(value: snapshot.fraction) {
+                    Image(systemName: "globe")
+                } currentValueLabel: {
+                    Text("\(snapshot.visitedCountries)")
+                }
+                .gaugeStyle(.accessoryCircular)
+
+            case .accessoryRectangular:
+                HStack(spacing: 10) {
+                    Gauge(value: snapshot.fraction) {
+                        Text("\(percent)%")
+                    }
+                    .gaugeStyle(.accessoryCircularCapacity)
+
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("\(snapshot.visitedCountries) countries")
+                            .font(.headline)
+                            .widgetAccentable()
+                        Text("\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+            default:
+                EmptyView()
+            }
+        }
+    }
+
+    struct AccessoryWidget: Widget {
+        var body: some WidgetConfiguration {
+            StaticConfiguration(kind: "WorldwardAccessory", provider: WorldwardProvider()) { entry in
+                AccessoryView(snapshot: entry.snapshot)
+                    .containerBackground(for: .widget) { Color.clear }
+            }
+            .configurationDisplayName("Travel Progress")
+            .description("Your country count and share of the world, on the Lock Screen.")
+            .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        }
+    }
+
+#endif
+
 // MARK: - Previews
 
 #Preview("Snapshot", as: .systemMedium) {
@@ -224,3 +292,11 @@ struct MiniMapWidget: Widget {
 } timeline: {
     WorldwardEntry(date: .now, snapshot: .sample)
 }
+
+#if os(iOS)
+    #Preview("Lock Screen", as: .accessoryRectangular) {
+        AccessoryWidget()
+    } timeline: {
+        WorldwardEntry(date: .now, snapshot: .sample)
+    }
+#endif
