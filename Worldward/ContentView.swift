@@ -108,7 +108,13 @@ struct ContentView: View {
     // Geographic data
     @State private var countryPolygons: [String: [MKPolygon]] = [:]
     @State private var countryPaths: [String: [CGPath]] = [:]
+    /// Per-country rect of the *largest* polygon only — used to zoom to a country's
+    /// mainland rather than a far-flung territory.
     @State private var countryBoundingRects: [String: MKMapRect] = [:]
+    /// Per-country rect spanning *all* of a country's polygons — used as the tap
+    /// hit-test pre-filter so detached parts (Alaska, Greek islands, the Indonesian
+    /// archipelago) are still selectable.
+    @State private var countryHitRects: [String: MKMapRect] = [:]
     @State private var countryCentroids: [String: CLLocationCoordinate2D] = [:]
     @State private var isLoadingMapData = true
     @State private var mapLoadingMessage = "Loading map…"
@@ -162,9 +168,11 @@ struct ContentView: View {
                     let mapPoint = MKMapPoint(coordinate)
                     let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
 
-                    // Optimized lookup: check country bounding rects first, then individual paths.
+                    // Optimized lookup: reject by the country's full-extent hit rect
+                    // first (covers every polygon, not just the mainland), then test
+                    // individual paths.
                     for country in allCountries {
-                        guard let countryRect = countryBoundingRects[country.id],
+                        guard let countryRect = countryHitRects[country.id],
                             countryRect.contains(mapPoint)
                         else { continue }
 
@@ -495,26 +503,26 @@ struct ContentView: View {
         // Douglas-Peucker simplification happen once per release in
         // Tools/generate_geo.swift, not on-device — so this is fast on every launch,
         // including the first. The same file carries the seed metadata.
-        let (extractedPolygons, extractedPaths, extractedRects, seeds) = await Task.detached(
-            priority: .userInitiated
-        ) {
-            () -> (
-                [String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect], [CountrySeed]?
-            ) in
-            guard let bundled = loadBundledGeo() else { return ([:], [:], [:], nil) }
-            // Copy the bundled outline into the shared App Group container (once)
-            // so the map widget can draw it — the extension can't read this bundle.
-            WorldMapStore.cacheFromAppBundle()
-            let geo = buildGeo(from: bundled.rings)
-            return (geo.0, geo.1, geo.2, needsSeed ? bundled.seeds : nil)
-        }.value
+        let (extractedPolygons, extractedPaths, extractedRects, extractedHitRects, seeds) =
+            await Task.detached(priority: .userInitiated) {
+                () -> (
+                    [String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect],
+                    [String: MKMapRect], [CountrySeed]?
+                ) in
+                guard let bundled = loadBundledGeo() else { return ([:], [:], [:], [:], nil) }
+                // Copy the bundled outline into the shared App Group container (once)
+                // so the map widget can draw it — the extension can't read this bundle.
+                await WorldMapStore.cacheFromAppBundle()
+                let geo = buildGeo(from: bundled.rings)
+                return (geo.0, geo.1, geo.2, geo.3, bundled.seeds)
+            }.value
 
         // Reconcile the database on the main actor — the only place SwiftData
         // models are touched. Seeding and reconciliation are mutually exclusive.
         if needsSeed {
             if let seeds { seedDatabase(seeds, wiping: stale ? existing : []) }
         } else {
-            reconcileDatabase(existing)
+            reconcileDatabase(existing, seeds: seeds ?? [])
         }
 
         // Collapse any duplicate rows iCloud may have produced (two devices that
@@ -524,6 +532,7 @@ struct ContentView: View {
         self.countryPolygons = extractedPolygons
         self.countryPaths = extractedPaths
         self.countryBoundingRects = extractedRects
+        self.countryHitRects = extractedHitRects
         // Derive a centroid per country from its bounding rect so the statistics
         // page can rank the nearest unvisited countries by real proximity.
         self.countryCentroids = extractedRects.mapValues { rect in
@@ -549,7 +558,7 @@ struct ContentView: View {
         // button reliably enables.
         let seededCountries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? allCountries
         photoImporter.configure(
-            countryBoundingRects: extractedRects,
+            countryBoundingRects: extractedHitRects,
             countryPaths: extractedPaths,
             allCountries: seededCountries
         )
@@ -577,21 +586,33 @@ struct ContentView: View {
         try? modelContext.save()
     }
 
-    /// Reconcile an already-seeded store: drop non-countries an earlier seed stored
-    /// and fix continents written by an older build. Idempotent and cheap.
-    private func reconcileDatabase(_ existing: [Country]) {
+    /// Reconcile an already-seeded store: drop non-countries an earlier seed stored,
+    /// fix continents written by an older build, and add any catalog country the
+    /// store is missing (e.g. an ISO code a later build started recognising, like
+    /// Taiwan) so existing installs gain it without a full wipe-and-reseed.
+    /// Idempotent and cheap.
+    private func reconcileDatabase(_ existing: [Country], seeds: [CountrySeed]) {
         var changed = false
+        var presentIDs = Set<String>()
         for country in existing {
             if Continents.byISO[country.id] == nil {
                 modelContext.delete(country)
                 changed = true
                 continue
             }
+            presentIDs.insert(country.id)
             let continent = Continents.name(for: country.id)
             if country.continent != continent {
                 country.continent = continent
                 changed = true
             }
+        }
+        for seed in seeds where Continents.byISO[seed.id] != nil && !presentIDs.contains(seed.id) {
+            modelContext.insert(
+                Country(
+                    id: seed.id, iso3: seed.iso3, name: seed.name,
+                    continent: Continents.name(for: seed.id)))
+            changed = true
         }
         if changed { try? modelContext.save() }
     }
@@ -823,15 +844,17 @@ struct CountrySeed: Sendable {
 /// map and tap targets are identical whichever produced the rings.
 private nonisolated func buildGeo(
     from rings: [String: [[MKMapPoint]]]
-) -> ([String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect]) {
+) -> ([String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect], [String: MKMapRect]) {
     var polys: [String: [MKPolygon]] = [:]
     var paths: [String: [CGPath]] = [:]
     var rects: [String: MKMapRect] = [:]
+    var hitRects: [String: MKMapRect] = [:]
 
     for (id, ringList) in rings {
         var polygons: [MKPolygon] = []
         var cgPaths: [CGPath] = []
         var largestRect: MKMapRect?
+        var unionRect: MKMapRect?
 
         for points in ringList {
             guard points.count >= 3 else { continue }
@@ -849,16 +872,20 @@ private nonisolated func buildGeo(
 
             let rect = polygon.boundingMapRect
             if largestRect == nil || rect.area > largestRect!.area { largestRect = rect }
+            unionRect = unionRect.map { $0.union(rect) } ?? rect
         }
 
-        guard !polygons.isEmpty, let largestRect else { continue }
+        guard !polygons.isEmpty, let largestRect, let unionRect else { continue }
         polys[id] = polygons
         paths[id] = cgPaths
         // Bounding rect uses only the largest polygon, so selecting a country
         // zooms to its mainland rather than a far-flung territory.
         rects[id] = largestRect
+        // Hit rect spans every polygon, so a tap on a detached part (an island, an
+        // exclave like Alaska) still resolves to the country.
+        hitRects[id] = unionRect
     }
-    return (polys, paths, rects)
+    return (polys, paths, rects, hitRects)
 }
 
 /// Compact key explaining the green shades shown on the map.

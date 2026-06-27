@@ -152,14 +152,34 @@ private struct AchievementsSection: View {
     private let columns = [GridItem(.adaptive(minimum: 96), spacing: 12)]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 20) {
             let unlocked = achievements.filter(\.isUnlocked).count
             SectionHeader(
                 title: "Achievements", trailing: "\(unlocked) / \(achievements.count)")
 
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-                ForEach(achievements) { achievement in
-                    AchievementBadge(achievement: achievement)
+            // Split into labelled groups so the wall of badges reads as themed
+            // collections (Countries, Continents, …) rather than one long grid.
+            ForEach(Achievement.Category.allCases) { category in
+                let group = achievements.filter { $0.category == category }
+                if !group.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text(category.title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text("\(group.filter(\.isUnlocked).count) / \(group.count)")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                                .monospacedDigit()
+                        }
+
+                        LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
+                            ForEach(group) { achievement in
+                                AchievementBadge(achievement: achievement)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -168,6 +188,11 @@ private struct AchievementsSection: View {
 
 private struct AchievementBadge: View {
     let achievement: Achievement
+
+    /// Drives the tap-to-reveal description. macOS users get the same text on
+    /// hover via `.help`, but a touch device has no hover, so tapping a badge
+    /// surfaces it in a popover.
+    @State private var showingDetail = false
 
     var body: some View {
         VStack(spacing: 6) {
@@ -207,7 +232,61 @@ private struct AchievementBadge: View {
         .padding(8)
         .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
         .opacity(achievement.isUnlocked ? 1 : 0.85)
+        .contentShape(RoundedRectangle(cornerRadius: 12))
         .help(achievement.detail)
+        .onTapGesture { showingDetail = true }
+        // A touch device has no hover tooltip, so reveal the description on tap.
+        .popover(isPresented: $showingDetail) {
+            AchievementDetailPopover(achievement: achievement)
+                .presentationCompactAdaptation(.popover)
+        }
+        // Read as one element to VoiceOver, with the description as the hint.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(achievement.title), "
+                + (achievement.isUnlocked ? "unlocked" : "locked, \(achievement.progressLabel)"))
+        .accessibilityHint(achievement.detail)
+    }
+}
+
+/// The small bubble shown when a badge is tapped — the only way to read a badge's
+/// description on a touch device, where there's no hover tooltip.
+private struct AchievementDetailPopover: View {
+    let achievement: Achievement
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: achievement.symbol)
+                    .font(.title3)
+                    .foregroundStyle(achievement.isUnlocked ? achievement.tint : Color.secondary)
+                Text(achievement.title)
+                    .font(.headline)
+            }
+
+            Text(achievement.detail)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 8) {
+                if achievement.isUnlocked {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(achievement.tint)
+                    Text("Unlocked")
+                        .foregroundStyle(achievement.tint)
+                } else {
+                    ProgressView(value: achievement.progress)
+                        .tint(achievement.tint)
+                    Text(achievement.progressLabel)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
+            .font(.caption.weight(.medium))
+        }
+        .padding()
+        .frame(width: 240)
     }
 }
 

@@ -34,7 +34,7 @@ enum Continents {
         // Asia (52)
         "AE": "Asia", "AF": "Asia", "AM": "Asia",
         "AZ": "Asia", "BD": "Asia", "BH": "Asia", "BN": "Asia",
-        "BT": "Asia", "CN": "Asia", "CN-TW": "Asia", "GE": "Asia",
+        "BT": "Asia", "CN": "Asia", "GE": "Asia",
         "HK": "Asia", "ID": "Asia", "IL": "Asia", "IN": "Asia",
         "IO": "Asia", "IQ": "Asia", "IR": "Asia", "JO": "Asia",
         "JP": "Asia", "KG": "Asia", "KH": "Asia", "KP": "Asia",
@@ -44,8 +44,8 @@ enum Continents {
         "OM": "Asia", "PH": "Asia", "PK": "Asia", "PS": "Asia",
         "QA": "Asia", "RU": "Asia", "SA": "Asia", "SG": "Asia",
         "SY": "Asia", "TH": "Asia", "TJ": "Asia", "TL": "Asia",
-        "TM": "Asia", "TR": "Asia", "UZ": "Asia", "VN": "Asia",
-        "YE": "Asia",
+        "TM": "Asia", "TR": "Asia", "TW": "Asia", "UZ": "Asia",
+        "VN": "Asia", "YE": "Asia",
         // Africa (56)
         "AO": "Africa", "BF": "Africa", "BI": "Africa", "BJ": "Africa",
         "BW": "Africa", "CD": "Africa", "CF": "Africa", "CG": "Africa",
