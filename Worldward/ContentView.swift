@@ -395,8 +395,15 @@ struct ContentView: View {
             }
             // The "Mark where I am" Control Center control opens the app and leaves
             // a request in the App Group; pick it up whenever the app becomes active.
+            // The second, delayed check covers the case where the opening intent
+            // writes the request slightly after the app becomes active.
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { checkControlRequest() }
+                guard phase == .active else { return }
+                checkControlRequest()
+                Task {
+                    try? await Task.sleep(for: .milliseconds(500))
+                    checkControlRequest()
+                }
             }
             // Keep the Home/Lock Screen widgets in sync. `widgetSnapshotKey`
             // changes whenever a country is added, removed, or its status edited

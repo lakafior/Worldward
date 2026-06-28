@@ -275,29 +275,16 @@ struct MiniMapWidget: Widget {
 
 // MARK: - Control Center
 
-// Controls are iOS-only. The intent lives here (in the extension), raises a
-// request through the App Group, and opens the app — which has the location
-// permission and model needed to actually resolve and mark the country.
+// Controls are iOS-only. The control's action is `MarkHereOpenIntent` (an
+// `OpenIntent` in the shared file, so it belongs to both targets) — that's what
+// lets the button launch the app, which then resolves the location and shows the
+// status picker.
 #if os(iOS)
-
-    /// Tapping the control records a request and opens Worldward, which then runs
-    /// its current-location flow and shows the status picker to confirm.
-    struct MarkHereControlIntent: AppIntent {
-        static let title: LocalizedStringResource = "Mark where I am"
-        static let description = IntentDescription(
-            "Marks your current country in Worldward.")
-        static let openAppWhenRun = true
-
-        func perform() async throws -> some IntentResult {
-            WidgetActionStore.requestMarkHere()
-            return .result()
-        }
-    }
 
     struct MarkHereControl: ControlWidget {
         var body: some ControlWidgetConfiguration {
             StaticControlConfiguration(kind: "net.smigi.worldward.markhere") {
-                ControlWidgetButton(action: MarkHereControlIntent()) {
+                ControlWidgetButton(action: MarkHereOpenIntent()) {
                     Label("Mark where I am", systemImage: "mappin.and.ellipse")
                 }
             }

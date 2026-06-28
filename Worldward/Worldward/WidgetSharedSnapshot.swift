@@ -1,3 +1,4 @@
+import AppIntents
 import CoreGraphics
 import Foundation
 import MapKit
@@ -269,6 +270,38 @@ enum WidgetActionStore {
         guard let defaults, defaults.bool(forKey: markHereKey) else { return false }
         defaults.removeObject(forKey: markHereKey)
         return true
+    }
+}
+
+/// The action the Control Center control opens the app to perform. `OpenIntent`
+/// requires a target parameter even when there's only one choice.
+enum ControlTarget: String, AppEnum {
+    case markHere
+
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Action")
+    static let caseDisplayRepresentations: [ControlTarget: DisplayRepresentation] = [
+        .markHere: "Mark where I am"
+    ]
+}
+
+/// Opens Worldward and asks it to mark the user's current country. A Control
+/// Center control only launches the app when its action is an `OpenIntent` (not
+/// merely `openAppWhenRun`), and the type must belong to BOTH the app and the
+/// widget extension — hence it lives in this shared file. The heavy lifting
+/// (location + status picker) happens app-side once `WidgetActionStore` is read.
+struct MarkHereOpenIntent: OpenIntent {
+    static let title: LocalizedStringResource = "Mark where I am"
+    static let description = IntentDescription("Marks your current country in Worldward.")
+
+    @Parameter(title: "Action")
+    var target: ControlTarget
+
+    init() { self.target = .markHere }
+    init(target: ControlTarget) { self.target = target }
+
+    func perform() async throws -> some IntentResult {
+        WidgetActionStore.requestMarkHere()
+        return .result()
     }
 }
 
