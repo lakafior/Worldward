@@ -94,6 +94,7 @@ struct ContentView: View {
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
     // Filters
     @State private var filterVisited: Bool? = nil  // nil = all, true = visited, false = unvisited
@@ -601,6 +602,11 @@ struct ContentView: View {
         Task { await CountrySpotlightIndexer.indexIfNeeded(seededCountries) }
 
         focusOnHomeIfNeeded()
+
+        // Refresh local travel reminders from the freshly loaded catalog. A no-op
+        // when the user hasn't enabled reminders (off by default — see SettingsView).
+        await NotificationManager.reschedule(
+            enabled: notificationsEnabled, countries: seededCountries)
     }
 
     /// Seed an empty (or freshly wiped) store from decoded GeoJSON metadata. Drops

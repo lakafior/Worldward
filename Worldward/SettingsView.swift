@@ -33,6 +33,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 /// scene (⌘,) and inside a sheet on iOS/iPadOS — the same `Form` for both.
 struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -43,6 +44,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             appearanceSection
+            notificationsSection
             dataSection
         }
         .formStyle(.grouped)
@@ -79,6 +81,45 @@ struct SettingsView: View {
                     Text(theme.label).tag(theme)
                 }
             }
+        }
+    }
+
+    @ViewBuilder private var notificationsSection: some View {
+        Section {
+            Toggle(
+                "Travel reminders",
+                isOn: Binding(get: { notificationsEnabled }, set: setNotifications))
+        } header: {
+            Text("Notifications")
+        } footer: {
+            Text(
+                "Occasional on-device reminders: “on this day” travel memories, a year-in-review nudge each December, and a gentle prompt if you haven't logged a trip in a while. Off by default; nothing is sent unless you turn this on."
+            )
+        }
+    }
+
+    /// Toggling on requests permission and schedules the reminders; toggling off
+    /// clears them. If permission is denied, the switch stays off and we point the
+    /// user to the system Settings app.
+    private func setNotifications(_ on: Bool) {
+        guard on else {
+            notificationsEnabled = false
+            NotificationManager.cancelAll()
+            return
+        }
+        Task {
+            guard await NotificationManager.requestAuthorization() else {
+                notificationsEnabled = false
+                transferAlert = TransferAlert(
+                    title: "Notifications Off",
+                    message:
+                        "Turn on notifications for Worldward in the Settings app to receive travel reminders."
+                )
+                return
+            }
+            notificationsEnabled = true
+            let countries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
+            await NotificationManager.reschedule(enabled: true, countries: countries)
         }
     }
 
