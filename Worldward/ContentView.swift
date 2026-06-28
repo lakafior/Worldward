@@ -13,6 +13,18 @@ enum BrowseMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+/// The app's three top-level tabs.
+enum AppTab: Hashable {
+    case map, been, going
+}
+
+/// How the Been/Going lists are ordered.
+enum CountrySort: String, CaseIterable, Identifiable {
+    case name = "Name"
+    case recent = "Recently visited"
+    var id: String { rawValue }
+}
+
 private struct CountryListSummary {
     let filteredCountries: [Country]
     let continents: [String]
@@ -22,7 +34,7 @@ private struct CountryListSummary {
 
     init(
         countries: [Country], searchText: String, browseMode: BrowseMode,
-        filterVisited: Bool?, selectedContinent: String?, selectedYear: Int?
+        selectedContinent: String?, selectedYear: Int?
     ) {
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         let calendar = Calendar.current
@@ -63,10 +75,6 @@ private struct CountryListSummary {
                 }
             }
 
-            // The visited and year filters belong to the Been workflow only.
-            if browseMode == .been {
-                guard filterVisited == nil || country.isVisited == filterVisited else { continue }
-            }
             guard selectedContinent == nil || country.continent == selectedContinent else {
                 continue
             }
@@ -92,8 +100,7 @@ private struct CountryListSummary {
         self.continents = continents.sorted()
         self.visitYears = visitYears.sorted(by: >)
         self.visitedCount = visitedCount
-        self.hasActiveFilters =
-            filterVisited != nil || selectedContinent != nil || selectedYear != nil
+        self.hasActiveFilters = selectedContinent != nil || selectedYear != nil
     }
 }
 
@@ -110,12 +117,10 @@ struct ContentView: View {
     @State private var logVisitsText = ""
     @State private var intentRouter = IntentRouter.shared
     @State private var showSettings = false
-    @State private var showCountryList = false
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
-    @State private var expandedContinents: Set<String> = []
-    /// Whether the country list shows where you've Been or where you're Going.
-    @State private var browseMode: BrowseMode = .been
+    /// The selected top-level tab (Map / Been / Going).
+    @State private var selectedTab: AppTab = .map
 
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
@@ -123,7 +128,6 @@ struct ContentView: View {
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
     // Filters
-    @State private var filterVisited: Bool? = nil  // nil = all, true = visited, false = unvisited
     @State private var selectedContinent: String? = nil
     @State private var selectedYear: Int? = nil
 
@@ -150,29 +154,8 @@ struct ContentView: View {
     @State private var isLoadingMapData = true
     @State private var mapLoadingMessage = "Loading map…"
 
-    private var countryListSummary: CountryListSummary {
-        CountryListSummary(
-            countries: allCountries,
-            searchText: searchText,
-            browseMode: browseMode,
-            filterVisited: filterVisited,
-            selectedContinent: selectedContinent,
-            selectedYear: selectedYear
-        )
-    }
-
     private var visibleCountries: [Country] {
         allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
-    }
-
-    private var countriesGroupedByContinent: [String: [Country]] {
-        Dictionary(grouping: countryListSummary.filteredCountries, by: { $0.continent })
-    }
-
-    private func initializeExpandedContinents() {
-        if expandedContinents.isEmpty {
-            expandedContinents = Set(countriesGroupedByContinent.keys)
-        }
     }
 
     /// The interactive world map. Extracted so the body can withhold it (and the
@@ -279,15 +262,6 @@ struct ContentView: View {
                     } label: {
                         Label("From Description", systemImage: "text.bubble")
                     }
-
-                    #if !os(macOS)
-                        // macOS shows the country list in the always-present sidebar.
-                        Button {
-                            showCountryList = true
-                        } label: {
-                            Label("From List", systemImage: "list.bullet")
-                        }
-                    #endif
                 } label: {
                     if isLocating {
                         ProgressView()
@@ -317,26 +291,35 @@ struct ContentView: View {
 
     /// The root layout: a sidebar + map split on macOS (so the full country list
     /// is always visible), and the map alone on iOS (the list arrives as a sheet).
+    /// Map / Been / Going as a Liquid Glass tab bar (bottom bar on iPhone, sidebar
+    /// on iPad & Mac via `.sidebarAdaptable`). The map is the hero; the two lists
+    /// are your history and your plans. Discovery/adding happens on the Map (tap a
+    /// country → set its status or plan), so the lists stay curated collections.
     @ViewBuilder private var rootView: some View {
-        #if os(macOS)
-            NavigationSplitView {
-                CountrySidebar(
-                    allCountries: allCountries,
-                    searchText: $searchText,
-                    browseMode: $browseMode,
-                    filterVisited: $filterVisited,
-                    selectedContinent: $selectedContinent,
-                    selectedYear: $selectedYear,
-                    selectedCountry: $selectedCountry
-                )
-            } detail: {
-                mapContent
+        TabView(selection: $selectedTab) {
+            Tab("Map", systemImage: "map", value: AppTab.map) {
+                NavigationStack { mapContent }
             }
-        #else
-            NavigationStack {
-                mapContent
+            Tab("Been", systemImage: "checkmark.seal", value: AppTab.been) {
+                NavigationStack { countryList(.been) }
             }
-        #endif
+            Tab("Going", systemImage: "airplane", value: AppTab.going) {
+                NavigationStack { countryList(.going) }
+            }
+        }
+        .tabViewStyle(.sidebarAdaptable)
+        .tabBarMinimizeBehavior(.onScrollDown)
+    }
+
+    private func countryList(_ mode: BrowseMode) -> some View {
+        CountryListView(
+            allCountries: allCountries,
+            browseMode: mode,
+            searchText: $searchText,
+            selectedContinent: $selectedContinent,
+            selectedYear: $selectedYear,
+            selectedCountry: $selectedCountry
+        )
     }
 
     var body: some View {
@@ -368,22 +351,6 @@ struct ContentView: View {
             .sheet(isPresented: $showLogVisits) {
                 LogVisitsView(initialText: logVisitsText)
             }
-            #if !os(macOS)
-                .sheet(isPresented: $showCountryList) {
-                    CountryListSheet(
-                        allCountries: allCountries,
-                        searchText: $searchText,
-                        browseMode: $browseMode,
-                        filterVisited: $filterVisited,
-                        selectedContinent: $selectedContinent,
-                        selectedYear: $selectedYear,
-                        expandedContinents: $expandedContinents,
-                        selectedCountry: $selectedCountry,
-                        isPresented: $showCountryList,
-                        onAppear: initializeExpandedContinents
-                    )
-                }
-            #endif
             .sheet(item: $detailCountry) { country in
                 CountryDetailSheet(country: country)
             }
@@ -480,18 +447,17 @@ struct ContentView: View {
     private func consumePendingOpenCountry() {
         guard let id = intentRouter.pendingOpenCountryID, !allCountries.isEmpty else { return }
         intentRouter.pendingOpenCountryID = nil
+        selectedTab = .map
         selectedCountry = allCountries.first { $0.id == id }
     }
 
-    /// Applies a search term an intent requested. On iOS the country list is a
-    /// sheet, so present it; on macOS the sidebar is always visible.
+    /// Applies a search term an intent requested by switching to the Been tab (its
+    /// list searches across every country) and seeding the search field.
     private func consumePendingSearch() {
         guard let term = intentRouter.pendingSearchText else { return }
         intentRouter.pendingSearchText = nil
         searchText = term
-        #if !os(macOS)
-            showCountryList = true
-        #endif
+        selectedTab = .been
     }
 
     /// Picks up a pending "Mark where I am" request left by the Control Center
@@ -786,6 +752,9 @@ struct CountryRow: View {
                     .foregroundStyle(country.status.color)
             }
         }
+        // Make the whole row tappable, not just the drawn content (the Spacer gap
+        // wouldn't register taps under a plain button otherwise).
+        .contentShape(Rectangle())
     }
 }
 
@@ -1225,43 +1194,28 @@ struct VisitRow: View {
     }
 }
 
-// MARK: - Country List Sheet
+// MARK: - Country List
 
-/// The macOS sidebar listing every country grouped by continent. Selecting a row
-/// drives the same `selectedCountry` binding the map uses, so list and map stay in
-/// sync. iOS shows `CountryListSheet` instead, because a sheet reads better there.
-/// The Been / Going segmented control shown atop the country list, switching the
-/// list between your travel history and your wishlist/planning.
-private struct BrowseModePicker: View {
-    @Binding var browseMode: BrowseMode
-
-    var body: some View {
-        Picker("View", selection: $browseMode) {
-            ForEach(BrowseMode.allCases) { mode in
-                Text(mode.rawValue).tag(mode)
-            }
-        }
-        .pickerStyle(.segmented)
-        .padding(.vertical, 4)
-    }
-}
-
-private struct CountrySidebar: View {
+/// A full-screen, grouped country list backing the **Been** and **Going** tabs.
+/// Filtered to the tab's `browseMode` (Been = visited, Going = wishlist/planning);
+/// tapping a row opens that country's detail via `selectedCountry`. Searching
+/// matches across every country so you can still find any one to open.
+private struct CountryListView: View {
     let allCountries: [Country]
+    let browseMode: BrowseMode
 
     @Binding var searchText: String
-    @Binding var browseMode: BrowseMode
-    @Binding var filterVisited: Bool?
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
     @Binding var selectedCountry: Country?
+
+    @State private var sortOrder: CountrySort = .name
 
     private var summary: CountryListSummary {
         CountryListSummary(
             countries: allCountries,
             searchText: searchText,
             browseMode: browseMode,
-            filterVisited: filterVisited,
             selectedContinent: selectedContinent,
             selectedYear: selectedYear
         )
@@ -1271,212 +1225,126 @@ private struct CountrySidebar: View {
         Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
     }
 
-    private var plannedCount: Int { allCountries.lazy.filter(\.isPlanned).count }
+    /// Filtered countries ordered by most recent visit (newest first); countries
+    /// with no recorded visit fall to the bottom, then alphabetically.
+    private var recentlySorted: [Country] {
+        summary.filteredCountries.sorted { lhs, rhs in
+            switch (lastVisit(lhs), lastVisit(rhs)) {
+            case let (l?, r?): return l == r ? lhs.name < rhs.name : l > r
+            case (.some, nil): return true
+            case (nil, .some): return false
+            case (nil, nil): return lhs.name < rhs.name
+            }
+        }
+    }
+
+    private var count: Int { summary.filteredCountries.count }
+
+    /// The most recent visit date for a country, including the legacy `visitDate`.
+    private func lastVisit(_ country: Country) -> Date? {
+        var dates = country.visits.map(\.date)
+        if let legacy = country.visitDate { dates.append(legacy) }
+        return dates.max()
+    }
 
     var body: some View {
-        List(selection: $selectedCountry) {
-            Section {
-                BrowseModePicker(browseMode: $browseMode)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                if browseMode == .been {
-                    Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("On your list: \(plannedCount)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
+        Group {
             if allCountries.isEmpty {
-                Text("Preparing database...")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                ProgressView()
+            } else if summary.filteredCountries.isEmpty {
+                emptyState
             } else {
-                ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
-                    Section(continent) {
-                        ForEach(countriesGroupedByContinent[continent] ?? []) { country in
-                            CountryRow(country: country)
-                                .tag(country)
-                        }
-                    }
-                }
+                list
             }
         }
         .searchable(text: $searchText, prompt: "Search countries")
-        .navigationTitle("Countries")
-        .toolbar {
-            ToolbarItem {
-                Menu {
-                    if browseMode == .been {
-                        Section("Status") {
-                            Button("All") { filterVisited = nil }
-                            Button("Visited") { filterVisited = true }
-                            Button("Unvisited") { filterVisited = false }
-                        }
-                    }
+        .navigationTitle(browseMode == .been ? "Been" : "Going")
+        #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar { sortAndFilterMenu }
+    }
 
-                    Section("Continent") {
-                        Button("All") { selectedContinent = nil }
-                        ForEach(summary.continents, id: \.self) { continent in
-                            Button(continent) { selectedContinent = continent }
+    private var list: some View {
+        List {
+            Section {
+                Text("\(count) \(count == 1 ? "country" : "countries")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            // Name keeps the familiar by-continent grouping; recency is a flat,
+            // global order where continent sections wouldn't make sense.
+            if sortOrder == .name {
+                ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
+                    Section(continent) {
+                        ForEach(countriesGroupedByContinent[continent] ?? []) { country in
+                            row(country)
                         }
                     }
-
-                    if browseMode == .been, !summary.visitYears.isEmpty {
-                        Section("Visit year") {
-                            Button("All years") { selectedYear = nil }
-                            ForEach(summary.visitYears, id: \.self) { year in
-                                Button(String(year)) { selectedYear = year }
-                            }
-                        }
+                }
+            } else {
+                Section {
+                    ForEach(recentlySorted) { country in
+                        row(country)
                     }
-                } label: {
-                    Label(
-                        "Filter",
-                        systemImage: summary.hasActiveFilters
-                            ? "line.3.horizontal.decrease.circle.fill"
-                            : "line.3.horizontal.decrease.circle")
                 }
             }
         }
     }
-}
 
-/// A bottom sheet that presents the full country list with search and filters.
-/// Tapping a country selects it on the map and dismisses the sheet.
-private struct CountryListSheet: View {
-    let allCountries: [Country]
-
-    @Binding var searchText: String
-    @Binding var browseMode: BrowseMode
-    @Binding var filterVisited: Bool?
-    @Binding var selectedContinent: String?
-    @Binding var selectedYear: Int?
-    @Binding var expandedContinents: Set<String>
-    @Binding var selectedCountry: Country?
-    @Binding var isPresented: Bool
-
-    let onAppear: () -> Void
-
-    private var summary: CountryListSummary {
-        CountryListSummary(
-            countries: allCountries,
-            searchText: searchText,
-            browseMode: browseMode,
-            filterVisited: filterVisited,
-            selectedContinent: selectedContinent,
-            selectedYear: selectedYear
-        )
+    private func row(_ country: Country) -> some View {
+        Button {
+            selectedCountry = country
+        } label: {
+            CountryRow(country: country)
+        }
+        .buttonStyle(.plain)
     }
 
-    private var countriesGroupedByContinent: [String: [Country]] {
-        Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
+    @ViewBuilder private var emptyState: some View {
+        if browseMode == .been {
+            ContentUnavailableView(
+                "No countries yet",
+                systemImage: "map",
+                description: Text("Tap a country on the Map to mark where you've been."))
+        } else {
+            ContentUnavailableView(
+                "Nothing planned yet",
+                systemImage: "airplane",
+                description: Text("Find a country on the Map and add it to your wishlist."))
+        }
     }
 
-    private var plannedCount: Int { allCountries.lazy.filter(\.isPlanned).count }
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    BrowseModePicker(browseMode: $browseMode)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                    if browseMode == .been {
-                        Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("On your list: \(plannedCount)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+    @ToolbarContentBuilder private var sortAndFilterMenu: some ToolbarContent {
+        ToolbarItem {
+            Menu {
+                Picker("Sort", selection: $sortOrder) {
+                    ForEach(CountrySort.allCases) { sort in
+                        Text(sort.rawValue).tag(sort)
                     }
                 }
 
-                if allCountries.isEmpty {
-                    Text("Preparing database...")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding()
-                } else {
-                    ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
-                        let countries = countriesGroupedByContinent[continent] ?? []
-                        let isExpanded = Binding(
-                            get: { expandedContinents.contains(continent) },
-                            set: { newValue in
-                                if newValue {
-                                    expandedContinents.insert(continent)
-                                } else {
-                                    expandedContinents.remove(continent)
-                                }
-                            }
-                        )
+                Section("Continent") {
+                    Button("All") { selectedContinent = nil }
+                    ForEach(summary.continents, id: \.self) { continent in
+                        Button(continent) { selectedContinent = continent }
+                    }
+                }
 
-                        DisclosureGroup(isExpanded: isExpanded) {
-                            ForEach(countries) { country in
-                                Button {
-                                    selectedCountry = country
-                                    isPresented = false
-                                } label: {
-                                    CountryRow(country: country)
-                                }
-                            }
-                        } label: {
-                            Text(continent)
-                                .font(.headline)
+                if browseMode == .been, !summary.visitYears.isEmpty {
+                    Section("Visit year") {
+                        Button("All years") { selectedYear = nil }
+                        ForEach(summary.visitYears, id: \.self) { year in
+                            Button(String(year)) { selectedYear = year }
                         }
                     }
                 }
-            }
-            .searchable(text: $searchText, prompt: "Search countries")
-            .navigationTitle("Countries")
-            #if !os(macOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { isPresented = false }
-                }
-
-                ToolbarItem(placement: .cancellationAction) {
-                    Menu {
-                        if browseMode == .been {
-                            Section("Status") {
-                                Button("All") { filterVisited = nil }
-                                Button("Visited") { filterVisited = true }
-                                Button("Unvisited") { filterVisited = false }
-                            }
-                        }
-
-                        Section("Continent") {
-                            Button("All") { selectedContinent = nil }
-                            ForEach(summary.continents, id: \.self) { continent in
-                                Button(continent) { selectedContinent = continent }
-                            }
-                        }
-
-                        if browseMode == .been, !summary.visitYears.isEmpty {
-                            Section("Visit year") {
-                                Button("All years") { selectedYear = nil }
-                                ForEach(summary.visitYears, id: \.self) { year in
-                                    Button(String(year)) { selectedYear = year }
-                                }
-                            }
-                        }
-                    } label: {
-                        Label(
-                            "Filter",
-                            systemImage: summary.hasActiveFilters
-                                ? "line.3.horizontal.decrease.circle.fill"
-                                : "line.3.horizontal.decrease.circle")
-                    }
-                }
-            }
-            .onAppear {
-                onAppear()
+            } label: {
+                Label(
+                    "Sort & Filter",
+                    systemImage: summary.hasActiveFilters
+                        ? "line.3.horizontal.decrease.circle.fill"
+                        : "line.3.horizontal.decrease.circle")
             }
         }
     }
