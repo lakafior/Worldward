@@ -34,6 +34,10 @@ struct TravelStats {
     /// shareable card.
     let statusTints: [String: Int]
 
+    /// Tally of the independent *plan* axis (wishlist/planning). Kept entirely
+    /// separate from the visited counts above so plans never inflate "been there".
+    let planCounts: [PlanStatus: Int]
+
     let totalContinents: Int
     let visitedContinents: Int
     let continents: [ContinentStat]
@@ -81,10 +85,12 @@ struct TravelStats {
         var flagged: [(status: CountryStatus, name: String, flag: String)] = []
         var labels: [String: (flag: String, name: String)] = [:]
         var statusTints: [String: Int] = [:]
+        var planCounts: [PlanStatus: Int] = [:]
 
         for country in countries {
             let status = country.status
             statusCounts[status, default: 0] += 1
+            planCounts[country.planStatus, default: 0] += 1
 
             var bucket = buckets[country.continent, default: (0, 0)]
             bucket.total += 1
@@ -134,6 +140,7 @@ struct TravelStats {
         self.visitedCountries = visited
         self.statusCounts = statusCounts
         self.statusTints = statusTints
+        self.planCounts = planCounts
         self.totalContinents = continents.count
         self.visitedContinents = continents.lazy.filter { $0.visited > 0 }.count
         self.continents = continents
@@ -177,6 +184,18 @@ struct TravelStats {
 
     /// `true` when at least one country has been visited.
     var hasTravel: Bool { visitedCountries > 0 }
+
+    /// Countries flagged as a loose wishlist.
+    var wishlistCount: Int { planCounts[.wishlist] ?? 0 }
+
+    /// Countries you're actively planning to visit.
+    var planningCount: Int { planCounts[.planning] ?? 0 }
+
+    /// Countries on your plans at all (wishlist + planning).
+    var plannedCount: Int { wishlistCount + planningCount }
+
+    /// `true` when at least one country is on your plans.
+    var hasPlans: Bool { plannedCount > 0 }
 
     /// A friendly summary for sharing as plain text, leading with the headline
     /// figures and then listing every country visited.

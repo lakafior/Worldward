@@ -20,6 +20,9 @@ struct CountryRecord: Codable {
     var notes: String
     var visitDate: Date?  // legacy single-date field, preserved for round-tripping
     var visits: [VisitRecord]
+    /// The plan axis (wishlist/planning). Optional so older backups — written
+    /// before plans existed — still decode; a missing value imports as `.none`.
+    var planStatus: PlanStatus?
 
     /// Builds a record from a country, or `nil` when the country has no user data
     /// worth exporting (so a clean install exports an empty list, not 250 blanks).
@@ -27,6 +30,7 @@ struct CountryRecord: Codable {
     init?(from country: Country) {
         let hasData =
             country.status != .notVisited
+            || country.planStatus != .none
             || !country.visits.isEmpty
             || !country.notes.isEmpty
             || country.visitDate != nil
@@ -38,6 +42,7 @@ struct CountryRecord: Codable {
         self.notes = country.notes
         self.visitDate = country.visitDate
         self.visits = country.visits.map(VisitRecord.init)
+        self.planStatus = country.planStatus
     }
 
     /// Overwrites a country's travel data with this record. Replaces the country's
@@ -48,6 +53,7 @@ struct CountryRecord: Codable {
         country.statusIsImported = statusIsImported
         country.notes = notes
         country.visitDate = visitDate
+        country.planStatus = planStatus ?? .none
 
         for visit in country.visits {
             context.delete(visit)

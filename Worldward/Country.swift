@@ -23,6 +23,11 @@ final class Country {
     /// statuses the user chose manually.
     var statusIsImported: Bool = false
 
+    /// The country's place in your travel *plans* (wishlist/planning), persisted as
+    /// a primitive `String` for the same migration-safety reasons as `statusRaw`.
+    /// Independent of `statusRaw` — a country can be both visited and planned.
+    var planStatusRaw: String = PlanStatus.none.rawValue
+
     /// Legacy fields - kept for backward compatibility with existing data
     /// New code should use the `visits` relationship instead
     var visitDate: Date?
@@ -48,6 +53,16 @@ final class Country {
 
     /// Convenience used by statistics and filtering.
     var isVisited: Bool { status.isVisited }
+
+    /// The country's plan state. Writing it updates `planStatusRaw`, which SwiftData
+    /// persists and publishes — driving live map, list, and stats updates.
+    var planStatus: PlanStatus {
+        get { PlanStatus(rawValue: planStatusRaw) ?? .none }
+        set { planStatusRaw = newValue.rawValue }
+    }
+
+    /// Convenience used by the map's "Going" layer and the country list.
+    var isPlanned: Bool { planStatus.isPlanned }
 
     /// Unicode flag derived from the ISO 3166-1 alpha-2 id, so it never needs storing.
     var flagEmoji: String {

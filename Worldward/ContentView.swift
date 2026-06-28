@@ -4,6 +4,15 @@ import Photos
 import SwiftData
 import SwiftUI
 
+/// Whether the country list is showing where you've **been** or where you're
+/// **going** (your wishlist/planning). Drives the segmented control and which
+/// countries the list shows when not searching.
+enum BrowseMode: String, CaseIterable, Identifiable {
+    case been = "Been"
+    case going = "Going"
+    var id: String { rawValue }
+}
+
 private struct CountryListSummary {
     let filteredCountries: [Country]
     let continents: [String]
@@ -12,8 +21,8 @@ private struct CountryListSummary {
     let hasActiveFilters: Bool
 
     init(
-        countries: [Country], searchText: String, filterVisited: Bool?, selectedContinent: String?,
-        selectedYear: Int?
+        countries: [Country], searchText: String, browseMode: BrowseMode,
+        filterVisited: Bool?, selectedContinent: String?, selectedYear: Int?
     ) {
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         let calendar = Calendar.current
@@ -42,12 +51,27 @@ private struct CountryListSummary {
                 trimmedSearch.isEmpty
                     || country.name.localizedCaseInsensitiveContains(trimmedSearch)
             else { continue }
-            guard filterVisited == nil || country.isVisited == filterVisited else { continue }
+
+            // With no search term, restrict the list to the active workflow: Been
+            // shows where you've been, Going shows your wishlist/planning. While
+            // searching, both modes show every match so you can find any country to
+            // add to your plans.
+            if trimmedSearch.isEmpty {
+                switch browseMode {
+                case .been: guard country.isVisited else { continue }
+                case .going: guard country.isPlanned else { continue }
+                }
+            }
+
+            // The visited and year filters belong to the Been workflow only.
+            if browseMode == .been {
+                guard filterVisited == nil || country.isVisited == filterVisited else { continue }
+            }
             guard selectedContinent == nil || country.continent == selectedContinent else {
                 continue
             }
 
-            if let selectedYear {
+            if browseMode == .been, let selectedYear {
                 // Check if any visit matches the selected year
                 let hasMatchingVisit = country.visits.contains { visit in
                     calendar.component(.year, from: visit.date) == selectedYear
@@ -90,6 +114,8 @@ struct ContentView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
     @State private var expandedContinents: Set<String> = []
+    /// Whether the country list shows where you've Been or where you're Going.
+    @State private var browseMode: BrowseMode = .been
 
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
@@ -128,6 +154,7 @@ struct ContentView: View {
         CountryListSummary(
             countries: allCountries,
             searchText: searchText,
+            browseMode: browseMode,
             filterVisited: filterVisited,
             selectedContinent: selectedContinent,
             selectedYear: selectedYear
@@ -135,7 +162,7 @@ struct ContentView: View {
     }
 
     private var visibleCountries: [Country] {
-        allCountries.filter { $0.isVisited || $0 == selectedCountry }
+        allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
     }
 
     private var countriesGroupedByContinent: [String: [Country]] {
@@ -157,6 +184,7 @@ struct ContentView: View {
                     CountryMapPolygons(
                         country: country,
                         status: country.status,
+                        planStatus: country.planStatus,
                         polygons: countryPolygons[country.id] ?? [])
                 }
             }
@@ -295,6 +323,7 @@ struct ContentView: View {
                 CountrySidebar(
                     allCountries: allCountries,
                     searchText: $searchText,
+                    browseMode: $browseMode,
                     filterVisited: $filterVisited,
                     selectedContinent: $selectedContinent,
                     selectedYear: $selectedYear,
@@ -344,6 +373,7 @@ struct ContentView: View {
                     CountryListSheet(
                         allCountries: allCountries,
                         searchText: $searchText,
+                        browseMode: $browseMode,
                         filterVisited: $filterVisited,
                         selectedContinent: $selectedContinent,
                         selectedYear: $selectedYear,
@@ -743,10 +773,14 @@ struct CountryRow: View {
     let country: Country
 
     var body: some View {
-        HStack {
+        HStack(spacing: 6) {
             Text(country.flagEmoji)
             Text(country.name)
             Spacer()
+            if country.isPlanned {
+                Image(systemName: country.planStatus.symbolName)
+                    .foregroundStyle(country.planStatus.tint)
+            }
             if country.status.isVisited {
                 Image(systemName: country.status.symbolName)
                     .foregroundStyle(country.status.color)
@@ -761,13 +795,28 @@ struct CountryRow: View {
 struct CountryMapPolygons: MapContent {
     let country: Country
     let status: CountryStatus
+    let planStatus: PlanStatus
     let polygons: [MKPolygon]
+
+    /// Fill shows where you've *been* (warm); a country that's only planned shows
+    /// its blue plan fill instead.
+    private var fillColor: Color {
+        status.isVisited ? status.fillColor : planStatus.fillColor
+    }
+
+    /// A planned country gets a blue outline — thicker so it reads as a ring even
+    /// over a warm fill (a country that's both visited and on your list).
+    private var strokeColor: Color {
+        planStatus.isPlanned ? planStatus.strokeColor : status.strokeColor
+    }
+
+    private var lineWidth: CGFloat { planStatus.isPlanned ? 1.2 : 0.5 }
 
     var body: some MapContent {
         ForEach(polygons.indices, id: \.self) { index in
             MapPolygon(polygons[index])
-                .foregroundStyle(status.fillColor)
-                .stroke(status.strokeColor, lineWidth: 0.5)
+                .foregroundStyle(fillColor)
+                .stroke(strokeColor, lineWidth: lineWidth)
         }
     }
 }
@@ -927,22 +976,30 @@ private nonisolated func buildGeo(
     return (polys, paths, rects, hitRects)
 }
 
-/// Compact key explaining the green shades shown on the map.
+/// Compact key explaining the warm "been" shades and the blue "going" shades.
 struct MapLegend: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             ForEach(CountryStatus.visitedCases) { status in
-                HStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(status.color)
-                        .frame(width: 12, height: 12)
-                    Text(status.label)
-                        .font(.caption2)
-                }
+                swatch(color: status.color, label: status.label)
+            }
+            Divider().frame(maxWidth: 90)
+            ForEach(PlanStatus.plannedCases) { plan in
+                swatch(color: plan.color, label: plan.label)
             }
         }
         .padding(8)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func swatch(color: Color, label: String) -> some View {
+        HStack(spacing: 6) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(color)
+                .frame(width: 12, height: 12)
+            Text(label)
+                .font(.caption2)
+        }
     }
 }
 
@@ -1014,6 +1071,15 @@ struct CountryDetailView: View {
                     ForEach(CountryStatus.allCases) { status in
                         Label(status.label, systemImage: status.symbolName)
                             .tag(status)
+                    }
+                }
+            }
+
+            Section("Plans") {
+                Picker("List", selection: $country.planStatus) {
+                    ForEach(PlanStatus.allCases) { plan in
+                        Label(plan.label, systemImage: plan.symbolName)
+                            .tag(plan)
                     }
                 }
             }
@@ -1164,10 +1230,27 @@ struct VisitRow: View {
 /// The macOS sidebar listing every country grouped by continent. Selecting a row
 /// drives the same `selectedCountry` binding the map uses, so list and map stay in
 /// sync. iOS shows `CountryListSheet` instead, because a sheet reads better there.
+/// The Been / Going segmented control shown atop the country list, switching the
+/// list between your travel history and your wishlist/planning.
+private struct BrowseModePicker: View {
+    @Binding var browseMode: BrowseMode
+
+    var body: some View {
+        Picker("View", selection: $browseMode) {
+            ForEach(BrowseMode.allCases) { mode in
+                Text(mode.rawValue).tag(mode)
+            }
+        }
+        .pickerStyle(.segmented)
+        .padding(.vertical, 4)
+    }
+}
+
 private struct CountrySidebar: View {
     let allCountries: [Country]
 
     @Binding var searchText: String
+    @Binding var browseMode: BrowseMode
     @Binding var filterVisited: Bool?
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
@@ -1177,6 +1260,7 @@ private struct CountrySidebar: View {
         CountryListSummary(
             countries: allCountries,
             searchText: searchText,
+            browseMode: browseMode,
             filterVisited: filterVisited,
             selectedContinent: selectedContinent,
             selectedYear: selectedYear
@@ -1187,12 +1271,23 @@ private struct CountrySidebar: View {
         Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
     }
 
+    private var plannedCount: Int { allCountries.lazy.filter(\.isPlanned).count }
+
     var body: some View {
         List(selection: $selectedCountry) {
             Section {
-                Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                BrowseModePicker(browseMode: $browseMode)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                if browseMode == .been {
+                    Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("On your list: \(plannedCount)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if allCountries.isEmpty {
@@ -1215,10 +1310,12 @@ private struct CountrySidebar: View {
         .toolbar {
             ToolbarItem {
                 Menu {
-                    Section("Status") {
-                        Button("All") { filterVisited = nil }
-                        Button("Visited") { filterVisited = true }
-                        Button("Unvisited") { filterVisited = false }
+                    if browseMode == .been {
+                        Section("Status") {
+                            Button("All") { filterVisited = nil }
+                            Button("Visited") { filterVisited = true }
+                            Button("Unvisited") { filterVisited = false }
+                        }
                     }
 
                     Section("Continent") {
@@ -1228,7 +1325,7 @@ private struct CountrySidebar: View {
                         }
                     }
 
-                    if !summary.visitYears.isEmpty {
+                    if browseMode == .been, !summary.visitYears.isEmpty {
                         Section("Visit year") {
                             Button("All years") { selectedYear = nil }
                             ForEach(summary.visitYears, id: \.self) { year in
@@ -1254,6 +1351,7 @@ private struct CountryListSheet: View {
     let allCountries: [Country]
 
     @Binding var searchText: String
+    @Binding var browseMode: BrowseMode
     @Binding var filterVisited: Bool?
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
@@ -1267,6 +1365,7 @@ private struct CountryListSheet: View {
         CountryListSummary(
             countries: allCountries,
             searchText: searchText,
+            browseMode: browseMode,
             filterVisited: filterVisited,
             selectedContinent: selectedContinent,
             selectedYear: selectedYear
@@ -1277,13 +1376,24 @@ private struct CountryListSheet: View {
         Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
     }
 
+    private var plannedCount: Int { allCountries.lazy.filter(\.isPlanned).count }
+
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    BrowseModePicker(browseMode: $browseMode)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                    if browseMode == .been {
+                        Text("Visited countries: \(summary.visitedCount) / \(allCountries.count)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("On your list: \(plannedCount)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 if allCountries.isEmpty {
@@ -1333,10 +1443,12 @@ private struct CountryListSheet: View {
 
                 ToolbarItem(placement: .cancellationAction) {
                     Menu {
-                        Section("Status") {
-                            Button("All") { filterVisited = nil }
-                            Button("Visited") { filterVisited = true }
-                            Button("Unvisited") { filterVisited = false }
+                        if browseMode == .been {
+                            Section("Status") {
+                                Button("All") { filterVisited = nil }
+                                Button("Visited") { filterVisited = true }
+                                Button("Unvisited") { filterVisited = false }
+                            }
                         }
 
                         Section("Continent") {
@@ -1346,7 +1458,7 @@ private struct CountryListSheet: View {
                             }
                         }
 
-                        if !summary.visitYears.isEmpty {
+                        if browseMode == .been, !summary.visitYears.isEmpty {
                             Section("Visit year") {
                                 Button("All years") { selectedYear = nil }
                                 ForEach(summary.visitYears, id: \.self) { year in

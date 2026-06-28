@@ -44,6 +44,10 @@ struct StatisticsView: View {
 
                     StatCardsSection(stats: stats)
 
+                    if stats.hasPlans {
+                        PlansSection(stats: stats)
+                    }
+
                     if stats.years.contains(where: { $0.countries > 0 }) {
                         YearChartSection(years: stats.years)
                     }
@@ -315,6 +319,28 @@ private struct StatCardsSection: View {
                     title: "Busiest year",
                     value: "\(busiest.year) · \(busiest.countries)",
                     symbol: "flame.fill", tint: .brandIndigo)
+            }
+        }
+    }
+}
+
+/// The "Going" counterpart to the visited stat cards: how many countries are on
+/// your wishlist and how many you're actively planning, in the blue plan scale.
+private struct PlansSection: View {
+    let stats: TravelStats
+
+    private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "On your list", trailing: "\(stats.plannedCount)")
+            LazyVGrid(columns: columns, spacing: 12) {
+                StatCard(
+                    title: "Wishlist", value: "\(stats.wishlistCount)",
+                    symbol: PlanStatus.wishlist.symbolName, tint: PlanStatus.wishlist.color)
+                StatCard(
+                    title: "Planning", value: "\(stats.planningCount)",
+                    symbol: PlanStatus.planning.symbolName, tint: PlanStatus.planning.color)
             }
         }
     }
