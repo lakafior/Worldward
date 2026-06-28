@@ -93,6 +93,7 @@ struct ContentView: View {
 
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     // Filters
     @State private var filterVisited: Bool? = nil  // nil = all, true = visited, false = unvisited
@@ -104,6 +105,9 @@ struct ContentView: View {
     @State private var locationCountry: Country?
     @State private var showLocationPicker = false
     @State private var locationStatus: CountryStatusOption = .visited
+    /// Set when the Control Center "Mark where I am" control opened the app; held
+    /// until the catalog is ready so a cold launch still resolves.
+    @State private var pendingMarkHere = false
 
     // Geographic data
     @State private var countryPolygons: [String: [MKPolygon]] = [:]
@@ -386,7 +390,13 @@ struct ContentView: View {
             // duplicates that arrive from another device that seeded offline.
             .onChange(of: allCountries.count) {
                 consumePendingOpenCountry()
+                consumePendingMarkHere()
                 deduplicateCountries()
+            }
+            // The "Mark where I am" Control Center control opens the app and leaves
+            // a request in the App Group; pick it up whenever the app becomes active.
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { checkControlRequest() }
             }
             // Keep the Home/Lock Screen widgets in sync. `widgetSnapshotKey`
             // changes whenever a country is added, removed, or its status edited
@@ -399,6 +409,7 @@ struct ContentView: View {
                 consumePendingOpenStats()
                 consumePendingOpenCountry()
                 consumePendingSearch()
+                checkControlRequest()
             }
     }
 
@@ -443,6 +454,21 @@ struct ContentView: View {
         #if !os(macOS)
             showCountryList = true
         #endif
+    }
+
+    /// Picks up a pending "Mark where I am" request left by the Control Center
+    /// control, then tries to act on it. Safe to call on every activation.
+    private func checkControlRequest() {
+        if WidgetActionStore.consumeMarkHere() { pendingMarkHere = true }
+        consumePendingMarkHere()
+    }
+
+    /// Runs the current-location flow once the catalog is loaded. Retried from the
+    /// `allCountries.count` change so a cold launch from the control still resolves.
+    private func consumePendingMarkHere() {
+        guard pendingMarkHere, !allCountries.isEmpty else { return }
+        pendingMarkHere = false
+        Task { await markCurrentLocation() }
     }
 
     /// Requests the user's location, reverse‑geocodes it to a country, and presents

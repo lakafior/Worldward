@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -267,6 +268,41 @@ struct MiniMapWidget: Widget {
             .configurationDisplayName("Travel Progress")
             .description("Your country count and share of the world, on the Lock Screen.")
             .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        }
+    }
+
+#endif
+
+// MARK: - Control Center
+
+// Controls are iOS-only. The intent lives here (in the extension), raises a
+// request through the App Group, and opens the app — which has the location
+// permission and model needed to actually resolve and mark the country.
+#if os(iOS)
+
+    /// Tapping the control records a request and opens Worldward, which then runs
+    /// its current-location flow and shows the status picker to confirm.
+    struct MarkHereControlIntent: AppIntent {
+        static let title: LocalizedStringResource = "Mark where I am"
+        static let description = IntentDescription(
+            "Marks your current country in Worldward.")
+        static let openAppWhenRun = true
+
+        func perform() async throws -> some IntentResult {
+            WidgetActionStore.requestMarkHere()
+            return .result()
+        }
+    }
+
+    struct MarkHereControl: ControlWidget {
+        var body: some ControlWidgetConfiguration {
+            StaticControlConfiguration(kind: "net.smigi.worldward.markhere") {
+                ControlWidgetButton(action: MarkHereControlIntent()) {
+                    Label("Mark where I am", systemImage: "mappin.and.ellipse")
+                }
+            }
+            .displayName("Mark where I am")
+            .description("Mark your current country as visited in Worldward.")
         }
     }
 

@@ -245,6 +245,33 @@ enum WorldMapStore {
     }
 }
 
+// MARK: - Control Center actions
+
+/// A one-shot request raised by the Control Center control (which runs in the
+/// widget extension, outside the app) and consumed by the app on its next
+/// activation. It travels through the App Group's shared `UserDefaults`; the app
+/// then runs its own location + status-picker flow, which needs permissions and
+/// the model the extension doesn't have.
+enum WidgetActionStore {
+    private static let markHereKey = "pendingMarkHere"
+
+    private static var defaults: UserDefaults? {
+        UserDefaults(suiteName: WidgetSnapshotStore.appGroupID)
+    }
+
+    /// Extension side: ask the app to mark the user's current country.
+    static func requestMarkHere() {
+        defaults?.set(true, forKey: markHereKey)
+    }
+
+    /// App side: returns `true` once when a request is pending, then clears it.
+    static func consumeMarkHere() -> Bool {
+        guard let defaults, defaults.bool(forKey: markHereKey) else { return false }
+        defaults.removeObject(forKey: markHereKey)
+        return true
+    }
+}
+
 // MARK: - Shared map view
 
 /// The map's yellow-to-orange status scale (mirrors `CountryStatus.color`), keyed
