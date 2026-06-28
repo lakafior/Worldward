@@ -50,8 +50,18 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### Share
 - Generate a beautiful share card (rasterised image) with your travel stats.
-- Customisable headline, caption, metrics, and gradient theme.
+- Customisable headline, caption, metrics, and gradient theme — optionally featuring your tinted world map.
 - Share as image or plain-text summary.
+
+### Widgets & Controls
+- **Home Screen / desktop widgets**: Travel Snapshot (countries, continents, % of the world), Flags Visited, and a tinted World Map.
+- **Lock Screen accessories**: a circular progress gauge, a rectangular summary, and an inline count.
+- **Control Center / Action button**: a "Mark where I am" control that opens the app to log your current country.
+- Widgets read a small snapshot the app writes to a shared **App Group** (plus a copy of the map geometry) — no SwiftData runs in the extension.
+
+### Reminders
+- Optional on-device local notifications: "on this day" travel memories, a December year-in-review nudge, and a gentle prompt if you haven't logged a trip in a while.
+- **Off by default** — opt in from Settings; nothing is scheduled until you do.
 
 ### Data Portability
 - **Export / Import** your travel data as a portable JSON file.
@@ -73,7 +83,9 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 | Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~340 KB) |
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
-| Intents | `AppIntents` framework |
+| Intents | `AppIntents` framework (Shortcuts, Siri, Control Center controls) |
+| Widgets | `WidgetKit` (Home/Lock Screen, accessories, controls) over an App Group |
+| Notifications | `UserNotifications` (local, opt-in) |
 | Share | `ImageRenderer` → `ShareLink` |
 | Platforms | macOS 15+, iOS 18+ |
 
@@ -85,17 +97,20 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 Worldward/
 ├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
 ├── ContentView.swift           # Main map view, sidebar, bundled-geometry reader
-├── Country.swift               # SwiftData model for a country
+├── Country.swift               # SwiftData model for a country (been + plan axes)
 ├── Visit.swift                 # SwiftData model for a dated visit
-├── CountryStatus.swift         # Travel status enum (notVisited → living)
+├── CountryStatus.swift         # "Been there" status enum (notVisited → living)
+├── PlanStatus.swift            # "Going" plan enum (none / wishlist / planning)
 ├── Continents.swift            # ISO → continent lookup table
 ├── TravelStats.swift           # All computed statistics + nearest-unvisited helper
 ├── Achievement.swift           # Gamification badges, derived from TravelStats
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
-├── SettingsView.swift          # Appearance picker + export/import
+├── SettingsView.swift          # Appearance, reminders toggle, export/import
 ├── StatisticsView.swift        # Dashboard, achievements, charts, AI insights
-├── ShareCard.swift             # Rasterised share-card view
+├── ShareCard.swift             # Rasterised share-card view (with optional map)
 ├── ShareCustomizationView.swift # Live card preview + share flow
+├── NotificationManager.swift   # Opt-in local travel reminders
+├── WidgetSharedSnapshot.swift  # Shared snapshot/geometry + control intent (app ∩ widget)
 ├── PhotoImporter.swift         # Photo Library scan → proposed trips
 ├── ImportPreviewView.swift     # Scan configuration & results UI
 ├── VisitPhotosView.swift       # Photo thumbnail strip + full-size viewer
@@ -113,7 +128,13 @@ Worldward/
 ├── Assets.xcassets/            # App icon, launch screen, brand colors
 ├── countries.wmgb             # Pre-simplified country geometry (~239 countries)
 └── Info.plist                  # Launch screen config
+
+WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Control Center)
+├── WorldwardWidgetsBundle.swift # @main WidgetBundle (widgets + control)
+└── WorldwardWidgets.swift      # Snapshot/Flags/Map widgets, accessories, "Mark where I am" control
 ```
+
+> The app and the widget extension share data through an **App Group** (`group.net.smigi.worldward`): the app writes a small `WidgetSnapshot` and a copy of the map geometry; the widgets read them. `WidgetSharedSnapshot.swift` is a member of both targets.
 
 ---
 
