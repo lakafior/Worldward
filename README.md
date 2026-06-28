@@ -11,12 +11,18 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 ### Interactive Map
 - Every country rendered as a tap-able map polygon from Natural Earth data (~250 countries).
 - Warm yellow-to-orange fill per country status: **Crossed** → **Visited** → **Lived** → **Living**.
+- A cool-blue **planning layer** on the same map — **Wishlist** and **Planning** countries tinted blue, with a blue ring on places you've both visited *and* want to return to.
 - Tap any country to see its visits, flag, and notes.
 
 ### Travel Log
 - Record visits with dates and notes for every country you've been to.
 - Attach photo thumbnails fetched live from your Photo Library — no image data is ever stored.
 - Multiple visits per country, each with its own date and photo set.
+
+### Trip Planning
+- A **plan axis** independent of where you've been: mark any country **Wishlist** or **Planning** — a country can be both visited *and* on your list.
+- A **Been / Going** segmented control splits the country list, detail, and stats into history vs. plans, all on one shared world map.
+- An "On your list" stats card tracks your wishlist and planning counts without touching your visited totals.
 
 ### Statistics & Achievements
 - Live dashboard: total countries, continents covered, busiest year, most-visited country.
