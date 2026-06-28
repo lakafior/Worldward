@@ -179,8 +179,13 @@ struct ContentView: View {
                 #endif
                 MapCompass()
             }
-            .onTapGesture { location in
-                if let coordinate = proxy.convert(location, from: .local) {
+            // Use `simultaneousGesture` rather than `.onTapGesture`: attaching a
+            // plain tap recognizer directly to `Map` competes with MapKit's own
+            // pan/pinch recognizers, which intermittently swallows taps and turns
+            // drags into zooms. A simultaneous SpatialTapGesture runs alongside the
+            // map's gestures instead of fighting them for each touch.
+            .simultaneousGesture(SpatialTapGesture().onEnded { event in
+                if let coordinate = proxy.convert(event.location, from: .local) {
                     let mapPoint = MKMapPoint(coordinate)
                     let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
 
@@ -200,7 +205,7 @@ struct ContentView: View {
                         }
                     }
                 }
-            }
+            })
             // Prevent CAMetalLayer zero-size warnings during sheet transitions.
             .frame(minWidth: 1, minHeight: 1)
         }
