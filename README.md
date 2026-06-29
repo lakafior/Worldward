@@ -86,11 +86,11 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 | | | |
 |---|---|---
 | ![Map View](Assets/Screenshots/1.png) | ![Country Detail](Assets/Screenshots/2.png) | ![Visit Logging](Assets/Screenshots/3.png) |
-| **Interactive Map** - Tap any country to view details, set visit status, and attach photos | **Import from photos** - Options for importing countries from Apple Photos | **Local Foundation Chat** - Chat with Apple Intelligence local model about yours trips |
+| **Interactive Map** - Tap any country to view details, set visit status, and attach photos | **Import from photos** - Options for importing countries from Apple Photos | **Lot of Shortcuts** - Endpoints to iOS Shortcuts to automate your travel workflows |
 | ![Trip Planning](Assets/Screenshots/4.png) | ![Statistics Dashboard](Assets/Screenshots/5.png) | ![Achievements](Assets/Screenshots/6.png) |
 | **Achievments** - Earn achievments by travelling and view your stats | **Share Summary** - Share image or text with summary of your progress | **Been** - Section with all your entries to quick summary countries you've visited |
-| ![Settings](Assets/Screenshots/7.png) | ![Share Card](Assets/Screenshots/8.png) | |
-| **Travel details** - Details of your planned trips | **Going** - Summary of your travel plans |
+| ![Settings](Assets/Screenshots/7.png) | ![Share Card](Assets/Screenshots/8.png) | ![Widgets](Assets/Screenshots/9.png) |
+| **Travel details** - Details of your planned trips | **Going** - Summary of your travel plans | **Widgets** - Home/Lock Screen and Control Center widgets with travel stats and map | 
 
 ---
 
