@@ -18,6 +18,39 @@ enum AppTab: Hashable {
     case map, been, going
 }
 
+/// A grid-based spatial index for map hit-testing. Matches the same grid
+/// convention used by `SpatialIndex` in PhotoImporter, so a tap only tests
+/// the 5-15 countries whose bounding rect overlaps the tapped cell.
+struct WorldHitTestIndex: Sendable {
+    private let cols: Int
+    private let rows: Int
+    private let world = MKMapRect.world
+    private var cells: [Int: [String]] = [:]
+
+    init(rects: [String: MKMapRect], cols: Int = 36, rows: Int = 18) {
+        self.cols = cols
+        self.rows = rows
+        for (id, rect) in rects {
+            let minCol = max(0, Int((rect.minX / world.width) * Double(cols)))
+            let maxCol = min(cols - 1, Int((rect.maxX / world.width) * Double(cols)))
+            let minRow = max(0, Int((rect.minY / world.height) * Double(rows)))
+            let maxRow = min(rows - 1, Int((rect.maxY / world.height) * Double(rows)))
+            for col in minCol...maxCol {
+                for row in minRow...maxRow {
+                    cells[row * cols + col, default: []].append(id)
+                }
+            }
+        }
+    }
+
+    /// Country ids whose bounding rect spans the grid cell containing `point`.
+    func candidates(for point: MKMapPoint) -> [String] {
+        let col = min(cols - 1, max(0, Int((point.x / world.width) * Double(cols))))
+        let row = min(rows - 1, max(0, Int((point.y / world.height) * Double(rows))))
+        return cells[row * cols + col] ?? []
+    }
+}
+
 struct ContentView: View {
     @Query(sort: [SortDescriptor(\Country.continent), SortDescriptor(\Country.name)]) private
         var allCountries: [Country]
@@ -35,6 +68,10 @@ struct ContentView: View {
     @State private var hasCenteredOnHome = false
     /// The selected top-level tab (Map / Been / Going).
     @State private var selectedTab: AppTab = .map
+    /// Cached subset of `allCountries` that should appear on the map.
+    /// Rebuilt via `onChange(of: allCountries.count)` so we don't filter all 250+
+    /// rows on every SwiftUI body evaluation.
+    @State private var visibleCountryCache: [Country] = []
 
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
@@ -65,11 +102,20 @@ struct ContentView: View {
     /// archipelago) are still selectable.
     @State private var countryHitRects: [String: MKMapRect] = [:]
     @State private var countryCentroids: [String: CLLocationCoordinate2D] = [:]
+    /// Spatial index for map hit-testing: divides the world into a grid so a tap
+    /// only tests countries whose bounding rect overlaps the tapped cell (typically
+    /// 5-15 candidates instead of all ~250). Built once alongside the geometry.
+    @State private var hitTestIndex: WorldHitTestIndex? = nil
     @State private var isLoadingMapData = true
     @State private var mapLoadingMessage = "Loading map…"
 
+    /// The subset of countries to render on the map. Uses a cached array that is
+    /// rebuilt when the catalog or selection changes, avoiding a full filter of
+    /// all 250+ rows on every body evaluation.
     private var visibleCountries: [Country] {
-        allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
+        visibleCountryCache.isEmpty
+            ? allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
+            : visibleCountryCache
     }
 
     /// The interactive world map. Extracted so the body can withhold it (and the
@@ -104,17 +150,22 @@ struct ContentView: View {
                         let mapPoint = MKMapPoint(coordinate)
                         let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
 
-                        // Optimized lookup: reject by the country's full-extent hit rect
-                        // first (covers every polygon, not just the mainland), then test
-                        // individual paths.
-                        for country in allCountries {
-                            guard let countryRect = countryHitRects[country.id],
+                        // Optimized lookup: use the spatial grid index to only test
+                        // countries whose bounding rect overlaps the tapped cell
+                        // (typically 5-15 candidates instead of all ~250),
+                        // then hit-test individual paths.
+                        let candidates =
+                            hitTestIndex?.candidates(for: mapPoint) ?? allCountries.map(\.id)
+                        for id in candidates {
+                            guard let countryRect = countryHitRects[id],
                                 countryRect.contains(mapPoint)
                             else { continue }
 
-                            for path in countryPaths[country.id] ?? [] {
+                            for path in countryPaths[id] ?? [] {
                                 if path.contains(cgPoint) {
-                                    selectedCountry = country
+                                    if let country = allCountries.first(where: { $0.id == id }) {
+                                        selectedCountry = country
+                                    }
                                     return
                                 }
                             }
@@ -320,6 +371,10 @@ struct ContentView: View {
                 consumePendingOpenCountry()
                 consumePendingMarkHere()
                 deduplicateCountries()
+                rebuildVisibleCache()
+            }
+            .onChange(of: selectedCountry) {
+                rebuildVisibleCache()
             }
             // The "Mark where I am" Control Center control writes a request to the
             // App Group's UserDefaults before opening the app (the OpenIntent runs
@@ -342,6 +397,14 @@ struct ContentView: View {
                 consumePendingSearch()
                 checkControlRequest()
             }
+    }
+
+    /// Rebuild the cached visible-country set so the map view doesn't have to
+    /// filter all 250+ rows on every body evaluation.
+    private func rebuildVisibleCache() {
+        visibleCountryCache = allCountries.filter {
+            $0.isVisited || $0.isPlanned || $0 == selectedCountry
+        }
     }
 
     /// The padded map rectangle enclosing all of a country's polygons.
@@ -492,6 +555,7 @@ struct ContentView: View {
         self.countryPaths = extractedPaths
         self.countryBoundingRects = extractedRects
         self.countryHitRects = extractedHitRects
+        self.hitTestIndex = WorldHitTestIndex(rects: extractedHitRects)
         // Derive a centroid per country from its bounding rect so the statistics
         // page can rank the nearest unvisited countries by real proximity.
         self.countryCentroids = extractedRects.mapValues { rect in

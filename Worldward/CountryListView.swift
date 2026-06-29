@@ -17,6 +17,17 @@ struct CountryListSummary {
     let visitedCount: Int
     let hasActiveFilters: Bool
 
+    /// Empty placeholder so the summary can be stored as `@State` and populated
+    /// on first render via `rebuildSummary`. The list body checks `summaryReady`
+    /// before reading it, so the empty state is never shown.
+    init() {
+        filteredCountries = []
+        continents = []
+        visitYears = []
+        visitedCount = 0
+        hasActiveFilters = false
+    }
+
     init(
         countries: [Country], searchText: String, browseMode: BrowseMode,
         selectedContinent: String?, selectedYear: Int?
@@ -103,16 +114,13 @@ struct CountryListView: View {
     @Binding var selectedCountry: Country?
 
     @State private var sortOrder: CountrySort = .name
+    /// Cached filter/sort summary recomputed only when dependencies change,
+    /// avoiding a full iteration of all countries + their visits on every render.
+    @State private var summary = CountryListSummary()
 
-    private var summary: CountryListSummary {
-        CountryListSummary(
-            countries: allCountries,
-            searchText: searchText,
-            browseMode: browseMode,
-            selectedContinent: selectedContinent,
-            selectedYear: selectedYear
-        )
-    }
+    /// `true` once the summary has been initialized. Avoids flashing empty states
+    /// when the view first appears before `rebuildSummary` fires via `onAppear`.
+    @State private var summaryReady = false
 
     private var countriesGroupedByContinent: [String: [Country]] {
         Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
@@ -144,7 +152,7 @@ struct CountryListView: View {
         Group {
             if allCountries.isEmpty {
                 ProgressView()
-            } else if summary.filteredCountries.isEmpty {
+            } else if summaryReady && summary.filteredCountries.isEmpty {
                 emptyState
             } else {
                 list
@@ -156,6 +164,23 @@ struct CountryListView: View {
             .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar { sortAndFilterMenu }
+        .onAppear { rebuildSummary() }
+        .onChange(of: searchText) { rebuildSummary() }
+        .onChange(of: selectedContinent) { rebuildSummary() }
+        .onChange(of: selectedYear) { rebuildSummary() }
+        .onChange(of: allCountries.count) { rebuildSummary() }
+    }
+
+    /// Recompute the cached summary from the current filter/sort state.
+    private func rebuildSummary() {
+        summary = CountryListSummary(
+            countries: allCountries,
+            searchText: searchText,
+            browseMode: browseMode,
+            selectedContinent: selectedContinent,
+            selectedYear: selectedYear
+        )
+        summaryReady = true
     }
 
     private var list: some View {
