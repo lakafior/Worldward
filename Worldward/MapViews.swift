@@ -36,7 +36,10 @@ struct CountryMapPolygons: MapContent {
 }
 
 /// Compact key explaining the warm "been" shades and the blue "going" shades.
+/// Adapts its background to bright or dark map styles.
 struct MapLegend: View {
+    let isDark: Bool
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             ForEach(CountryStatus.visitedCases) { status in
@@ -48,7 +51,11 @@ struct MapLegend: View {
             }
         }
         .padding(8)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+        .background(in: RoundedRectangle(cornerRadius: 8))
+        .backgroundStyle(
+            isDark ? AnyShapeStyle(Color.black.opacity(0.6)) : AnyShapeStyle(.ultraThinMaterial)
+        )
+        .foregroundStyle(isDark ? .white : .primary)
     }
 
     private func swatch(color: Color, label: String) -> some View {

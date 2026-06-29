@@ -34,6 +34,43 @@ enum MapFilter: String, CaseIterable, Identifiable {
     }
 }
 
+/// The available MapKit map styles. Persisted via @AppStorage.
+enum MapStyleOption: String, CaseIterable, Identifiable {
+    case standard
+    case hybrid
+    case imagery
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .standard: "Standard"
+        case .hybrid: "Hybrid"
+        case .imagery: "Satellite"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .standard: "map"
+        case .hybrid: "map.fill"
+        case .imagery: "globe"
+        }
+    }
+
+    /// The MapKit map style this option maps to.
+    var mapStyle: MapStyle {
+        switch self {
+        case .standard: .standard
+        case .hybrid: .hybrid
+        case .imagery: .imagery
+        }
+    }
+
+    /// `true` for dark-background styles where the legend needs more contrast.
+    var isDark: Bool { self != .standard }
+}
+
 /// A grid-based spatial index for map hit-testing. Matches the same grid
 /// convention used by `SpatialIndex` in PhotoImporter, so a tap only tests
 /// the 5-15 countries whose bounding rect overlaps the tapped cell.
@@ -99,6 +136,7 @@ struct ContentView: View {
     @State private var selectedContinent: String? = nil
     @State private var selectedYear: Int? = nil
     @State private var mapFilter: MapFilter = .all
+    @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
 
     // Current-location marking
     @State private var isLocating = false
@@ -175,13 +213,14 @@ struct ContentView: View {
                     }
                 }
             }
-            .mapStyle(.standard)
+            .mapStyle(mapStyle.mapStyle)
             .mapControls {
                 // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
                 #if os(macOS)
                     MapZoomStepper()
                 #endif
                 MapCompass()
+                MapScaleView()
             }
             // Use `simultaneousGesture` rather than `.onTapGesture`: attaching a
             // plain tap recognizer directly to `Map` competes with MapKit's own
@@ -241,7 +280,7 @@ struct ContentView: View {
             } else {
                 mapView
 
-                MapLegend()
+                MapLegend(isDark: mapStyle.isDark)
                     .padding([.horizontal, .top])
                     .padding(.bottom, 40)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)

@@ -33,6 +33,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 /// scene (⌘,) and inside a sheet on iOS/iPadOS — the same `Form` for both.
 struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
     @Environment(\.modelContext) private var modelContext
 
@@ -80,6 +81,12 @@ struct SettingsView: View {
             Picker("Theme", selection: $appTheme) {
                 ForEach(AppTheme.allCases) { theme in
                     Text(theme.label).tag(theme)
+                }
+            }
+
+            Picker("Map Style", selection: $mapStyle) {
+                ForEach(MapStyleOption.allCases) { style in
+                    Label(style.label, systemImage: style.symbolName).tag(style)
                 }
             }
         }
