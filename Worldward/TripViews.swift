@@ -204,6 +204,7 @@ struct TripDetailView: View {
     @State private var planner = TripPlanner()
     @State private var confirmClearPacking = false
     @State private var isAddingContainer = false
+    @State private var showManageContainers = false
     @State private var newContainerName = ""
     /// The item to file into the container being created, or `nil` when creating
     /// an empty container from the controls section.
@@ -250,6 +251,9 @@ struct TripDetailView: View {
             Button("Cancel", role: .cancel, action: resetContainerDraft)
         } message: {
             Text("Bags and cases are shared across all your trips.")
+        }
+        .sheet(isPresented: $showManageContainers) {
+            ManageContainersView()
         }
         .alert(
             "Apple Calendar",
@@ -345,10 +349,9 @@ struct TripDetailView: View {
             }
 
             Button {
-                pendingContainerItem = nil
-                isAddingContainer = true
+                showManageContainers = true
             } label: {
-                Label("New container", systemImage: "bag.badge.plus")
+                Label("Manage containers", systemImage: "bag.badge.plus")
             }
 
             if canUseAssistant {
