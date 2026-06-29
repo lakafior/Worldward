@@ -150,11 +150,10 @@ enum WorldMapStore {
         try? data.write(to: containerURL, options: .atomic)
     }
 
-    /// Widget side: the decoded geometry. The first successful decode is cached for
-    /// the lifetime of the extension process; while the file is still missing
-    /// (e.g. the app hasn't run since install) it returns `nil` and retries on the
-    /// next call, so the map fills in as soon as the app caches the file — without
-    /// needing the widget process to restart.
+    /// Widget side: the decoded geometry, cached for the lifetime of the
+    /// extension process. Accessed only from the main actor (SwiftUI View bodies
+    /// and TimelineProvider callbacks); the widget renders one timeline and exits,
+    /// so concurrent access is impossible in practice.
     nonisolated(unsafe) private static var cached: WorldMap?
     static var shared: WorldMap? {
         if let cached { return cached }
