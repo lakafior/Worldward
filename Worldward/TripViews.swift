@@ -84,6 +84,8 @@ private struct TripsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var trips: [Trip]
     @State private var editingTrip: Trip?
+    @State private var showManageContainers = false
+    @State private var showManageTemplates = false
 
     /// Upcoming trips first (soonest start), then finished trips (most recent).
     private var orderedTrips: [Trip] {
@@ -119,6 +121,22 @@ private struct TripsListView: View {
         #endif
         .toolbar {
             ToolbarItem {
+                Menu {
+                    Button {
+                        showManageContainers = true
+                    } label: {
+                        Label("Manage Containers", systemImage: "bag")
+                    }
+                    Button {
+                        showManageTemplates = true
+                    } label: {
+                        Label("Manage Templates", systemImage: "list.bullet.rectangle.portrait")
+                    }
+                } label: {
+                    Label("Manage", systemImage: "slider.horizontal.3")
+                }
+            }
+            ToolbarItem {
                 Button {
                     addTrip()
                 } label: {
@@ -128,6 +146,12 @@ private struct TripsListView: View {
         }
         .sheet(item: $editingTrip) { trip in
             TripDetailSheet(trip: trip, allCountries: allCountries)
+        }
+        .sheet(isPresented: $showManageContainers) {
+            ManageContainersView()
+        }
+        .sheet(isPresented: $showManageTemplates) {
+            ManageTemplatesView()
         }
     }
 
@@ -219,7 +243,10 @@ struct TripDetailView: View {
     @State private var newTemplateName = ""
 
     var body: some View {
-        Form {
+        // A `List` (not `Form`) so iOS 27's `reorderContainer` can host the
+        // packing drag — the drop only commits inside a real list container.
+        // `.insetGrouped` keeps the familiar grouped-form appearance.
+        List {
             Section {
                 TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
                 DatePicker("Start", selection: $trip.startDate, displayedComponents: .date)
@@ -249,10 +276,18 @@ struct TripDetailView: View {
         // Drag-to-reorder packing items within and across container groups; the
         // closure rewrites each moved item's container + `order`. The itinerary's
         // own `.onMove` is keyed to `ItineraryItem` and coexists.
+        // Both reorderable collections use the new iOS 27 API so the list has a
+        // single, consistent reorder system — mixing the legacy `.onMove` with a
+        // `reorderContainer` in the same List corrupts UIKit's move bookkeeping
+        // and crashes on drop.
+        .reorderContainer(for: ItineraryItem.self) { difference in
+            applyItineraryReorder(difference)
+        }
         .reorderContainer(for: PackingItem.self, in: String.self) { difference in
             applyPackingReorder(difference)
         }
         #if os(iOS)
+            .listStyle(.insetGrouped)
             .toolbar { EditButton() }
         #endif
         .task { seedContainersIfNeeded() }
@@ -318,8 +353,8 @@ struct TripDetailView: View {
                 ForEach(trip.sortedStops) { stop in
                     StopRow(stop: stop)
                 }
+                .reorderable()
                 .onDelete(perform: deleteStops)
-                .onMove(perform: moveStops)
             }
             Button {
                 showCountryPicker = true
@@ -524,9 +559,27 @@ struct TripDetailView: View {
         for index in offsets { modelContext.delete(ordered[index]) }
     }
 
-    private func moveStops(from source: IndexSet, to destination: Int) {
+    /// Applies a drag-to-reorder of the itinerary (a single collection) and
+    /// renumbers every stop's `order` so the new arrangement persists.
+    private func applyItineraryReorder(
+        _ difference: ReorderDifference<PersistentIdentifier, ReorderableSingleCollectionIdentifier>
+    ) {
         var ordered = trip.sortedStops
-        ordered.move(fromOffsets: source, toOffset: destination)
+        let movingSet = Set(difference.sources)
+        let moved = difference.sources.compactMap { id in
+            ordered.first { $0.persistentModelID == id }
+        }
+        guard !moved.isEmpty else { return }
+        ordered.removeAll { movingSet.contains($0.persistentModelID) }
+
+        switch difference.destination.position {
+        case .before(let targetID):
+            let index = ordered.firstIndex { $0.persistentModelID == targetID } ?? ordered.endIndex
+            ordered.insert(contentsOf: moved, at: index)
+        case .end:
+            ordered.append(contentsOf: moved)
+        }
+
         for (index, stop) in ordered.enumerated() { stop.order = index }
     }
 
@@ -549,6 +602,15 @@ struct TripDetailView: View {
     /// Applies a drag-to-reorder across packing containers: the moved items adopt
     /// the destination group's container, and that whole group is renumbered so
     /// `order` stays contiguous. Items in untouched groups keep their order.
+    ///
+    /// A move that changes an item's container shifts the row counts of two
+    /// sections at once. Doing that synchronously inside the interactive-reorder
+    /// commit makes `UICollectionView` assert ("invalid number of items in
+    /// section" / "0 moved in"), because the gesture's bookkeeping can't attribute
+    /// the cross-section change. Deferring the cross-container write to the next
+    /// runloop tick lets SwiftUI diff it as an ordinary data update instead.
+    /// Same-container reorders don't change any section's count, so they commit
+    /// synchronously for a smooth, flicker-free drag.
     private func applyPackingReorder(
         _ difference: ReorderDifference<PersistentIdentifier, String>
     ) {
@@ -563,27 +625,39 @@ struct TripDetailView: View {
         }
         guard !moved.isEmpty else { return }
 
-        // The destination group's current items, minus anything being moved in.
-        var destItems =
-            trip.packing
-            .filter {
-                $0.container?.persistentModelID == destContainerID
-                    && !movingSet.contains($0.persistentModelID)
-            }
-            .sorted { $0.order < $1.order }
-
-        switch difference.destination.position {
-        case .before(let targetID):
-            let index =
-                destItems.firstIndex { $0.persistentModelID == targetID } ?? destItems.endIndex
-            destItems.insert(contentsOf: moved, at: index)
-        case .end:
-            destItems.append(contentsOf: moved)
+        let crossesContainers = moved.contains {
+            $0.container?.persistentModelID != destContainerID
         }
 
-        for (index, item) in destItems.enumerated() {
-            item.container = destContainer
-            item.order = index
+        let commit = {
+            // The destination group's current items, minus anything being moved in.
+            var destItems =
+                self.trip.packing
+                .filter {
+                    $0.container?.persistentModelID == destContainerID
+                        && !movingSet.contains($0.persistentModelID)
+                }
+                .sorted { $0.order < $1.order }
+
+            switch difference.destination.position {
+            case .before(let targetID):
+                let index =
+                    destItems.firstIndex { $0.persistentModelID == targetID } ?? destItems.endIndex
+                destItems.insert(contentsOf: moved, at: index)
+            case .end:
+                destItems.append(contentsOf: moved)
+            }
+
+            for (index, item) in destItems.enumerated() {
+                item.container = destContainer
+                item.order = index
+            }
+        }
+
+        if crossesContainers {
+            DispatchQueue.main.async(execute: commit)
+        } else {
+            commit()
         }
     }
 
