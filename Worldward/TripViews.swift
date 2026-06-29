@@ -599,18 +599,15 @@ struct TripDetailView: View {
         for item in trip.packing { modelContext.delete(item) }
     }
 
-    /// Applies a drag-to-reorder across packing containers: the moved items adopt
-    /// the destination group's container, and that whole group is renumbered so
-    /// `order` stays contiguous. Items in untouched groups keep their order.
+    /// Applies a drag-to-reorder *within a single container*, renumbering that
+    /// group's items so `order` stays contiguous.
     ///
-    /// A move that changes an item's container shifts the row counts of two
-    /// sections at once. Doing that synchronously inside the interactive-reorder
-    /// commit makes `UICollectionView` assert ("invalid number of items in
-    /// section" / "0 moved in"), because the gesture's bookkeeping can't attribute
-    /// the cross-section change. Deferring the cross-container write to the next
-    /// runloop tick lets SwiftUI diff it as an ordinary data update instead.
-    /// Same-container reorders don't change any section's count, so they commit
-    /// synchronously for a smooth, flicker-free drag.
+    /// Cross-container drags are intentionally ignored (the drop reverts): moving
+    /// an item between containers changes two sections' row counts at once, which
+    /// reliably crashes `UICollectionView`'s interactive-reorder commit ("invalid
+    /// number of items in section"). Use the row's container menu to move an item
+    /// to a different bag instead. Same-container reorders never change a section's
+    /// count, so they commit cleanly.
     private func applyPackingReorder(
         _ difference: ReorderDifference<PersistentIdentifier, String>
     ) {
@@ -625,40 +622,29 @@ struct TripDetailView: View {
         }
         guard !moved.isEmpty else { return }
 
-        let crossesContainers = moved.contains {
-            $0.container?.persistentModelID != destContainerID
-        }
+        // Ignore (revert) any drop that would move an item into a different
+        // container — that path is handled by the per-row container menu.
+        guard moved.allSatisfy({ $0.container?.persistentModelID == destContainerID })
+        else { return }
 
-        let commit = {
-            // The destination group's current items, minus anything being moved in.
-            var destItems =
-                self.trip.packing
-                .filter {
-                    $0.container?.persistentModelID == destContainerID
-                        && !movingSet.contains($0.persistentModelID)
-                }
-                .sorted { $0.order < $1.order }
-
-            switch difference.destination.position {
-            case .before(let targetID):
-                let index =
-                    destItems.firstIndex { $0.persistentModelID == targetID } ?? destItems.endIndex
-                destItems.insert(contentsOf: moved, at: index)
-            case .end:
-                destItems.append(contentsOf: moved)
+        // The group's current items, minus the ones being dragged.
+        var items =
+            trip.packing
+            .filter {
+                $0.container?.persistentModelID == destContainerID
+                    && !movingSet.contains($0.persistentModelID)
             }
+            .sorted { $0.order < $1.order }
 
-            for (index, item) in destItems.enumerated() {
-                item.container = destContainer
-                item.order = index
-            }
+        switch difference.destination.position {
+        case .before(let targetID):
+            let index = items.firstIndex { $0.persistentModelID == targetID } ?? items.endIndex
+            items.insert(contentsOf: moved, at: index)
+        case .end:
+            items.append(contentsOf: moved)
         }
 
-        if crossesContainers {
-            DispatchQueue.main.async(execute: commit)
-        } else {
-            commit()
-        }
+        for (index, item) in items.enumerated() { item.order = index }
     }
 
     // MARK: Templates
