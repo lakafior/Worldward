@@ -123,6 +123,45 @@ struct Worldward: App {
                 SettingsView()
             }
             .modelContainer(Self.sharedModelContainer)
+
+            // Menu bar extra with glanceable stats and quick actions.
+            MenuBarExtra {
+                let snapshot = WidgetSnapshotStore.read()
+                let percent =
+                    snapshot.totalCountries > 0
+                    ? Int(
+                        (Double(snapshot.visitedCountries) / Double(snapshot.totalCountries) * 100)
+                            .rounded())
+                    : 0
+
+                Text(
+                    "\(snapshot.visitedCountries) countries · \(snapshot.visitedContinents) continents · \(percent)%"
+                )
+                .font(.subheadline)
+                .padding(.horizontal, 8)
+
+                Divider()
+
+                Button("Open Worldward") {
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                .keyboardShortcut("1")
+
+                Button("Mark Current Location…") {
+                    WidgetActionStore.requestMarkHere()
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                .keyboardShortcut("l", modifiers: [.command, .shift])
+
+                Divider()
+
+                Button("Quit Worldward") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q")
+            } label: {
+                Label("Worldward", systemImage: "globe")
+            }
         #endif
     }
 }

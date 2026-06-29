@@ -5,6 +5,8 @@ import MapKit
 import SwiftUI
 import WidgetKit
 
+// MARK: - Widget Snapshot
+
 /// A tiny, `Codable` summary of the user's travels, written by the app into the
 /// shared App Group container and read by the widgets. Keeping the widget on a
 /// snapshot — rather than opening SwiftData inside the extension — keeps it

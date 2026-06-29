@@ -42,6 +42,8 @@ struct StatisticsView: View {
 
                     AchievementsSection(achievements: Achievement.all(for: stats))
 
+                    TimelineSection(countries: countries)
+
                     StatCardsSection(stats: stats)
 
                     if stats.hasPlans {
@@ -101,12 +103,46 @@ struct StatisticsView: View {
     }
 
     private var shareButton: some View {
-        Button {
-            showShareSheet = true
+        Menu {
+            Button {
+                showShareSheet = true
+            } label: {
+                Label("Share Image Card", systemImage: "photo")
+            }
+
+            ShareLink(item: csvString, subject: Text("Worldward Travel Data")) {
+                Label("Export CSV", systemImage: "tablecells")
+            }
         } label: {
             Label("Share", systemImage: "square.and.arrow.up")
         }
         .disabled(!stats.hasTravel)
+    }
+
+    /// A CSV representation of every visited country and its visits.
+    private var csvString: String {
+        var lines = ["Country,Status,Date,Notes"]
+        for country in countries where country.isVisited {
+            let name = csvEscape(country.name)
+            let status = csvEscape(country.status.label)
+            if country.visits.isEmpty {
+                lines.append("\(name),\(status),,")
+            }
+            for visit in country.visits.sorted(by: { $0.date < $1.date }) {
+                let date = visit.date.formatted(date: .numeric, time: .omitted)
+                let notes = csvEscape(visit.notes)
+                lines.append("\(name),\(status),\(date),\(notes)")
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// Escapes a string for CSV (wraps in quotes if it contains a comma or newline).
+    private func csvEscape(_ value: String) -> String {
+        if value.contains(",") || value.contains("\n") {
+            return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
+        }
+        return value
     }
 }
 
@@ -202,8 +238,10 @@ private struct AchievementBadge: View {
         VStack(spacing: 6) {
             ZStack {
                 Circle()
-                    .fill(achievement.isUnlocked
-                        ? achievement.tint.opacity(0.2) : Color.gray.opacity(0.12))
+                    .fill(
+                        achievement.isUnlocked
+                            ? achievement.tint.opacity(0.2) : Color.gray.opacity(0.12)
+                    )
                     .frame(width: 56, height: 56)
                 Image(systemName: achievement.symbol)
                     .font(.title2)
@@ -248,7 +286,8 @@ private struct AchievementBadge: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "\(achievement.title), "
-                + (achievement.isUnlocked ? "unlocked" : "locked, \(achievement.progressLabel)"))
+                + (achievement.isUnlocked ? "unlocked" : "locked, \(achievement.progressLabel)")
+        )
         .accessibilityHint(achievement.detail)
     }
 }
@@ -383,7 +422,8 @@ private struct YearChartSection: View {
             Chart(years) { year in
                 BarMark(
                     x: .value("Year", String(year.year)),
-                    y: .value("Countries", year.countries))
+                    y: .value("Countries", year.countries)
+                )
                 .foregroundStyle(Color.brand.gradient)
                 .cornerRadius(4)
             }
@@ -445,6 +485,137 @@ private struct NextClosestSection: View {
     }
 }
 
+// MARK: - Timeline
+
+/// A chronological list of every recorded visit across all countries, grouped
+/// by year. Each entry shows the flag, country name, date, notes, and photo
+/// thumbnails — a browsable travel history embedded in the statistics view.
+private struct TimelineSection: View {
+    let countries: [Country]
+
+    /// All visits across every country, sorted newest-first.
+    private var allVisits: [Visit] {
+        countries
+            .flatMap(\.visits)
+            .sorted { $0.date > $1.date }
+    }
+
+    /// Visits grouped by year, descending.
+    private var groupedByYear: [(year: Int, visits: [Visit])] {
+        let grouped = Dictionary(grouping: allVisits) { visit in
+            Calendar.current.component(.year, from: visit.date)
+        }
+        return grouped.keys
+            .sorted(by: >)
+            .map { year in
+                (year: year, visits: grouped[year]!.sorted { $0.date > $1.date })
+            }
+    }
+
+    @ViewBuilder var body: some View {
+        if allVisits.isEmpty {
+            EmptyView()
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                TimelineHeader()
+
+                ForEach(groupedByYear.indices, id: \.self) { sectionIndex in
+                    let group = groupedByYear[sectionIndex]
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Year header with count
+                        HStack(spacing: 6) {
+                            Text(String(group.year))
+                                .font(.title3.weight(.bold))
+                            Text(
+                                "\(group.visits.count) \(group.visits.count == 1 ? "visit" : "visits")"
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 8)
+
+                        // Timeline line + entries
+                        ForEach(group.visits.indices, id: \.self) { index in
+                            TimelineEntryRow(
+                                visit: group.visits[index],
+                                isLast: index == group.visits.count - 1
+                            )
+                        }
+
+                        if sectionIndex < groupedByYear.count - 1 {
+                            Divider()
+                                .padding(.vertical, 4)
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+/// The small header above the timeline.
+private struct TimelineHeader: View {
+    var body: some View {
+        HStack {
+            SectionHeader(title: "Travel Timeline")
+            Spacer()
+        }
+    }
+}
+
+/// A single row in the timeline: a dot on the left, then flag + country + date + notes.
+private struct TimelineEntryRow: View {
+    let visit: Visit
+    let isLast: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            // Timeline dot + line
+            VStack(spacing: 0) {
+                Circle()
+                    .fill(Color.accentColor)
+                    .frame(width: 8, height: 8)
+                if !isLast {
+                    Rectangle()
+                        .fill(Color.accentColor.opacity(0.25))
+                        .frame(width: 2)
+                        .frame(maxHeight: .infinity)
+                }
+            }
+            .frame(width: 10)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(visit.country?.flagEmoji ?? "🏳️")
+                        .font(.title3)
+                    Text(visit.country?.name ?? "Unknown")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text(visit.date, style: .date)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+
+                if !visit.notes.isEmpty {
+                    Text(visit.notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+
+                if !visit.photoIdentifiers.isEmpty {
+                    VisitPhotosView(identifiers: visit.photoIdentifiers)
+                        .frame(height: 44)
+                }
+            }
+            .padding(.bottom, isLast ? 0 : 8)
+        }
+    }
+}
+
 // MARK: - Year in review
 
 private struct YearInReviewSection: View {
@@ -471,13 +642,17 @@ private struct YearInReviewSection: View {
                     Text("In \(String(yearStat.year)) you visited")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Text("\(yearStat.countries) "
-                        + (yearStat.countries == 1 ? "country" : "countries"))
-                        .font(.title2.bold())
-                    Text("\(yearStat.visits) recorded "
-                        + (yearStat.visits == 1 ? "visit" : "visits"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "\(yearStat.countries) "
+                            + (yearStat.countries == 1 ? "country" : "countries")
+                    )
+                    .font(.title2.bold())
+                    Text(
+                        "\(yearStat.visits) recorded "
+                            + (yearStat.visits == 1 ? "visit" : "visits")
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
                 Spacer()
             }
