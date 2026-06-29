@@ -12,18 +12,28 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - Every country rendered as a tap-able map polygon from Natural Earth data (~250 countries).
 - Warm yellow-to-orange fill per country status: **Crossed** → **Visited** → **Lived** → **Living**.
 - A cool-blue **planning layer** on the same map — **Wishlist** and **Planning** countries tinted blue, with a blue ring on places you've both visited *and* want to return to.
-- Tap any country to see its visits, flag, and notes.
+- **Tap any country** to zoom in and open its detail sheet with visits, flag, and notes.
+- **Search & fly-to** — type a country name in the search bar and tap a suggestion to animate the map directly to it.
+- **Status filter bar** — toggle the map between All, Visited only, or Planning only countries.
+- **Map style picker** (in Settings → Appearance) — choose from **Standard**, **Hybrid** (satellite + labels), or **Satellite** (pure imagery).
+- A selected country's **flag annotation** floats above its location on the map.
 
 ### Travel Log
 - Record visits with dates and notes for every country you've been to.
 - Attach photo thumbnails fetched live from your Photo Library — no image data is ever stored.
 - Multiple visits per country, each with its own date and photo set.
+- **Smart default date** — new visits default to one day after your most recent visit, reducing date-picking friction.
 
-### Trip Planning
-- A **plan axis** independent of where you've been: mark any country **Wishlist** or **Planning** — a country can be both visited *and* on your list.
-- **Map / Been / Going** live as a Liquid Glass tab bar (a bottom bar on iPhone, a sidebar on iPad & Mac), all backed by the one shared world map.
-- An "On your list" stats card tracks your wishlist and planning counts without touching your visited totals.
-- The **Been** and **Going** tabs each list their countries grouped by continent, with sort (by name or most recently visited) and a continent / visit-year filter. Discovery and adding happen on the Map — tap any country to set its status or plan.
+### Country Lists (Been / Going)
+- The **Been** tab shows everywhere you've visited; the **Going** tab splits into **Trips** and **Wishlist**.
+- Grouped by continent with sort by name or most recently visited, plus continent and visit-year filters.
+- **Quick-add** a country directly from the list toolbar — pick any country and it's marked as visited (Been) or added to your wishlist (Going).
+- **Fuzzy search** matches names with diacritic and substring awareness ("cote" finds "Côte d'Ivoire", "USA" finds "United States").
+- Discovery and status changes happen on the Map — tap any country to set its status or plan.
+
+### macOS
+- **Menu Bar Extra** — a globe icon in the menu bar showing your country count with quick actions: Open Worldward, Mark Current Location, and Quit.
+- **Undo / Redo** (⌘Z / ⇧⌘Z) — every status change, visit, and trip edit is undoable.
 
 ### Trips (multi-country itineraries)
 - The **Going** tab splits into **Trips** and **Wishlist**. A trip is multi-country *through its itinerary*: add ordered **stops**, each optionally tied to a country, and the trip's countries follow (Paris 🇫🇷 → Rome 🇮🇹 → Zurich 🇨🇭).
@@ -38,6 +48,8 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - Per-continent completion tracking.
 - Year-in-review breakdown with per-year charts.
 - Smart "next destinations" — nearest unvisited countries by geographic proximity.
+- **Travel Timeline** — a chronological, scrollable history of every recorded visit, grouped by year with flag, date, notes, and photo thumbnails.
+- **CSV Export** — export all your travel data as a CSV file through the system share sheet.
 
 ### Apple Intelligence ✨
 - **Travel Chat** – ask free-form questions about your own travels in natural language ("Which European countries haven't I been to?", "Where did I go in 2023?"). Everything runs on-device via the Foundation Models framework.
@@ -58,17 +70,18 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### Share
 - Generate a beautiful share card (rasterised image) with your travel stats.
-- Customisable headline, caption, metrics, and gradient theme — optionally featuring your tinted world map.
-- Share as image or plain-text summary.
+- Customisable headline, caption, metrics, and gradient theme — optionally featuring your tinted world map and a **QR code** linking to the GitHub repository.
+- Share as image, plain-text summary, or **CSV export** of every visit.
 
 ### Widgets & Controls
 - **Home Screen / desktop widgets**: Travel Snapshot (countries, continents, % of the world), Flags Visited, and a tinted World Map.
 - **Lock Screen accessories**: a circular progress gauge, a rectangular summary, and an inline count.
 - **Control Center / Action button**: a "Mark where I am" control that opens the app to log your current country.
+- Widgets respect your **Light / Dark / System** appearance preference from Settings.
 - Widgets read a small snapshot the app writes to a shared **App Group** (plus a copy of the map geometry) — no SwiftData runs in the extension.
 
 ### Reminders
-- Optional on-device local notifications: "on this day" travel memories, a December year-in-review nudge, and a gentle prompt if you haven't logged a trip in a while.
+- Optional on-device local notifications: "on this day" travel memories, a **trip start reminder** 24 hours before an upcoming trip, a December year-in-review nudge, and a gentle prompt if you haven't logged a trip in a while.
 - **Off by default** — opt in from Settings; nothing is scheduled until you do.
 
 ### Data Portability
@@ -77,6 +90,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### Appearance
 - System / Light / Dark theme preference.
+- **Map style** picker (Standard / Hybrid / Satellite) in Settings → Appearance.
 - Unified sky-to-royal-blue brand palette throughout.
 
 ---
@@ -99,8 +113,8 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 | Layer | Technology |
 |---|---|
 | UI | SwiftUI (Liquid Glass `TabView`, `.sidebarAdaptable`) |
-| Mapping | MapKit (`MKPolygon`, `MKMapView`) |
-| Persistence | SwiftData (`ModelContainer`, `@Model`) |
+| Mapping | MapKit (`MKPolygon`, `MKMapView`, Standard / Hybrid / Satellite styles) |
+| Persistence | SwiftData (`ModelContainer`, `@Model`, `UndoManager`) |
 | Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~340 KB) |
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
@@ -108,7 +122,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 | Widgets | `WidgetKit` (Home/Lock Screen, accessories, controls) over an App Group |
 | Notifications | `UserNotifications` (local, opt-in) |
 | Calendar | `EventKit` (write-only, "Add to Apple Calendar") |
-| Share | `ImageRenderer` → `ShareLink` |
+| Share | `ImageRenderer` → `ShareLink`, `CIFilter` (QR codes) |
 | Platforms | macOS 15+, iOS 18+ |
 
 ---
