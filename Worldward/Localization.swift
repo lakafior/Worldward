@@ -60,6 +60,18 @@ enum Str {
             localized: "Name", comment: "Sort option: alphabetical by name")
         static let sortRecent = String(
             localized: "Recently visited", comment: "Sort option: by most recent visit")
+        static let sortLabel = String(
+            localized: "Sort", comment: "Sort picker label")
+        static let sortFilterLabel = String(
+            localized: "Sort & Filter", comment: "Toolbar button: open sort/filter menu")
+        static let continentSection = String(
+            localized: "Continent", comment: "Filter section heading")
+        static let continentAll = String(
+            localized: "All", comment: "Filter option: show all continents")
+        static let visitYearSection = String(
+            localized: "Visit year", comment: "Filter section heading for visit years")
+        static let visitYearAll = String(
+            localized: "All years", comment: "Filter option: show all years")
     }
 
     // MARK: - Country detail

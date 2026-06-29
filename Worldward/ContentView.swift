@@ -27,9 +27,9 @@ enum MapFilter: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .all: "All"
-        case .visited: "Visited"
-        case .planning: "Planning"
+        case .all: Str.Map.filterAll
+        case .visited: Str.Map.filterVisited
+        case .planning: Str.Map.filterPlanning
         }
     }
 }

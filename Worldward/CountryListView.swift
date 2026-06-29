@@ -2,10 +2,16 @@ import SwiftData
 import SwiftUI
 
 /// How the Been/Going lists are ordered.
-enum CountrySort: String, CaseIterable, Identifiable {
-    case name = "Name"
-    case recent = "Recently visited"
-    var id: String { rawValue }
+enum CountrySort: CaseIterable, Identifiable {
+    case name
+    case recent
+    var id: Self { self }
+    var label: String {
+        switch self {
+        case .name: Str.List.sortName
+        case .recent: Str.List.sortRecent
+        }
+    }
 }
 
 /// Pre-computed snapshot of the country list's filter/sort state, derived once
@@ -162,8 +168,8 @@ struct CountryListView: View {
                 list
             }
         }
-        .searchable(text: $searchText, prompt: "Search countries")
-        .navigationTitle(browseMode == .been ? "Been" : "Going")
+        .searchable(text: $searchText, prompt: Str.List.searchPlaceholder)
+        .navigationTitle(browseMode == .been ? Str.Tab.been : Str.Tab.going)
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -172,7 +178,7 @@ struct CountryListView: View {
                 Button {
                     showAddCountry = true
                 } label: {
-                    Label("Add Country", systemImage: "plus")
+                    Label(Str.List.addButton, systemImage: "plus")
                 }
             }
             sortAndFilterMenu
@@ -217,7 +223,7 @@ struct CountryListView: View {
     private var list: some View {
         List {
             Section {
-                Text("\(count) \(count == 1 ? "country" : "countries")")
+                Text("^[\\(count) country](inflect: true)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -252,12 +258,12 @@ struct CountryListView: View {
     @ViewBuilder private var emptyState: some View {
         if browseMode == .been {
             ContentUnavailableView(
-                "No countries yet",
+                Str.List.emptyBeen,
                 systemImage: "map",
                 description: Text("Tap a country on the Map to mark where you've been."))
         } else {
             ContentUnavailableView(
-                "Nothing planned yet",
+                Str.List.emptyGoing,
                 systemImage: "airplane",
                 description: Text("Find a country on the Map and add it to your wishlist."))
         }
@@ -266,22 +272,22 @@ struct CountryListView: View {
     @ToolbarContentBuilder private var sortAndFilterMenu: some ToolbarContent {
         ToolbarItem {
             Menu {
-                Picker("Sort", selection: $sortOrder) {
+                Picker(Str.List.sortLabel, selection: $sortOrder) {
                     ForEach(CountrySort.allCases) { sort in
-                        Text(sort.rawValue).tag(sort)
+                        Text(sort.label).tag(sort)
                     }
                 }
 
-                Section("Continent") {
-                    Button("All") { selectedContinent = nil }
+                Section(Str.List.continentSection) {
+                    Button(Str.List.continentAll) { selectedContinent = nil }
                     ForEach(summary.continents, id: \.self) { continent in
                         Button(continent) { selectedContinent = continent }
                     }
                 }
 
                 if browseMode == .been, !summary.visitYears.isEmpty {
-                    Section("Visit year") {
-                        Button("All years") { selectedYear = nil }
+                    Section(Str.List.visitYearSection) {
+                        Button(Str.List.visitYearAll) { selectedYear = nil }
                         ForEach(summary.visitYears, id: \.self) { year in
                             Button(String(year)) { selectedYear = year }
                         }
@@ -289,7 +295,7 @@ struct CountryListView: View {
                 }
             } label: {
                 Label(
-                    "Sort & Filter",
+                    Str.List.sortFilterLabel,
                     systemImage: summary.hasActiveFilters
                         ? "line.3.horizontal.decrease.circle.fill"
                         : "line.3.horizontal.decrease.circle")
