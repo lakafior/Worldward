@@ -216,7 +216,6 @@ struct CountryListView: View {
         } label: {
             CountryRow(country: country)
         }
-        .buttonStyle(.plain)
     }
 
     @ViewBuilder private var emptyState: some View {

@@ -78,7 +78,6 @@ private struct TripsListView: View {
                         } label: {
                             TripRow(trip: trip)
                         }
-                        .buttonStyle(.plain)
                     }
                     .onDelete(perform: deleteTrips)
                 }
