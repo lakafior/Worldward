@@ -410,6 +410,7 @@
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "Worldward adds your trips to your calendar when you choose “Add to Apple Calendar.” It never reads your existing events.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Worldward uses your location to detect which country you're in so it can mark it as visited.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Worldward reads the location and date of your photos to automatically mark the countries you've visited. Your photos never leave your device.";
+				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Worldward sends optional travel reminders about your past trips and a year-in-review nudge. Nothing is scheduled until you opt in.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -476,6 +477,7 @@
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "Worldward adds your trips to your calendar when you choose “Add to Apple Calendar.” It never reads your existing events.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Worldward uses your location to detect which country you're in so it can mark it as visited.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Worldward reads the location and date of your photos to automatically mark the countries you've visited. Your photos never leave your device.";
+				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Worldward sends optional travel reminders about your past trips and a year-in-review nudge. Nothing is scheduled until you opt in.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
