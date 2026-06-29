@@ -7,9 +7,20 @@ import SwiftUI
 struct CountryDetailView: View {
     @Bindable var country: Country
     @Environment(\.modelContext) private var modelContext
-    @State private var newVisitDate = Date()
+    @State private var newVisitDate: Date
     @State private var newVisitNotes = ""
     @State private var showingAddVisit = false
+
+    init(country: Country) {
+        self.country = country
+        // Default to one day after the most recent visit, so adding
+        // consecutive visits requires less date-picking.
+        let lastDate = country.visits.sorted { $0.date > $1.date }.first?.date
+        _newVisitDate = State(
+            initialValue: lastDate.map {
+                Calendar.current.date(byAdding: .day, value: 1, to: $0) ?? Date()
+            } ?? Date())
+    }
 
     var body: some View {
         Form {

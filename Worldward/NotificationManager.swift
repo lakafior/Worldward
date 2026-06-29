@@ -1,13 +1,15 @@
 import Foundation
+import SwiftData
 import UserNotifications
 
 /// Schedules Worldward's local, on-device travel reminders. Everything here is
 /// opt-in: nothing is scheduled unless the user turns reminders on in Settings
 /// (`notificationsEnabled`, off by default) and grants notification permission.
 ///
-/// Three gentle reminders, all rebuilt from a clean slate on each launch so their
+/// Gentle reminders, all rebuilt from a clean slate on each launch so their
 /// content stays current and the app stays well under iOS's 64-pending limit:
 ///   • "On this day" — anniversaries of past visits (yearly).
+///   • Trip start — a nudge 24 hours before an upcoming trip.
 ///   • Year recap — a single nudge each December.
 ///   • Inactivity — one prompt if the app goes unopened for a while.
 enum NotificationManager {
@@ -29,10 +31,11 @@ enum NotificationManager {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
-    /// Rebuilds the full reminder schedule from the current catalog. Always clears
-    /// existing pending requests first, then — only when reminders are enabled and
-    /// authorized — schedules the fresh set. Safe to call on every launch.
-    static func reschedule(enabled: Bool, countries: [Country]) async {
+    /// Rebuilds the full reminder schedule from the current catalog and trips.
+    /// Always clears existing pending requests first, then — only when reminders
+    /// are enabled and authorized — schedules the fresh set. Safe to call on
+    /// every launch.
+    static func reschedule(enabled: Bool, countries: [Country], trips: [Trip] = []) async {
         let center = UNUserNotificationCenter.current()
         center.removeAllPendingNotificationRequests()
 
@@ -41,6 +44,7 @@ enum NotificationManager {
         guard status == .authorized || status == .provisional else { return }
 
         var requests = onThisDayRequests(countries: countries)
+        requests.append(contentsOf: tripStartRequests(trips: trips))
         requests.append(yearRecapRequest())
         requests.append(inactivityRequest())
 
@@ -55,7 +59,11 @@ enum NotificationManager {
     /// capped at `maxOnThisDay`. A single day aggregates every country visited on
     /// it across the years, e.g. "🇯🇵 Japan (2019), 🇫🇷 France (2022)".
     private static func onThisDayRequests(countries: [Country]) -> [UNNotificationRequest] {
-        struct Anniversary { let flag: String; let name: String; let year: Int }
+        struct Anniversary {
+            let flag: String
+            let name: String
+            let year: Int
+        }
         let calendar = Calendar.current
 
         // Group every recorded visit by its month/day.
@@ -103,6 +111,40 @@ enum NotificationManager {
             }
     }
 
+    /// One notification per upcoming trip, firing 24 hours before it starts.
+    /// Trips that start within the next 24 hours — or are already in progress —
+    /// are skipped so the reminder only arrives when it's actually useful.
+    private static func tripStartRequests(trips: [Trip]) -> [UNNotificationRequest] {
+        let now = Date()
+        let fireLimit = now.addingTimeInterval(24 * 3600)  // skip trips starting within the hour
+
+        return
+            trips
+            .filter { $0.startDate > fireLimit }
+            .sorted { $0.startDate < $1.startDate }
+            .prefix(10)  // cap to stay well under the 64-pending limit
+            .compactMap { trip -> UNNotificationRequest? in
+                let fireDate = trip.startDate.addingTimeInterval(-24 * 3600)
+                guard fireDate > now else { return nil }
+
+                let flags = trip.flags.isEmpty ? "" : "\(trip.flags) · "
+                let name = trip.title.isEmpty ? "Untitled Trip" : trip.title
+
+                let content = UNMutableNotificationContent()
+                content.title = "Upcoming trip ✈️"
+                content.body = "\(flags)\(name) starts tomorrow — check your packing list!"
+                content.sound = .default
+
+                let trigger = UNCalendarNotificationTrigger(
+                    dateMatching: Calendar.current.dateComponents(
+                        [.year, .month, .day, .hour], from: fireDate),
+                    repeats: false)
+                return UNNotificationRequest(
+                    identifier: "trip-\(trip.dedupID.prefix(8))",
+                    content: content, trigger: trigger)
+            }
+    }
+
     /// A single nudge on 28 December to revisit the year-in-review.
     private static func yearRecapRequest() -> UNNotificationRequest {
         let content = UNMutableNotificationContent()
@@ -130,5 +172,8 @@ enum NotificationManager {
     }
 
     /// A hashable month/day key for grouping anniversaries.
-    private struct DayKey: Hashable { let month: Int; let day: Int }
+    private struct DayKey: Hashable {
+        let month: Int
+        let day: Int
+    }
 }

@@ -28,6 +28,10 @@ struct WidgetSnapshot: Codable, Hashable {
     /// (1 = crossed … 4 = living); only visited countries appear.
     var tints: [String: Int]
 
+    /// The user's appearance preference: "system", "light", or "dark".
+    /// Written by the app so widgets can adapt their tint to match.
+    var appTheme: String = "system"
+
     /// Share of the world's countries visited, `0...1`.
     var fraction: Double {
         totalCountries > 0 ? Double(visitedCountries) / Double(totalCountries) : 0
@@ -57,12 +61,13 @@ struct WidgetSnapshot: Codable, Hashable {
 
 extension WidgetSnapshot {
     private enum CodingKeys: String, CodingKey {
-        case visitedCountries, totalCountries, visitedContinents, totalContinents, flags, tints
+        case visitedCountries, totalCountries, visitedContinents, totalContinents, flags, tints,
+            appTheme
     }
 
     /// Custom decoding so a snapshot written by an older app build (without
-    /// `tints`) still loads — the field simply defaults to empty until the app
-    /// rewrites the snapshot. Defined in an extension to keep the memberwise init.
+    /// `tints` or `appTheme`) still loads — new fields default to sensible
+    /// values until the app rewrites the snapshot.
     init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         visitedCountries = try c.decode(Int.self, forKey: .visitedCountries)
@@ -71,6 +76,7 @@ extension WidgetSnapshot {
         totalContinents = try c.decode(Int.self, forKey: .totalContinents)
         flags = try c.decode([String].self, forKey: .flags)
         tints = try c.decodeIfPresent([String: Int].self, forKey: .tints) ?? [:]
+        appTheme = try c.decodeIfPresent(String.self, forKey: .appTheme) ?? "system"
     }
 }
 

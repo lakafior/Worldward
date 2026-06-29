@@ -120,7 +120,8 @@ struct SettingsView: View {
             }
             notificationsEnabled = true
             let countries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
-            await NotificationManager.reschedule(enabled: true, countries: countries)
+            let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
+            await NotificationManager.reschedule(enabled: true, countries: countries, trips: trips)
         }
     }
 

@@ -22,7 +22,8 @@ struct ExportableTrip: Transferable {
 
     /// The trip title, stripped of characters illegal in filenames.
     var fileBaseName: String {
-        let cleaned = title
+        let cleaned =
+            title
             .components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>"))
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -231,7 +232,7 @@ struct TripDetailView: View {
             }
         }
         #if os(iOS)
-        .toolbar { EditButton() }
+            .toolbar { EditButton() }
         #endif
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(allCountries: allCountries) { country in addStop(country: country) }
@@ -403,7 +404,7 @@ private struct CountryPickerSheet: View {
     private var filtered: [Country] {
         let term = search.trimmingCharacters(in: .whitespaces)
         guard !term.isEmpty else { return allCountries }
-        return allCountries.filter { $0.name.localizedCaseInsensitiveContains(term) }
+        return allCountries.filter { $0.name.localizedStandardContains(term) }
     }
 
     var body: some View {

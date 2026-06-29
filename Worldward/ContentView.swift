@@ -130,6 +130,18 @@ struct ContentView: View {
                         planStatus: country.planStatus,
                         polygons: countryPolygons[country.id] ?? [])
                 }
+
+                if let sel = selectedCountry {
+                    if let centroid = countryCentroids[sel.id] {
+                        Annotation(sel.name, coordinate: centroid, anchor: .bottom) {
+                            Text(sel.flagEmoji)
+                                .font(.title)
+                                .padding(4)
+                                .background(
+                                    .ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                        }
+                    }
+                }
             }
             .mapStyle(.standard)
             .mapControls {
@@ -165,6 +177,12 @@ struct ContentView: View {
                                 if path.contains(cgPoint) {
                                     if let country = allCountries.first(where: { $0.id == id }) {
                                         selectedCountry = country
+                                        // Animate the map to center on the tapped country.
+                                        if let rect = countryBoundingRects[id] {
+                                            withAnimation(.easeInOut(duration: 0.4)) {
+                                                cameraPosition = .region(MKCoordinateRegion(rect))
+                                            }
+                                        }
                                     }
                                     return
                                 }
@@ -686,6 +704,7 @@ struct ContentView: View {
     /// Recompute the travel summary and hand it to the shared App Group store,
     /// which redraws the widgets. Reuses `TravelStats` so the figures always match
     /// the dashboard.
+    @AppStorage("appTheme") private var widgetAppTheme: AppTheme = .system
     private func updateWidgetSnapshot() {
         let stats = TravelStats(countries: allCountries)
         WidgetSnapshotStore.write(
@@ -695,7 +714,8 @@ struct ContentView: View {
                 visitedContinents: stats.visitedContinents,
                 totalContinents: stats.totalContinents,
                 flags: stats.visitedFlags,
-                tints: stats.statusTints))
+                tints: stats.statusTints,
+                appTheme: widgetAppTheme.rawValue))
     }
 
     /// Fold a duplicate country's user data into the row that will survive

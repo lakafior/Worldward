@@ -57,7 +57,7 @@ struct CountryListSummary {
 
             guard
                 trimmedSearch.isEmpty
-                    || country.name.localizedCaseInsensitiveContains(trimmedSearch)
+                    || country.name.localizedStandardContains(trimmedSearch)
             else { continue }
 
             // With no search term, restrict the list to the active workflow: Been

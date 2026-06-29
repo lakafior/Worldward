@@ -24,7 +24,8 @@ struct WorldwardProvider: TimelineProvider {
         completion(WorldwardEntry(date: .now, snapshot: snapshot))
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<WorldwardEntry>) -> Void) {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<WorldwardEntry>) -> Void)
+    {
         let entry = WorldwardEntry(date: .now, snapshot: WidgetSnapshotStore.read())
         completion(Timeline(entries: [entry], policy: .never))
     }
@@ -37,6 +38,21 @@ struct WorldwardProvider: TimelineProvider {
 private let brandGradient = LinearGradient(
     colors: [Color(red: 1.00, green: 0.72, blue: 0.20), Color(red: 0.84, green: 0.30, blue: 0.05)],
     startPoint: .topLeading, endPoint: .bottomTrailing)
+
+/// A darker variant of the gradient for dark mode, so the widget stays readable
+/// without washing out.
+private let darkBrandGradient = LinearGradient(
+    colors: [Color(red: 0.70, green: 0.50, blue: 0.14), Color(red: 0.59, green: 0.21, blue: 0.04)],
+    startPoint: .topLeading, endPoint: .bottomTrailing)
+
+/// Returns the appropriate gradient for the snapshot's theme setting.
+private func widgetGradient(for theme: String) -> LinearGradient {
+    // system defers to the system color scheme; light maps to light; dark maps to dark
+    switch theme {
+    case "dark": return darkBrandGradient
+    default: return brandGradient
+    }
+}
 
 // MARK: - Travel Snapshot
 
@@ -62,10 +78,12 @@ struct TravelSnapshotView: View {
                 Text("countries")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.white.opacity(0.85))
-                Text("\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents · \(percent)% of the world")
-                    .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.8))
-                    .lineLimit(2)
+                Text(
+                    "\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents · \(percent)% of the world"
+                )
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.8))
+                .lineLimit(2)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -147,14 +165,14 @@ struct MiniMapView: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             WorldMapCanvas(tints: snapshot.tints)
-            .overlay {
-                // No geometry cached yet — e.g. the app hasn't run since install.
-                if WorldMapStore.shared == nil {
-                    Image(systemName: "globe")
-                        .font(.largeTitle)
-                        .foregroundStyle(.white.opacity(0.5))
+                .overlay {
+                    // No geometry cached yet — e.g. the app hasn't run since install.
+                    if WorldMapStore.shared == nil {
+                        Image(systemName: "globe")
+                            .font(.largeTitle)
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
                 }
-            }
 
             Text("\(snapshot.visitedCountries) countries")
                 .font(.caption2.weight(.semibold))
@@ -171,9 +189,10 @@ struct MiniMapView: View {
 
 struct TravelSnapshotWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "WorldwardTravelSnapshot", provider: WorldwardProvider()) { entry in
+        StaticConfiguration(kind: "WorldwardTravelSnapshot", provider: WorldwardProvider()) {
+            entry in
             TravelSnapshotView(snapshot: entry.snapshot)
-                .containerBackground(for: .widget) { brandGradient }
+                .containerBackground(for: .widget) { widgetGradient(for: entry.snapshot.appTheme) }
         }
         .configurationDisplayName("Travel Snapshot")
         .description("Countries visited, continents reached, and your share of the world.")
@@ -186,6 +205,7 @@ struct FlagStripWidget: Widget {
         StaticConfiguration(kind: "WorldwardFlagStrip", provider: WorldwardProvider()) { entry in
             FlagStripView(snapshot: entry.snapshot)
                 .containerBackground(.background, for: .widget)
+                .modifier(ForceColorScheme(theme: entry.snapshot.appTheme))
         }
         .configurationDisplayName("Flags Visited")
         .description("A grid of the flags of every country you've visited.")
@@ -247,9 +267,11 @@ struct MiniMapWidget: Widget {
                         Text("\(snapshot.visitedCountries) countries")
                             .font(.headline)
                             .widgetAccentable()
-                        Text("\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        Text(
+                            "\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                     }
                 }
 
@@ -261,7 +283,8 @@ struct MiniMapWidget: Widget {
 
     struct AccessoryWidget: Widget {
         var body: some WidgetConfiguration {
-            StaticConfiguration(kind: "WorldwardAccessory", provider: WorldwardProvider()) { entry in
+            StaticConfiguration(kind: "WorldwardAccessory", provider: WorldwardProvider()) {
+                entry in
                 AccessoryView(snapshot: entry.snapshot)
                     .containerBackground(for: .widget) { Color.clear }
             }
@@ -294,6 +317,24 @@ struct MiniMapWidget: Widget {
     }
 
 #endif
+
+// MARK: - Helpers
+
+/// Forces a specific color scheme on its content when `theme` is "light" or
+/// "dark"; leaves it to the system when `theme` is "system" (the default).
+private struct ForceColorScheme: ViewModifier {
+    let theme: String
+
+    func body(content: Content) -> some View {
+        if theme == "dark" {
+            content.environment(\.colorScheme, .dark)
+        } else if theme == "light" {
+            content.environment(\.colorScheme, .light)
+        } else {
+            content
+        }
+    }
+}
 
 // MARK: - Previews
 
