@@ -1,0 +1,32 @@
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2026 Marcin Ś.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+---
+Additional Exception for Apple App Store Distribution:
+
+As a special exception to the GNU General Public License version 3.0 ("GPL-3.0"),
+you may distribute this program via the Apple App Store, provided that:
+
+1. You comply with all other terms of the GPL-3.0.
+2. You make the Corresponding Source (as defined in GPL-3.0) available to users
+   in a way that satisfies the GPL-3.0 requirements (e.g., by providing a
+   publicly accessible repository with the Corresponding Source).
+3. You do not impose any additional restrictions on the exercise of rights
+   granted or attempted to be granted under this License.
+
+This exception does not invalidate or void any other terms of the GPL-3.0.

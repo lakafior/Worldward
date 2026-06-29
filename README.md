@@ -172,4 +172,8 @@ WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Co
 
 ## License
 
-Private project.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)** with an additional exception for distribution via the Apple App Store.
+
+- **Full license text**: [LICENSE](LICENSE)
+- **Summary**: You are free to use, modify, and distribute this software under the GPL-3.0 terms, including for commercial use, **as long as you also open-source your modifications**.
+- **App Store Exception**: Distribution via the Apple App Store is permitted, provided that the source code is made available to users (e.g., via a public repository).
