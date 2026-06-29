@@ -83,8 +83,37 @@ struct Worldward: App {
         WindowGroup {
             ContentView()
                 .preferredColorScheme(appTheme.colorScheme)
+                .onAppear {
+                    // Set up UndoManager on the model context so every change
+                    // (status, visit, trip edit) is undoable. SwiftData records
+                    // undo actions automatically once the manager is attached.
+                    let context = Self.sharedModelContainer.mainContext
+                    if context.undoManager == nil {
+                        context.undoManager = UndoManager()
+                    }
+                }
         }
         .modelContainer(Self.sharedModelContainer)
+        #if os(macOS)
+            // Standard Edit menu with Undo (⌘Z) / Redo (⇧⌘Z).
+            .commands {
+                CommandGroup(replacing: .undoRedo) {
+                    Button("Undo") {
+                        Self.sharedModelContainer.mainContext.undo()
+                    }
+                    .keyboardShortcut("z", modifiers: .command)
+                    .disabled(
+                        !(Self.sharedModelContainer.mainContext.undoManager?.canUndo ?? false))
+
+                    Button("Redo") {
+                        Self.sharedModelContainer.mainContext.redo()
+                    }
+                    .keyboardShortcut("z", modifiers: [.command, .shift])
+                    .disabled(
+                        !(Self.sharedModelContainer.mainContext.undoManager?.canRedo ?? false))
+                }
+            }
+        #endif
 
         #if os(macOS)
             // Adds the standard "Worldward ▸ Settings…" menu item (⌘,). The Settings

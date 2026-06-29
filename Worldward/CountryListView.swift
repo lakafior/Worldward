@@ -113,10 +113,14 @@ struct CountryListView: View {
     @Binding var selectedYear: Int?
     @Binding var selectedCountry: Country?
 
+    @Environment(\.modelContext) private var modelContext
+
     @State private var sortOrder: CountrySort = .name
     /// Cached filter/sort summary recomputed only when dependencies change,
     /// avoiding a full iteration of all countries + their visits on every render.
     @State private var summary = CountryListSummary()
+    /// Sheet for quick-adding a country from the list toolbar.
+    @State private var showAddCountry = false
 
     /// `true` once the summary has been initialized. Avoids flashing empty states
     /// when the view first appears before `rebuildSummary` fires via `onAppear`.
@@ -163,12 +167,39 @@ struct CountryListView: View {
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .toolbar { sortAndFilterMenu }
+        .toolbar {
+            ToolbarItem {
+                Button {
+                    showAddCountry = true
+                } label: {
+                    Label("Add Country", systemImage: "plus")
+                }
+            }
+            sortAndFilterMenu
+        }
+        .sheet(isPresented: $showAddCountry) {
+            CountryPickerSheet(allCountries: allCountries) { country in
+                addCountry(country)
+            }
+        }
         .onAppear { rebuildSummary() }
         .onChange(of: searchText) { rebuildSummary() }
         .onChange(of: selectedContinent) { rebuildSummary() }
         .onChange(of: selectedYear) { rebuildSummary() }
         .onChange(of: allCountries.count) { rebuildSummary() }
+    }
+
+    /// Quick-add a country: in Been mode, mark as visited; in Going mode,
+    /// add to the wishlist so it shows up immediately.
+    private func addCountry(_ country: Country) {
+        switch browseMode {
+        case .been:
+            country.status = .visited
+        case .going:
+            if country.planStatus == .none { country.planStatus = .wishlist }
+        }
+        try? modelContext.save()
+        rebuildSummary()
     }
 
     /// Recompute the cached summary from the current filter/sort state.

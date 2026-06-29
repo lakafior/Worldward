@@ -18,6 +18,22 @@ enum AppTab: Hashable {
     case map, been, going
 }
 
+/// Which countries to show on the map. `all` shows every visited/planned country;
+/// `visited` hides planned-only countries; `planning` hides visited-only countries.
+enum MapFilter: String, CaseIterable, Identifiable {
+    case all
+    case visited
+    case planning
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .all: "All"
+        case .visited: "Visited"
+        case .planning: "Planning"
+        }
+    }
+}
+
 /// A grid-based spatial index for map hit-testing. Matches the same grid
 /// convention used by `SpatialIndex` in PhotoImporter, so a tap only tests
 /// the 5-15 countries whose bounding rect overlaps the tapped cell.
@@ -78,9 +94,11 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
-    // Filters
+    // Map search & filters
+    @State private var mapSearchText = ""
     @State private var selectedContinent: String? = nil
     @State private var selectedYear: Int? = nil
+    @State private var mapFilter: MapFilter = .all
 
     // Current-location marking
     @State private var isLocating = false
@@ -113,9 +131,23 @@ struct ContentView: View {
     /// rebuilt when the catalog or selection changes, avoiding a full filter of
     /// all 250+ rows on every body evaluation.
     private var visibleCountries: [Country] {
-        visibleCountryCache.isEmpty
+        let base =
+            visibleCountryCache.isEmpty
             ? allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
             : visibleCountryCache
+        switch mapFilter {
+        case .all: return base
+        case .visited: return base.filter { $0.isVisited }
+        case .planning: return base.filter { $0.isPlanned }
+        }
+    }
+
+    /// Countries matching the map search text, used for search suggestions.
+    private var mapSearchResults: [Country] {
+        let term = mapSearchText.trimmingCharacters(in: .whitespaces)
+        guard !term.isEmpty else { return [] }
+        return allCountries.filter { $0.name.localizedStandardContains(term) }
+            .sorted { $0.name < $1.name }
     }
 
     /// The interactive world map. Extracted so the body can withhold it (and the
@@ -288,7 +320,23 @@ struct ContentView: View {
     @ViewBuilder private var rootView: some View {
         TabView(selection: $selectedTab) {
             Tab("Map", systemImage: "map", value: AppTab.map) {
-                NavigationStack { mapContent }
+                NavigationStack {
+                    mapContent
+                        .safeAreaInset(edge: .bottom) {
+                            mapFilterBar
+                        }
+                }
+                .searchable(text: $mapSearchText, placement: .toolbar, prompt: "Find a country…")
+                .onSubmit(of: .search, flyToFirstSearchResult)
+                .searchSuggestions {
+                    ForEach(mapSearchResults.prefix(8)) { country in
+                        Button {
+                            flyTo(country: country)
+                        } label: {
+                            Label("\(country.flagEmoji) \(country.name)", systemImage: "mappin")
+                        }
+                    }
+                }
             }
             Tab("Been", systemImage: "checkmark.seal", value: AppTab.been) {
                 NavigationStack { countryList(.been) }
@@ -394,6 +442,9 @@ struct ContentView: View {
             .onChange(of: selectedCountry) {
                 rebuildVisibleCache()
             }
+            .onChange(of: mapFilter) {
+                rebuildVisibleCache()
+            }
             // The "Mark where I am" Control Center control writes a request to the
             // App Group's UserDefaults before opening the app (the OpenIntent runs
             // first), so it's always present when .active fires. If it somehow misses,
@@ -423,6 +474,52 @@ struct ContentView: View {
         visibleCountryCache = allCountries.filter {
             $0.isVisited || $0.isPlanned || $0 == selectedCountry
         }
+    }
+
+    // MARK: - Map Search & Filters
+
+    /// The filter bar shown at the bottom of the map.
+    @ViewBuilder private var mapFilterBar: some View {
+        HStack(spacing: 4) {
+            ForEach(MapFilter.allCases) { filter in
+                Button {
+                    mapFilter = filter
+                } label: {
+                    Text(filter.label)
+                        .font(.caption.weight(.medium))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            mapFilter == filter
+                                ? Color.accentColor : Color.gray.opacity(0.15),
+                            in: Capsule()
+                        )
+                        .foregroundStyle(mapFilter == filter ? .white : .primary)
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+
+    /// Fly the map to a country's bounding rect and select it.
+    private func flyTo(country: Country) {
+        mapSearchText = ""
+        selectedTab = .map
+        if let rect = mapRect(for: country) {
+            withAnimation(.easeInOut(duration: 0.5)) {
+                cameraPosition = .rect(rect)
+            }
+        }
+        selectedCountry = country
+    }
+
+    /// Fly to the first search result (for keyboard submit).
+    private func flyToFirstSearchResult() {
+        guard let first = mapSearchResults.first else { return }
+        flyTo(country: first)
     }
 
     /// The padded map rectangle enclosing all of a country's polygons.

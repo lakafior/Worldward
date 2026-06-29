@@ -393,8 +393,9 @@ private struct StopRow: View {
 
 // MARK: - Country picker
 
-/// A searchable country chooser used when adding a stop to a trip.
-private struct CountryPickerSheet: View {
+/// A searchable country chooser used when adding a stop to a trip or
+/// quick-adding from the Been/Going list.
+struct CountryPickerSheet: View {
     let allCountries: [Country]
     let onPick: (Country) -> Void
 
