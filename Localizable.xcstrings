@@ -20,6 +20,12 @@
             "state": "translated",
             "value": "Próg „zamieszkania“"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seuil « Vécu »"
+          }
         }
       }
     },
@@ -40,6 +46,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "%@"
@@ -74,6 +86,12 @@
             "state": "translated",
             "value": "%1$@  %2$@"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@  %2$@"
+          }
         }
       }
     },
@@ -100,6 +118,12 @@
           }
         },
         "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$lld/%3$lld"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ · %2$lld/%3$lld"
@@ -134,6 +158,12 @@
             "state": "translated",
             "value": "%1$@ %2$@"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
         }
       }
     },
@@ -164,6 +194,12 @@
             "state": "translated",
             "value": "%1$@ %2$lld"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld"
+          }
         }
       }
     },
@@ -184,6 +220,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld"
@@ -218,6 +260,12 @@
             "state": "translated",
             "value": "%1$lld / %2$lld"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld / %2$lld"
+          }
         }
       }
     },
@@ -248,6 +296,12 @@
             "state": "translated",
             "value": "%1$lld %2$@"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld %2$@"
+          }
         }
       }
     },
@@ -271,6 +325,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld km stąd"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld km"
           }
         }
       }
@@ -302,6 +362,12 @@
             "state": "translated",
             "value": "%1$lld z %2$lld kontynentów"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld sur %2$lld continents"
+          }
         }
       }
     },
@@ -331,6 +397,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld z %2$lld krajów\n"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld sur %2$lld pays"
           }
         }
       }
@@ -362,6 +434,12 @@
             "state": "translated",
             "value": "%1$lld zdjęć%2$@"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld photo%2$@"
+          }
         }
       }
     },
@@ -391,6 +469,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld zdjęć%2$@ · %3$lld dzień%4$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld photo%2$@ · %3$lld jour%4$@"
           }
         }
       }
@@ -422,6 +506,12 @@
             "state": "translated",
             "value": "%1$lld wycieczk%2$@ · %3$lld dzień%4$@"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld voyage%2$@ · %3$lld jour%4$@"
+          }
         }
       }
     },
@@ -442,6 +532,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld%%"
@@ -470,6 +566,12 @@
             "state": "translated",
             "value": "🌍"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍"
+          }
         }
       }
     },
@@ -490,6 +592,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍 %@"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "🌍 %@"
@@ -518,6 +626,12 @@
             "state": "translated",
             "value": "🌍 Brak zalogowanych podróży"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍 Aucun voyage enregistré pour l’instant"
+          }
         }
       }
     },
@@ -539,6 +653,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pojedyncza podróż trwająca co najmniej tyle oznacza kraj jako „Mieszkałem”."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un seul voyage d’au moins cette durée marque le pays comme « Vécu »."
           }
         }
       }
@@ -563,6 +683,12 @@
             "state": "translated",
             "value": "O aplikacji"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos"
+          }
         }
       }
     },
@@ -585,6 +711,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Osiągnięcia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Succès"
           }
         }
       }
@@ -616,6 +748,12 @@
             "state": "translated",
             "value": "W %1$lld kontynent%2$@"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À travers %1$lld continent%2$@"
+          }
         }
       }
     },
@@ -640,6 +778,12 @@
             "state": "translated",
             "value": "Akcja"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Action"
+          }
         }
       }
     },
@@ -662,6 +806,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dodaj"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter"
           }
         }
       }
@@ -687,6 +837,12 @@
             "state": "translated",
             "value": "Añadir un contenedor"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un conteneur"
+          }
         }
       }
     },
@@ -711,6 +867,12 @@
             "state": "translated",
             "value": "Dodaj kraj"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un pays"
+          }
         }
       }
     },
@@ -733,6 +895,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dodaj kraj / przystanek"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un pays / une escale"
           }
         }
       }
@@ -757,6 +925,12 @@
             "state": "translated",
             "value": "Dodaj Kraj"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un pays"
+          }
         }
       }
     },
@@ -779,6 +953,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dodaj przedmiot"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter un article"
           }
         }
       }
@@ -804,6 +984,12 @@
             "state": "translated",
             "value": "Dodaj do Kalendarza Apple"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter au Calendrier Apple"
+          }
         }
       }
     },
@@ -826,6 +1012,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dodaj Wizytę"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter une visite"
           }
         }
       }
@@ -851,6 +1043,12 @@
             "state": "translated",
             "value": "Dodaj swoją pierwszą wizytę w tym kraju"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajoutez votre première visite à ce pays"
+          }
         }
       }
     },
@@ -874,6 +1072,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afryka"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afrique"
           }
         }
       }
@@ -899,6 +1103,12 @@
             "state": "translated",
             "value": "ai"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ia"
+          }
         }
       }
     },
@@ -921,6 +1131,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wszystkie"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous"
           }
         }
       }
@@ -946,6 +1162,12 @@
             "state": "translated",
             "value": "Wszystkie kraje"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous les pays"
+          }
         }
       }
     },
@@ -969,6 +1191,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wszystkie lata"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toutes les années"
           }
         }
       }
@@ -994,6 +1222,12 @@
             "state": "translated",
             "value": "Antarktyda"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antarctique"
+          }
         }
       }
     },
@@ -1018,6 +1252,12 @@
             "state": "translated",
             "value": "Nazwa Aplikacji"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom de l'app"
+          }
         }
       }
     },
@@ -1040,6 +1280,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wygląd"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apparence"
           }
         }
       }
@@ -1065,6 +1311,12 @@
             "state": "translated",
             "value": "Kalendarz Apple"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendrier Apple"
+          }
         }
       }
     },
@@ -1088,6 +1340,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apple Intelligence jest wyłączone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence est désactivé"
           }
         }
       }
@@ -1113,6 +1371,12 @@
             "state": "translated",
             "value": "azja"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "asie"
+          }
         }
       }
     },
@@ -1137,6 +1401,12 @@
             "state": "translated",
             "value": "Azja"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asie"
+          }
         }
       }
     },
@@ -1160,6 +1430,12 @@
             "state": "translated",
             "value": "Zapytaj o Swoje Podróże"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interroger sur vos voyages"
+          }
         }
       }
     },
@@ -1182,6 +1458,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zapytaj o swoje podróże…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interrogez sur vos voyages…"
           }
         }
       }
@@ -1207,6 +1489,12 @@
             "state": "translated",
             "value": "Zapytaj o wszystko dotyczące krajów, które odwiedziłeś — na urządzeniu, prywatnie."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demandez-moi tout sur les pays que vous avez visités — sur l’appareil, en toute confidentialité."
+          }
         }
       }
     },
@@ -1230,6 +1518,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Przypisz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attribuer"
           }
         }
       }
@@ -1255,6 +1549,12 @@
             "state": "translated",
             "value": "Australia i Oceania"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Australie et Océanie"
+          }
         }
       }
     },
@@ -1279,6 +1579,12 @@
             "state": "translated",
             "value": "Autor"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auteur"
+          }
         }
       }
     },
@@ -1302,6 +1608,12 @@
             "state": "translated",
             "value": "Wstecz"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour"
+          }
         }
       }
     },
@@ -1323,6 +1635,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Taschen und Koffer werden geräteübergreifend für alle deine Reisen genutzt."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les sacs et valises sont partagés entre tous vos voyages."
           }
         }
       }
@@ -1347,6 +1665,12 @@
             "state": "translated",
             "value": "Byłem"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visiter"
+          }
         }
       }
     },
@@ -1369,6 +1693,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Minęło trochę czasu 🧭"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il y a un moment 🧭"
           }
         }
       }
@@ -1394,6 +1724,12 @@
             "state": "translated",
             "value": "Najbardziej aktywny rok"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Année la plus active"
+          }
         }
       }
     },
@@ -1416,6 +1752,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anuluj"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annuler"
           }
         }
       }
@@ -1441,6 +1783,12 @@
             "state": "translated",
             "value": "Podpis"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Légende"
+          }
         }
       }
     },
@@ -1464,6 +1812,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Karta"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carte"
           }
         }
       }
@@ -1489,6 +1843,12 @@
             "state": "translated",
             "value": "Elegir icono"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choisir une icône"
+          }
         }
       }
     },
@@ -1512,6 +1872,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wyczyść listę"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effacer la liste"
           }
         }
       }
@@ -1537,6 +1903,12 @@
             "state": "translated",
             "value": "Behälter"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conteneur"
+          }
         }
       }
     },
@@ -1560,6 +1932,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contenedores"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conteneurs"
           }
         }
       }
@@ -1585,6 +1963,12 @@
             "state": "translated",
             "value": "kontynent"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "continent"
+          }
         }
       }
     },
@@ -1608,6 +1992,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kontynent"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continent"
           }
         }
       }
@@ -1633,6 +2023,12 @@
             "state": "translated",
             "value": "Postęp na Kontynencie"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progrès du continent"
+          }
         }
       }
     },
@@ -1655,6 +2051,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kontynenty"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continents"
           }
         }
       }
@@ -1680,6 +2082,12 @@
             "state": "translated",
             "value": "Nie można określić Twojego obecnego kraju na podstawie lokalizacji."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de déterminer votre pays actuel depuis votre position."
+          }
         }
       }
     },
@@ -1703,6 +2111,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nie mogę wygenerować"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de générer"
           }
         }
       }
@@ -1728,6 +2142,12 @@
             "state": "translated",
             "value": "Nie można dopasować"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de faire correspondre"
+          }
         }
       }
     },
@@ -1751,6 +2171,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "licz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "compter"
           }
         }
       }
@@ -1776,6 +2202,12 @@
             "state": "translated",
             "value": "kraje"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pays"
+          }
         }
       }
     },
@@ -1799,6 +2231,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kraje"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pays"
           }
         }
       }
@@ -1824,6 +2262,12 @@
             "state": "translated",
             "value": "Odwiedzone kraje"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pays visités"
+          }
         }
       }
     },
@@ -1847,6 +2291,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Odwiedzone Kraje"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pays visités"
           }
         }
       }
@@ -1872,6 +2322,12 @@
             "state": "translated",
             "value": "kraj"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pays"
+          }
         }
       }
     },
@@ -1895,6 +2351,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kraj"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pays"
           }
         }
       }
@@ -1920,6 +2382,12 @@
             "state": "translated",
             "value": "Znaleziono kod kraju %@, ale nie ma go w katalogu Worldward."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le code pays %@ a été trouvé mais n’est pas dans le catalogue Worldward."
+          }
         }
       }
     },
@@ -1943,6 +2411,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lista krajów"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste des pays"
           }
         }
       }
@@ -1968,6 +2442,12 @@
             "state": "translated",
             "value": "Przekroczony"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traversé"
+          }
         }
       }
     },
@@ -1992,6 +2472,12 @@
             "state": "translated",
             "value": "dotychczasowy"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "actuel"
+          }
         }
       }
     },
@@ -2014,6 +2500,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dane"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données"
           }
         }
       }
@@ -2039,6 +2531,12 @@
             "state": "translated",
             "value": "data"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "date"
+          }
         }
       }
     },
@@ -2062,6 +2560,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Data"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
           }
         }
       }
@@ -2087,6 +2591,12 @@
             "state": "translated",
             "value": "Data Wizyty"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date de visite"
+          }
         }
       }
     },
@@ -2110,6 +2620,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "opisz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "décrire"
           }
         }
       }
@@ -2135,6 +2651,12 @@
             "state": "translated",
             "value": "Opisz podróż własnymi słowami, a Worldward wyodrębni kraje i daty do potwierdzenia."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décrivez un voyage avec vos propres mots et Worldward extrait les pays et les dates pour confirmation."
+          }
         }
       }
     },
@@ -2158,6 +2680,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Opisz swoją podróż"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décrivez votre voyage"
           }
         }
       }
@@ -2183,6 +2711,12 @@
             "state": "translated",
             "value": "Opis"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Description"
+          }
         }
       }
     },
@@ -2206,6 +2740,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wykrywa Twój obecny kraj i oznacza go wybranym statusem podróży."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Détecte votre pays actuel et le marque avec le statut de voyage choisi."
           }
         }
       }
@@ -2231,6 +2771,12 @@
             "state": "translated",
             "value": "dyktuj"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dicter"
+          }
         }
       }
     },
@@ -2253,6 +2799,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gotowe"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé"
           }
         }
       }
@@ -2278,6 +2830,12 @@
             "state": "translated",
             "value": "np. Europa 2026"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "p. ex. Europe 2026"
+          }
         }
       }
     },
@@ -2301,6 +2859,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "np. Odwiedziłem Japonię i Koreę Południową w zeszłą wiosnę"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "p. ex. J’ai visité le Japon et la Corée du Sud au printemps dernier"
           }
         }
       }
@@ -2326,6 +2890,12 @@
             "state": "translated",
             "value": "Koniec"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fin"
+          }
         }
       }
     },
@@ -2349,6 +2919,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "europa"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "europe"
           }
         }
       }
@@ -2374,6 +2950,12 @@
             "state": "translated",
             "value": "Europa"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Europe"
+          }
         }
       }
     },
@@ -2396,6 +2978,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eksportuj CSV"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporter CSV"
           }
         }
       }
@@ -2421,6 +3009,12 @@
             "state": "translated",
             "value": "Eksport zapisuje statusy krajów i wizyty do pliku JSON. Import dopasowuje ten plik do Twoich krajów i zastępuje ich dane podróży."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’exportation enregistre vos statuts de pays et visites dans un fichier JSON. L’importation fait correspondre ce fichier à vos pays et remplace leurs données de voyage."
+          }
         }
       }
     },
@@ -2443,6 +3037,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eksportuj Dane Podróży…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporter les données de voyage…"
           }
         }
       }
@@ -2468,6 +3068,12 @@
             "state": "translated",
             "value": "Wypełnij z LLM"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remplir avec l’IA"
+          }
         }
       }
     },
@@ -2489,6 +3095,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Znajdź kraj na Mapie i dodaj go do swojej listy życzeń."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouvez un pays sur la Carte et ajoutez-le à votre liste de souhaits."
           }
         }
       }
@@ -2512,6 +3124,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Znajdź kraj…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher un pays…"
           }
         }
       }
@@ -2537,6 +3155,12 @@
             "state": "translated",
             "value": "Znajdź Wizyty"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouver des visites"
+          }
         }
       }
     },
@@ -2560,6 +3184,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Z Bieżącej Lokalizacji"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuis la position actuelle"
           }
         }
       }
@@ -2585,6 +3215,12 @@
             "state": "translated",
             "value": "Z Opisu"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuis la description"
+          }
         }
       }
     },
@@ -2607,6 +3243,12 @@
             "state": "translated",
             "value": "Ze Zdjęć"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Depuis les photos"
+          }
         }
       }
     },
@@ -2628,6 +3270,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Generowanie…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Génération…"
           }
         }
       }
@@ -2653,6 +3301,12 @@
             "state": "translated",
             "value": "Pobierz Postęp na Kontynencie"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtenir le progrès du continent"
+          }
         }
       }
     },
@@ -2676,6 +3330,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pobierz Liczbę Wizyt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtenir le nombre de visites"
           }
         }
       }
@@ -2701,6 +3361,12 @@
             "state": "translated",
             "value": "Przygotowywanie"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparation"
+          }
         }
       }
     },
@@ -2725,6 +3391,12 @@
             "state": "translated",
             "value": "Repozytorium GitHub"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dépôt GitHub"
+          }
         }
       }
     },
@@ -2748,6 +3420,12 @@
             "state": "translated",
             "value": "Planuję"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planifié"
+          }
         }
       }
     },
@@ -2768,6 +3446,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gps"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "gps"
@@ -2796,6 +3480,12 @@
             "state": "translated",
             "value": "Nagłówek"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titre"
+          }
         }
       }
     },
@@ -2819,6 +3509,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "tutaj"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ici"
           }
         }
       }
@@ -2844,6 +3540,12 @@
             "state": "translated",
             "value": "Oto Twój postęp w %@."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici votre progression dans %@."
+          }
         }
       }
     },
@@ -2867,6 +3569,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oto podsumowanie Twoich podróży."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voici le résumé de vos voyages."
           }
         }
       }
@@ -2892,6 +3600,12 @@
             "state": "translated",
             "value": "Dom"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domicile"
+          }
         }
       }
     },
@@ -2914,6 +3628,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hybryda"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hybride"
           }
         }
       }
@@ -2939,6 +3659,12 @@
             "state": "translated",
             "value": "Importuj %lld krajów"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importer %lld pays"
+          }
         }
       }
     },
@@ -2963,6 +3689,12 @@
             "state": "translated",
             "value": "Importuj ze Zdjęć"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importer depuis Photos"
+          }
         }
       }
     },
@@ -2985,6 +3717,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importuj Dane Podróży…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importer les données de voyage…"
           }
         }
       }
@@ -3010,6 +3748,12 @@
             "state": "translated",
             "value": "W %@ odwiedziłeś"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En %@ vous avez visité"
+          }
         }
       }
     },
@@ -3034,6 +3778,12 @@
             "state": "translated",
             "value": "Dołącz"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inclure"
+          }
         }
       }
     },
@@ -3056,6 +3806,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Plan podróży"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Itinéraire"
           }
         }
       }
@@ -3081,6 +3837,12 @@
             "state": "translated",
             "value": "Licencja"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licence"
+          }
         }
       }
     },
@@ -3104,6 +3866,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Linki, potwierdzenia, pomysły…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liens, confirmations, idées…"
           }
         }
       }
@@ -3129,6 +3897,12 @@
             "state": "translated",
             "value": "Lista"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste"
+          }
         }
       }
     },
@@ -3152,6 +3926,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "mieszkałem"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "vécu"
           }
         }
       }
@@ -3177,6 +3957,12 @@
             "state": "translated",
             "value": "Mieszkałem"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vécu"
+          }
         }
       }
     },
@@ -3200,6 +3986,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mieszkam"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vit actuellement"
           }
         }
       }
@@ -3225,6 +4017,12 @@
             "state": "translated",
             "value": "lokalizacja"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "localisation"
+          }
         }
       }
     },
@@ -3246,6 +4044,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "log"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "journal"
           }
         }
       }
@@ -3271,6 +4075,12 @@
             "state": "translated",
             "value": "Zarejestruj Wizytę"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer une visite"
+          }
         }
       }
     },
@@ -3292,6 +4102,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zarejestruj wizytę w ${country}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer une visite dans ${country}"
           }
         }
       }
@@ -3317,6 +4133,12 @@
             "state": "translated",
             "value": "Rejestruj z Opisu"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer depuis la description"
+          }
         }
       }
     },
@@ -3341,6 +4163,12 @@
             "state": "translated",
             "value": "Rejestruj Wizytę"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer la visite"
+          }
         }
       }
     },
@@ -3362,6 +4190,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rejestruj wizyty z ${text}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer les visites depuis ${text}"
           }
         }
       }
@@ -3387,6 +4221,12 @@
             "state": "translated",
             "value": "Rejestruj Wizyty z Opisu"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer les visites depuis une description"
+          }
         }
       }
     },
@@ -3408,6 +4248,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rejestruj Wizyty z Tekstu"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer les visites depuis un texte"
           }
         }
       }
@@ -3433,6 +4279,12 @@
             "state": "translated",
             "value": "Gestionar contenedores"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gérer les conteneurs"
+          }
         }
       }
     },
@@ -3456,6 +4308,12 @@
             "state": "translated",
             "value": "Mapa"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carte"
+          }
         }
       }
     },
@@ -3478,6 +4336,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Styl Mapy"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Style de carte"
           }
         }
       }
@@ -3503,6 +4367,12 @@
             "state": "translated",
             "value": "oznacz"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "marquer"
+          }
         }
       }
     },
@@ -3527,6 +4397,12 @@
             "state": "translated",
             "value": "Oznacz"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer"
+          }
         }
       }
     },
@@ -3548,6 +4424,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oznacz ${country} jako ${status}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer ${country} comme ${status}"
           }
         }
       }
@@ -3573,6 +4455,12 @@
             "state": "translated",
             "value": "Oznacz kraje jako odwiedzone lub zaimportuj ze Zdjęć, aby zacząć zdobywać osiągnięcia."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquez des pays comme visités ou importez depuis Photos pour commencer à gagner des succès."
+          }
         }
       }
     },
@@ -3596,6 +4484,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oznacz Kraj"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer le pays"
           }
         }
       }
@@ -3621,6 +4515,12 @@
             "state": "translated",
             "value": "Oznacz Status Kraju"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer le statut du pays"
+          }
         }
       }
     },
@@ -3644,6 +4544,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oznacz Bieżącą Lokalizację"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer la position actuelle"
           }
         }
       }
@@ -3669,6 +4575,12 @@
             "state": "translated",
             "value": "Oznacz Lokalizację"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer la position"
+          }
         }
       }
     },
@@ -3692,6 +4604,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oznacz najczęściej odwiedzany kraj jako dom"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer le pays le plus visité comme domicile"
           }
         }
       }
@@ -3717,6 +4635,12 @@
             "state": "translated",
             "value": "Oznacz gdzie jestem"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer où je suis"
+          }
         }
       }
     },
@@ -3738,6 +4662,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oznacz gdzie jestem jako ${status}"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marquer où je suis comme ${status}"
           }
         }
       }
@@ -3763,6 +4693,12 @@
             "state": "translated",
             "value": "Oznacza Twój obecny kraj w Worldward."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marque votre pays actuel dans Worldward."
+          }
         }
       }
     },
@@ -3784,6 +4720,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Połącz przerwę"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fusionner l’intervalle"
           }
         }
       }
@@ -3809,6 +4751,12 @@
             "state": "translated",
             "value": "Wiadomość"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message"
+          }
         }
       }
     },
@@ -3830,6 +4778,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Najczęściej odwiedzane"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le plus visité"
           }
         }
       }
@@ -3853,6 +4807,12 @@
             "state": "translated",
             "value": "Mój postęp w ${continent}"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ma progression dans ${continent}"
+          }
         }
       }
     },
@@ -3875,6 +4835,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mój Świat"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mon Monde"
           }
         }
       }
@@ -3900,6 +4866,12 @@
             "state": "translated",
             "value": "Moje podróże w Worldward"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes voyages Worldward"
+          }
         }
       }
     },
@@ -3923,6 +4895,12 @@
             "state": "translated",
             "value": "Nazwa"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom"
+          }
         }
       }
     },
@@ -3944,6 +4922,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "W pobliżu"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À proximité"
           }
         }
       }
@@ -3969,6 +4953,12 @@
             "state": "translated",
             "value": "Nowy"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau"
+          }
         }
       }
     },
@@ -3992,6 +4982,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Neuer Behälter"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau conteneur"
           }
         }
       }
@@ -4017,6 +5013,12 @@
             "state": "translated",
             "value": "Neuer Behälter…"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau conteneur…"
+          }
         }
       }
     },
@@ -4039,6 +5041,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nowa Podróż"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nouveau voyage"
           }
         }
       }
@@ -4063,6 +5071,12 @@
             "state": "translated",
             "value": "Następne destynacje"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prochaines destinations"
+          }
         }
       }
     },
@@ -4084,6 +5098,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nie znaleziono krajów"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun pays trouvé"
           }
         }
       }
@@ -4107,6 +5127,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Brak krajów"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore de pays"
           }
         }
       }
@@ -4132,6 +5158,12 @@
             "state": "translated",
             "value": "Nie znaleziono kraju o kodzie %@."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun pays trouvé avec le code %@."
+          }
         }
       }
     },
@@ -4154,6 +5186,12 @@
             "state": "translated",
             "value": "Żadne zdjęcie z danymi lokalizacji nie pasowało do kraju lub wszystko zostało już zaimportowane."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune photo avec des données de localisation ne correspond à un pays, ou tout est déjà importé."
+          }
         }
       }
     },
@@ -4175,6 +5213,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Brak przystanków"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore d’escales"
           }
         }
       }
@@ -4200,6 +5244,12 @@
             "state": "translated",
             "value": "Brak podróży"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore de voyages"
+          }
         }
       }
     },
@@ -4222,6 +5272,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Brak wycieczek"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore de voyages"
           }
         }
       }
@@ -4247,6 +5303,12 @@
             "state": "translated",
             "value": "Nie znaleziono wizyt"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune visite trouvée"
+          }
         }
       }
     },
@@ -4269,6 +5331,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Brak wizyt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore de visites"
           }
         }
       }
@@ -4294,6 +5362,12 @@
             "state": "translated",
             "value": "Ameryka Północna"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amérique du Nord"
+          }
         }
       }
     },
@@ -4317,6 +5391,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Niedostępne"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non disponible"
           }
         }
       }
@@ -4342,6 +5422,12 @@
             "state": "translated",
             "value": "Notatka"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
         }
       }
     },
@@ -4364,6 +5450,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notatki"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
           }
         }
       }
@@ -4388,6 +5480,12 @@
             "state": "translated",
             "value": "Nic jeszcze nie zaplanowano"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rien de prévu pour l’instant"
+          }
         }
       }
     },
@@ -4411,6 +5509,12 @@
             "state": "translated",
             "value": "Powiadomienia"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications"
+          }
         }
       }
     },
@@ -4432,6 +5536,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Okazjonalne przypomnienia na urządzeniu: wspomnienia z podróży „w tym dniu”, podsumowanie roku każdego grudnia i delikatny przypomnienie, jeśli od dłuższego czasu nie zalogowałeś podróży. Domyślnie wyłączone; nic nie jest wysyłane, dopóki tego nie włączysz."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rappels occasionnels sur l’appareil : souvenirs de voyage « ce jour-là », un bilan annuel chaque décembre et une invitation discrète si vous n’avez pas enregistré de voyage depuis un moment. Désactivé par défaut ; rien n’est envoyé sauf si vous activez cette option."
           }
         }
       }
@@ -4457,6 +5567,12 @@
             "state": "translated",
             "value": "z %lld"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sur %lld"
+          }
         }
       }
     },
@@ -4481,6 +5597,12 @@
             "state": "translated",
             "value": "z %lld krajów"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sur %lld pays"
+          }
         }
       }
     },
@@ -4501,6 +5623,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "OK"
@@ -4528,6 +5656,12 @@
             "state": "translated",
             "value": "W tym dniu ✈️"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce jour-là ✈️"
+          }
         }
       }
     },
@@ -4552,6 +5686,12 @@
             "state": "translated",
             "value": "Otwiera pulpit podróży z odwiedzonymi krajami, osiągnięciami i postępem na kontynentach."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvre votre tableau de bord de voyage avec les pays visités, les succès et la progression sur les continents."
+          }
         }
       }
     },
@@ -4574,6 +5714,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pakowanie"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bagages"
           }
         }
       }
@@ -4605,6 +5751,12 @@
             "state": "translated",
             "value": "Pakowanie · %1$lld/%2$lld"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bagages · %1$lld/%2$lld"
+          }
         }
       }
     },
@@ -4628,6 +5780,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "procent"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pourcentage"
           }
         }
       }
@@ -4653,6 +5811,12 @@
             "state": "translated",
             "value": "Zdjęcia zrobione bliżej siebie niż ta wartość są traktowane jako jedna podróż."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les photos plus rapprochées que cela sont considérées comme un seul voyage."
+          }
         }
       }
     },
@@ -4677,6 +5841,12 @@
             "state": "translated",
             "value": "Zaplanuj swoją następną przygodę — dotknij ＋, aby rozpocząć podróż."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planifiez votre prochaine aventure — appuyez sur ＋ pour commencer un voyage."
+          }
         }
       }
     },
@@ -4700,6 +5870,12 @@
             "state": "translated",
             "value": "Planowanie"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planification"
+          }
         }
       }
     },
@@ -4722,6 +5898,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Plany"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plans"
           }
         }
       }
@@ -4747,6 +5929,12 @@
             "state": "translated",
             "value": "progres"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "progrès"
+          }
         }
       }
     },
@@ -4768,6 +5956,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Czytanie Twojego opisu…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecture de votre description…"
           }
         }
       }
@@ -4791,6 +5985,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ostatnio odwiedzone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visité récemment"
           }
         }
       }
@@ -4816,6 +6016,12 @@
             "state": "translated",
             "value": "wpis"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "enregistrer"
+          }
         }
       }
     },
@@ -4839,6 +6045,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rejestruje wizytę w kraju, opcjonalnie w określonej dacie."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistre une visite dans un pays, optionnellement à une date spécifique."
           }
         }
       }
@@ -4864,6 +6076,12 @@
             "state": "translated",
             "value": "Usunąć %lld spakowanych pozycji?"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer les %lld articles de bagages ?"
+          }
         }
       }
     },
@@ -4887,6 +6105,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Devuelve cuántos países has visitado, junto con un desglose por estado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retourne combien de pays vous avez visités, avec une ventilation par statut."
           }
         }
       }
@@ -4912,6 +6136,12 @@
             "state": "translated",
             "value": "Przepisz"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réécrire"
+          }
         }
       }
     },
@@ -4935,6 +6165,12 @@
             "state": "translated",
             "value": "Satelita"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satellite"
+          }
         }
       }
     },
@@ -4957,6 +6193,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zapisz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enregistrer"
           }
         }
       }
@@ -4982,6 +6224,12 @@
             "state": "translated",
             "value": "Tryb skanowania"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode de numérisation"
+          }
         }
       }
     },
@@ -5005,6 +6253,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skanuj Zdjęcia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Numériser les photos"
           }
         }
       }
@@ -5030,6 +6284,12 @@
             "state": "translated",
             "value": "Szukaj"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher"
+          }
         }
       }
     },
@@ -5052,6 +6312,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Szukaj krajów"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher des pays"
           }
         }
       }
@@ -5077,6 +6343,12 @@
             "state": "translated",
             "value": "Sekcja"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section"
+          }
         }
       }
     },
@@ -5100,6 +6372,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ustaw datę"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Définir une date"
           }
         }
       }
@@ -5125,6 +6403,12 @@
             "state": "translated",
             "value": "Ustawia status podróży kraju — odwiedzony, mieszkałem, przekroczony lub mieszkam."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Définit le statut de voyage d’un pays — visité, vécu, traversé ou vit actuellement."
+          }
         }
       }
     },
@@ -5149,6 +6433,12 @@
             "state": "translated",
             "value": "Ustawia Twój najczęściej obecny kraj jako „Mieszkam”. Istniejący dom nigdy nie jest nadpisywany."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Définit votre pays le plus présent comme « Vit actuellement ». Un domicile existant n’est jamais écrasé."
+          }
         }
       }
     },
@@ -5172,6 +6462,12 @@
             "state": "translated",
             "value": "Ustawienia"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réglages"
+          }
         }
       }
     },
@@ -5194,6 +6490,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Udostępnij"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partager"
           }
         }
       }
@@ -5219,6 +6521,12 @@
             "state": "translated",
             "value": "Udostępnij / Eksportuj (Markdown)"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partager / Exporter (Markdown)"
+          }
         }
       }
     },
@@ -5243,6 +6551,12 @@
             "state": "translated",
             "value": "Udostępnij Obraz"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partager l'image"
+          }
         }
       }
     },
@@ -5265,6 +6579,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Udostępnij Kartę Obrazu"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partager la carte image"
           }
         }
       }
@@ -5290,6 +6610,12 @@
             "state": "translated",
             "value": "Udostępnij Tekst"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partager le texte"
+          }
         }
       }
     },
@@ -5313,6 +6639,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pokaż Statystyki Podróży"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afficher les statistiques de voyage"
           }
         }
       }
@@ -5338,6 +6670,12 @@
             "state": "translated",
             "value": "Pokazuje, ile krajów odwiedziłeś na danym kontynencie."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Affiche combien de pays vous avez visités sur un continent spécifique."
+          }
         }
       }
     },
@@ -5361,6 +6699,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pomiń te zdjęcia"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorer ces photos"
           }
         }
       }
@@ -5386,6 +6730,12 @@
             "state": "translated",
             "value": "Sortuj"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trier"
+          }
         }
       }
     },
@@ -5409,6 +6759,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sortuj i Filtruj"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trier & Filtrer"
           }
         }
       }
@@ -5434,6 +6790,12 @@
             "state": "translated",
             "value": "Ameryka Południowa"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amérique du Sud"
+          }
         }
       }
     },
@@ -5456,6 +6818,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Standardowy"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
           }
         }
       }
@@ -5481,6 +6849,12 @@
             "state": "translated",
             "value": "Początek"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Début"
+          }
         }
       }
     },
@@ -5504,6 +6878,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Statystyki"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistiques"
           }
         }
       }
@@ -5529,6 +6909,12 @@
             "state": "translated",
             "value": "statystyki"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "statistiques"
+          }
         }
       }
     },
@@ -5551,6 +6937,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Status"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statut"
           }
         }
       }
@@ -5576,6 +6968,12 @@
             "state": "translated",
             "value": "Przystanek"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escale"
+          }
         }
       }
     },
@@ -5599,6 +6997,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zasugeruj ponownie"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggérer à nouveau"
           }
         }
       }
@@ -5624,6 +7028,12 @@
             "state": "translated",
             "value": "Zasugeruj z Apple Intelligence"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggérer avec Apple Intelligence"
+          }
         }
       }
     },
@@ -5647,6 +7057,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "podsumowanie"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "résumé"
           }
         }
       }
@@ -5672,6 +7088,12 @@
             "state": "translated",
             "value": "Dotknij kraju na Mapie, aby oznaczyć, gdzie byłeś."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appuyez sur un pays sur la Carte pour marquer où vous êtes allé."
+          }
         }
       }
     },
@@ -5694,6 +7116,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dotknij kraju, aby zobaczyć szczegóły"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appuyez sur un pays pour voir les détails"
           }
         }
       }
@@ -5719,6 +7147,12 @@
             "state": "translated",
             "value": "Model na urządzeniu jest nadal pobierany. Spróbuj ponownie za chwilę."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le modèle sur l’appareil est encore en téléchargement. Réessayez dans un instant."
+          }
         }
       }
     },
@@ -5740,6 +7174,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Model na urządzeniu jest nadal pobierany. Spróbuj ponownie wkrótce."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le modèle sur l’appareil est encore en téléchargement. Réessayez bientôt."
           }
         }
       }
@@ -5763,6 +7203,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Motyw"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thème"
           }
         }
       }
@@ -5788,6 +7234,12 @@
             "state": "translated",
             "value": "Te zdjęcia nie znajdują się w granicach żadnego kraju — często to mała wyspa. Przypisz każde do kraju lub pozostaw, aby pominąć te zdjęcia."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ces photos ne se situent dans aucun pays — souvent une petite île. Attribuez chacune à un pays, ou laissez pour ignorer ces photos."
+          }
         }
       }
     },
@@ -5812,6 +7264,12 @@
             "state": "translated",
             "value": "Myślę, dokąd pojechać dalej…"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réflexion sur la prochaine destination…"
+          }
         }
       }
     },
@@ -5833,6 +7291,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Myślę…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réflexion…"
           }
         }
       }
@@ -5858,6 +7322,12 @@
             "state": "translated",
             "value": "To urządzenie nie może uruchomić lokalnego parsera."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cet appareil ne peut pas exécuter l’analyseur local."
+          }
         }
       }
     },
@@ -5882,6 +7352,12 @@
             "state": "translated",
             "value": "To urządzenie nie może uruchomić lokalnego asystenta podróży."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cet appareil ne peut pas exécuter l’assistant de voyage local."
+          }
         }
       }
     },
@@ -5904,6 +7380,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Śledzone z Worldward"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suivi avec Worldward"
           }
         }
       }
@@ -5929,6 +7411,12 @@
             "state": "translated",
             "value": "Podróże"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voyages"
+          }
         }
       }
     },
@@ -5952,6 +7440,12 @@
             "state": "translated",
             "value": "Przypomnienia podróżne"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rappels de voyage"
+          }
         }
       }
     },
@@ -5973,6 +7467,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Status Podróży"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statut de voyage"
           }
         }
       }
@@ -5996,6 +7496,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oś Czasu Podróży"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chronologie des voyages"
           }
         }
       }
@@ -6021,6 +7527,12 @@
             "state": "translated",
             "value": "trip"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "voyage"
+          }
         }
       }
     },
@@ -6045,6 +7557,12 @@
             "state": "translated",
             "value": "Nazwa podróży"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom du voyage"
+          }
         }
       }
     },
@@ -6067,6 +7585,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wycieczki"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voyages"
           }
         }
       }
@@ -6092,6 +7616,12 @@
             "state": "translated",
             "value": "Spróbuj zapytać"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essayez de demander"
+          }
         }
       }
     },
@@ -6113,6 +7643,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Spróbuj wymienić odwiedzone kraje bardziej bezpośrednio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essayez de nommer les pays que vous avez visités plus directement."
           }
         }
       }
@@ -6138,6 +7674,12 @@
             "state": "translated",
             "value": "Włącz Apple Intelligence w Ustawieniach, aby pytać o swoje podróże."
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activez Apple Intelligence dans les Réglages pour poser des questions sur vos voyages."
+          }
         }
       }
     },
@@ -6161,6 +7703,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Włącz Apple Intelligence w Ustawieniach, aby rejestrować wizyty z tekstu."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activez Apple Intelligence dans les Réglages pour enregistrer des visites depuis un texte."
           }
         }
       }
@@ -6186,6 +7734,12 @@
             "state": "translated",
             "value": "Nicht gruppiert"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non groupé"
+          }
         }
       }
     },
@@ -6209,6 +7763,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Odblokowane"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Débloqué"
           }
         }
       }
@@ -6234,6 +7794,12 @@
             "state": "translated",
             "value": "Niepasujące lokalizacje"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lieux non correspondants"
+          }
         }
       }
     },
@@ -6256,6 +7822,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nadchodząca podróż ✈️"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voyage à venir ✈️"
           }
         }
       }
@@ -6281,6 +7853,12 @@
             "state": "translated",
             "value": "wizyta"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "visite"
+          }
         }
       }
     },
@@ -6304,6 +7882,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Liczba Wizyt"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de visites"
           }
         }
       }
@@ -6329,6 +7913,12 @@
             "state": "translated",
             "value": "Rok wizyty"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Année de visite"
+          }
         }
       }
     },
@@ -6353,6 +7943,12 @@
             "state": "translated",
             "value": "odiwedzone"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "visité"
+          }
         }
       }
     },
@@ -6375,6 +7971,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Odwiedzone"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visité"
           }
         }
       }
@@ -6400,6 +8002,12 @@
             "state": "translated",
             "value": "Odwiedzone w tym roku"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visité cette année"
+          }
         }
       }
     },
@@ -6424,6 +8032,12 @@
             "state": "translated",
             "value": "wizyt"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "visites"
+          }
         }
       }
     },
@@ -6446,6 +8060,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wizyty"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visites"
           }
         }
       }
@@ -6471,6 +8091,12 @@
             "state": "translated",
             "value": "Wizyty do zapisania"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visites à enregistrer"
+          }
         }
       }
     },
@@ -6495,6 +8121,12 @@
             "state": "translated",
             "value": "Jaką podróż chciałbyś zarejestrować?"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quel voyage souhaitez-vous enregistrer ?"
+          }
         }
       }
     },
@@ -6517,6 +8149,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lista życzeń"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste de souhaits"
           }
         }
       }
@@ -6542,6 +8180,12 @@
             "state": "translated",
             "value": "Mapa świata"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carte du monde"
+          }
         }
       }
     },
@@ -6562,6 +8206,12 @@
           }
         },
         "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward"
+          }
+        },
+        "fr": {
           "stringUnit": {
             "state": "translated",
             "value": "Worldward"
@@ -6590,6 +8240,12 @@
             "state": "translated",
             "value": "Dane Podróży Worldward"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Données de voyage Worldward"
+          }
         }
       }
     },
@@ -6613,6 +8269,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Napisz podsumowanie %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écrire le récapitulatif %@"
           }
         }
       }
@@ -6638,6 +8300,12 @@
             "state": "translated",
             "value": "Piszę Twoje podsumowanie %@…"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Écriture de votre récapitulatif %@…"
+          }
         }
       }
     },
@@ -6662,6 +8330,12 @@
             "state": "translated",
             "value": "Rok"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Année"
+          }
         }
       }
     },
@@ -6684,6 +8358,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Podsumowanie roku"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bilan de l’année"
           }
         }
       }
@@ -6708,6 +8388,12 @@
             "state": "translated",
             "value": "Twoje Podróże"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vos voyages"
+          }
         }
       }
     },
@@ -6730,6 +8416,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Twój rok w podróży 🌍"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre année de voyage 🌍"
           }
         }
       }
