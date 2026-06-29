@@ -24,7 +24,7 @@ struct ImportPreviewView: View {
             }
             .navigationTitle("Import from Photos")
             #if !os(macOS)
-            .navigationBarTitleDisplayMode(.inline)
+                .navigationBarTitleDisplayMode(.inline)
             #endif
         }
         #if os(macOS)
@@ -272,12 +272,12 @@ struct ImportPreviewView: View {
         guard let start = location.trips.map(\.startDate).min(),
             let end = location.trips.map(\.endDate).max()
         else { return "Unknown date" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
+        let startStr = start.formatted(date: .abbreviated, time: .omitted)
         if Calendar.current.isDate(start, inSameDayAs: end) {
-            return formatter.string(from: start)
+            return startStr
         }
-        return "\(formatter.string(from: start)) – \(formatter.string(from: end))"
+        let endStr = end.formatted(date: .abbreviated, time: .omitted)
+        return "\(startStr) – \(endStr)"
     }
 
     private func countryRow(_ proposedBinding: Binding<ProposedCountry>) -> some View {
@@ -342,11 +342,11 @@ struct ImportPreviewView: View {
     }
 
     private func tripDateText(_ trip: ProposedTrip) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
+        let start = trip.startDate.formatted(date: .abbreviated, time: .omitted)
         if Calendar.current.isDate(trip.startDate, inSameDayAs: trip.endDate) {
-            return formatter.string(from: trip.startDate)
+            return start
         }
-        return "\(formatter.string(from: trip.startDate)) – \(formatter.string(from: trip.endDate))"
+        let end = trip.endDate.formatted(date: .abbreviated, time: .omitted)
+        return "\(start) – \(end)"
     }
 }

@@ -43,8 +43,8 @@ struct TravelStats {
     let continents: [ContinentStat]
 
     let totalVisits: Int
-    let years: [YearStat]                       // sorted ascending by year
-    let countryIDsByYear: [Int: Set<String>]    // year -> visited country ids
+    let years: [YearStat]  // sorted ascending by year
+    let countryIDsByYear: [Int: Set<String>]  // year -> visited country ids
 
     let mostVisited: (name: String, flag: String, count: Int)?
     let firstVisitDate: Date?
@@ -123,7 +123,8 @@ struct TravelStats {
             }
         }
 
-        let continents = buckets
+        let continents =
+            buckets
             .map { ContinentStat(name: $0.key, visited: $0.value.visited, total: $0.value.total) }
             .sorted { $0.name < $1.name }
 
@@ -154,7 +155,8 @@ struct TravelStats {
         let rank: (CountryStatus) -> Int = { status in
             CountryStatus.allCases.firstIndex(of: status) ?? 0
         }
-        self.visitedFlags = flagged
+        self.visitedFlags =
+            flagged
             .sorted { lhs, rhs in
                 rank(lhs.status) != rank(rhs.status)
                     ? rank(lhs.status) > rank(rhs.status)
@@ -163,7 +165,8 @@ struct TravelStats {
             .map(\.flag)
 
         self.labelByID = labels
-        self.visitedList = flagged
+        self.visitedList =
+            flagged
             .sorted { $0.name < $1.name }
             .map { (flag: $0.flag, name: $0.name) }
     }
@@ -218,16 +221,21 @@ func nearestUnvisited(
     centroids: [String: CLLocationCoordinate2D],
     limit: Int = 5
 ) -> [(country: Country, distanceKM: Double)] {
-    let visitedPoints = countries
+    let visitedLocations =
+        countries
         .filter { $0.isVisited }
-        .compactMap { centroids[$0.id].map(MKMapPoint.init) }
-    guard !visitedPoints.isEmpty else { return [] }
+        .compactMap { coord in
+            centroids[coord.id].map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+        }
+    guard !visitedLocations.isEmpty else { return [] }
 
     var scored: [(country: Country, distanceKM: Double)] = []
     for country in countries where !country.isVisited {
         guard let coordinate = centroids[country.id] else { continue }
-        let point = MKMapPoint(coordinate)
-        let nearest = visitedPoints.map { point.distance(to: $0) }.min() ?? .greatestFiniteMagnitude
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        let nearest =
+            visitedLocations.map { $0.distance(from: location) }.min()
+            ?? .greatestFiniteMagnitude
         scored.append((country, nearest / 1000))
     }
 
