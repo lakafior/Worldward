@@ -27,11 +27,12 @@ private struct GeneratedPackingItem {
     var container: String
 }
 
-/// A finished packing suggestion handed back to the view: a display title (with
-/// its quantity folded in) and the name of the container it belongs in (empty if
-/// the model left it ungrouped).
+/// A finished packing suggestion handed back to the view: the item title, how
+/// many to pack, and the name of the container it belongs in (empty if the model
+/// left it ungrouped).
 struct PackingSuggestion {
     let title: String
+    let quantity: Int
     let containerName: String
 }
 
@@ -116,9 +117,9 @@ final class TripPlanner {
                 .compactMap { item -> PackingSuggestion? in
                     let name = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !name.isEmpty else { return nil }
-                    let title = item.quantity > 1 ? "\(name) ×\(item.quantity)" : name
                     let container = item.container.trimmingCharacters(in: .whitespacesAndNewlines)
-                    return PackingSuggestion(title: title, containerName: container)
+                    return PackingSuggestion(
+                        title: name, quantity: max(1, item.quantity), containerName: container)
                 }
             return items.isEmpty ? nil : items
         }

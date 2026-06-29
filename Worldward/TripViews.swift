@@ -437,11 +437,14 @@ struct TripDetailView: View {
     private func addPacking() {
         let title = newPackingTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
-        let item = PackingItem(title: title, trip: trip)
+        let item = PackingItem(title: title, order: nextPackingOrder, trip: trip)
         modelContext.insert(item)
         trip.packing.append(item)
         newPackingTitle = ""
     }
+
+    /// The next free ordering slot, so a new item lands at the end of its group.
+    private var nextPackingOrder: Int { (trip.packing.map(\.order).max() ?? -1) + 1 }
 
     private func clearPacking() {
         for item in trip.packing { modelContext.delete(item) }
@@ -515,15 +518,18 @@ struct TripDetailView: View {
 
             var existing = Set(trip.packing.map { $0.title.lowercased() })
             var createdContainers: [String: PackingContainer] = [:]
+            var order = nextPackingOrder
             for suggestion in suggestions {
                 let key = suggestion.title.lowercased()
                 guard !existing.contains(key) else { continue }
                 existing.insert(key)
-                let item = PackingItem(title: suggestion.title, trip: trip)
+                let item = PackingItem(
+                    title: suggestion.title, quantity: suggestion.quantity, order: order, trip: trip)
                 item.container = resolveContainer(
                     named: suggestion.containerName, cache: &createdContainers)
                 modelContext.insert(item)
                 trip.packing.append(item)
+                order += 1
             }
         }
     }
@@ -557,18 +563,26 @@ private struct PackingItemRow: View {
             Button {
                 item.isPacked.toggle()
             } label: {
-                HStack {
+                HStack(spacing: 6) {
                     Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
                         .foregroundStyle(item.isPacked ? .green : .secondary)
                     Text(item.title)
                         .strikethrough(item.isPacked)
                         .foregroundStyle(item.isPacked ? .secondary : .primary)
+                    if item.quantity > 1 {
+                        Text("×\(item.quantity)")
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             Spacer()
+
+            Stepper("Quantity", value: $item.quantity, in: 1...99)
+                .labelsHidden()
 
             Menu {
                 Picker("Container", selection: containerSelection) {

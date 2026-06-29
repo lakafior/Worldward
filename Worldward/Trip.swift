@@ -76,9 +76,9 @@ final class Trip {
                 container: container,
                 items: packing.filter {
                     $0.container?.persistentModelID == container.persistentModelID
-                })
+                }.sorted { $0.order < $1.order })
         }
-        let ungrouped = packing.filter { $0.container == nil }
+        let ungrouped = packing.filter { $0.container == nil }.sorted { $0.order < $1.order }
         if !ungrouped.isEmpty { groups.append(PackingGroup(container: nil, items: ungrouped)) }
         return groups
     }
@@ -125,7 +125,8 @@ final class Trip {
                     lines.append("### \(group.container?.name ?? "Other")")
                 }
                 for item in group.items {
-                    lines.append("- [\(item.isPacked ? "x" : " ")] \(item.title)")
+                    let count = item.quantity > 1 ? " ×\(item.quantity)" : ""
+                    lines.append("- [\(item.isPacked ? "x" : " ")] \(item.title)\(count)")
                 }
             }
         }
@@ -178,15 +179,23 @@ final class ItineraryItem {
 final class PackingItem {
     var title: String = ""
     var isPacked: Bool = false
+    /// How many to pack — a first-class field so it can be edited and counted,
+    /// rather than baked into the title text.
+    var quantity: Int = 1
+    /// Manual ordering within a container, for drag-to-reorder. Not globally
+    /// unique; only compared among items in the same container.
+    var order: Int = 0
     var trip: Trip?
     var container: PackingContainer?
 
     init(
-        title: String = "", isPacked: Bool = false, trip: Trip? = nil,
-        container: PackingContainer? = nil
+        title: String = "", isPacked: Bool = false, quantity: Int = 1, order: Int = 0,
+        trip: Trip? = nil, container: PackingContainer? = nil
     ) {
         self.title = title
         self.isPacked = isPacked
+        self.quantity = quantity
+        self.order = order
         self.trip = trip
         self.container = container
     }
