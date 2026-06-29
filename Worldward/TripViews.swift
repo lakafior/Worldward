@@ -198,6 +198,10 @@ struct TripDetailView: View {
     /// The shared container catalog, used for the move menu, the assistant, and
     /// first-run seeding. Sorted so groups appear in a stable order everywhere.
     @Query(sort: \PackingContainer.sortOrder) private var allContainers: [PackingContainer]
+    /// Saved packing templates, offered in the "Start from…" menu.
+    @Query(sort: \PackingTemplate.name) private var templates: [PackingTemplate]
+    /// Every trip, so the "Start from…" menu can copy another trip's packing list.
+    @Query private var allTrips: [Trip]
     @State private var showCountryPicker = false
     @State private var newPackingTitle = ""
     @State private var calendarAlert: String?
@@ -209,6 +213,10 @@ struct TripDetailView: View {
     /// The item to file into the container being created, or `nil` when creating
     /// an empty container from the controls section.
     @State private var pendingContainerItem: PackingItem?
+    /// Container groups the user has collapsed, keyed by `PackingGroup.id`.
+    @State private var collapsedGroupIDs: Set<String> = []
+    @State private var showSaveTemplate = false
+    @State private var newTemplateName = ""
 
     var body: some View {
         Form {
@@ -238,6 +246,12 @@ struct TripDetailView: View {
             packingSections
             notesSection
         }
+        // Drag-to-reorder packing items within and across container groups; the
+        // closure rewrites each moved item's container + `order`. The itinerary's
+        // own `.onMove` is keyed to `ItineraryItem` and coexists.
+        .reorderContainer(for: PackingItem.self, in: String.self) { difference in
+            applyPackingReorder(difference)
+        }
         #if os(iOS)
             .toolbar { EditButton() }
         #endif
@@ -254,6 +268,13 @@ struct TripDetailView: View {
         }
         .sheet(isPresented: $showManageContainers) {
             ManageContainersView()
+        }
+        .alert("Save as template", isPresented: $showSaveTemplate) {
+            TextField("Template name", text: $newTemplateName)
+            Button("Save", action: saveTemplate)
+            Button("Cancel", role: .cancel, action: resetTemplateDraft)
+        } message: {
+            Text("Reuse this packing list on future trips.")
         }
         .alert(
             "Apple Calendar",
@@ -308,19 +329,34 @@ struct TripDetailView: View {
         }
     }
 
-    /// One Section per container that has items (plus an "Other" group for
-    /// ungrouped items), followed by the shared controls section.
+    /// An overall progress bar, one Section per container that has items (plus an
+    /// "Other" group for ungrouped items), followed by the shared controls section.
     @ViewBuilder private var packingSections: some View {
+        if !trip.packing.isEmpty {
+            Section {
+                VStack(alignment: .leading, spacing: 4) {
+                    ProgressView(
+                        value: Double(trip.packedCount), total: Double(trip.packing.count))
+                    Text("\(trip.packedCount) of \(trip.packing.count) packed")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+
         ForEach(trip.packingGroups) { group in
             Section {
-                ForEach(group.items) { item in
-                    PackingItemRow(item: item, containers: allContainers) {
-                        pendingContainerItem = item
-                        isAddingContainer = true
+                if !collapsedGroupIDs.contains(group.id) {
+                    ForEach(group.items) { item in
+                        PackingItemRow(item: item, containers: allContainers) {
+                            pendingContainerItem = item
+                            isAddingContainer = true
+                        }
                     }
-                }
-                .onDelete { offsets in
-                    for index in offsets { modelContext.delete(group.items[index]) }
+                    .reorderable(collectionID: group.id)
+                    .onDelete { offsets in
+                        for index in offsets { modelContext.delete(group.items[index]) }
+                    }
                 }
             } header: {
                 packingGroupHeader(group)
@@ -330,13 +366,32 @@ struct TripDetailView: View {
         packingControlsSection
     }
 
+    /// A tappable group header that collapses/expands its container and shows a
+    /// packed-count badge plus a chevron reflecting the collapsed state.
     private func packingGroupHeader(_ group: PackingGroup) -> some View {
         let packed = group.items.filter(\.isPacked).count
-        return Label {
-            Text("\(group.container?.name ?? "Other") · \(packed)/\(group.items.count)")
-        } icon: {
-            Image(systemName: group.container?.symbolName ?? "tray")
+        let collapsed = collapsedGroupIDs.contains(group.id)
+        return Button {
+            if collapsed {
+                collapsedGroupIDs.remove(group.id)
+            } else {
+                collapsedGroupIDs.insert(group.id)
+            }
+        } label: {
+            HStack {
+                Label {
+                    Text("\(group.container?.name ?? "Other") · \(packed)/\(group.items.count)")
+                } icon: {
+                    Image(systemName: group.container?.symbolName ?? "tray")
+                }
+                Spacer()
+                Image(systemName: collapsed ? "chevron.right" : "chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 
     private var packingControlsSection: some View {
@@ -354,11 +409,20 @@ struct TripDetailView: View {
                 Label("Manage containers", systemImage: "bag.badge.plus")
             }
 
+            packingStartFromMenu
+
             if canUseAssistant {
                 fillButton(field: .packing, action: fillPacking)
             }
 
             if !trip.packing.isEmpty {
+                Button {
+                    newTemplateName = trip.title
+                    showSaveTemplate = true
+                } label: {
+                    Label("Save as template…", systemImage: "square.and.arrow.down")
+                }
+
                 Button(role: .destructive) {
                     confirmClearPacking = true
                 } label: {
@@ -375,6 +439,38 @@ struct TripDetailView: View {
             Text(
                 trip.packing.isEmpty
                     ? "Packing" : "Packing · \(trip.packedCount)/\(trip.packing.count)")
+        }
+    }
+
+    /// "Start from…" — applies a saved template or copies another trip's packing
+    /// list. Hidden entirely when there's nothing to start from.
+    @ViewBuilder private var packingStartFromMenu: some View {
+        let otherTrips = allTrips.filter {
+            $0.persistentModelID != trip.persistentModelID && !$0.packing.isEmpty
+        }
+        if !templates.isEmpty || !otherTrips.isEmpty {
+            Menu {
+                if !templates.isEmpty {
+                    Section("Templates") {
+                        ForEach(templates) { template in
+                            Button(template.name.isEmpty ? "Untitled" : template.name) {
+                                applyTemplate(template)
+                            }
+                        }
+                    }
+                }
+                if !otherTrips.isEmpty {
+                    Section("Copy from trip") {
+                        ForEach(otherTrips) { other in
+                            Button(other.title.isEmpty ? "Untitled Trip" : other.title) {
+                                copyPacking(from: other)
+                            }
+                        }
+                    }
+                }
+            } label: {
+                Label("Start from…", systemImage: "tray.full")
+            }
         }
     }
 
@@ -448,6 +544,107 @@ struct TripDetailView: View {
 
     private func clearPacking() {
         for item in trip.packing { modelContext.delete(item) }
+    }
+
+    /// Applies a drag-to-reorder across packing containers: the moved items adopt
+    /// the destination group's container, and that whole group is renumbered so
+    /// `order` stays contiguous. Items in untouched groups keep their order.
+    private func applyPackingReorder(
+        _ difference: ReorderDifference<PersistentIdentifier, String>
+    ) {
+        let destID = difference.destination.collectionID
+        let destContainer: PackingContainer? =
+            destID == "ungrouped" ? nil : allContainers.first { $0.dedupID == destID }
+        let destContainerID = destContainer?.persistentModelID
+
+        let movingSet = Set(difference.sources)
+        let moved = difference.sources.compactMap { id in
+            trip.packing.first { $0.persistentModelID == id }
+        }
+        guard !moved.isEmpty else { return }
+
+        // The destination group's current items, minus anything being moved in.
+        var destItems =
+            trip.packing
+            .filter {
+                $0.container?.persistentModelID == destContainerID
+                    && !movingSet.contains($0.persistentModelID)
+            }
+            .sorted { $0.order < $1.order }
+
+        switch difference.destination.position {
+        case .before(let targetID):
+            let index =
+                destItems.firstIndex { $0.persistentModelID == targetID } ?? destItems.endIndex
+            destItems.insert(contentsOf: moved, at: index)
+        case .end:
+            destItems.append(contentsOf: moved)
+        }
+
+        for (index, item) in destItems.enumerated() {
+            item.container = destContainer
+            item.order = index
+        }
+    }
+
+    // MARK: Templates
+
+    /// Appends a saved template's items, skipping titles already on the list
+    /// (case-insensitive) and resolving each item's container by name.
+    private func applyTemplate(_ template: PackingTemplate) {
+        addPackingItems(
+            template.items.sorted { $0.order < $1.order }
+                .map { ($0.title, $0.quantity, $0.containerName) })
+    }
+
+    /// Appends another trip's packing items, skipping duplicates and resolving
+    /// containers by name so they file into this trip's catalog.
+    private func copyPacking(from other: Trip) {
+        addPackingItems(
+            other.packing.sorted { $0.order < $1.order }
+                .map { ($0.title, $0.quantity, $0.container?.name ?? "") })
+    }
+
+    /// Shared appender for templates and trip-copies: inserts each `(title,
+    /// quantity, containerName)` not already present, in increasing `order`.
+    private func addPackingItems(_ sources: [(title: String, quantity: Int, containerName: String)])
+    {
+        var existing = Set(trip.packing.map { $0.title.lowercased() })
+        var cache: [String: PackingContainer] = [:]
+        var order = nextPackingOrder
+        for source in sources {
+            let key = source.title.lowercased()
+            guard !key.isEmpty, !existing.contains(key) else { continue }
+            existing.insert(key)
+            let item = PackingItem(
+                title: source.title, quantity: source.quantity, order: order, trip: trip)
+            item.container = resolveContainer(named: source.containerName, cache: &cache)
+            modelContext.insert(item)
+            trip.packing.append(item)
+            order += 1
+        }
+    }
+
+    /// Saves the current packing list as a reusable template, storing each item's
+    /// container by name for portability.
+    private func saveTemplate() {
+        let name = newTemplateName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !trip.packing.isEmpty else { return resetTemplateDraft() }
+        let template = PackingTemplate(name: name)
+        modelContext.insert(template)
+        for (index, source) in trip.packing.sorted(by: { $0.order < $1.order }).enumerated() {
+            let templateItem = PackingTemplateItem(
+                title: source.title, quantity: source.quantity, order: index,
+                containerName: source.container?.name ?? "", template: template)
+            modelContext.insert(templateItem)
+            template.items.append(templateItem)
+        }
+        resetTemplateDraft()
+    }
+
+    private func resetTemplateDraft() {
+        newTemplateName = ""
+        showSaveTemplate = false
     }
 
     // MARK: Containers

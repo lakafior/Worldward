@@ -227,6 +227,48 @@ final class PackingContainer {
     }
 }
 
+/// A saved, reusable packing list — a named bundle of items the user can apply
+/// to any trip. Items store their container by *name* rather than a relationship,
+/// so a template stays portable even as the shared container catalog changes.
+/// CloudKit-safe: defaults on every property and a `.cascade` one-to-many.
+@Model
+final class PackingTemplate {
+    var name: String = ""
+
+    /// Per-row token for CloudKit de-duplication, mirroring `Country.dedupID`.
+    var dedupID: String = UUID().uuidString
+
+    @Relationship(deleteRule: .cascade, inverse: \PackingTemplateItem.template)
+    var items: [PackingTemplateItem] = []
+
+    init(name: String = "") {
+        self.name = name
+    }
+}
+
+/// One entry in a `PackingTemplate`: a title, a quantity, and the *name* of the
+/// container it belongs in (empty means ungrouped). The name is resolved to a
+/// real `PackingContainer` only when the template is applied to a trip.
+@Model
+final class PackingTemplateItem {
+    var title: String = ""
+    var quantity: Int = 1
+    var order: Int = 0
+    var containerName: String = ""
+    var template: PackingTemplate?
+
+    init(
+        title: String = "", quantity: Int = 1, order: Int = 0, containerName: String = "",
+        template: PackingTemplate? = nil
+    ) {
+        self.title = title
+        self.quantity = quantity
+        self.order = order
+        self.containerName = containerName
+        self.template = template
+    }
+}
+
 /// One rendered group of a trip's packing list: a container (or `nil` for the
 /// ungrouped "Other" bucket) and the items filed under it. `Identifiable` so the
 /// grouped UI can `ForEach` over it. `nonisolated` so the `Trip` model's
