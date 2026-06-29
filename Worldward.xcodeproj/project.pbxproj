@@ -208,6 +208,7 @@
 				it,
 				"pt-PT",
 				"pt-BR",
+				ja,
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
