@@ -100,14 +100,14 @@ struct Worldward: App {
             .commands {
                 CommandGroup(replacing: .undoRedo) {
                     Button("Undo") {
-                        Self.sharedModelContainer.mainContext.undo()
+                        Self.sharedModelContainer.mainContext.undoManager?.undo()
                     }
                     .keyboardShortcut("z", modifiers: .command)
                     .disabled(
                         !(Self.sharedModelContainer.mainContext.undoManager?.canUndo ?? false))
 
                     Button("Redo") {
-                        Self.sharedModelContainer.mainContext.redo()
+                        Self.sharedModelContainer.mainContext.undoManager?.redo()
                     }
                     .keyboardShortcut("z", modifiers: [.command, .shift])
                     .disabled(
