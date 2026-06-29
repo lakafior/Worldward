@@ -18,6 +18,21 @@ private struct GeneratedPackingItem {
             + "capped near 7–10 since laundry is possible).",
         .range(1...30))
     var quantity: Int
+
+    @Guide(
+        description:
+            "Which bag this item is packed in. Copy EXACTLY one of the container names you "
+            + "were given, character for character. Only invent a new short container name if "
+            + "the item genuinely fits none of them.")
+    var container: String
+}
+
+/// A finished packing suggestion handed back to the view: a display title (with
+/// its quantity folded in) and the name of the container it belongs in (empty if
+/// the model left it ungrouped).
+struct PackingSuggestion {
+    let title: String
+    let containerName: String
 }
 
 /// The shape we ask the on-device model to produce for a packing list. Guided
@@ -62,9 +77,10 @@ final class TripPlanner {
 
     // MARK: Public requests
 
-    /// Drafts a packing list tailored to the trip's countries, season and length.
-    /// Returns concise item titles, or `nil` if generation failed or was empty.
-    func suggestPacking(for trip: Trip) async -> [String]? {
+    /// Drafts a packing list tailored to the trip's countries, season and length,
+    /// sorting each item into one of the trip's `containers`. Returns the
+    /// suggestions, or `nil` if generation failed or was empty.
+    func suggestPacking(for trip: Trip, containers: [String]) async -> [PackingSuggestion]? {
         await run(.packing) {
             let session = LanguageModelSession {
                 """
@@ -89,6 +105,7 @@ final class TripPlanner {
                 basic (underwear, socks, t-shirts) per day, capped around 7–10. Use \
                 quantity 1 for single items. No duplicates.
                 """
+                Self.containerInstruction(for: containers)
             }
             let response = try await session.respond(
                 to: "Create a packing list for this trip.\n\(Self.facts(for: trip))",
@@ -96,13 +113,36 @@ final class TripPlanner {
 
             let items =
                 response.content.items
-                .map { item -> String in
+                .compactMap { item -> PackingSuggestion? in
                     let name = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                    return item.quantity > 1 ? "\(name) ×\(item.quantity)" : name
+                    guard !name.isEmpty else { return nil }
+                    let title = item.quantity > 1 ? "\(name) ×\(item.quantity)" : name
+                    let container = item.container.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return PackingSuggestion(title: title, containerName: container)
                 }
-                .filter { !$0.isEmpty }
             return items.isEmpty ? nil : items
         }
+    }
+
+    /// Instruction telling the model which containers to file items into. When the
+    /// user already has containers we constrain to them by name (so non-English
+    /// names are preserved); otherwise the model groups items into a few sensible
+    /// containers of its own.
+    private static func containerInstruction(for containers: [String]) -> String {
+        let names = containers.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        if names.isEmpty {
+            return """
+                Sort the items into a few sensible bags by giving each a short \
+                'container' label (for example a toiletry bag, a day bag, and a \
+                main case). Reuse the same label for items that travel together.
+                """
+        }
+        return """
+            File every item into one of these containers by copying its name \
+            EXACTLY into the item's 'container' field: \(names.joined(separator: ", ")). \
+            Only coin a new short container name if an item fits none of them.
+            """
     }
 
     /// Drafts free-text notes proposing what to see and do on the trip, formatted

@@ -57,6 +57,32 @@ final class Trip {
     /// Items already ticked off the packing list.
     var packedCount: Int { packing.filter(\.isPacked).count }
 
+    /// The packing list grouped by container — containers in their `sortOrder`,
+    /// then the ungrouped items last. Containers with no items are omitted (they
+    /// still live in the shared catalog and remain selectable).
+    var packingGroups: [PackingGroup] {
+        var containers: [PackingContainer] = []
+        var seen = Set<PersistentIdentifier>()
+        for item in packing {
+            guard let container = item.container, !seen.contains(container.persistentModelID)
+            else { continue }
+            seen.insert(container.persistentModelID)
+            containers.append(container)
+        }
+        containers.sort { $0.sortOrder < $1.sortOrder }
+
+        var groups = containers.map { container in
+            PackingGroup(
+                container: container,
+                items: packing.filter {
+                    $0.container?.persistentModelID == container.persistentModelID
+                })
+        }
+        let ungrouped = packing.filter { $0.container == nil }
+        if !ungrouped.isEmpty { groups.append(PackingGroup(container: nil, items: ungrouped)) }
+        return groups
+    }
+
     /// A shareable Markdown summary of the trip — for the system share sheet
     /// (Apple Notes, Messages, Mail) or pasting into any Markdown editor.
     var markdownSummary: String {
@@ -89,8 +115,18 @@ final class Trip {
         if !packing.isEmpty {
             lines.append("")
             lines.append("## Packing")
-            for item in packing {
-                lines.append("- [\(item.isPacked ? "x" : " ")] \(item.title)")
+            let groups = packingGroups
+            // Only break the list into sub-headings once items are actually
+            // filed into containers; a single ungrouped list stays flat.
+            let useHeadings = groups.contains { $0.container != nil }
+            for group in groups {
+                if useHeadings {
+                    lines.append("")
+                    lines.append("### \(group.container?.name ?? "Other")")
+                }
+                for item in group.items {
+                    lines.append("- [\(item.isPacked ? "x" : " ")] \(item.title)")
+                }
             }
         }
 
@@ -135,16 +171,61 @@ final class ItineraryItem {
     }
 }
 
-/// A single checkable entry on a trip's packing list.
+/// A single checkable entry on a trip's packing list, optionally filed into a
+/// `PackingContainer` (a bag/case) so the list can be grouped by where each item
+/// goes. `container` is optional — an unfiled item is simply "ungrouped".
 @Model
 final class PackingItem {
     var title: String = ""
     var isPacked: Bool = false
     var trip: Trip?
+    var container: PackingContainer?
 
-    init(title: String = "", isPacked: Bool = false, trip: Trip? = nil) {
+    init(
+        title: String = "", isPacked: Bool = false, trip: Trip? = nil,
+        container: PackingContainer? = nil
+    ) {
         self.title = title
         self.isPacked = isPacked
         self.trip = trip
+        self.container = container
     }
+}
+
+/// A reusable place to pack things into — a bag, case or pouch. Containers are a
+/// catalog *shared across every trip*: once you've made "Travel case" it can be
+/// picked on any trip, and the on-device assistant sorts items into the ones you
+/// already have. CloudKit-safe: defaults on every property, a one-to-many to its
+/// items, and `.nullify` so deleting a container just ungroups its items.
+@Model
+final class PackingContainer {
+    var name: String = ""
+    /// SF Symbol shown beside the container in the grouped list.
+    var symbolName: String = "bag.fill"
+    /// User-facing ordering of the groups.
+    var sortOrder: Int = 0
+
+    /// Per-row token for CloudKit de-duplication, mirroring `Country.dedupID`.
+    var dedupID: String = UUID().uuidString
+
+    @Relationship(deleteRule: .nullify, inverse: \PackingItem.container)
+    var items: [PackingItem] = []
+
+    init(name: String = "", symbolName: String = "bag.fill", sortOrder: Int = 0) {
+        self.name = name
+        self.symbolName = symbolName
+        self.sortOrder = sortOrder
+    }
+}
+
+/// One rendered group of a trip's packing list: a container (or `nil` for the
+/// ungrouped "Other" bucket) and the items filed under it. `Identifiable` so the
+/// grouped UI can `ForEach` over it. `nonisolated` so the `Trip` model's
+/// nonisolated computed properties can build and read it (the project defaults to
+/// `@MainActor` isolation).
+nonisolated struct PackingGroup: Identifiable {
+    let container: PackingContainer?
+    let items: [PackingItem]
+
+    var id: String { container?.dedupID ?? "ungrouped" }
 }

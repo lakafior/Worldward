@@ -195,11 +195,19 @@ struct TripDetailView: View {
     let allCountries: [Country]
 
     @Environment(\.modelContext) private var modelContext
+    /// The shared container catalog, used for the move menu, the assistant, and
+    /// first-run seeding. Sorted so groups appear in a stable order everywhere.
+    @Query(sort: \PackingContainer.sortOrder) private var allContainers: [PackingContainer]
     @State private var showCountryPicker = false
     @State private var newPackingTitle = ""
     @State private var calendarAlert: String?
     @State private var planner = TripPlanner()
     @State private var confirmClearPacking = false
+    @State private var isAddingContainer = false
+    @State private var newContainerName = ""
+    /// The item to file into the container being created, or `nil` when creating
+    /// an empty container from the controls section.
+    @State private var pendingContainerItem: PackingItem?
 
     var body: some View {
         Form {
@@ -226,14 +234,22 @@ struct TripDetailView: View {
             }
 
             itinerarySection
-            packingSection
+            packingSections
             notesSection
         }
         #if os(iOS)
             .toolbar { EditButton() }
         #endif
+        .task { seedContainersIfNeeded() }
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(allCountries: allCountries) { country in addStop(country: country) }
+        }
+        .alert("New container", isPresented: $isAddingContainer) {
+            TextField("Name", text: $newContainerName)
+            Button("Add", action: createContainer)
+            Button("Cancel", role: .cancel, action: resetContainerDraft)
+        } message: {
+            Text("Bags and cases are shared across all your trips.")
         }
         .alert(
             "Apple Calendar",
@@ -288,30 +304,51 @@ struct TripDetailView: View {
         }
     }
 
-    private var packingSection: some View {
-        Section {
-            ForEach(trip.packing) { item in
-                Button {
-                    item.isPacked.toggle()
-                } label: {
-                    HStack {
-                        Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(item.isPacked ? .green : .secondary)
-                        Text(item.title)
-                            .strikethrough(item.isPacked)
-                            .foregroundStyle(item.isPacked ? .secondary : .primary)
+    /// One Section per container that has items (plus an "Other" group for
+    /// ungrouped items), followed by the shared controls section.
+    @ViewBuilder private var packingSections: some View {
+        ForEach(trip.packingGroups) { group in
+            Section {
+                ForEach(group.items) { item in
+                    PackingItemRow(item: item, containers: allContainers) {
+                        pendingContainerItem = item
+                        isAddingContainer = true
                     }
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .onDelete { offsets in
+                    for index in offsets { modelContext.delete(group.items[index]) }
+                }
+            } header: {
+                packingGroupHeader(group)
             }
-            .onDelete(perform: deletePacking)
+        }
 
+        packingControlsSection
+    }
+
+    private func packingGroupHeader(_ group: PackingGroup) -> some View {
+        let packed = group.items.filter(\.isPacked).count
+        return Label {
+            Text("\(group.container?.name ?? "Other") · \(packed)/\(group.items.count)")
+        } icon: {
+            Image(systemName: group.container?.symbolName ?? "tray")
+        }
+    }
+
+    private var packingControlsSection: some View {
+        Section {
             HStack {
                 TextField("Add item", text: $newPackingTitle)
                     .onSubmit { addPacking() }
                 Button("Add", action: addPacking)
                     .disabled(newPackingTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+
+            Button {
+                pendingContainerItem = nil
+                isAddingContainer = true
+            } label: {
+                Label("New container", systemImage: "bag.badge.plus")
             }
 
             if canUseAssistant {
@@ -403,28 +440,85 @@ struct TripDetailView: View {
         newPackingTitle = ""
     }
 
-    private func deletePacking(at offsets: IndexSet) {
-        let items = offsets.map { trip.packing[$0] }
-        for item in items { modelContext.delete(item) }
-    }
-
     private func clearPacking() {
         for item in trip.packing { modelContext.delete(item) }
     }
 
+    // MARK: Containers
+
+    /// Pre-creates a small starter set of containers the first time any trip is
+    /// opened, so grouping is useful immediately. Runs once — it no-ops as soon as
+    /// the shared catalog has anything in it.
+    private func seedContainersIfNeeded() {
+        guard allContainers.isEmpty else { return }
+        let defaults: [(String, String)] = [
+            ("Carry-on", "suitcase.rolling.fill"),
+            ("Personal item", "backpack.fill"),
+            ("Checked bag", "suitcase.fill"),
+        ]
+        for (index, container) in defaults.enumerated() {
+            modelContext.insert(
+                PackingContainer(name: container.0, symbolName: container.1, sortOrder: index))
+        }
+    }
+
+    private func createContainer() {
+        let name = newContainerName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return resetContainerDraft() }
+        let order = (allContainers.map(\.sortOrder).max() ?? -1) + 1
+        let container = PackingContainer(name: name, sortOrder: order)
+        modelContext.insert(container)
+        if let item = pendingContainerItem { item.container = container }
+        resetContainerDraft()
+    }
+
+    private func resetContainerDraft() {
+        newContainerName = ""
+        pendingContainerItem = nil
+    }
+
+    /// Maps a container name from the assistant to a real container: an existing
+    /// one (matched case-insensitively, so it never duplicates "Carry-on"), one
+    /// created earlier in this same fill, or a brand-new container. `cache` keeps
+    /// names consistent within a fill, since `allContainers` won't refresh mid-loop.
+    private func resolveContainer(
+        named raw: String, cache: inout [String: PackingContainer]
+    ) -> PackingContainer? {
+        let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return nil }
+        let key = name.lowercased()
+        if let existing = allContainers.first(where: { $0.name.lowercased() == key }) {
+            return existing
+        }
+        if let created = cache[key] { return created }
+        let order = (allContainers.map(\.sortOrder).max() ?? -1) + 1 + cache.count
+        let container = PackingContainer(name: name, sortOrder: order)
+        modelContext.insert(container)
+        cache[key] = container
+        return container
+    }
+
     // MARK: On-device assistant
 
-    /// Asks the on-device model for a packing list and appends any items not
-    /// already on the list (case-insensitive), leaving the user's own entries be.
+    /// Asks the on-device model for a packing list — filed into the user's
+    /// containers — and appends any items not already present (case-insensitive),
+    /// leaving the user's own entries be.
     private func fillPacking() {
         Task {
-            guard let suggestions = await planner.suggestPacking(for: trip) else { return }
+            guard
+                let suggestions = await planner.suggestPacking(
+                    for: trip, containers: allContainers.map(\.name))
+            else { return }
+
             var existing = Set(trip.packing.map { $0.title.lowercased() })
-            for title in suggestions {
-                let key = title.lowercased()
+            var createdContainers: [String: PackingContainer] = [:]
+            for suggestion in suggestions {
+                let key = suggestion.title.lowercased()
                 guard !existing.contains(key) else { continue }
                 existing.insert(key)
-                let item = PackingItem(title: title, trip: trip)
+                let item = PackingItem(title: suggestion.title, trip: trip)
+                item.container = resolveContainer(
+                    named: suggestion.containerName, cache: &createdContainers)
                 modelContext.insert(item)
                 trip.packing.append(item)
             }
@@ -442,6 +536,63 @@ struct TripDetailView: View {
                 trip.notes += "\n\n" + text
             }
         }
+    }
+}
+
+/// A packing-list row: a tappable check-off control on the left and a "move to
+/// container" menu on the right. Editing `item.container` directly persists the
+/// change through SwiftData.
+private struct PackingItemRow: View {
+    @Bindable var item: PackingItem
+    let containers: [PackingContainer]
+    /// Invoked when the user picks "New container…" so the parent can present the
+    /// naming alert with this item queued to be filed into the new container.
+    let onNewContainer: () -> Void
+
+    var body: some View {
+        HStack {
+            Button {
+                item.isPacked.toggle()
+            } label: {
+                HStack {
+                    Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(item.isPacked ? .green : .secondary)
+                    Text(item.title)
+                        .strikethrough(item.isPacked)
+                        .foregroundStyle(item.isPacked ? .secondary : .primary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Menu {
+                Picker("Container", selection: containerSelection) {
+                    Text("Ungrouped").tag(nil as PersistentIdentifier?)
+                    ForEach(containers) { container in
+                        Label(container.name, systemImage: container.symbolName)
+                            .tag(container.persistentModelID as PersistentIdentifier?)
+                    }
+                }
+                Divider()
+                Button {
+                    onNewContainer()
+                } label: {
+                    Label("New container…", systemImage: "plus")
+                }
+            } label: {
+                Image(systemName: "tray.and.arrow.down")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+        }
+    }
+
+    private var containerSelection: Binding<PersistentIdentifier?> {
+        Binding(
+            get: { item.container?.persistentModelID },
+            set: { id in item.container = containers.first { $0.persistentModelID == id } })
     }
 }
 
