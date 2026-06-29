@@ -25,6 +25,12 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - An "On your list" stats card tracks your wishlist and planning counts without touching your visited totals.
 - The **Been** and **Going** tabs each list their countries grouped by continent, with sort (by name or most recently visited) and a continent / visit-year filter. Discovery and adding happen on the Map — tap any country to set its status or plan.
 
+### Trips (multi-country itineraries)
+- The **Going** tab splits into **Trips** and **Wishlist**. A trip is multi-country *through its itinerary*: add ordered **stops**, each optionally tied to a country, and the trip's countries follow (Paris 🇫🇷 → Rome 🇮🇹 → Zurich 🇨🇭).
+- Each trip has a **date range**, a reorderable **itinerary** (stops with optional dates/notes), a checkable **packing list**, and free-text **notes**.
+- **Add to Apple Calendar** writes the trip as an all-day event (write-only EventKit access; it never reads your existing events).
+- Adding a stop's country flips it to **Planning** on the map, so your trips light up the blue layer.
+
 ### Statistics & Achievements
 - Live dashboard: total countries, continents covered, busiest year, most-visited country.
 - Gamified achievement badges (First Steps, Globetrotter, Centurion, Seven Summits, etc.).
@@ -66,7 +72,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### Data Portability
 - **Export / Import** your travel data as a portable JSON file.
-- Only your personal data is exported (statuses, visits, notes) — the country catalog re-seeds from the bundled geometry file.
+- Only your personal data is exported (statuses, visits, notes, plans, and full trips with itineraries & packing lists) — the country catalog re-seeds from the bundled geometry file. Backups are versioned; older files still import.
 
 ### Appearance
 - System / Light / Dark theme preference.
@@ -87,6 +93,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 | Intents | `AppIntents` framework (Shortcuts, Siri, Control Center controls) |
 | Widgets | `WidgetKit` (Home/Lock Screen, accessories, controls) over an App Group |
 | Notifications | `UserNotifications` (local, opt-in) |
+| Calendar | `EventKit` (write-only, "Add to Apple Calendar") |
 | Share | `ImageRenderer` → `ShareLink` |
 | Platforms | macOS 15+, iOS 18+ |
 
@@ -98,8 +105,11 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 Worldward/
 ├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
 ├── ContentView.swift           # Map/Been/Going tab shell, map view, country list, geometry reader
-├── Country.swift               # SwiftData model for a country (been + plan axes)
+├── Country.swift               # SwiftData model for a country (been + plan axes, trip stops)
 ├── Visit.swift                 # SwiftData model for a dated visit
+├── Trip.swift                  # SwiftData models: Trip, ItineraryItem (stop), PackingItem
+├── TripViews.swift             # Going tab (Trips | Wishlist), trips list, trip editor
+├── CalendarExporter.swift      # EventKit "Add to Apple Calendar" (write-only)
 ├── CountryStatus.swift         # "Been there" status enum (notVisited → living)
 ├── PlanStatus.swift            # "Going" plan enum (none / wishlist / planning)
 ├── Continents.swift            # ISO → continent lookup table
@@ -115,7 +125,7 @@ Worldward/
 ├── PhotoImporter.swift         # Photo Library scan → proposed trips
 ├── ImportPreviewView.swift     # Scan configuration & results UI
 ├── VisitPhotosView.swift       # Photo thumbnail strip + full-size viewer
-├── TravelDataTransfer.swift    # JSON backup/restore
+├── TravelDataTransfer.swift    # JSON backup/restore (countries, visits, plans, trips)
 ├── Intents/
 │   ├── WorldwardIntents.swift   # AppIntents + Shortcuts provider
 │   ├── CountryEntity.swift     # AppEntity for countries
