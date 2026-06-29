@@ -56,6 +56,52 @@ final class Trip {
 
     /// Items already ticked off the packing list.
     var packedCount: Int { packing.filter(\.isPacked).count }
+
+    /// A shareable Markdown summary of the trip — for the system share sheet
+    /// (Apple Notes, Messages, Mail) or pasting into any Markdown editor.
+    var markdownSummary: String {
+        let name = title.isEmpty ? "Untitled Trip" : title
+        let start = startDate.formatted(date: .abbreviated, time: .omitted)
+        let end = endDate.formatted(date: .abbreviated, time: .omitted)
+        let dateLine = start == end ? start : "\(start) – \(end)"
+
+        var lines: [String] = ["# \(name)"]
+        let header = [flags.isEmpty ? nil : flags, dateLine]
+            .compactMap { $0 }
+            .joined(separator: " · ")
+        if !header.isEmpty { lines.append(header) }
+
+        let stops = sortedStops
+        if !stops.isEmpty {
+            lines.append("")
+            lines.append("## Itinerary")
+            for (index, stop) in stops.enumerated() {
+                let flag = stop.country?.flagEmoji ?? "📍"
+                var line = "\(index + 1). \(flag) \(stop.displayTitle)"
+                if let date = stop.date {
+                    line += " — \(date.formatted(date: .abbreviated, time: .omitted))"
+                }
+                lines.append(line)
+                if !stop.note.isEmpty { lines.append("   \(stop.note)") }
+            }
+        }
+
+        if !packing.isEmpty {
+            lines.append("")
+            lines.append("## Packing")
+            for item in packing {
+                lines.append("- [\(item.isPacked ? "x" : " ")] \(item.title)")
+            }
+        }
+
+        if !notes.isEmpty {
+            lines.append("")
+            lines.append("## Notes")
+            lines.append(notes)
+        }
+
+        return lines.joined(separator: "\n")
+    }
 }
 
 /// One stop in a trip's itinerary: a place — optionally a country — with an

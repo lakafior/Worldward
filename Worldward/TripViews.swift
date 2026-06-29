@@ -1,6 +1,35 @@
 import SwiftData
 import SwiftUI
 
+// MARK: - Markdown export
+
+/// Makes a trip shareable as a real Markdown file. The system writes it out named
+/// after the trip with a `.md` extension (e.g. "Europe 2026.md"), so "Save to
+/// Files", Apple Notes, Mail, etc. all receive a proper file rather than loose text.
+struct ExportableTrip: Transferable {
+    let title: String
+    let markdown: String
+
+    init(trip: Trip) {
+        self.title = trip.title
+        self.markdown = trip.markdownSummary
+    }
+
+    static var transferRepresentation: some TransferRepresentation {
+        ProxyRepresentation(exporting: \.markdown)
+            .suggestedFileName { "\($0.fileBaseName).md" }
+    }
+
+    /// The trip title, stripped of characters illegal in filenames.
+    var fileBaseName: String {
+        let cleaned = title
+            .components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>"))
+            .joined()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.isEmpty ? "Trip" : cleaned
+    }
+}
+
 // MARK: - Going tab
 
 /// The Going tab: your **Trips** (multi-country plans) and your **Wishlist**
@@ -184,6 +213,12 @@ struct TripDetailView: View {
                     addToCalendar()
                 } label: {
                     Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
+                }
+                ShareLink(
+                    item: ExportableTrip(trip: trip),
+                    preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
+                ) {
+                    Label("Share / Export (Markdown)", systemImage: "square.and.arrow.up")
                 }
             }
 

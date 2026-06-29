@@ -29,6 +29,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - The **Going** tab splits into **Trips** and **Wishlist**. A trip is multi-country *through its itinerary*: add ordered **stops**, each optionally tied to a country, and the trip's countries follow (Paris 🇫🇷 → Rome 🇮🇹 → Zurich 🇨🇭).
 - Each trip has a **date range**, a reorderable **itinerary** (stops with optional dates/notes), a checkable **packing list**, and free-text **notes**.
 - **Add to Apple Calendar** writes the trip as an all-day event (write-only EventKit access; it never reads your existing events).
+- **Share / export** a trip as **Markdown** through the system share sheet — send it straight to **Apple Notes**, Messages, or Mail, or copy it into any Markdown editor.
 - Adding a stop's country flips it to **Planning** on the map, so your trips light up the blue layer.
 
 ### Statistics & Achievements
@@ -112,7 +113,7 @@ Worldward/
 ├── Country.swift               # SwiftData model for a country (been + plan axes, trip stops)
 ├── Visit.swift                 # SwiftData model for a dated visit
 ├── Trip.swift                  # SwiftData models: Trip, ItineraryItem (stop), PackingItem
-├── TripViews.swift             # Going tab (Trips | Wishlist), trips list, trip editor
+├── TripViews.swift             # Going tab (Trips | Wishlist), trips list, trip editor, Markdown share
 ├── CalendarExporter.swift      # EventKit "Add to Apple Calendar" (write-only)
 ├── CountryStatus.swift         # "Been there" status enum (notVisited → living)
 ├── PlanStatus.swift            # "Going" plan enum (none / wishlist / planning)
@@ -142,7 +143,8 @@ Worldward/
 │   └── VisitLogParser.swift    # Natural-language visit parser
 ├── Assets.xcassets/            # App icon, launch screen, brand colors
 ├── countries.wmgb             # Pre-simplified country geometry (~239 countries)
-└── Info.plist                  # Launch screen config
+├── PrivacyInfo.xcprivacy       # Privacy manifest (declared data use / API reasons)
+└── Info.plist                  # Launch screen + usage descriptions
 
 WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Control Center)
 ├── WorldwardWidgetsBundle.swift # @main WidgetBundle (widgets + control)
