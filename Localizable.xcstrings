@@ -77,6 +77,12 @@
             "state": "translated",
             "value": "Práh „Žil(a)“"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Práh „Žil(a)“"
+          }
         }
       }
     },
@@ -151,6 +157,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "%@"
@@ -233,6 +245,12 @@
             "state": "translated",
             "value": "%1$@  %2$@"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@  %2$@"
+          }
         }
       }
     },
@@ -307,6 +325,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$lld/%3$lld"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ · %2$lld/%3$lld"
@@ -389,6 +413,12 @@
             "state": "translated",
             "value": "%1$@ %2$@"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
         }
       }
     },
@@ -463,6 +493,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ %2$lld"
@@ -545,6 +581,12 @@
             "state": "translated",
             "value": "%lld"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
         }
       }
     },
@@ -619,6 +661,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld / %2$lld"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld / %2$lld"
@@ -701,6 +749,12 @@
             "state": "translated",
             "value": "%1$lld %2$@"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld %2$@"
+          }
         }
       }
     },
@@ -778,6 +832,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld zemí · %2$lld kontinentů · %3$lld%%"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld krajín · %2$lld kontinentov · %3$lld%%"
           }
         }
       }
@@ -857,6 +917,12 @@
             "state": "translated",
             "value": "%lld km daleko"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld km ďaleko"
+          }
         }
       }
     },
@@ -934,6 +1000,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld z %2$lld kontinentů"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld z %2$lld kontinentov"
           }
         }
       }
@@ -1013,6 +1085,12 @@
             "state": "translated",
             "value": "%1$lld z %2$lld zemí"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld z %2$lld krajín"
+          }
         }
       }
     },
@@ -1087,6 +1165,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld fotk%2$@"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld fotk%2$@"
@@ -1169,6 +1253,12 @@
             "state": "translated",
             "value": "%1$lld fotk%2$@ · %3$lld dn%4$@"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld fotk%2$@ · %3$lld dn%4$@"
+          }
         }
       }
     },
@@ -1243,6 +1333,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld výlet%2$@ · %3$lld dn%4$@"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld výlet%2$@ · %3$lld dn%4$@"
@@ -1325,6 +1421,12 @@
             "state": "translated",
             "value": "%lld%%"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
         }
       }
     },
@@ -1399,6 +1501,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "×%lld"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "×%lld"
@@ -1481,6 +1589,12 @@
             "state": "translated",
             "value": "🌍"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍"
+          }
         }
       }
     },
@@ -1555,6 +1669,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍 %@"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "🌍 %@"
@@ -1637,6 +1757,12 @@
             "state": "translated",
             "value": "🌍 Zatím nebyly zaznamenány žádné cesty"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍 Zatiaľ neboli zaznamenané žiadne cesty"
+          }
         }
       }
     },
@@ -1712,6 +1838,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jedna cesta v délce alespoň této doby označí zemi jako „Žil(a)“."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jedna cesta v trvaní aspoň tohto času označí krajinu ako „Žil(a)“."
           }
         }
       }
@@ -1790,6 +1922,12 @@
             "state": "translated",
             "value": "O aplikaci"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O aplikácii"
+          }
         }
       }
     },
@@ -1866,6 +2004,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Úspěchy"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Úspechy"
           }
         }
       }
@@ -1945,6 +2089,12 @@
             "state": "translated",
             "value": "Napříč %1$lld kontinent%2$@"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naprieč %1$lld kontinent%2$@"
+          }
         }
       }
     },
@@ -2023,6 +2173,12 @@
             "state": "translated",
             "value": "Akce"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akcia"
+          }
         }
       }
     },
@@ -2099,6 +2255,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať"
           }
         }
       }
@@ -2178,6 +2340,12 @@
             "state": "translated",
             "value": "Přidat kontejner"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať kontajner"
+          }
         }
       }
     },
@@ -2256,6 +2424,12 @@
             "state": "translated",
             "value": "Přidat zemi"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať krajinu"
+          }
         }
       }
     },
@@ -2332,6 +2506,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat zemi / zastávku"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať krajinu / zastávku"
           }
         }
       }
@@ -2410,6 +2590,12 @@
             "state": "translated",
             "value": "Přidat zemi"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať krajinu"
+          }
         }
       }
     },
@@ -2486,6 +2672,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat položku"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať položku"
           }
         }
       }
@@ -2565,6 +2757,12 @@
             "state": "translated",
             "value": "Přidat do Apple Kalendáře"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať do Apple Kalendára"
+          }
         }
       }
     },
@@ -2641,6 +2839,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat návštěvu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať návštevu"
           }
         }
       }
@@ -2720,6 +2924,12 @@
             "state": "translated",
             "value": "Přidat první návštěvu této země"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pridať prvú návštevu tejto krajiny"
+          }
         }
       }
     },
@@ -2794,6 +3004,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Afrika"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Afrika"
@@ -2876,6 +3092,12 @@
             "state": "translated",
             "value": "ai"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ai"
+          }
         }
       }
     },
@@ -2952,6 +3174,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vše"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Všetko"
           }
         }
       }
@@ -3031,6 +3259,12 @@
             "state": "translated",
             "value": "Všechny země"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Všetky krajiny"
+          }
         }
       }
     },
@@ -3108,6 +3342,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Všechny roky"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Všetky roky"
           }
         }
       }
@@ -3187,6 +3427,12 @@
             "state": "translated",
             "value": "Antarktida"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antarktída"
+          }
         }
       }
     },
@@ -3261,6 +3507,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Worldward"
@@ -3342,6 +3594,12 @@
             "state": "translated",
             "value": "Vzhled"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vzhľad"
+          }
         }
       }
     },
@@ -3420,6 +3678,12 @@
             "state": "translated",
             "value": "Apple Kalendář"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Kalendár"
+          }
         }
       }
     },
@@ -3494,6 +3758,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence je vypnuté"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Apple Intelligence je vypnuté"
@@ -3576,6 +3846,12 @@
             "state": "translated",
             "value": "asie"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ázia"
+          }
         }
       }
     },
@@ -3654,6 +3930,12 @@
             "state": "translated",
             "value": "Asie"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ázia"
+          }
         }
       }
     },
@@ -3731,6 +4013,12 @@
             "state": "translated",
             "value": "Zeptat se na cesty"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spýtať sa na svoje cesty"
+          }
         }
       }
     },
@@ -3807,6 +4095,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zeptat se na cesty…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spýtať sa na svoje cesty…"
           }
         }
       }
@@ -3886,6 +4180,12 @@
             "state": "translated",
             "value": "Zeptejte se na cokoli o zemích, které jste navštívili — zpracováno na zařízení, soukromé jen pro vás."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spýtajte sa na čokoľvek o krajinách, ktoré ste navštívili — spracované na zariadení, súkromné len pre vás."
+          }
         }
       }
     },
@@ -3963,6 +4263,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přiřadit"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Priradiť"
           }
         }
       }
@@ -4042,6 +4348,12 @@
             "state": "translated",
             "value": "Austrálie a Oceánie"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Austrália a Oceánia"
+          }
         }
       }
     },
@@ -4116,6 +4428,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autor"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Autor"
@@ -4197,6 +4515,12 @@
             "state": "translated",
             "value": "Zpět"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Späť"
+          }
         }
       }
     },
@@ -4272,6 +4596,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Batohy a kufry jsou sdíleny napříč všemi vašimi cestami."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tašky a kufre sú zdieľané naprieč všetkými vašimi cestami."
           }
         }
       }
@@ -4350,6 +4680,12 @@
             "state": "translated",
             "value": "Navštíveno"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navštívené"
+          }
         }
       }
     },
@@ -4426,6 +4762,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Už je to nějaká doba 🧭"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Už je to nejaký čas 🧭"
           }
         }
       }
@@ -4505,6 +4847,12 @@
             "state": "translated",
             "value": "Nejrušnější rok"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Najrušnejší rok"
+          }
         }
       }
     },
@@ -4581,6 +4929,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zrušit"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušiť"
           }
         }
       }
@@ -4660,6 +5014,12 @@
             "state": "translated",
             "value": "Titulek"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titulok"
+          }
         }
       }
     },
@@ -4734,6 +5094,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karta"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Karta"
@@ -4816,6 +5182,12 @@
             "state": "translated",
             "value": "Vybrat ikonu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vybrať ikonu"
+          }
         }
       }
     },
@@ -4893,6 +5265,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vymazat seznam"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vymazať zoznam"
           }
         }
       }
@@ -4972,6 +5350,12 @@
             "state": "translated",
             "value": "Kontejner"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontajner"
+          }
         }
       }
     },
@@ -5050,6 +5434,12 @@
             "state": "translated",
             "value": "Kontejnery"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontajnery"
+          }
         }
       }
     },
@@ -5124,6 +5514,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kontinent"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "kontinent"
@@ -5206,6 +5602,12 @@
             "state": "translated",
             "value": "Kontinent"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontinent"
+          }
         }
       }
     },
@@ -5284,6 +5686,12 @@
             "state": "translated",
             "value": "Pokrok na kontinentu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokrok na kontinente"
+          }
         }
       }
     },
@@ -5357,6 +5765,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontinenty"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Kontinenty"
@@ -5439,6 +5853,12 @@
             "state": "translated",
             "value": "Z vaší polohy nelze určit vaši aktuální zemi."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z vašej polohy nie je možné určiť vašu aktuálnu krajinu."
+          }
         }
       }
     },
@@ -5516,6 +5936,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nelze vygenerovat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie je možné vygenerovať"
           }
         }
       }
@@ -5595,6 +6021,12 @@
             "state": "translated",
             "value": "Nelze párovat"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie je možné spárovať"
+          }
         }
       }
     },
@@ -5669,6 +6101,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "počet"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "počet"
@@ -5751,6 +6189,12 @@
             "state": "translated",
             "value": "země"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "krajiny"
+          }
         }
       }
     },
@@ -5828,6 +6272,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Země"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krajiny"
           }
         }
       }
@@ -5907,6 +6357,12 @@
             "state": "translated",
             "value": "Navštívené země"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navštívené krajiny"
+          }
         }
       }
     },
@@ -5984,6 +6440,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Navštívené země"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navštívené krajiny"
           }
         }
       }
@@ -6063,6 +6525,12 @@
             "state": "translated",
             "value": "země"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "krajina"
+          }
         }
       }
     },
@@ -6140,6 +6608,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Země"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krajina"
           }
         }
       }
@@ -6219,6 +6693,12 @@
             "state": "translated",
             "value": "Kód země %@ byl nalezen, ale není v katalogu Worldward."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kód krajiny %@ bol nájdený, ale nie je v katalógu Worldward."
+          }
         }
       }
     },
@@ -6296,6 +6776,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seznam zemí"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoznam krajín"
           }
         }
       }
@@ -6375,6 +6861,12 @@
             "state": "translated",
             "value": "Projíždělo"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prejdené"
+          }
         }
       }
     },
@@ -6453,6 +6945,12 @@
             "state": "translated",
             "value": "aktuální"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aktuálny"
+          }
         }
       }
     },
@@ -6529,6 +7027,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Data"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dáta"
           }
         }
       }
@@ -6608,6 +7112,12 @@
             "state": "translated",
             "value": "datum"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "dátum"
+          }
         }
       }
     },
@@ -6685,6 +7195,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Datum"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dátum"
           }
         }
       }
@@ -6764,6 +7280,12 @@
             "state": "translated",
             "value": "Datum návštěvy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dátum návštevy"
+          }
         }
       }
     },
@@ -6841,6 +7363,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "popsat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "popísať"
           }
         }
       }
@@ -6920,6 +7448,12 @@
             "state": "translated",
             "value": "Popište cestu vlastními slovy a Worldward extrahuje země a data k potvrzení."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Popíšte cestu vlastnými slovami a Worldward extrahuje krajiny a dátumy na potvrdenie."
+          }
         }
       }
     },
@@ -6998,6 +7532,12 @@
             "state": "translated",
             "value": "Popište svou cestu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Popíšte svoju cestu"
+          }
         }
       }
     },
@@ -7072,6 +7612,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Popis"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Popis"
@@ -7154,6 +7700,12 @@
             "state": "translated",
             "value": "Rozpozná vaši aktuální zemi a označí ji zvoleným stavem cesty."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rozpozná vašu aktuálnu krajinu a označí ju zvoleným stavom cesty."
+          }
         }
       }
     },
@@ -7232,6 +7784,12 @@
             "state": "translated",
             "value": "diktovat"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "diktovať"
+          }
         }
       }
     },
@@ -7305,6 +7863,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hotovo"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Hotovo"
@@ -7387,6 +7951,12 @@
             "state": "translated",
             "value": "např. Evropa 2026"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "napr. Európa 2026"
+          }
         }
       }
     },
@@ -7464,6 +8034,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "např. Loni na jaře jsem navštívil Japonsko a Jižní Koreu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "napr. Minulú jar som navštívil Japonsko a Južnú Kóreu"
           }
         }
       }
@@ -7543,6 +8119,12 @@
             "state": "translated",
             "value": "Konec"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Koniec"
+          }
         }
       }
     },
@@ -7620,6 +8202,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "evropa"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "európa"
           }
         }
       }
@@ -7699,6 +8287,12 @@
             "state": "translated",
             "value": "Evropa"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Európa"
+          }
         }
       }
     },
@@ -7776,6 +8370,12 @@
             "state": "translated",
             "value": "Exportovat CSV"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportovať CSV"
+          }
         }
       }
     },
@@ -7852,6 +8452,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export se nezdařil"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export zlyhal"
           }
         }
       }
@@ -7931,6 +8537,12 @@
             "state": "translated",
             "value": "Export uloží stav vašich zemí a návštěvy do JSON souboru. Import páruje tento soubor s vašimi zeměmi a nahradí jejich cestovní data."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export uloží stav vašich krajín a návštevy do JSON súboru. Import spáruje tento súbor s vašimi krajinami a nahradí ich cestovné údaje."
+          }
         }
       }
     },
@@ -8007,6 +8619,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exportovat cestovní data…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportovať cestovné údaje…"
           }
         }
       }
@@ -8086,6 +8704,12 @@
             "state": "translated",
             "value": "Vyplnit pomocí LLM"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyplniť pomocou LLM"
+          }
         }
       }
     },
@@ -8161,6 +8785,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Najděte zemi na Mapě a přidejte ji do svého seznamu přání."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nájdite krajinu na Mape a pridajte ju do svojho zoznamu želaní."
           }
         }
       }
@@ -8238,6 +8868,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Najít zemi…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nájsť krajinu…"
           }
         }
       }
@@ -8317,6 +8953,12 @@
             "state": "translated",
             "value": "Najít návštěvy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nájsť návštevy"
+          }
         }
       }
     },
@@ -8395,6 +9037,12 @@
             "state": "translated",
             "value": "Z aktuální polohy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z aktuálnej polohy"
+          }
         }
       }
     },
@@ -8469,6 +9117,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z popisu"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Z popisu"
@@ -8549,6 +9203,12 @@
             "state": "translated",
             "value": "Z fotek"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z fotiek"
+          }
         }
       }
     },
@@ -8624,6 +9284,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Generuje se…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generuje sa…"
           }
         }
       }
@@ -8703,6 +9369,12 @@
             "state": "translated",
             "value": "Získat pokrok na kontinentu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Získať pokrok na kontinente"
+          }
         }
       }
     },
@@ -8780,6 +9452,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Získat počet návštěv"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Získať počet návštêv"
           }
         }
       }
@@ -8859,6 +9537,12 @@
             "state": "translated",
             "value": "Připravuje se"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pripravuje sa"
+          }
         }
       }
     },
@@ -8937,6 +9621,12 @@
             "state": "translated",
             "value": "GitHub repozitář"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub repozitár"
+          }
         }
       }
     },
@@ -9014,6 +9704,12 @@
             "state": "translated",
             "value": "Chystám se"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chystám sa"
+          }
         }
       }
     },
@@ -9088,6 +9784,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gps"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "gps"
@@ -9170,6 +9872,12 @@
             "state": "translated",
             "value": "Titulek"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titulok"
+          }
         }
       }
     },
@@ -9247,6 +9955,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "zde"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "tu"
           }
         }
       }
@@ -9326,6 +10040,12 @@
             "state": "translated",
             "value": "Zde je váš pokrok v %@."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu je váš pokrok v %@."
+          }
         }
       }
     },
@@ -9404,6 +10124,12 @@
             "state": "translated",
             "value": "Zde je váš souhrn cest."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu je váš súhrn ciest."
+          }
         }
       }
     },
@@ -9478,6 +10204,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domov"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Domov"
@@ -9559,6 +10291,12 @@
             "state": "translated",
             "value": "Hybridní"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hybridná"
+          }
         }
       }
     },
@@ -9637,6 +10375,12 @@
             "state": "translated",
             "value": "Importovat %lld zemí"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importovať %lld krajín"
+          }
         }
       }
     },
@@ -9714,6 +10458,12 @@
             "state": "translated",
             "value": "Import dokončen"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import dokončený"
+          }
         }
       }
     },
@@ -9790,6 +10540,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Import se nezdařil"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import zlyhal"
           }
         }
       }
@@ -9869,6 +10625,12 @@
             "state": "translated",
             "value": "Importovat z fotek"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importovať z fotiek"
+          }
         }
       }
     },
@@ -9945,6 +10707,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importovat cestovní data…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importovať cestovné údaje…"
           }
         }
       }
@@ -10024,6 +10792,12 @@
             "state": "translated",
             "value": "V %@ jste navštívili"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V %@ ste navštívili"
+          }
         }
       }
     },
@@ -10102,6 +10876,12 @@
             "state": "translated",
             "value": "Zahrnout"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zahrnúť"
+          }
         }
       }
     },
@@ -10179,6 +10959,12 @@
             "state": "translated",
             "value": "Itinerář"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Itinerár"
+          }
         }
       }
     },
@@ -10252,6 +11038,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jazyk"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Jazyk"
@@ -10334,6 +11126,12 @@
             "state": "translated",
             "value": "Licence"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licencia"
+          }
         }
       }
     },
@@ -10411,6 +11209,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Odkazy, potvrzení, nápady…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odkazy, potvrdenia, nápady…"
           }
         }
       }
@@ -10490,6 +11294,12 @@
             "state": "translated",
             "value": "Seznam"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoznam"
+          }
         }
       }
     },
@@ -10564,6 +11374,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "žil(a)"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "žil(a)"
@@ -10646,6 +11462,12 @@
             "state": "translated",
             "value": "Žil(a)"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Žil(a)"
+          }
         }
       }
     },
@@ -10723,6 +11545,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "žijící"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "žijúci"
           }
         }
       }
@@ -10802,6 +11630,12 @@
             "state": "translated",
             "value": "poloha"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "poloha"
+          }
         }
       }
     },
@@ -10874,6 +11708,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "záznam"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "záznam"
@@ -10956,6 +11796,12 @@
             "state": "translated",
             "value": "Zaznamenat návštěvu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať návštevu"
+          }
         }
       }
     },
@@ -11031,6 +11877,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zaznamenat návštěvu ${country}"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať návštevu ${country}"
           }
         }
       }
@@ -11110,6 +11962,12 @@
             "state": "translated",
             "value": "Zaznamenat z popisu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať z popisu"
+          }
         }
       }
     },
@@ -11188,6 +12046,12 @@
             "state": "translated",
             "value": "Zaznamenat návštěvu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať návštevu"
+          }
         }
       }
     },
@@ -11263,6 +12127,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zaznamenat návštěvy z ${text}"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať návštevy z ${text}"
           }
         }
       }
@@ -11342,6 +12212,12 @@
             "state": "translated",
             "value": "Zaznamenat návštěvy z popisu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať návštevy z popisu"
+          }
         }
       }
     },
@@ -11417,6 +12293,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zaznamenat návštěvy z textu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamenať návštevy z textu"
           }
         }
       }
@@ -11496,6 +12378,12 @@
             "state": "translated",
             "value": "Spravovat kontejnery"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spravovať kontajnery"
+          }
         }
       }
     },
@@ -11569,6 +12457,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapa"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Mapa"
@@ -11650,6 +12544,12 @@
             "state": "translated",
             "value": "Styl mapy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ťtýl mapy"
+          }
         }
       }
     },
@@ -11727,6 +12627,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "označit"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "označiť"
           }
         }
       }
@@ -11806,6 +12712,12 @@
             "state": "translated",
             "value": "Označit"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť"
+          }
         }
       }
     },
@@ -11881,6 +12793,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Označit ${country} jako ${status}"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť ${country} ako ${status}"
           }
         }
       }
@@ -11960,6 +12878,12 @@
             "state": "translated",
             "value": "Označte země jako navštívené nebo importujte z fotek a začněte získávat úspěchy."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označte krajiny ako navštívené alebo importujte z fotiek a začnite získavať úspechy."
+          }
         }
       }
     },
@@ -12037,6 +12961,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Označit zemi"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť krajinu"
           }
         }
       }
@@ -12116,6 +13046,12 @@
             "state": "translated",
             "value": "Označit stav země"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť stav krajiny"
+          }
         }
       }
     },
@@ -12193,6 +13129,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Označit aktuální polohu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť aktuálnu polohu"
           }
         }
       }
@@ -12272,6 +13214,12 @@
             "state": "translated",
             "value": "Označit aktuální polohu…"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť aktuálnu polohu…"
+          }
         }
       }
     },
@@ -12349,6 +13297,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Označit polohu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť polohu"
           }
         }
       }
@@ -12428,6 +13382,12 @@
             "state": "translated",
             "value": "Označit nejčastěji navštěvovanou zemi jako domov"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť najčastejšie navštívovanú krajinu ako domov"
+          }
         }
       }
     },
@@ -12506,6 +13466,12 @@
             "state": "translated",
             "value": "Označit, kde jsem"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť, kde som"
+          }
         }
       }
     },
@@ -12581,6 +13547,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Označit, kde jsem, jako ${status}"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označiť, kde som, ako ${status}"
           }
         }
       }
@@ -12660,6 +13632,12 @@
             "state": "translated",
             "value": "Označí vaši aktuální zemi ve Worldward."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označí vašu aktuálnu krajinu vo Worldward."
+          }
         }
       }
     },
@@ -12735,6 +13713,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sloučit mezeru"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zlúčiť medzeru"
           }
         }
       }
@@ -12814,6 +13798,12 @@
             "state": "translated",
             "value": "Zpráva"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Správa"
+          }
         }
       }
     },
@@ -12890,6 +13880,12 @@
             "state": "translated",
             "value": "Nejčastěji navštívované"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Najčastejšie navštívované"
+          }
         }
       }
     },
@@ -12965,6 +13961,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Můj pokrok v ${continent}"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Môj pokrok v ${continent}"
           }
         }
       }
@@ -13043,6 +14045,12 @@
             "state": "translated",
             "value": "Můj svět"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Môj svet"
+          }
         }
       }
     },
@@ -13117,6 +14125,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moje cesty Worldward"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Moje cesty Worldward"
@@ -13198,6 +14212,12 @@
             "state": "translated",
             "value": "Název"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Názov"
+          }
         }
       }
     },
@@ -13270,6 +14290,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V okolí"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "V okolí"
@@ -13352,6 +14378,12 @@
             "state": "translated",
             "value": "Nový"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nový"
+          }
         }
       }
     },
@@ -13429,6 +14461,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nový kontejner"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nový kontajner"
           }
         }
       }
@@ -13508,6 +14546,12 @@
             "state": "translated",
             "value": "Nový kontejner…"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nový kontajner…"
+          }
         }
       }
     },
@@ -13581,6 +14625,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nová cesta"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Nová cesta"
@@ -13662,6 +14712,12 @@
             "state": "translated",
             "value": "Další cíle"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ďalšie ciele"
+          }
         }
       }
     },
@@ -13737,6 +14793,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nenalezeny žádné země"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenašli sa žiadne krajiny"
           }
         }
       }
@@ -13814,6 +14876,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zatím žádné země"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatiaľ žiadne krajiny"
           }
         }
       }
@@ -13893,6 +14961,12 @@
             "state": "translated",
             "value": "Nenalezena žádná země s kódem %@."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenašla sa žiadna krajina s kódom %@."
+          }
         }
       }
     },
@@ -13969,6 +15043,12 @@
             "state": "translated",
             "value": "Žádné fotky s údaji o poloze neodpovídají zemi, nebo je vše již importováno."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Žiadne fotky s údajmi o polohe nezodpovedajú krajine, alebo je všetko už importované."
+          }
         }
       }
     },
@@ -14044,6 +15124,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zatím žádné zastávky"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatiaľ žiadne zastávky"
           }
         }
       }
@@ -14123,6 +15209,12 @@
             "state": "translated",
             "value": "Zatím žádné cesty"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatiaľ žiadne cesty"
+          }
         }
       }
     },
@@ -14199,6 +15291,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zatím žádné výlety"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatiaľ žiadne výlety"
           }
         }
       }
@@ -14278,6 +15376,12 @@
             "state": "translated",
             "value": "Nenalezeny žádné návštěvy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenašli sa žiadne návštevy"
+          }
         }
       }
     },
@@ -14354,6 +15458,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zatím žádné návštěvy"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatiaľ žiadne návštevy"
           }
         }
       }
@@ -14433,6 +15543,12 @@
             "state": "translated",
             "value": "Severní Amerika"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Severná Amerika"
+          }
         }
       }
     },
@@ -14511,6 +15627,12 @@
             "state": "translated",
             "value": "Není k dispozici"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nie je k dispozícii"
+          }
         }
       }
     },
@@ -14585,6 +15707,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poznámka"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Poznámka"
@@ -14666,6 +15794,12 @@
             "state": "translated",
             "value": "Poznámky"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poznámky"
+          }
         }
       }
     },
@@ -14742,6 +15876,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zatím nic naplánováno"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatiaľ nič naplánované"
           }
         }
       }
@@ -14820,6 +15960,12 @@
             "state": "translated",
             "value": "Oznámení"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oznámenia"
+          }
         }
       }
     },
@@ -14897,6 +16043,12 @@
             "state": "translated",
             "value": "Oznámení vypnuta"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oznámenia vypnuté"
+          }
         }
       }
     },
@@ -14973,6 +16125,12 @@
             "state": "translated",
             "value": "Občasná upozornění na zařízení: „V tento den“ cestovní vzpomínky, výroční shrnutí každý prosinec a jemná výzva, pokud jste delší dobu nezaznamenali žádnou cestu. Ve výchozím nastavení vypnuto; nic se neodesílá, dokud to nezapnete."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Príležitostné upozornenia na zariadení: „V tento deň“ cestovné spomienky, výročné zhrnutie každý december a jemná výzva, ak ste dlhšie nezaznamenali žiadnu cestu. Predvolene vypnuté; nič sa neodosiela, pokiaľ to nezapnete."
+          }
         }
       }
     },
@@ -15047,6 +16205,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "z %lld"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "z %lld"
@@ -15129,6 +16293,12 @@
             "state": "translated",
             "value": "z %lld zemí"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "z %lld krajín"
+          }
         }
       }
     },
@@ -15203,6 +16373,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "OK"
@@ -15284,6 +16460,12 @@
             "state": "translated",
             "value": "V tento den ✈️"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "V tento deň ✈️"
+          }
         }
       }
     },
@@ -15361,6 +16543,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otevřít Worldward"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otvoriť Worldward"
           }
         }
       }
@@ -15440,6 +16628,12 @@
             "state": "translated",
             "value": "Otevře váš cestovní přehled s navštívenými zeměmi, úspěchy a pokrokem na kontinentech."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otvára váš cestovný prehľad s navštívenými krajinami, úspechmi a pokrokom na kontinentoch."
+          }
         }
       }
     },
@@ -15516,6 +16710,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Balíčky"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balenie"
           }
         }
       }
@@ -15595,6 +16795,12 @@
             "state": "translated",
             "value": "Balíčky · %1$lld/%2$lld"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balenie · %1$lld/%2$lld"
+          }
         }
       }
     },
@@ -15672,6 +16878,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "procento"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "percento"
           }
         }
       }
@@ -15751,6 +16963,12 @@
             "state": "translated",
             "value": "Fotky blíže než toto jsou považovány za jednu cestu."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotky bližšie ako toto sú považované za jednu cestu."
+          }
         }
       }
     },
@@ -15829,6 +17047,12 @@
             "state": "translated",
             "value": "Plánujte své další dobrodružství — klepněte na + a začněte cestu."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plánujte svoje ďalšie dobrodružstvo — klepnite na + a začnite cestu."
+          }
         }
       }
     },
@@ -15906,6 +17130,12 @@
             "state": "translated",
             "value": "Plánování"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plánovanie"
+          }
         }
       }
     },
@@ -15979,6 +17209,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plány"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Plány"
@@ -16061,6 +17297,12 @@
             "state": "translated",
             "value": "pokrok"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pokrok"
+          }
         }
       }
     },
@@ -16138,6 +17380,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Množství"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Množstvo"
           }
         }
       }
@@ -16217,6 +17465,12 @@
             "state": "translated",
             "value": "Ukončit Worldward"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukončiť Worldward"
+          }
         }
       }
     },
@@ -16293,6 +17547,12 @@
             "state": "translated",
             "value": "Čte se váš popis…"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Číta sa váš popis…"
+          }
         }
       }
     },
@@ -16366,6 +17626,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naposledy navštívené"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Naposledy navštívené"
@@ -16448,6 +17714,12 @@
             "state": "translated",
             "value": "záznam"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "záznam"
+          }
         }
       }
     },
@@ -16525,6 +17797,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zaznamená návštěvu země, volitelně ke konkrétnímu datu."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zaznamená návštevu krajiny, voliteľne ku konkrétnemu dátumu."
           }
         }
       }
@@ -16604,6 +17882,12 @@
             "state": "translated",
             "value": "Znovu"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Znova"
+          }
         }
       }
     },
@@ -16681,6 +17965,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Odebrat všechny položky (%lld) z balíčku?"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstrániť všetky položky (%lld) z balenia?"
           }
         }
       }
@@ -16760,6 +18050,12 @@
             "state": "translated",
             "value": "Vrátí počet navštívených zemí a rozpis podle stavu."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vráti počet navštívených krajín a rozpis podľa stavu."
+          }
         }
       }
     },
@@ -16838,6 +18134,12 @@
             "state": "translated",
             "value": "Přepsat"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepísať"
+          }
         }
       }
     },
@@ -16915,6 +18217,12 @@
             "state": "translated",
             "value": "Satelitní"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satelitná"
+          }
         }
       }
     },
@@ -16991,6 +18299,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Uložit"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uložiť"
           }
         }
       }
@@ -17070,6 +18384,12 @@
             "state": "translated",
             "value": "Režim skenování"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Režim skenovania"
+          }
         }
       }
     },
@@ -17147,6 +18467,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skenovat fotky"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skenovať fotky"
           }
         }
       }
@@ -17226,6 +18552,12 @@
             "state": "translated",
             "value": "Hledat"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hľadať"
+          }
         }
       }
     },
@@ -17302,6 +18634,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hledat země"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hľadať krajiny"
           }
         }
       }
@@ -17381,6 +18719,12 @@
             "state": "translated",
             "value": "Sekce"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sekcia"
+          }
         }
       }
     },
@@ -17458,6 +18802,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nastavit datum"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nastaviť dátum"
           }
         }
       }
@@ -17537,6 +18887,12 @@
             "state": "translated",
             "value": "Nastaví stav cesty pro zemi — navštíveno, žil(a), projíždělo nebo žijící."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nastaví stav cesty pre krajinu — navštívené, žil(a), prejdené alebo žijúci."
+          }
         }
       }
     },
@@ -17615,6 +18971,12 @@
             "state": "translated",
             "value": "Nastaví zemi, kde trávíte nejvíce času, jako „žijící“. Stávající domov není nikdy přepsán."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nastaví krajinu, kde trávite najviac času, ako „žijúci“. Existujúci domov nie je nikdy prepísaný."
+          }
         }
       }
     },
@@ -17692,6 +19054,12 @@
             "state": "translated",
             "value": "Nastavení"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nastavenia"
+          }
         }
       }
     },
@@ -17768,6 +19136,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sdílet"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdieľať"
           }
         }
       }
@@ -17847,6 +19221,12 @@
             "state": "translated",
             "value": "Sdílet / Exportovat (Markdown)"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdieľať / Exportovať (Markdown)"
+          }
         }
       }
     },
@@ -17925,6 +19305,12 @@
             "state": "translated",
             "value": "Sdílet obrázek"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdieľať obrázok"
+          }
         }
       }
     },
@@ -18001,6 +19387,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sdílet obrázkovou kartu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdieľať obrázkovú kartu"
           }
         }
       }
@@ -18080,6 +19472,12 @@
             "state": "translated",
             "value": "Sdílet text"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdieľať text"
+          }
         }
       }
     },
@@ -18157,6 +19555,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zobrazit statistiky cest"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobraziť štatistiky ciest"
           }
         }
       }
@@ -18236,6 +19640,12 @@
             "state": "translated",
             "value": "Zobrazí, kolik zemí jste navštívili na konkrétním kontinentu."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobrazí, koľko krajín ste navštívili na konkrétnom kontinente."
+          }
         }
       }
     },
@@ -18313,6 +19723,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přeskočit tyto fotky"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preskočiť tieto fotky"
           }
         }
       }
@@ -18392,6 +19808,12 @@
             "state": "translated",
             "value": "Řadit"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoradiť"
+          }
         }
       }
     },
@@ -18469,6 +19891,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Řadit a filtrovat"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoradiť a filtrovať"
           }
         }
       }
@@ -18548,6 +19976,12 @@
             "state": "translated",
             "value": "Jižní Amerika"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Južná Amerika"
+          }
         }
       }
     },
@@ -18624,6 +20058,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Standardní"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Štandardná"
           }
         }
       }
@@ -18703,6 +20143,12 @@
             "state": "translated",
             "value": "Začátek"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Začiatok"
+          }
         }
       }
     },
@@ -18780,6 +20226,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Statistiky"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Štatistiky"
           }
         }
       }
@@ -18859,6 +20311,12 @@
             "state": "translated",
             "value": "statistiky"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "štatistiky"
+          }
         }
       }
     },
@@ -18932,6 +20390,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stav"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Stav"
@@ -19014,6 +20478,12 @@
             "state": "translated",
             "value": "Zastávka"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastávka"
+          }
         }
       }
     },
@@ -19091,6 +20561,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Navrhnout znovu"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navrhnúť znova"
           }
         }
       }
@@ -19170,6 +20646,12 @@
             "state": "translated",
             "value": "Navrhnout pomocí Apple Intelligence"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navrhnúť pomocou Apple Intelligence"
+          }
         }
       }
     },
@@ -19247,6 +20729,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "souhrn"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "súhrn"
           }
         }
       }
@@ -19326,6 +20814,12 @@
             "state": "translated",
             "value": "Klepněte na zemi na Mapě a označte, kde jste byli."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klepnite na krajinu na Mape a označte, kde ste boli."
+          }
         }
       }
     },
@@ -19402,6 +20896,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Klepněte na zemi pro zobrazení podrobností"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klepnite na krajinu pre zobrazenie podrobností"
           }
         }
       }
@@ -19481,6 +20981,12 @@
             "state": "translated",
             "value": "Místní model se stále stahuje. Zkuste to znovu za chvíli."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miestny model sa stále sťahuje. Skúste to znova o chvíľu."
+          }
         }
       }
     },
@@ -19556,6 +21062,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Místní model se stále stahuje. Zkuste to brzy znovu."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miestny model sa stále sťahuje. Skúste to onedlho znova."
           }
         }
       }
@@ -19633,6 +21145,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Motiv"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motív"
           }
         }
       }
@@ -19712,6 +21230,12 @@
             "state": "translated",
             "value": "Tyto fotky neleží v žádné zemi — často malý ostrov. Přiřaďte každou k zemi, nebo ji ponechte pro přeskočení."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tieto fotky neležia v žiadnej krajine — často malý ostrov. Priraďte každú ku krajine, alebo ju ponechajte na preskočenie."
+          }
         }
       }
     },
@@ -19790,6 +21314,12 @@
             "state": "translated",
             "value": "Přemýšlím, kam dál…"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premýšľam, kam ďalej…"
+          }
         }
       }
     },
@@ -19865,6 +21395,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přemýšlím…"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premýšľam…"
           }
         }
       }
@@ -19944,6 +21480,12 @@
             "state": "translated",
             "value": "Toto zařízení nemůže spouštět místní analyzátor."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toto zariadenie nemôže spúšťať miestny analyzátor."
+          }
         }
       }
     },
@@ -20022,6 +21564,12 @@
             "state": "translated",
             "value": "Toto zařízení nemůže spouštět místního cestovního asistenta."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toto zariadenie nemôže spúšťať miestneho cestovného asistenta."
+          }
         }
       }
     },
@@ -20098,6 +21646,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sledováno pomocí Worldward"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sledované pomocou Worldward"
           }
         }
       }
@@ -20177,6 +21731,12 @@
             "state": "translated",
             "value": "Cestování"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cestovanie"
+          }
         }
       }
     },
@@ -20254,6 +21814,12 @@
             "state": "translated",
             "value": "Cestovní připomínky"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cestovné pripomienky"
+          }
         }
       }
     },
@@ -20326,6 +21892,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stav cesty"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Stav cesty"
@@ -20407,6 +21979,12 @@
             "state": "translated",
             "value": "Časová osa cest"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Časová os ciest"
+          }
         }
       }
     },
@@ -20481,6 +22059,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "výlet"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "výlet"
@@ -20563,6 +22147,12 @@
             "state": "translated",
             "value": "Název cesty"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Názov cesty"
+          }
         }
       }
     },
@@ -20636,6 +22226,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Výlety"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Výlety"
@@ -20718,6 +22314,12 @@
             "state": "translated",
             "value": "Zkuste se zeptat"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skúste sa spýtať"
+          }
         }
       }
     },
@@ -20793,6 +22395,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zkuste jmenovat země, které jste navštívili, příměji."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skúste vymenovať krajiny, ktoré ste navštívili, priamejšie."
           }
         }
       }
@@ -20872,6 +22480,12 @@
             "state": "translated",
             "value": "Zapněte Apple Intelligence v Nastavení a ptejte se na své cesty."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapnite Apple Intelligence v Nastaveniach a pýtajte sa na svoje cesty."
+          }
         }
       }
     },
@@ -20950,6 +22564,12 @@
             "state": "translated",
             "value": "Zapněte Apple Intelligence v Nastavení pro záznam návštěv z textu."
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapnite Apple Intelligence v Nastaveniach pre záznam návštêv z textu."
+          }
         }
       }
     },
@@ -21026,6 +22646,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zapněte oznámení pro Worldward v aplikaci Nastavení a získejte cestovní připomínky."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zapnite oznámenia pre Worldward v aplikácii Nastavenia a získajte cestovné pripomienky."
           }
         }
       }
@@ -21105,6 +22731,12 @@
             "state": "translated",
             "value": "Zpět"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Späť"
+          }
         }
       }
     },
@@ -21182,6 +22814,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Neseskupené"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nezoskupené"
           }
         }
       }
@@ -21261,6 +22899,12 @@
             "state": "translated",
             "value": "Odemčeno"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odomknuté"
+          }
         }
       }
     },
@@ -21339,6 +22983,12 @@
             "state": "translated",
             "value": "Nespárovaná místa"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nespárované miesta"
+          }
         }
       }
     },
@@ -21416,6 +23066,12 @@
             "state": "translated",
             "value": "Blížící se cesta ✈️"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blížiaca sa cesta ✈️"
+          }
         }
       }
     },
@@ -21492,6 +23148,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aktualizováno %lld zemí ze zálohy."
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualizované %lld krajín zo zálohy."
           }
         }
       }
@@ -21571,6 +23233,12 @@
             "state": "translated",
             "value": "návštěva"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "návšteva"
+          }
         }
       }
     },
@@ -21648,6 +23316,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Počet návštěv"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Počet návštêv"
           }
         }
       }
@@ -21727,6 +23401,12 @@
             "state": "translated",
             "value": "Rok návštěvy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rok návštevy"
+          }
         }
       }
     },
@@ -21805,6 +23485,12 @@
             "state": "translated",
             "value": "navštíveno"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "navštívené"
+          }
         }
       }
     },
@@ -21881,6 +23567,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Navštíveno"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navštívené"
           }
         }
       }
@@ -21960,6 +23652,12 @@
             "state": "translated",
             "value": "Navštíveno letos"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Navštívené tento rok"
+          }
         }
       }
     },
@@ -22038,6 +23736,12 @@
             "state": "translated",
             "value": "návštěvy"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "návštevy"
+          }
         }
       }
     },
@@ -22114,6 +23818,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Návštěvy"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Návštevy"
           }
         }
       }
@@ -22193,6 +23903,12 @@
             "state": "translated",
             "value": "Návštěvy k uložení"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Návštevy na uloženie"
+          }
         }
       }
     },
@@ -22271,6 +23987,12 @@
             "state": "translated",
             "value": "Jaký výlet chcete zaznamenat?"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aký výlet chcete zaznamenať?"
+          }
         }
       }
     },
@@ -22347,6 +24069,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seznam přání"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoznam želaní"
           }
         }
       }
@@ -22426,6 +24154,12 @@
             "state": "translated",
             "value": "Světová mapa"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svetová mapa"
+          }
         }
       }
     },
@@ -22500,6 +24234,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Worldward"
@@ -22582,6 +24322,12 @@
             "state": "translated",
             "value": "Cestovní data Worldward"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cestovné údaje Worldward"
+          }
         }
       }
     },
@@ -22659,6 +24405,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Napsat shrnutí roku %@"
+          }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Napísať zhrnutie roka %@"
           }
         }
       }
@@ -22738,6 +24490,12 @@
             "state": "translated",
             "value": "Píše se váš souhrn roku %@…"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Píše sa váš súhrn roka %@…"
+          }
         }
       }
     },
@@ -22812,6 +24570,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rok"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Rok"
@@ -22893,6 +24657,12 @@
             "state": "translated",
             "value": "Shrnutí roku"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zhrnutie roka"
+          }
         }
       }
     },
@@ -22970,6 +24740,12 @@
             "state": "translated",
             "value": "Vaše cesty"
           }
+        },
+        "sk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaše cesty"
+          }
         }
       }
     },
@@ -23043,6 +24819,12 @@
           }
         },
         "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Váš rok na cestách 🌍"
+          }
+        },
+        "sk": {
           "stringUnit": {
             "state": "translated",
             "value": "Váš rok na cestách 🌍"
