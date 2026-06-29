@@ -230,7 +230,9 @@ struct TripDetailView: View {
                     .lineLimit(3...8)
             }
         }
+        #if os(iOS)
         .toolbar { EditButton() }
+        #endif
         .sheet(isPresented: $showCountryPicker) {
             CountryPickerSheet(allCountries: allCountries) { country in addStop(country: country) }
         }
