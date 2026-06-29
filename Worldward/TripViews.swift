@@ -198,6 +198,8 @@ struct TripDetailView: View {
     @State private var showCountryPicker = false
     @State private var newPackingTitle = ""
     @State private var calendarAlert: String?
+    @State private var planner = TripPlanner()
+    @State private var confirmClearPacking = false
 
     var body: some View {
         Form {
@@ -225,11 +227,7 @@ struct TripDetailView: View {
 
             itinerarySection
             packingSection
-
-            Section("Notes") {
-                TextField("Links, confirmations, ideas…", text: $trip.notes, axis: .vertical)
-                    .lineLimit(3...8)
-            }
+            notesSection
         }
         #if os(iOS)
             .toolbar { EditButton() }
@@ -245,6 +243,15 @@ struct TripDetailView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(calendarAlert ?? "")
+        }
+        .alert(
+            "Couldn't generate",
+            isPresented: Binding(
+                get: { planner.errorMessage != nil }, set: { if !$0 { planner.clearError() } })
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(planner.errorMessage ?? "")
         }
     }
 
@@ -306,11 +313,63 @@ struct TripDetailView: View {
                 Button("Add", action: addPacking)
                     .disabled(newPackingTitle.trimmingCharacters(in: .whitespaces).isEmpty)
             }
+
+            if canUseAssistant {
+                fillButton(field: .packing, action: fillPacking)
+            }
+
+            if !trip.packing.isEmpty {
+                Button(role: .destructive) {
+                    confirmClearPacking = true
+                } label: {
+                    Label("Clear list", systemImage: "trash")
+                }
+                .confirmationDialog(
+                    "Remove all \(trip.packing.count) packing items?",
+                    isPresented: $confirmClearPacking, titleVisibility: .visible
+                ) {
+                    Button("Clear list", role: .destructive, action: clearPacking)
+                }
+            }
         } header: {
             Text(
                 trip.packing.isEmpty
                     ? "Packing" : "Packing · \(trip.packedCount)/\(trip.packing.count)")
         }
+    }
+
+    private var notesSection: some View {
+        Section("Notes") {
+            TextField("Links, confirmations, ideas…", text: $trip.notes, axis: .vertical)
+                .lineLimit(3...8)
+
+            if canUseAssistant {
+                fillButton(field: .notes, action: fillNotes)
+            }
+        }
+    }
+
+    /// The on-device assistant is only offered when Apple Intelligence is ready
+    /// *and* the trip has at least one country — its suggestions are driven by the
+    /// destinations and their season.
+    private var canUseAssistant: Bool {
+        planner.isAvailable && !trip.countries.isEmpty
+    }
+
+    /// A shared "Fill with LLM" row that shows a spinner while its field generates
+    /// and disables itself while any generation is in flight.
+    private func fillButton(field: TripPlanner.Field, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            if planner.busy == field {
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text("Generating…")
+                }
+            } else {
+                Label("Fill with LLM", systemImage: "sparkles")
+            }
+        }
+        .disabled(planner.busy != nil)
     }
 
     // MARK: Mutations
@@ -347,6 +406,42 @@ struct TripDetailView: View {
     private func deletePacking(at offsets: IndexSet) {
         let items = offsets.map { trip.packing[$0] }
         for item in items { modelContext.delete(item) }
+    }
+
+    private func clearPacking() {
+        for item in trip.packing { modelContext.delete(item) }
+    }
+
+    // MARK: On-device assistant
+
+    /// Asks the on-device model for a packing list and appends any items not
+    /// already on the list (case-insensitive), leaving the user's own entries be.
+    private func fillPacking() {
+        Task {
+            guard let suggestions = await planner.suggestPacking(for: trip) else { return }
+            var existing = Set(trip.packing.map { $0.title.lowercased() })
+            for title in suggestions {
+                let key = title.lowercased()
+                guard !existing.contains(key) else { continue }
+                existing.insert(key)
+                let item = PackingItem(title: title, trip: trip)
+                modelContext.insert(item)
+                trip.packing.append(item)
+            }
+        }
+    }
+
+    /// Asks the on-device model for sightseeing notes and appends them, preserving
+    /// anything the user has already written.
+    private func fillNotes() {
+        Task {
+            guard let text = await planner.suggestNotes(for: trip) else { return }
+            if trip.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                trip.notes = text
+            } else {
+                trip.notes += "\n\n" + text
+            }
+        }
     }
 }
 
