@@ -309,11 +309,20 @@ struct ContentView: View {
                 NavigationStack { countryList(.been) }
             }
             Tab("Going", systemImage: "airplane", value: AppTab.going) {
-                NavigationStack { countryList(.going) }
+                NavigationStack {
+                    GoingView(
+                        allCountries: allCountries,
+                        searchText: $searchText,
+                        selectedContinent: $selectedContinent,
+                        selectedYear: $selectedYear,
+                        selectedCountry: $selectedCountry)
+                }
             }
         }
         .tabViewStyle(.sidebarAdaptable)
+        #if os(iOS)
         .tabBarMinimizeBehavior(.onScrollDown)
+        #endif
     }
 
     private func countryList(_ mode: BrowseMode) -> some View {
@@ -1205,7 +1214,7 @@ struct VisitRow: View {
 /// Filtered to the tab's `browseMode` (Been = visited, Going = wishlist/planning);
 /// tapping a row opens that country's detail via `selectedCountry`. Searching
 /// matches across every country so you can still find any one to open.
-private struct CountryListView: View {
+struct CountryListView: View {
     let allCountries: [Country]
     let browseMode: BrowseMode
 

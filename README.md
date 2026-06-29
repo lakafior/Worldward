@@ -21,8 +21,9 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### Trip Planning
 - A **plan axis** independent of where you've been: mark any country **Wishlist** or **Planning** — a country can be both visited *and* on your list.
-- A **Been / Going** segmented control splits the country list, detail, and stats into history vs. plans, all on one shared world map.
+- **Map / Been / Going** live as a Liquid Glass tab bar (a bottom bar on iPhone, a sidebar on iPad & Mac), all backed by the one shared world map.
 - An "On your list" stats card tracks your wishlist and planning counts without touching your visited totals.
+- The **Been** and **Going** tabs each list their countries grouped by continent, with sort (by name or most recently visited) and a continent / visit-year filter. Discovery and adding happen on the Map — tap any country to set its status or plan.
 
 ### Statistics & Achievements
 - Live dashboard: total countries, continents covered, busiest year, most-visited country.
@@ -77,7 +78,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 | Layer | Technology |
 |---|---|
-| UI | SwiftUI |
+| UI | SwiftUI (Liquid Glass `TabView`, `.sidebarAdaptable`) |
 | Mapping | MapKit (`MKPolygon`, `MKMapView`) |
 | Persistence | SwiftData (`ModelContainer`, `@Model`) |
 | Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~340 KB) |
@@ -96,7 +97,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 ```
 Worldward/
 ├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
-├── ContentView.swift           # Main map view, sidebar, bundled-geometry reader
+├── ContentView.swift           # Map/Been/Going tab shell, map view, country list, geometry reader
 ├── Country.swift               # SwiftData model for a country (been + plan axes)
 ├── Visit.swift                 # SwiftData model for a dated visit
 ├── CountryStatus.swift         # "Been there" status enum (notVisited → living)

@@ -11,6 +11,25 @@ struct TravelDataFile: Codable {
     var version: Int
     var exportedAt: Date
     var countries: [CountryRecord]
+    /// Multi-country trips (Phase 2). Top-level rather than per-country.
+    var trips: [TripRecord] = []
+}
+
+extension TravelDataFile {
+    private enum CodingKeys: String, CodingKey {
+        case version, exportedAt, countries, trips
+    }
+
+    /// Custom decoding so a v1 backup (written before trips existed) still loads —
+    /// `trips` simply defaults to empty. Defined in an extension to keep the
+    /// memberwise initializer the exporter uses.
+    init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = try c.decode(Int.self, forKey: .version)
+        exportedAt = try c.decode(Date.self, forKey: .exportedAt)
+        countries = try c.decode([CountryRecord].self, forKey: .countries)
+        trips = try c.decodeIfPresent([TripRecord].self, forKey: .trips) ?? []
+    }
 }
 
 struct CountryRecord: Codable {
@@ -83,9 +102,56 @@ struct VisitRecord: Codable {
     }
 }
 
+struct TripRecord: Codable {
+    var title: String
+    var startDate: Date
+    var endDate: Date
+    var notes: String
+    var itinerary: [ItineraryItemRecord]
+    var packing: [PackingItemRecord]
+
+    @MainActor
+    init(from trip: Trip) {
+        self.title = trip.title
+        self.startDate = trip.startDate
+        self.endDate = trip.endDate
+        self.notes = trip.notes
+        self.itinerary = trip.sortedStops.map(ItineraryItemRecord.init)
+        self.packing = trip.packing.map(PackingItemRecord.init)
+    }
+}
+
+struct ItineraryItemRecord: Codable {
+    var title: String
+    var note: String
+    var date: Date?
+    var order: Int
+    var countryID: String?  // ISO alpha-2; re-linked on import, skipped if unknown
+
+    @MainActor
+    init(from item: ItineraryItem) {
+        self.title = item.title
+        self.note = item.note
+        self.date = item.date
+        self.order = item.order
+        self.countryID = item.country?.id
+    }
+}
+
+struct PackingItemRecord: Codable {
+    var title: String
+    var isPacked: Bool
+
+    @MainActor
+    init(from item: PackingItem) {
+        self.title = item.title
+        self.isPacked = item.isPacked
+    }
+}
+
 /// Encodes and decodes the travel-data backup, and applies an import to the store.
 enum TravelDataTransfer {
-    static let currentVersion = 1
+    static let currentVersion = 2
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -105,8 +171,11 @@ enum TravelDataTransfer {
     static func export(from context: ModelContext) throws -> Data {
         let countries = try context.fetch(FetchDescriptor<Country>())
         let records = countries.compactMap(CountryRecord.init).sorted { $0.id < $1.id }
+        let trips = try context.fetch(FetchDescriptor<Trip>())
+            .sorted { $0.startDate < $1.startDate }
+            .map(TripRecord.init)
         let file = TravelDataFile(
-            version: currentVersion, exportedAt: Date(), countries: records)
+            version: currentVersion, exportedAt: Date(), countries: records, trips: trips)
         return try encoder.encode(file)
     }
 
@@ -127,6 +196,31 @@ enum TravelDataTransfer {
             record.apply(to: country, in: context)
             applied += 1
         }
+
+        // Trips are replaced wholesale so re-importing a backup is idempotent
+        // rather than additive (cascade delete removes their stops and packing).
+        for trip in try context.fetch(FetchDescriptor<Trip>()) {
+            context.delete(trip)
+        }
+        for record in file.trips {
+            let trip = Trip(
+                title: record.title, startDate: record.startDate,
+                endDate: record.endDate, notes: record.notes)
+            context.insert(trip)
+            for stop in record.itinerary.sorted(by: { $0.order < $1.order }) {
+                let item = ItineraryItem(
+                    title: stop.title, note: stop.note, date: stop.date, order: stop.order,
+                    country: stop.countryID.flatMap { byID[$0] }, trip: trip)
+                context.insert(item)
+                trip.itinerary.append(item)
+            }
+            for pack in record.packing {
+                let item = PackingItem(title: pack.title, isPacked: pack.isPacked, trip: trip)
+                context.insert(item)
+                trip.packing.append(item)
+            }
+        }
+
         try context.save()
         return applied
     }

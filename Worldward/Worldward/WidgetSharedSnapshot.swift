@@ -256,12 +256,14 @@ enum WorldMapStore {
 enum WidgetActionStore {
     private static let markHereKey = "pendingMarkHere"
 
-    private static var defaults: UserDefaults? {
+    private nonisolated static var defaults: UserDefaults? {
         UserDefaults(suiteName: WidgetSnapshotStore.appGroupID)
     }
 
-    /// Extension side: ask the app to mark the user's current country.
-    static func requestMarkHere() {
+    /// Extension side: ask the app to mark the user's current country. Called from
+    /// the control's nonisolated `perform()`, so it must not require the main actor;
+    /// it only touches thread-safe `UserDefaults`.
+    nonisolated static func requestMarkHere() {
         defaults?.set(true, forKey: markHereKey)
     }
 

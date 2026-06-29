@@ -17,7 +17,9 @@ struct Worldward: App {
     static let cloudKitContainerID = "iCloud.net.smigi.worldward"
 
     static let sharedModelContainer: ModelContainer = {
-        let schema = Schema([Country.self, Visit.self])
+        let schema = Schema([
+            Country.self, Visit.self, Trip.self, ItineraryItem.self, PackingItem.self,
+        ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
