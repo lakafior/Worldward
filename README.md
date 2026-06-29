@@ -104,7 +104,11 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 ```
 Worldward/
 ├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
-├── ContentView.swift           # Map/Been/Going tab shell, map view, country list, geometry reader
+├── ContentView.swift           # Tabs (Map/Been/Going), map view, intents, sheets
+├── CountryListView.swift       # Been/Going list with sort & filter
+├── CountryDetailViews.swift    # Country detail, visit row, detail/location sheets
+├── MapViews.swift              # Map polygons, legend, loading splash, country row
+├── GeoLoading.swift            # Binary format decoder, polygon builder, CountrySeed
 ├── Country.swift               # SwiftData model for a country (been + plan axes, trip stops)
 ├── Visit.swift                 # SwiftData model for a dated visit
 ├── Trip.swift                  # SwiftData models: Trip, ItineraryItem (stop), PackingItem
@@ -146,6 +150,8 @@ WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Co
 ```
 
 > The app and the widget extension share data through an **App Group** (`group.net.smigi.worldward`): the app writes a small `WidgetSnapshot` and a copy of the map geometry; the widgets read them. `WidgetSharedSnapshot.swift` is a member of both targets.
+
+> `ContentView.swift` was split into five focused files during the 1.0 release: `MapViews.swift` (map rendering), `CountryDetailViews.swift` (detail/sheets), `CountryListView.swift` (list/filter), and `GeoLoading.swift` (binary geometry decoder). The original `ContentView` is now ~650 lines, down from ~1,450.
 
 ---
 
