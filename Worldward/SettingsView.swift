@@ -66,7 +66,7 @@ struct SettingsView: View {
             onCompletion: handleImport
         )
         .alert(
-            transferAlert?.title ?? "",
+            Text(transferAlert?.title ?? ""),
             isPresented: alertIsPresented,
             presenting: transferAlert
         ) { _ in
@@ -89,6 +89,14 @@ struct SettingsView: View {
                     Label(style.label, systemImage: style.symbolName).tag(style)
                 }
             }
+
+            #if !os(macOS)
+                Button("Language") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            #endif
         }
     }
 
@@ -120,8 +128,10 @@ struct SettingsView: View {
                 notificationsEnabled = false
                 transferAlert = TransferAlert(
                     title: "Notifications Off",
-                    message:
-                        "Turn on notifications for Worldward in the Settings app to receive travel reminders."
+                    message: String(
+                        localized:
+                            "Turn on notifications for Worldward in the Settings app to receive travel reminders."
+                    )
                 )
                 return
             }
@@ -203,7 +213,8 @@ struct SettingsView: View {
             let count = try TravelDataTransfer.importData(data, into: modelContext)
             transferAlert = TransferAlert(
                 title: "Import Complete",
-                message: "Updated \(count) countr\(count == 1 ? "y" : "ies") from the backup.")
+                message: String(localized: "Updated \(count) countries from the backup.")
+            )
         } catch {
             transferAlert = TransferAlert(
                 title: "Import Failed", message: error.localizedDescription)
@@ -214,7 +225,7 @@ struct SettingsView: View {
 /// A one-shot alert payload for export/import results.
 private struct TransferAlert: Identifiable {
     let id = UUID()
-    let title: String
+    let title: LocalizedStringKey
     let message: String
 }
 
