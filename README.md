@@ -123,7 +123,23 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 | Notifications | `UserNotifications` (local, opt-in) |
 | Calendar | `EventKit` (write-only, "Add to Apple Calendar") |
 | Share | `ImageRenderer` → `ShareLink`, `CIFilter` (QR codes) |
+| Localization | `String(localized:)` backed by Xcode String Catalogs |
 | Platforms | macOS 15+, iOS 18+ |
+
+---
+
+## Localization
+
+All user-facing strings are centralized in [`Localization.swift`](Worldward/Localization.swift), grouped by feature. To add a new language:
+
+1. **Xcode → File → New → File → String Catalog** → name it `Localizable` and add it to the Worldward target.
+2. **Build the project** — Xcode scans every `Text("…")` and `String(localized:)` call and populates the catalog automatically.
+3. **Click "+"** in the catalog to add your target language.
+4. Translate each entry — the key is the English string, and the context comment tells the translator where it appears.
+
+For new features, write strings inline with `Text("Hello")` or `String(localized: "Hello", comment: "…")` — the catalog catches them on the next build. The `Localization.swift` file serves as a translator-friendly reference of every string in the app.
+
+Strings that are purely internal (enum cases, debug logs, static data) are intentionally omitted.
 
 ---
 

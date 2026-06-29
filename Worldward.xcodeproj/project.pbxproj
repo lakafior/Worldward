@@ -10,6 +10,7 @@
 		48BF24FE2FEEFFAD00A75A0D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48BF24FD2FEEFFAD00A75A0D /* WidgetKit.framework */; };
 		48BF25002FEEFFAD00A75A0D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48BF24FF2FEEFFAD00A75A0D /* SwiftUI.framework */; };
 		48BF250B2FEEFFAE00A75A0D /* WorldwardWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 48BF24FB2FEEFFAD00A75A0D /* WorldwardWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		48C458072FF2B74E00C15DFC /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 48C458062FF2B74E00C15DFC /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		48BF24FD2FEEFFAD00A75A0D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = /System/Library/Frameworks/WidgetKit.framework; sourceTree = "<absolute>"; };
 		48BF24FF2FEEFFAD00A75A0D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = /System/Library/Frameworks/SwiftUI.framework; sourceTree = "<absolute>"; };
 		48BF25132FEF003D00A75A0D /* WorldwardWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorldwardWidgetsExtension.entitlements; sourceTree = "<group>"; };
+		48C458062FF2B74E00C15DFC /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -105,6 +107,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				48C458062FF2B74E00C15DFC /* Localizable.xcstrings */,
 				48BF25132FEF003D00A75A0D /* WorldwardWidgetsExtension.entitlements */,
 				000000000000000000000010 /* Worldward */,
 				48BF25012FEEFFAD00A75A0D /* WorldwardWidgets */,
@@ -216,6 +219,7 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				48C458072FF2B74E00C15DFC /* Localizable.xcstrings in Resources */,
 			);
 		};
 		48BF24F92FEEFFAD00A75A0D /* Resources */ = {
@@ -311,6 +315,7 @@
 				PROJECT_UNIQUE_VALUE = GNUPOXRU;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				WATCHOS_DEPLOYMENT_TARGET = 27.0;
 				XROS_DEPLOYMENT_TARGET = 27.0;
@@ -374,6 +379,7 @@
 				PROJECT_UNIQUE_VALUE = GNUPOXRU;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				WATCHOS_DEPLOYMENT_TARGET = 27.0;
 				XROS_DEPLOYMENT_TARGET = 27.0;
 			};
