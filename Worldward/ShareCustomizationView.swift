@@ -99,8 +99,14 @@ struct ShareCustomizationView: View {
         }
         .frame(minWidth: 420, minHeight: 640)
         .onAppear(perform: regenerate)
-        .onChange(of: config) { regenerate() }
-        .onChange(of: theme) { regenerate() }
+        .onChange(of: headline) { _, _ in regenerate() }
+        .onChange(of: caption) { _, _ in regenerate() }
+        .onChange(of: showMap) { _, _ in regenerate() }
+        .onChange(of: showContinents) { _, _ in regenerate() }
+        .onChange(of: showSecondMetric) { _, _ in regenerate() }
+        .onChange(of: showMostVisited) { _, _ in regenerate() }
+        .onChange(of: showCountryList) { _, _ in regenerate() }
+        .onChange(of: theme) { _, _ in regenerate() }
     }
 
     @ViewBuilder

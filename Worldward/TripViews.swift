@@ -73,8 +73,12 @@ private struct TripsListView: View {
             } else {
                 List {
                     ForEach(orderedTrips) { trip in
-                        Button { editingTrip = trip } label: { TripRow(trip: trip) }
-                            .buttonStyle(.plain)
+                        Button {
+                            editingTrip = trip
+                        } label: {
+                            TripRow(trip: trip)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .onDelete(perform: deleteTrips)
                 }
@@ -86,7 +90,11 @@ private struct TripsListView: View {
         #endif
         .toolbar {
             ToolbarItem {
-                Button { addTrip() } label: { Label("New Trip", systemImage: "plus") }
+                Button {
+                    addTrip()
+                } label: {
+                    Label("New Trip", systemImage: "plus")
+                }
             }
         }
         .sheet(item: $editingTrip) { trip in
@@ -173,7 +181,9 @@ struct TripDetailView: View {
                 if !trip.flags.isEmpty {
                     Text(trip.flags).font(.title3)
                 }
-                Button { addToCalendar() } label: {
+                Button {
+                    addToCalendar()
+                } label: {
                     Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
                 }
             }
@@ -226,7 +236,9 @@ struct TripDetailView: View {
                 .onDelete(perform: deleteStops)
                 .onMove(perform: moveStops)
             }
-            Button { showCountryPicker = true } label: {
+            Button {
+                showCountryPicker = true
+            } label: {
                 Label("Add a country / stop", systemImage: "plus")
             }
         }
@@ -235,7 +247,9 @@ struct TripDetailView: View {
     private var packingSection: some View {
         Section {
             ForEach(trip.packing) { item in
-                Button { item.isPacked.toggle() } label: {
+                Button {
+                    item.isPacked.toggle()
+                } label: {
                     HStack {
                         Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
                             .foregroundStyle(item.isPacked ? .green : .secondary)
@@ -294,7 +308,8 @@ struct TripDetailView: View {
     }
 
     private func deletePacking(at offsets: IndexSet) {
-        for index in offsets { modelContext.delete(trip.packing[index]) }
+        let items = offsets.map { trip.packing[$0] }
+        for item in items { modelContext.delete(item) }
     }
 }
 
