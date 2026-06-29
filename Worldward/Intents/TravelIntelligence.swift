@@ -79,7 +79,8 @@ final class TravelIntelligence {
             }
             phase = .answered(latest.isEmpty ? "I couldn't find an answer to that." : latest)
         } catch let error as LanguageModelSession.ToolCallError {
-            phase = .failed("I couldn't read your travel data: \(error.underlyingError.localizedDescription)")
+            phase = .failed(
+                "I couldn't read your travel data: \(error.underlyingError.localizedDescription)")
         } catch {
             phase = .failed(error.localizedDescription)
         }
@@ -97,9 +98,9 @@ final class TravelIntelligence {
     private func activeSession() -> LanguageModelSession {
         if let session { return session }
         let tools: [any Tool] = [
-            TravelSummaryTool(container: container),
-            CountriesTool(container: container),
-            ContinentProgressTool(container: container),
+            TravelSummaryTool(),
+            CountriesTool(),
+            ContinentProgressTool(),
         ]
         let session = LanguageModelSession(tools: tools) {
             """
@@ -126,12 +127,11 @@ final class TravelIntelligence {
 
 // MARK: - Shared data access
 
-/// Loads every country from a background `ModelContext`. Tools run off the main
-/// actor (`Tool.call` is `@concurrent`), so each builds its own short-lived
-/// context rather than touching the main context. The catalog is ~250 rows, so
-/// a full fetch per call is cheap and always reflects the latest edits.
-private func fetchCountries(from container: ModelContainer) throws -> [Country] {
-    let context = ModelContext(container)
+/// Loads every country from the main actor, creating a short-lived `ModelContext`.
+/// Tools run off the main actor (`Tool.call` is `@concurrent`), but their private
+/// `@MainActor` helpers handle the fetch here.
+private func fetchCountries() throws -> [Country] {
+    let context = ModelContext(Worldward.sharedModelContainer)
     return try context.fetch(FetchDescriptor<Country>())
 }
 
@@ -158,8 +158,6 @@ private struct TravelSummaryTool: Tool {
         "Returns the user's overall travel totals: visited country count, "
         + "continents reached, per-status counts, busiest year, and visit date range."
 
-    let container: ModelContainer
-
     @Generable
     struct Arguments {}
 
@@ -167,10 +165,8 @@ private struct TravelSummaryTool: Tool {
         try await summarize()
     }
 
-    // The catalog and `TravelStats` are main-actor isolated (the app uses
-    // default main-actor isolation), so the data work hops to the main actor.
     @MainActor private func summarize() throws -> String {
-        let countries = try fetchCountries(from: container)
+        let countries = try fetchCountries()
         let stats = TravelStats(countries: countries)
 
         guard stats.hasTravel else {
@@ -180,7 +176,7 @@ private struct TravelSummaryTool: Tool {
         var lines: [String] = []
         lines.append(
             "Visited \(stats.visitedCountries) of \(stats.totalCountries) countries "
-            + "across \(stats.visitedContinents) of \(stats.totalContinents) continents.")
+                + "across \(stats.visitedContinents) of \(stats.totalContinents) continents.")
 
         let statusLines = CountryStatus.visitedCases.compactMap { status -> String? in
             let count = stats.statusCounts[status] ?? 0
@@ -193,7 +189,7 @@ private struct TravelSummaryTool: Tool {
         if let busiest = stats.busiestYear, busiest.countries > 0 {
             lines.append(
                 "Busiest year: \(busiest.year) with \(busiest.countries) countries "
-                + "and \(busiest.visits) visits.")
+                    + "and \(busiest.visits) visits.")
         }
         lines.append("Active travel years: \(stats.activeYears).")
 
@@ -218,17 +214,23 @@ private struct CountriesTool: Tool {
         + "Optionally filter by continent, by whether they were visited, or by a "
         + "specific status (crossed, visited, lived, living)."
 
-    let container: ModelContainer
-
     @Generable
     struct Arguments {
-        @Guide(description: "Continent to filter by, e.g. 'Europe' or 'Asia'. Omit for all continents.")
+        @Guide(
+            description: "Continent to filter by, e.g. 'Europe' or 'Asia'. Omit for all continents."
+        )
         var continent: String?
 
-        @Guide(description: "When true, return only countries the user has visited; when false, only unvisited ones.")
+        @Guide(
+            description:
+                "When true, return only countries the user has visited; when false, only unvisited ones."
+        )
         var visitedOnly: Bool?
 
-        @Guide(description: "Filter to one status exactly: 'crossed', 'visited', 'lived', or 'living'. Omit for any status.")
+        @Guide(
+            description:
+                "Filter to one status exactly: 'crossed', 'visited', 'lived', or 'living'. Omit for any status."
+        )
         var status: String?
     }
 
@@ -237,10 +239,11 @@ private struct CountriesTool: Tool {
     }
 
     @MainActor private func list(_ arguments: Arguments) throws -> String {
-        var countries = try fetchCountries(from: container)
+        var countries = try fetchCountries()
 
         if let continent = arguments.continent?.trimmingCharacters(in: .whitespaces),
-            !continent.isEmpty {
+            !continent.isEmpty
+        {
             countries = countries.filter {
                 $0.continent.localizedCaseInsensitiveContains(continent)
             }
@@ -251,7 +254,8 @@ private struct CountriesTool: Tool {
         }
 
         if let status = arguments.status?.trimmingCharacters(in: .whitespaces).lowercased(),
-            let match = CountryStatus(rawValue: status) {
+            let match = CountryStatus(rawValue: status)
+        {
             countries = countries.filter { $0.status == match }
         }
 
@@ -292,11 +296,12 @@ private struct ContinentProgressTool: Tool {
         "Returns how complete a single continent is: visited count, total count, "
         + "percentage, and the list of countries there the user has not visited yet."
 
-    let container: ModelContainer
-
     @Generable
     struct Arguments {
-        @Guide(description: "The continent to report on, e.g. 'Europe', 'Asia', 'Africa', 'North America', 'South America', 'Australia and Oceania', 'Antarctica'.")
+        @Guide(
+            description:
+                "The continent to report on, e.g. 'Europe', 'Asia', 'Africa', 'North America', 'South America', 'Australia and Oceania', 'Antarctica'."
+        )
         var continent: String
     }
 
@@ -306,7 +311,7 @@ private struct ContinentProgressTool: Tool {
 
     @MainActor private func progress(_ arguments: Arguments) throws -> String {
         let query = arguments.continent.trimmingCharacters(in: .whitespaces)
-        let all = try fetchCountries(from: container)
+        let all = try fetchCountries()
         let countries = all.filter { $0.continent.localizedCaseInsensitiveContains(query) }
 
         guard !countries.isEmpty else {

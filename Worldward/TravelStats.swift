@@ -10,6 +10,7 @@ struct TravelStats {
     /// One continent's visited/total tally.
     struct ContinentStat: Identifiable {
         let name: String
+        let continent: Continent?
         let visited: Int
         let total: Int
         var id: String { name }
@@ -64,10 +65,7 @@ struct TravelStats {
     private let labelByID: [String: (flag: String, name: String)]
 
     /// The seven canonical continents, used for the "every continent" achievement.
-    static let canonicalContinents = [
-        "Europe", "Asia", "Africa", "North America",
-        "South America", "Australia and Oceania", "Antarctica",
-    ]
+    static let canonicalContinents: [String] = Continent.allCases.map(\.rawValue)
 
     init(countries: [Country]) {
         let calendar = Calendar.current
@@ -125,7 +123,14 @@ struct TravelStats {
 
         let continents =
             buckets
-            .map { ContinentStat(name: $0.key, visited: $0.value.visited, total: $0.value.total) }
+            .map {
+                ContinentStat(
+                    name: $0.key,
+                    continent: Continent(rawValue: $0.key),
+                    visited: $0.value.visited,
+                    total: $0.value.total
+                )
+            }
             .sorted { $0.name < $1.name }
 
         let years = Set(Array(visitsByYear.keys) + Array(countryIDsByYear.keys))

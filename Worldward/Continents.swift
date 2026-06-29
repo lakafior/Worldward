@@ -1,5 +1,19 @@
 import Foundation
 
+/// The seven canonical continents, as a typed enum. Replaces raw string constants
+/// throughout the codebase so continent comparisons and lookups are type-safe.
+enum Continent: String, CaseIterable, Identifiable, Codable {
+    case europe = "Europe"
+    case asia = "Asia"
+    case africa = "Africa"
+    case northAmerica = "North America"
+    case southAmerica = "South America"
+    case australiaOceania = "Australia and Oceania"
+    case antarctica = "Antarctica"
+
+    var id: String { rawValue }
+}
+
 /// Authoritative ISO 3166-1 alpha-2 → continent lookup, in English.
 ///
 /// The bundled GeoJSON only carries ISO codes and country names — it has no
@@ -14,6 +28,11 @@ enum Continents {
     /// `nonisolated` so the background seeding task can call it.
     nonisolated static func name(for isoAlpha2: String) -> String {
         byISO[isoAlpha2] ?? unknown
+    }
+
+    /// The typed `Continent` for a given ISO alpha-2 code, if recognised.
+    nonisolated static func typed(for isoAlpha2: String) -> Continent? {
+        byISO[isoAlpha2].flatMap(Continent.init(rawValue:))
     }
 
     nonisolated static let byISO: [String: String] = [
@@ -78,12 +97,18 @@ enum Continents {
         "PE": "South America", "PY": "South America", "SR": "South America", "UY": "South America",
         "VE": "South America",
         // Australia and Oceania (25)
-        "AS": "Australia and Oceania", "AU": "Australia and Oceania", "CK": "Australia and Oceania", "FJ": "Australia and Oceania",
-        "FM": "Australia and Oceania", "GU": "Australia and Oceania", "KI": "Australia and Oceania", "MH": "Australia and Oceania",
-        "MP": "Australia and Oceania", "NC": "Australia and Oceania", "NF": "Australia and Oceania", "NR": "Australia and Oceania",
-        "NU": "Australia and Oceania", "NZ": "Australia and Oceania", "PF": "Australia and Oceania", "PG": "Australia and Oceania",
-        "PN": "Australia and Oceania", "PW": "Australia and Oceania", "SB": "Australia and Oceania", "TO": "Australia and Oceania",
-        "TV": "Australia and Oceania", "UM": "Australia and Oceania", "VU": "Australia and Oceania", "WF": "Australia and Oceania",
+        "AS": "Australia and Oceania", "AU": "Australia and Oceania", "CK": "Australia and Oceania",
+        "FJ": "Australia and Oceania",
+        "FM": "Australia and Oceania", "GU": "Australia and Oceania", "KI": "Australia and Oceania",
+        "MH": "Australia and Oceania",
+        "MP": "Australia and Oceania", "NC": "Australia and Oceania", "NF": "Australia and Oceania",
+        "NR": "Australia and Oceania",
+        "NU": "Australia and Oceania", "NZ": "Australia and Oceania", "PF": "Australia and Oceania",
+        "PG": "Australia and Oceania",
+        "PN": "Australia and Oceania", "PW": "Australia and Oceania", "SB": "Australia and Oceania",
+        "TO": "Australia and Oceania",
+        "TV": "Australia and Oceania", "UM": "Australia and Oceania", "VU": "Australia and Oceania",
+        "WF": "Australia and Oceania",
         "WS": "Australia and Oceania",
         // Antarctica (1)
         // Only the continent itself. Natural Earth also ships three sub-antarctic
@@ -94,7 +119,7 @@ enum Continents {
         // deletes any an older build already stored.
         "AQ": "Antarctica",
         // Fallback alpha-2 codes for records the dataset ships with `-99`.
-        "XK": "Europe",                  // Kosovo
-        "CP": "Australia and Oceania",   // Clipperton Island
+        "XK": "Europe",  // Kosovo
+        "CP": "Australia and Oceania",  // Clipperton Island
     ]
 }
