@@ -81,6 +81,19 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ---
 
+## Screenshots
+
+| | | |
+|---|---|---
+| ![Map View](Assets/Screenshots/1.png) | ![Country Detail](Assets/Screenshots/2.png) | ![Visit Logging](Assets/Screenshots/3.png) |
+| **Interactive Map** - Tap any country to view details, set visit status, and attach photos | **Country Detail** - View visit history, flag, and notes for each country | **Visit Logging** - Record dates, notes, and photo thumbnails from your library |
+| ![Trip Planning](Assets/Screenshots/4.png) | ![Statistics Dashboard](Assets/Screenshots/5.png) | ![Achievements](Assets/Screenshots/6.png) |
+| **Trip Planning** - Create multi-country itineraries with stops, dates, and packing lists | **Statistics Dashboard** - Live travel stats, continent progress, and year breakdowns | **Achievements** - Gamified badges celebrating your travel milestones |
+| ![Settings](Assets/Screenshots/7.png) | ![Share Card](Assets/Screenshots/8.png) | |
+| **Settings** - Theme preference, reminders, export/import, and Apple Intelligence toggles | **Share Card** - Generate beautiful share cards with your travel stats and map |
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
