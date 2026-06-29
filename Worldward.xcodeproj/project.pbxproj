@@ -45,13 +45,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		48AED7772FDAC8E30052D713 /* Exceptions for "Worldward" folder in "Worldward" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				gemini.md,
-			);
-			target = 000000000000000100000000 /* Worldward */;
-		};
 		48BF250F2FEEFFAE00A75A0D /* Exceptions for "WorldwardWidgets" folder in "WorldwardWidgetsExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -72,7 +65,6 @@
 		000000000000000000000010 /* Worldward */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				48AED7772FDAC8E30052D713 /* Exceptions for "Worldward" folder in "Worldward" target */,
 				48BF25122FEEFFEC00A75A0D /* Exceptions for "Worldward" folder in "WorldwardWidgetsExtension" target */,
 			);
 			path = Worldward;
@@ -215,6 +207,20 @@
 				sk,
 				hu,
 				eo,
+				bg,
+				hr,
+				nl,
+				da,
+				el,
+				fi,
+				et,
+				ga,
+				lv,
+				lt,
+				mt,
+				sv,
+				ro,
+				sl,
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
