@@ -65,6 +65,12 @@
             "state": "translated",
             "value": "“居住过”阈值"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“살아본” 기준"
+          }
         }
       }
     },
@@ -103,6 +109,12 @@
           }
         },
         "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "%@"
@@ -174,6 +186,12 @@
             "value": "%1$@  %2$@"
           }
         },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@  %2$@"
+          }
+        },
         "pl": {
           "stringUnit": {
             "state": "translated",
@@ -240,6 +258,12 @@
             "value": "%1$@ · %2$lld/%3$lld"
           }
         },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$lld/%3$lld"
+          }
+        },
         "pl": {
           "stringUnit": {
             "state": "translated",
@@ -301,6 +325,12 @@
           }
         },
         "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ %2$@"
@@ -395,6 +425,12 @@
             "state": "translated",
             "value": "%1$@ %2$lld"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld"
+          }
         }
       }
     },
@@ -457,6 +493,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld"
@@ -527,6 +569,12 @@
             "state": "translated",
             "value": "%1$lld / %2$lld"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld / %2$lld"
+          }
         }
       }
     },
@@ -589,6 +637,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld %2$@"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld %2$@"
@@ -659,6 +713,12 @@
             "state": "translated",
             "value": "%1$lld个国家 · %2$lld个大洲 · %3$lld%%"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld개 국가 · %2$lld개 대륙 · %3$lld%%"
+          }
         }
       }
     },
@@ -724,6 +784,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "距离 %lld 公里"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld km 거리"
           }
         }
       }
@@ -791,6 +857,12 @@
             "state": "translated",
             "value": "%1$lld/%2$lld 个大洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld/%2$lld 대륙"
+          }
         }
       }
     },
@@ -856,6 +928,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld/%2$lld 个国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld/%2$lld 국가"
           }
         }
       }
@@ -923,6 +1001,12 @@
             "state": "translated",
             "value": "%1$lld 张照片%2$@"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진 %1$lld개%2$@"
+          }
         }
       }
     },
@@ -988,6 +1072,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld张照片%2$@ · %3$lld天%4$@"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진 %1$lld개%2$@ · %3$lld일%4$@"
           }
         }
       }
@@ -1055,6 +1145,12 @@
             "state": "translated",
             "value": "%1$lld次旅行%2$@ · %3$lld天%4$@"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 %1$lld번%2$@ · %3$lld일%4$@"
+          }
         }
       }
     },
@@ -1117,6 +1213,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld%%"
@@ -1187,6 +1289,12 @@
             "state": "translated",
             "value": "×%lld"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "×%lld"
+          }
         }
       }
     },
@@ -1249,6 +1357,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "🌍"
@@ -1319,6 +1433,12 @@
             "state": "translated",
             "value": "🌍 %@"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍 %@"
+          }
         }
       }
     },
@@ -1385,6 +1505,12 @@
             "state": "translated",
             "value": "🌍 尚未记录旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌍 아직 기록된 여행이 없습니다"
+          }
         }
       }
     },
@@ -1448,6 +1574,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "单次旅行达到此时长即将该国标记为“居住过”。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 기간 이상의 단일 여행이면 해당 국가가 “살아본”으로 표시됩니다."
           }
         }
       }
@@ -1514,6 +1646,12 @@
             "state": "translated",
             "value": "关于"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정보"
+          }
         }
       }
     },
@@ -1578,6 +1716,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "成就"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "성과"
           }
         }
       }
@@ -1645,6 +1789,12 @@
             "state": "translated",
             "value": "跨越%1$lld个大洲%2$@"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld대 대륙%2$@에 걸쳐"
+          }
         }
       }
     },
@@ -1711,6 +1861,12 @@
             "state": "translated",
             "value": "操作"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작업"
+          }
         }
       }
     },
@@ -1775,6 +1931,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가"
           }
         }
       }
@@ -1842,6 +2004,12 @@
             "state": "translated",
             "value": "添加容器"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "용기 추가"
+          }
         }
       }
     },
@@ -1908,6 +2076,12 @@
             "state": "translated",
             "value": "添加国家"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 추가"
+          }
         }
       }
     },
@@ -1972,6 +2146,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加国家/停靠点"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가/경유지 추가"
           }
         }
       }
@@ -2038,6 +2218,12 @@
             "state": "translated",
             "value": "添加国家"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 추가"
+          }
         }
       }
     },
@@ -2102,6 +2288,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加物品"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "항목 추가"
           }
         }
       }
@@ -2169,6 +2361,12 @@
             "state": "translated",
             "value": "添加到 Apple 日历"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 캘린더에 추가"
+          }
         }
       }
     },
@@ -2233,6 +2431,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문 추가"
           }
         }
       }
@@ -2300,6 +2504,12 @@
             "state": "translated",
             "value": "添加您对该国的第一次访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 국가에 처음 방문 추가"
+          }
         }
       }
     },
@@ -2366,6 +2576,12 @@
             "state": "translated",
             "value": "非洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아프리카"
+          }
         }
       }
     },
@@ -2428,6 +2644,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ai"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "ai"
@@ -2497,6 +2719,12 @@
             "state": "translated",
             "value": "全部"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모두"
+          }
         }
       }
     },
@@ -2562,6 +2790,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "所有国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 국가"
           }
         }
       }
@@ -2629,6 +2863,12 @@
             "state": "translated",
             "value": "所有年份"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 년도"
+          }
         }
       }
     },
@@ -2695,6 +2935,12 @@
             "state": "translated",
             "value": "南极洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남극"
+          }
         }
       }
     },
@@ -2757,6 +3003,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "Worldward"
@@ -2826,6 +3078,12 @@
             "state": "translated",
             "value": "外观"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모양"
+          }
         }
       }
     },
@@ -2891,6 +3149,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apple 日历"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 캘린더"
           }
         }
       }
@@ -2958,6 +3222,12 @@
             "state": "translated",
             "value": "Apple Intelligence 已关闭"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence가 비활성화됨"
+          }
         }
       }
     },
@@ -3023,6 +3293,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "亚洲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아시아"
           }
         }
       }
@@ -3090,6 +3366,12 @@
             "state": "translated",
             "value": "亚洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아시아"
+          }
         }
       }
     },
@@ -3155,6 +3437,12 @@
             "state": "translated",
             "value": "咨询您的旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행에 대해 묻기"
+          }
         }
       }
     },
@@ -3219,6 +3507,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "咨询您的旅行…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행에 대해 묻기…"
           }
         }
       }
@@ -3286,6 +3580,12 @@
             "state": "translated",
             "value": "尽管问我您去过的国家——在设备上处理，仅属于您个人隐私。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문한 국가에 관해 무엇이나 묻어보세요 — 기기 내에서 처리되며, 당신만의 개인정보로 남습니다."
+          }
         }
       }
     },
@@ -3351,6 +3651,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "分配"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "할당"
           }
         }
       }
@@ -3418,6 +3724,12 @@
             "state": "translated",
             "value": "大洋洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오세아니아"
+          }
         }
       }
     },
@@ -3484,6 +3796,12 @@
             "state": "translated",
             "value": "作者"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저자"
+          }
         }
       }
     },
@@ -3549,6 +3867,12 @@
             "state": "translated",
             "value": "返回"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "뒤로"
+          }
         }
       }
     },
@@ -3612,6 +3936,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "包袋和箱子在您所有旅行中共享。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가방과 케이스는 모든 여행에서 공유됩니다."
           }
         }
       }
@@ -3678,6 +4008,12 @@
             "state": "translated",
             "value": "已去过"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가본"
+          }
         }
       }
     },
@@ -3742,6 +4078,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "有一阵子了 🧭"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오래되었네요 🧭"
           }
         }
       }
@@ -3809,6 +4151,12 @@
             "state": "translated",
             "value": "最忙碌的一年"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장 바쁘얈던 해"
+          }
         }
       }
     },
@@ -3873,6 +4221,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "取消"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "취소"
           }
         }
       }
@@ -3940,6 +4294,12 @@
             "state": "translated",
             "value": "标题说明"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "캡션"
+          }
         }
       }
     },
@@ -4005,6 +4365,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "卡片"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "카드"
           }
         }
       }
@@ -4072,6 +4438,12 @@
             "state": "translated",
             "value": "选择图标"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아이콘 선택"
+          }
         }
       }
     },
@@ -4137,6 +4509,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "清空列表"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "리스트 비우기"
           }
         }
       }
@@ -4204,6 +4582,12 @@
             "state": "translated",
             "value": "容器"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "용기"
+          }
         }
       }
     },
@@ -4269,6 +4653,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "容器"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "용기"
           }
         }
       }
@@ -4336,6 +4726,12 @@
             "state": "translated",
             "value": "大洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대륙"
+          }
         }
       }
     },
@@ -4401,6 +4797,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "大洲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대륙"
           }
         }
       }
@@ -4468,6 +4870,12 @@
             "state": "translated",
             "value": "大洲进度"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대륙 진행도"
+          }
         }
       }
     },
@@ -4532,6 +4940,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "大洲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대륙"
           }
         }
       }
@@ -4599,6 +5013,12 @@
             "state": "translated",
             "value": "无法从您的位置确定当前国家。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 위치로부터 국가를 확인할 수 없습니다."
+          }
         }
       }
     },
@@ -4664,6 +5084,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "无法生成"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "생성할 수 없음"
           }
         }
       }
@@ -4731,6 +5157,12 @@
             "state": "translated",
             "value": "无法匹配"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일치하지 못함"
+          }
         }
       }
     },
@@ -4796,6 +5228,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "计数"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "개수"
           }
         }
       }
@@ -4863,6 +5301,12 @@
             "state": "translated",
             "value": "国家"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가"
+          }
         }
       }
     },
@@ -4928,6 +5372,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가"
           }
         }
       }
@@ -4995,6 +5445,12 @@
             "state": "translated",
             "value": "已访问的国家"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문한 국가"
+          }
         }
       }
     },
@@ -5060,6 +5516,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "已访问的国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문한 국가"
           }
         }
       }
@@ -5127,6 +5589,12 @@
             "state": "translated",
             "value": "国家"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가"
+          }
         }
       }
     },
@@ -5192,6 +5660,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가"
           }
         }
       }
@@ -5259,6 +5733,12 @@
             "state": "translated",
             "value": "已找到国家代码 %@，但它不在 Worldward 目录中。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 코드 %@를 찾았지만 Worldward 카탈로그에 없습니다."
+          }
         }
       }
     },
@@ -5324,6 +5804,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "国家列表"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 목록"
           }
         }
       }
@@ -5391,6 +5877,12 @@
             "state": "translated",
             "value": "经过"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경과"
+          }
         }
       }
     },
@@ -5457,6 +5949,12 @@
             "state": "translated",
             "value": "当前"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재"
+          }
         }
       }
     },
@@ -5521,6 +6019,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "数据"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "데이터"
           }
         }
       }
@@ -5588,6 +6092,12 @@
             "state": "translated",
             "value": "日期"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜"
+          }
         }
       }
     },
@@ -5653,6 +6163,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "日期"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜"
           }
         }
       }
@@ -5720,6 +6236,12 @@
             "state": "translated",
             "value": "访问日期"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문일"
+          }
         }
       }
     },
@@ -5785,6 +6307,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "描述"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명"
           }
         }
       }
@@ -5852,6 +6380,12 @@
             "state": "translated",
             "value": "用您的话描述一次旅行，Worldward 会提取国家和日期供您确认。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행을 스스로 설명하면 Worldward가 국가와 날짜를 추출하여 확인할 수 있게 해줍니다."
+          }
         }
       }
     },
@@ -5917,6 +6451,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "描述您的旅行"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 설명"
           }
         }
       }
@@ -5984,6 +6524,12 @@
             "state": "translated",
             "value": "描述"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명"
+          }
         }
       }
     },
@@ -6049,6 +6595,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "检测您当前的国家并以选定的旅行状态标记它。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 국가를 감지하고 선택한 여행 상태로 표시합니다."
           }
         }
       }
@@ -6116,6 +6668,12 @@
             "state": "translated",
             "value": "口述"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구술"
+          }
         }
       }
     },
@@ -6180,6 +6738,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "完成"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료"
           }
         }
       }
@@ -6247,6 +6811,12 @@
             "state": "translated",
             "value": "例如：欧洲 2026"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예: 유럽 2026"
+          }
         }
       }
     },
@@ -6312,6 +6882,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "例如：我去年春天去了日本和韩国"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예: 지난 봄에 일본과 한국을 방문했습니다"
           }
         }
       }
@@ -6379,6 +6955,12 @@
             "state": "translated",
             "value": "结束"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료"
+          }
         }
       }
     },
@@ -6444,6 +7026,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "欧洲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "유럽"
           }
         }
       }
@@ -6511,6 +7099,12 @@
             "state": "translated",
             "value": "欧洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "유럽"
+          }
         }
       }
     },
@@ -6576,6 +7170,12 @@
             "state": "translated",
             "value": "导出 CSV"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CSV 내보내기"
+          }
         }
       }
     },
@@ -6640,6 +7240,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "导出失败"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기 실패"
           }
         }
       }
@@ -6707,6 +7313,12 @@
             "state": "translated",
             "value": "导出将您的国家状态和访问保存到 JSON 文件。导入将该文件与您的国家匹配并替换其旅行数据。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내보내기는 국가 상태와 방문을 JSON 파일로 저장합니다. 가져들오기는 해당 파일을 국가와 매칭하여 여행 데이터를 교체합니다."
+          }
         }
       }
     },
@@ -6771,6 +7383,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "导出旅行数据…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 데이터 내보내기…"
           }
         }
       }
@@ -6838,6 +7456,12 @@
             "state": "translated",
             "value": "使用 LLM 填充"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LLM으로 채우기"
+          }
         }
       }
     },
@@ -6901,6 +7525,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "在地图上找到一个国家并添加到您的心愿清单。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지도에서 국가를 찾아 위시리스트에 추가하세요."
           }
         }
       }
@@ -6966,6 +7596,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "搜索国家…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 검색…"
           }
         }
       }
@@ -7033,6 +7669,12 @@
             "state": "translated",
             "value": "查找访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문 찾기"
+          }
         }
       }
     },
@@ -7098,6 +7740,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "从当前位置"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 위치에서"
           }
         }
       }
@@ -7165,6 +7813,12 @@
             "state": "translated",
             "value": "从描述"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명에서"
+          }
         }
       }
     },
@@ -7229,6 +7883,12 @@
             "state": "translated",
             "value": "从照片"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진에서"
+          }
         }
       }
     },
@@ -7292,6 +7952,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "生成中…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "생성 중…"
           }
         }
       }
@@ -7359,6 +8025,12 @@
             "state": "translated",
             "value": "获取大洲进度"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대륙 진행도 가져오기"
+          }
         }
       }
     },
@@ -7424,6 +8096,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "获取访问次数"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문 회수 가져오기"
           }
         }
       }
@@ -7491,6 +8169,12 @@
             "state": "translated",
             "value": "正在准备"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "준비 중"
+          }
         }
       }
     },
@@ -7557,6 +8241,12 @@
             "state": "translated",
             "value": "GitHub 仓库"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub 리포지토리"
+          }
         }
       }
     },
@@ -7622,6 +8312,12 @@
             "state": "translated",
             "value": "计划中"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가는 중"
+          }
         }
       }
     },
@@ -7684,6 +8380,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gps"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "gps"
@@ -7754,6 +8456,12 @@
             "state": "translated",
             "value": "标题"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "헤드라인"
+          }
         }
       }
     },
@@ -7819,6 +8527,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "这里"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기"
           }
         }
       }
@@ -7886,6 +8600,12 @@
             "state": "translated",
             "value": "这是您在 %@ 的进度。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기 %@에서의 진행상황입니다."
+          }
         }
       }
     },
@@ -7951,6 +8671,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "这是您的旅行摘要。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기 여행 요약입니다."
           }
         }
       }
@@ -8018,6 +8744,12 @@
             "state": "translated",
             "value": "首页"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "홈"
+          }
         }
       }
     },
@@ -8082,6 +8814,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "混合"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하이브리드"
           }
         }
       }
@@ -8149,6 +8887,12 @@
             "state": "translated",
             "value": "导入 %lld 个国家"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld개 국가 가져오기"
+          }
         }
       }
     },
@@ -8214,6 +8958,12 @@
             "state": "translated",
             "value": "导入完成"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가져오기 완료"
+          }
         }
       }
     },
@@ -8278,6 +9028,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "导入失败"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가져오기 실패"
           }
         }
       }
@@ -8345,6 +9101,12 @@
             "state": "translated",
             "value": "从照片导入"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진에서 가져오기"
+          }
         }
       }
     },
@@ -8409,6 +9171,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "导入旅行数据…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 데이터 가져오기…"
           }
         }
       }
@@ -8476,6 +9244,12 @@
             "state": "translated",
             "value": "在 %@ 您去过"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@에서 방문한 곳"
+          }
         }
       }
     },
@@ -8542,6 +9316,12 @@
             "state": "translated",
             "value": "包含"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "포함"
+          }
         }
       }
     },
@@ -8607,6 +9387,12 @@
             "state": "translated",
             "value": "行程"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일정"
+          }
         }
       }
     },
@@ -8671,6 +9457,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "语言"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언어"
           }
         }
       }
@@ -8738,6 +9530,12 @@
             "state": "translated",
             "value": "授权许可"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "라이선스"
+          }
         }
       }
     },
@@ -8803,6 +9601,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "链接、确认信息、点子…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "링크, 확인, 아이디어…"
           }
         }
       }
@@ -8870,6 +9674,12 @@
             "state": "translated",
             "value": "列表"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목록"
+          }
         }
       }
     },
@@ -8935,6 +9745,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "居住过"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "살아본"
           }
         }
       }
@@ -9002,6 +9818,12 @@
             "state": "translated",
             "value": "居住过"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "살아본"
+          }
         }
       }
     },
@@ -9067,6 +9889,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在居住"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "살고 있는"
           }
         }
       }
@@ -9134,6 +9962,12 @@
             "state": "translated",
             "value": "位置"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치"
+          }
         }
       }
     },
@@ -9197,6 +10031,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "日志"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록"
           }
         }
       }
@@ -9264,6 +10104,12 @@
             "state": "translated",
             "value": "记录访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문 기록"
+          }
         }
       }
     },
@@ -9327,6 +10173,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "记录对 ${country} 的访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "${country} 방문 기록"
           }
         }
       }
@@ -9394,6 +10246,12 @@
             "state": "translated",
             "value": "从描述记录"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명에서 기록"
+          }
         }
       }
     },
@@ -9460,6 +10318,12 @@
             "state": "translated",
             "value": "记录访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문 기록"
+          }
         }
       }
     },
@@ -9523,6 +10387,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "从 ${text} 记录访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "${text}에서 방문 기록"
           }
         }
       }
@@ -9590,6 +10460,12 @@
             "state": "translated",
             "value": "从描述记录访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명에서 방문 기록"
+          }
         }
       }
     },
@@ -9653,6 +10529,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "从文本记录访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "텍스트에서 방문 기록"
           }
         }
       }
@@ -9720,6 +10602,12 @@
             "state": "translated",
             "value": "管理容器"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "용기 관리"
+          }
         }
       }
     },
@@ -9785,6 +10673,12 @@
             "state": "translated",
             "value": "地图"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지도"
+          }
         }
       }
     },
@@ -9849,6 +10743,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "地图风格"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지도 스타일"
           }
         }
       }
@@ -9916,6 +10816,12 @@
             "state": "translated",
             "value": "标记"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시"
+          }
         }
       }
     },
@@ -9982,6 +10888,12 @@
             "state": "translated",
             "value": "标记"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시"
+          }
         }
       }
     },
@@ -10045,6 +10957,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "将 ${country} 标记为 ${status}"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "${country}를 ${status}(으)로 표시"
           }
         }
       }
@@ -10112,6 +11030,12 @@
             "state": "translated",
             "value": "将国家标记为已访问，或从照片导入以开始解锁成就。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가를 방문한 것으로 표시하거나 사진에서 가져와 성과를 해제해보세요."
+          }
         }
       }
     },
@@ -10177,6 +11101,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "标记国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 표시"
           }
         }
       }
@@ -10244,6 +11174,12 @@
             "state": "translated",
             "value": "标记国家状态"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 상태 표시"
+          }
         }
       }
     },
@@ -10309,6 +11245,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "标记当前位置"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 위치 표시"
           }
         }
       }
@@ -10376,6 +11318,12 @@
             "state": "translated",
             "value": "标记当前位置…"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 위치 표시…"
+          }
         }
       }
     },
@@ -10441,6 +11389,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "标记位置"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 표시"
           }
         }
       }
@@ -10508,6 +11462,12 @@
             "state": "translated",
             "value": "将去得最多的国家标记为家乡"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장 많이 방문한 국가를 홈으로 설정"
+          }
         }
       }
     },
@@ -10574,6 +11534,12 @@
             "state": "translated",
             "value": "标记我所在的位置"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내 위치 표시"
+          }
         }
       }
     },
@@ -10637,6 +11603,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "将我所在的位置标记为 ${status}"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내 위치를 ${status}(으)로 표시"
           }
         }
       }
@@ -10704,6 +11676,12 @@
             "state": "translated",
             "value": "在 Worldward 中标记您当前的国家。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 국가를 Worldward에 표시합니다."
+          }
         }
       }
     },
@@ -10767,6 +11745,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "合并间隙"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "간격 합치기"
           }
         }
       }
@@ -10834,6 +11818,12 @@
             "state": "translated",
             "value": "消息"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지"
+          }
         }
       }
     },
@@ -10897,6 +11887,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "最常去的"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장 많이 방문한"
           }
         }
       }
@@ -10962,6 +11958,12 @@
             "state": "translated",
             "value": "我在 ${continent} 的进度"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "${continent}에서의 내 진행상황"
+          }
         }
       }
     },
@@ -11026,6 +12028,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "我的世界"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나의 세계"
           }
         }
       }
@@ -11093,6 +12101,12 @@
             "state": "translated",
             "value": "我的 Worldward 旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나의 Worldward 여행"
+          }
         }
       }
     },
@@ -11158,6 +12172,12 @@
             "state": "translated",
             "value": "名称"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이름"
+          }
         }
       }
     },
@@ -11221,6 +12241,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "附近"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "근처"
           }
         }
       }
@@ -11288,6 +12314,12 @@
             "state": "translated",
             "value": "新建"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새로"
+          }
         }
       }
     },
@@ -11353,6 +12385,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "新容器"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 용기"
           }
         }
       }
@@ -11420,6 +12458,12 @@
             "state": "translated",
             "value": "新容器…"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 용기…"
+          }
         }
       }
     },
@@ -11484,6 +12528,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "新旅行"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 여행"
           }
         }
       }
@@ -11550,6 +12600,12 @@
             "state": "translated",
             "value": "下一个目的地"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 목적지"
+          }
         }
       }
     },
@@ -11613,6 +12669,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "未找到国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검색된 국가 없음"
           }
         }
       }
@@ -11678,6 +12740,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "还没有国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 국가가 없습니다"
           }
         }
       }
@@ -11745,6 +12813,12 @@
             "state": "translated",
             "value": "未找到代码为 %@ 的国家。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "코드 %@에 해당하는 국가가 없습니다."
+          }
         }
       }
     },
@@ -11809,6 +12883,12 @@
             "state": "translated",
             "value": "没有带位置数据的照片匹配到国家，或所有照片已导入。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위치 정보가 있는 사진이 국가와 일치하지 않거나, 모두 이미 가져왔습니다."
+          }
         }
       }
     },
@@ -11872,6 +12952,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "尚无停靠点"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 경유지가 없습니다"
           }
         }
       }
@@ -11939,6 +13025,12 @@
             "state": "translated",
             "value": "还没有旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 여행이 없습니다"
+          }
         }
       }
     },
@@ -12003,6 +13095,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "还没有旅行"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 여행이 없습니다"
           }
         }
       }
@@ -12070,6 +13168,12 @@
             "state": "translated",
             "value": "未找到访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "찾은 방문 없음"
+          }
         }
       }
     },
@@ -12134,6 +13238,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "还没有访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 방문이 없습니다"
           }
         }
       }
@@ -12201,6 +13311,12 @@
             "state": "translated",
             "value": "北美洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "북미"
+          }
         }
       }
     },
@@ -12266,6 +13382,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "不可用"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용 불가"
           }
         }
       }
@@ -12333,6 +13455,12 @@
             "state": "translated",
             "value": "备注"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메모"
+          }
         }
       }
     },
@@ -12397,6 +13525,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "备注"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메모"
           }
         }
       }
@@ -12463,6 +13597,12 @@
             "state": "translated",
             "value": "尚无计划"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 계획된 것이 없습니다"
+          }
         }
       }
     },
@@ -12527,6 +13667,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "通知"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림"
           }
         }
       }
@@ -12593,6 +13739,12 @@
             "state": "translated",
             "value": "通知已关闭"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 끄기"
+          }
         }
       }
     },
@@ -12656,6 +13808,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "偶尔的设备上提醒：“在这一天”的旅行回忆、每年十二月的年度回顾提醒，以及您一段时间未记录旅行时的温柔提示。默认关闭；除非您打开它，否则不会发送任何信息。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가끔 기기에서 알려드립니다: “이 날” 여행 추억, 매년 12월 연말 회고, 오래동안 여행을 기록하지 않았을 때의 알림. 기본값은 꼭 패 상태입니다. 이 설정을 켜야만 보내지는 않습니다."
           }
         }
       }
@@ -12723,6 +13881,12 @@
             "state": "translated",
             "value": "%lld 中的"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 중"
+          }
         }
       }
     },
@@ -12788,6 +13952,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "在 %lld 个国家中"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld개 국가 중"
           }
         }
       }
@@ -12855,6 +14025,12 @@
             "state": "translated",
             "value": "确定"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인"
+          }
         }
       }
     },
@@ -12919,6 +14095,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "在这一天 ✈️"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 날에 ✈️"
           }
         }
       }
@@ -12986,6 +14168,12 @@
             "state": "translated",
             "value": "打开 Worldward"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward 열기"
+          }
         }
       }
     },
@@ -13052,6 +14240,12 @@
             "state": "translated",
             "value": "打开您的旅行仪表盘，显示已访问的国家、成就和大洲进度。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문한 국가, 성과, 대륙 진행도를 표시하는 여행 대시보드를 엽니다."
+          }
         }
       }
     },
@@ -13116,6 +14310,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "收拾"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "집 꺹기"
           }
         }
       }
@@ -13183,6 +14383,12 @@
             "state": "translated",
             "value": "收拾 · %1$lld/%2$lld"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "집 꺹기 · %1$lld/%2$lld"
+          }
         }
       }
     },
@@ -13248,6 +14454,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "百分比"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "퍼센트"
           }
         }
       }
@@ -13315,6 +14527,12 @@
             "state": "translated",
             "value": "比这更近的照片将被视为同一次旅行。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이보다 가까운 사진은 하나의 여행으로 간주됩니다."
+          }
         }
       }
     },
@@ -13381,6 +14599,12 @@
             "state": "translated",
             "value": "计划您的下一次冒险——点击 + 开始一次旅行。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 모험을 계획하세요 — + 를 탭하여 여행을 시작하세요."
+          }
         }
       }
     },
@@ -13446,6 +14670,12 @@
             "state": "translated",
             "value": "计划中"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계획 중"
+          }
         }
       }
     },
@@ -13510,6 +14740,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "计划"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계획"
           }
         }
       }
@@ -13577,6 +14813,12 @@
             "state": "translated",
             "value": "进度"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "진행도"
+          }
         }
       }
     },
@@ -13642,6 +14884,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "数量"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "수량"
           }
         }
       }
@@ -13709,6 +14957,12 @@
             "state": "translated",
             "value": "退出 Worldward"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward 나가기"
+          }
         }
       }
     },
@@ -13772,6 +15026,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在读取您的描述…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설명 읽는 중…"
           }
         }
       }
@@ -13837,6 +15097,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "最近去过的"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 방문한"
           }
         }
       }
@@ -13904,6 +15170,12 @@
             "state": "translated",
             "value": "记录"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록"
+          }
         }
       }
     },
@@ -13969,6 +15241,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "记录对一个国家的访问，可选择指定日期。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가에 대한 방문을 기록합니다. (특정 날짜로 기록할 수 있습니다.)"
           }
         }
       }
@@ -14036,6 +15314,12 @@
             "state": "translated",
             "value": "重做"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 실행"
+          }
         }
       }
     },
@@ -14101,6 +15385,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "是否删除全部 %lld 个收拾物品？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 %lld개의 집 꺹기 항목을 삭제하시겠습니까?"
           }
         }
       }
@@ -14168,6 +15458,12 @@
             "state": "translated",
             "value": "返回您去过的国家数量，并按状态详细划分。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문한 국가 수와 상태별 내역을 반환합니다."
+          }
         }
       }
     },
@@ -14234,6 +15530,12 @@
             "state": "translated",
             "value": "重写"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다심 쓰기"
+          }
         }
       }
     },
@@ -14299,6 +15601,12 @@
             "state": "translated",
             "value": "卫星"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위성"
+          }
         }
       }
     },
@@ -14363,6 +15671,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "保存"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장"
           }
         }
       }
@@ -14430,6 +15744,12 @@
             "state": "translated",
             "value": "扫描模式"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스캔 모드"
+          }
         }
       }
     },
@@ -14495,6 +15815,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "扫描照片"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사진 스캔"
           }
         }
       }
@@ -14562,6 +15888,12 @@
             "state": "translated",
             "value": "搜索"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검색"
+          }
         }
       }
     },
@@ -14626,6 +15958,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "搜索国家"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가 검색"
           }
         }
       }
@@ -14693,6 +16031,12 @@
             "state": "translated",
             "value": "分类"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "섹션"
+          }
         }
       }
     },
@@ -14758,6 +16102,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "设置日期"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜 설정"
           }
         }
       }
@@ -14825,6 +16175,12 @@
             "state": "translated",
             "value": "设置国家的旅行状态——已访问、居住过、经过或正在居住。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가의 여행 상태를 설정합니다 — 방문, 살아본, 경과, 현재 거주."
+          }
         }
       }
     },
@@ -14891,6 +16247,12 @@
             "state": "translated",
             "value": "将您居住时间最长的国家设为“正在居住”。已有的家乡不会被覆盖。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장 오래 머물러있는 국가를 “살고 있는”으로 설정합니다. 기존 홈은 겹쳐쓰지 않습니다."
+          }
         }
       }
     },
@@ -14956,6 +16318,12 @@
             "state": "translated",
             "value": "设置"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정"
+          }
         }
       }
     },
@@ -15020,6 +16388,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "分享"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "공유"
           }
         }
       }
@@ -15087,6 +16461,12 @@
             "state": "translated",
             "value": "分享/导出 (Markdown)"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "공유/내보내기 (Markdown)"
+          }
         }
       }
     },
@@ -15153,6 +16533,12 @@
             "state": "translated",
             "value": "分享图片"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 공유"
+          }
         }
       }
     },
@@ -15217,6 +16603,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "分享图片卡片"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 카드 공유"
           }
         }
       }
@@ -15284,6 +16676,12 @@
             "state": "translated",
             "value": "分享文本"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "텍스트 공유"
+          }
         }
       }
     },
@@ -15349,6 +16747,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "显示旅行统计"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 통계 보기"
           }
         }
       }
@@ -15416,6 +16820,12 @@
             "state": "translated",
             "value": "显示您在特定大洲去过的国家数量。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "특정 대륙에서 방문한 국가 수를 표시합니다."
+          }
         }
       }
     },
@@ -15481,6 +16891,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "跳过这些照片"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 사진 스킵"
           }
         }
       }
@@ -15548,6 +16964,12 @@
             "state": "translated",
             "value": "排序"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정렬"
+          }
         }
       }
     },
@@ -15613,6 +17035,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "排序与筛选"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정렬 및 필터"
           }
         }
       }
@@ -15680,6 +17108,12 @@
             "state": "translated",
             "value": "南美洲"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남미"
+          }
         }
       }
     },
@@ -15744,6 +17178,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "标准"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표준"
           }
         }
       }
@@ -15811,6 +17251,12 @@
             "state": "translated",
             "value": "开始"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작"
+          }
         }
       }
     },
@@ -15876,6 +17322,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "统计"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통계"
           }
         }
       }
@@ -15943,6 +17395,12 @@
             "state": "translated",
             "value": "统计"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통계"
+          }
         }
       }
     },
@@ -16007,6 +17465,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "状态"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "상태"
           }
         }
       }
@@ -16074,6 +17538,12 @@
             "state": "translated",
             "value": "停靠点"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경유지"
+          }
         }
       }
     },
@@ -16139,6 +17609,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "再次建议"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 제안"
           }
         }
       }
@@ -16206,6 +17682,12 @@
             "state": "translated",
             "value": "使用 Apple Intelligence 建议"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence로 제안"
+          }
         }
       }
     },
@@ -16271,6 +17753,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "摘要"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "요약"
           }
         }
       }
@@ -16338,6 +17826,12 @@
             "state": "translated",
             "value": "点击地图上的国家来标记您去过的地方。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지도에서 국가를 탭하여 가본 곳을 표시하세요."
+          }
         }
       }
     },
@@ -16402,6 +17896,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "点击国家查看详情"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "국가를 탭하여 세부 정보 보기"
           }
         }
       }
@@ -16469,6 +17969,12 @@
             "state": "translated",
             "value": "设备上的模型仍在下载中。稍后再试。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기기상의 모델이 아직 다운로드 중입니다. 잠시 후에 다시 시도하세요."
+          }
         }
       }
     },
@@ -16532,6 +18038,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "设备上的模型仍在下载中。请稍后再试。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기기상의 모델이 아직 다운로드 중입니다. 잠시 후에 다시 시도하세요."
           }
         }
       }
@@ -16597,6 +18109,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "主题"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "테마"
           }
         }
       }
@@ -16664,6 +18182,12 @@
             "state": "translated",
             "value": "这些照片不在任何国家境内——通常是小岛屿。将每张照片分配到国家，或留空以跳过这些照片。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 사진은 어떤 국가 안에 위치하지 않습니다 — 보통 작은 섬입니다. 각 사진을 국가에 할당하거나 두어서 스킵하세요."
+          }
         }
       }
     },
@@ -16730,6 +18254,12 @@
             "state": "translated",
             "value": "正在思考下一站去哪里…"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음에 어디로 갈지 고민 중…"
+          }
         }
       }
     },
@@ -16793,6 +18323,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在思考…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "고민 중…"
           }
         }
       }
@@ -16860,6 +18396,12 @@
             "state": "translated",
             "value": "该设备无法运行本地解析器。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 기기는 기기상 파서를 실행할 수 없습니다."
+          }
         }
       }
     },
@@ -16926,6 +18468,12 @@
             "state": "translated",
             "value": "该设备无法运行本地旅行助手。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 기기는 기기상 여행 도우미를 실행할 수 없습니다."
+          }
         }
       }
     },
@@ -16990,6 +18538,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用 Worldward 跟踪"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward로 추적함"
           }
         }
       }
@@ -17057,6 +18611,12 @@
             "state": "translated",
             "value": "旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행"
+          }
         }
       }
     },
@@ -17122,6 +18682,12 @@
             "state": "translated",
             "value": "旅行提醒"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 리머인더"
+          }
         }
       }
     },
@@ -17185,6 +18751,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "旅行状态"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 상태"
           }
         }
       }
@@ -17250,6 +18822,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "旅行时间线"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 타임라인"
           }
         }
       }
@@ -17317,6 +18895,12 @@
             "state": "translated",
             "value": "旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행"
+          }
         }
       }
     },
@@ -17383,6 +18967,12 @@
             "state": "translated",
             "value": "旅行名称"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행 이름"
+          }
         }
       }
     },
@@ -17447,6 +19037,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "旅行"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여행"
           }
         }
       }
@@ -17514,6 +19110,12 @@
             "state": "translated",
             "value": "尝试问问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "묻어보세요"
+          }
         }
       }
     },
@@ -17577,6 +19179,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "请直接说出您去过的国家名称。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문한 국가를 더 직접적으로 명시해보세요."
           }
         }
       }
@@ -17644,6 +19252,12 @@
             "state": "translated",
             "value": "在设置中打开 Apple Intelligence 来咨询您的旅行。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 Apple Intelligence를 켬고 여행에 대해 묻어보세요."
+          }
         }
       }
     },
@@ -17710,6 +19324,12 @@
             "state": "translated",
             "value": "在设置中打开 Apple Intelligence 以从文本记录访问。"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 Apple Intelligence를 켬고 텍스트로부터 방문을 기록하세요."
+          }
         }
       }
     },
@@ -17774,6 +19394,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "在设置应用中打开 Worldward 的通知以接收旅行提醒。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정에서 Worldward의 알림을 켬고 여행 리머인더를 받으세요."
           }
         }
       }
@@ -17841,6 +19467,12 @@
             "state": "translated",
             "value": "撤销"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "실행 취소"
+          }
         }
       }
     },
@@ -17906,6 +19538,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "未分组"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그룹 없음"
           }
         }
       }
@@ -17973,6 +19611,12 @@
             "state": "translated",
             "value": "已解锁"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "해제됨"
+          }
         }
       }
     },
@@ -18039,6 +19683,12 @@
             "state": "translated",
             "value": "未匹配的位置"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일치하지 않은 위치"
+          }
         }
       }
     },
@@ -18104,6 +19754,12 @@
             "state": "translated",
             "value": "即将出行 ✈️"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다가오는 여행 ✈️"
+          }
         }
       }
     },
@@ -18168,6 +19824,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "从备份中更新了 %lld 个国家。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "백업에서 %lld개 국가를 업데이트했습니다."
           }
         }
       }
@@ -18235,6 +19897,12 @@
             "state": "translated",
             "value": "访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문"
+          }
         }
       }
     },
@@ -18300,6 +19968,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "访问次数"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문 회수"
           }
         }
       }
@@ -18367,6 +20041,12 @@
             "state": "translated",
             "value": "访问年份"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문년"
+          }
         }
       }
     },
@@ -18433,6 +20113,12 @@
             "state": "translated",
             "value": "已访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문함"
+          }
         }
       }
     },
@@ -18497,6 +20183,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "已访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문함"
           }
         }
       }
@@ -18564,6 +20256,12 @@
             "state": "translated",
             "value": "今年去过的"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "올해 방문한"
+          }
         }
       }
     },
@@ -18630,6 +20328,12 @@
             "state": "translated",
             "value": "访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문"
+          }
         }
       }
     },
@@ -18694,6 +20398,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "访问"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "방문"
           }
         }
       }
@@ -18761,6 +20471,12 @@
             "state": "translated",
             "value": "要保存的访问"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장할 방문"
+          }
         }
       }
     },
@@ -18827,6 +20543,12 @@
             "state": "translated",
             "value": "您想记录哪次旅行？"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "어떤 여행을 기록하시겠습니까?"
+          }
         }
       }
     },
@@ -18891,6 +20613,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "心愿清单"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위시리스트"
           }
         }
       }
@@ -18958,6 +20686,12 @@
             "state": "translated",
             "value": "世界地图"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "세계 지도"
+          }
         }
       }
     },
@@ -19020,6 +20754,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward"
+          }
+        },
+        "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "Worldward"
@@ -19090,6 +20830,12 @@
             "state": "translated",
             "value": "Worldward 旅行数据"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worldward 여행 데이터"
+          }
         }
       }
     },
@@ -19155,6 +20901,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "撰写 %@ 年度回顾"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 연말 회고 쓰기"
           }
         }
       }
@@ -19222,6 +20974,12 @@
             "state": "translated",
             "value": "正在撰写您的 %@ 年度回顾…"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 연말 회고를 작성 중…"
+          }
         }
       }
     },
@@ -19288,6 +21046,12 @@
             "state": "translated",
             "value": "年"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "년"
+          }
         }
       }
     },
@@ -19352,6 +21116,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "年度回顾"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "연말 회고"
           }
         }
       }
@@ -19418,6 +21188,12 @@
             "state": "translated",
             "value": "您的旅行"
           }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나의 여행"
+          }
         }
       }
     },
@@ -19482,6 +21258,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "您这一年的旅行 🌍"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "당신의 올해 여행 🌍"
           }
         }
       }
