@@ -3,6 +3,7 @@ import SwiftData
 
 @Model
 final class Country {
+    #Index([\Country.id])
     /// ISO 3166-1 alpha-2 id. Not marked `@Attribute(.unique)` because CloudKit
     /// can't enforce uniqueness — `ContentView.deduplicateCountries` keeps the
     /// catalog single-per-id instead. Every stored property has a default value,

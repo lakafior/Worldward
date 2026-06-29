@@ -1,0 +1,244 @@
+import SwiftData
+import SwiftUI
+
+/// How the Been/Going lists are ordered.
+enum CountrySort: String, CaseIterable, Identifiable {
+    case name = "Name"
+    case recent = "Recently visited"
+    var id: String { rawValue }
+}
+
+/// Pre-computed snapshot of the country list's filter/sort state, derived once
+/// in its `init` so the list body can read it without recomputing on every render.
+struct CountryListSummary {
+    let filteredCountries: [Country]
+    let continents: [String]
+    let visitYears: [Int]
+    let visitedCount: Int
+    let hasActiveFilters: Bool
+
+    init(
+        countries: [Country], searchText: String, browseMode: BrowseMode,
+        selectedContinent: String?, selectedYear: Int?
+    ) {
+        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let calendar = Calendar.current
+        var filteredCountries: [Country] = []
+        var continents = Set<String>()
+        var visitYears = Set<Int>()
+        var visitedCount = 0
+
+        for country in countries {
+            continents.insert(country.continent)
+
+            if country.isVisited {
+                visitedCount += 1
+            }
+
+            // Collect visit years from all visits
+            for visit in country.visits {
+                visitYears.insert(calendar.component(.year, from: visit.date))
+            }
+            // Also check legacy visitDate for backward compatibility
+            if let visitDate = country.visitDate {
+                visitYears.insert(calendar.component(.year, from: visitDate))
+            }
+
+            guard
+                trimmedSearch.isEmpty
+                    || country.name.localizedCaseInsensitiveContains(trimmedSearch)
+            else { continue }
+
+            // With no search term, restrict the list to the active workflow: Been
+            // shows where you've been, Going shows your wishlist/planning. While
+            // searching, both modes show every match so you can find any country to
+            // add to your plans.
+            if trimmedSearch.isEmpty {
+                switch browseMode {
+                case .been: guard country.isVisited else { continue }
+                case .going: guard country.isPlanned else { continue }
+                }
+            }
+
+            guard selectedContinent == nil || country.continent == selectedContinent else {
+                continue
+            }
+
+            if browseMode == .been, let selectedYear {
+                // Check if any visit matches the selected year
+                let hasMatchingVisit = country.visits.contains { visit in
+                    calendar.component(.year, from: visit.date) == selectedYear
+                }
+                // Also check legacy visitDate for backward compatibility
+                let legacyYearMatch =
+                    country.visitDate.map {
+                        calendar.component(.year, from: $0) == selectedYear
+                    } ?? false
+
+                guard hasMatchingVisit || legacyYearMatch else { continue }
+            }
+
+            filteredCountries.append(country)
+        }
+
+        self.filteredCountries = filteredCountries
+        self.continents = continents.sorted()
+        self.visitYears = visitYears.sorted(by: >)
+        self.visitedCount = visitedCount
+        self.hasActiveFilters = selectedContinent != nil || selectedYear != nil
+    }
+}
+
+/// A full-screen, grouped country list backing the **Been** and **Going** tabs.
+/// Filtered to the tab's `browseMode` (Been = visited, Going = wishlist/planning);
+/// tapping a row opens that country's detail via `selectedCountry`. Searching
+/// matches across every country so you can still find any one to open.
+struct CountryListView: View {
+    let allCountries: [Country]
+    let browseMode: BrowseMode
+
+    @Binding var searchText: String
+    @Binding var selectedContinent: String?
+    @Binding var selectedYear: Int?
+    @Binding var selectedCountry: Country?
+
+    @State private var sortOrder: CountrySort = .name
+
+    private var summary: CountryListSummary {
+        CountryListSummary(
+            countries: allCountries,
+            searchText: searchText,
+            browseMode: browseMode,
+            selectedContinent: selectedContinent,
+            selectedYear: selectedYear
+        )
+    }
+
+    private var countriesGroupedByContinent: [String: [Country]] {
+        Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
+    }
+
+    /// Filtered countries ordered by most recent visit (newest first); countries
+    /// with no recorded visit fall to the bottom, then alphabetically.
+    private var recentlySorted: [Country] {
+        summary.filteredCountries.sorted { lhs, rhs in
+            switch (lastVisit(lhs), lastVisit(rhs)) {
+            case (let l?, let r?): return l == r ? lhs.name < rhs.name : l > r
+            case (.some, nil): return true
+            case (nil, .some): return false
+            case (nil, nil): return lhs.name < rhs.name
+            }
+        }
+    }
+
+    private var count: Int { summary.filteredCountries.count }
+
+    /// The most recent visit date for a country, including the legacy `visitDate`.
+    private func lastVisit(_ country: Country) -> Date? {
+        var dates = country.visits.map(\.date)
+        if let legacy = country.visitDate { dates.append(legacy) }
+        return dates.max()
+    }
+
+    var body: some View {
+        Group {
+            if allCountries.isEmpty {
+                ProgressView()
+            } else if summary.filteredCountries.isEmpty {
+                emptyState
+            } else {
+                list
+            }
+        }
+        .searchable(text: $searchText, prompt: "Search countries")
+        .navigationTitle(browseMode == .been ? "Been" : "Going")
+        #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar { sortAndFilterMenu }
+    }
+
+    private var list: some View {
+        List {
+            Section {
+                Text("\(count) \(count == 1 ? "country" : "countries")")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            // Name keeps the familiar by-continent grouping; recency is a flat,
+            // global order where continent sections wouldn't make sense.
+            if sortOrder == .name {
+                ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
+                    Section(continent) {
+                        ForEach(countriesGroupedByContinent[continent] ?? []) { country in
+                            row(country)
+                        }
+                    }
+                }
+            } else {
+                Section {
+                    ForEach(recentlySorted) { country in
+                        row(country)
+                    }
+                }
+            }
+        }
+    }
+
+    private func row(_ country: Country) -> some View {
+        Button {
+            selectedCountry = country
+        } label: {
+            CountryRow(country: country)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder private var emptyState: some View {
+        if browseMode == .been {
+            ContentUnavailableView(
+                "No countries yet",
+                systemImage: "map",
+                description: Text("Tap a country on the Map to mark where you've been."))
+        } else {
+            ContentUnavailableView(
+                "Nothing planned yet",
+                systemImage: "airplane",
+                description: Text("Find a country on the Map and add it to your wishlist."))
+        }
+    }
+
+    @ToolbarContentBuilder private var sortAndFilterMenu: some ToolbarContent {
+        ToolbarItem {
+            Menu {
+                Picker("Sort", selection: $sortOrder) {
+                    ForEach(CountrySort.allCases) { sort in
+                        Text(sort.rawValue).tag(sort)
+                    }
+                }
+
+                Section("Continent") {
+                    Button("All") { selectedContinent = nil }
+                    ForEach(summary.continents, id: \.self) { continent in
+                        Button(continent) { selectedContinent = continent }
+                    }
+                }
+
+                if browseMode == .been, !summary.visitYears.isEmpty {
+                    Section("Visit year") {
+                        Button("All years") { selectedYear = nil }
+                        ForEach(summary.visitYears, id: \.self) { year in
+                            Button(String(year)) { selectedYear = year }
+                        }
+                    }
+                }
+            } label: {
+                Label(
+                    "Sort & Filter",
+                    systemImage: summary.hasActiveFilters
+                        ? "line.3.horizontal.decrease.circle.fill"
+                        : "line.3.horizontal.decrease.circle")
+            }
+        }
+    }
+}
