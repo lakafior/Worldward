@@ -184,28 +184,30 @@ struct ContentView: View {
             // pan/pinch recognizers, which intermittently swallows taps and turns
             // drags into zooms. A simultaneous SpatialTapGesture runs alongside the
             // map's gestures instead of fighting them for each touch.
-            .simultaneousGesture(SpatialTapGesture().onEnded { event in
-                if let coordinate = proxy.convert(event.location, from: .local) {
-                    let mapPoint = MKMapPoint(coordinate)
-                    let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
+            .simultaneousGesture(
+                SpatialTapGesture().onEnded { event in
+                    if let coordinate = proxy.convert(event.location, from: .local) {
+                        let mapPoint = MKMapPoint(coordinate)
+                        let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
 
-                    // Optimized lookup: reject by the country's full-extent hit rect
-                    // first (covers every polygon, not just the mainland), then test
-                    // individual paths.
-                    for country in allCountries {
-                        guard let countryRect = countryHitRects[country.id],
-                            countryRect.contains(mapPoint)
-                        else { continue }
+                        // Optimized lookup: reject by the country's full-extent hit rect
+                        // first (covers every polygon, not just the mainland), then test
+                        // individual paths.
+                        for country in allCountries {
+                            guard let countryRect = countryHitRects[country.id],
+                                countryRect.contains(mapPoint)
+                            else { continue }
 
-                        for path in countryPaths[country.id] ?? [] {
-                            if path.contains(cgPoint) {
-                                selectedCountry = country
-                                return
+                            for path in countryPaths[country.id] ?? [] {
+                                if path.contains(cgPoint) {
+                                    selectedCountry = country
+                                    return
+                                }
                             }
                         }
                     }
                 }
-            })
+            )
             // Prevent CAMetalLayer zero-size warnings during sheet transitions.
             .frame(minWidth: 1, minHeight: 1)
         }
@@ -321,7 +323,7 @@ struct ContentView: View {
         }
         .tabViewStyle(.sidebarAdaptable)
         #if os(iOS)
-        .tabBarMinimizeBehavior(.onScrollDown)
+            .tabBarMinimizeBehavior(.onScrollDown)
         #endif
     }
 
@@ -542,31 +544,34 @@ struct ContentView: View {
             ? "Setting up your map…\nThis only happens once."
             : "Loading map…"
 
-        // Build the drawable country geometry off the main thread from the bundled
-        // pre-simplified binary (countries.wmgb). The heavy GeoJSON decode and
-        // Douglas-Peucker simplification happen once per release in
-        // Tools/generate_geo.swift, not on-device — so this is fast on every launch,
-        // including the first. The same file carries the seed metadata.
-        let (extractedPolygons, extractedPaths, extractedRects, extractedHitRects, seeds) =
-            await Task.detached(priority: .userInitiated) {
-                () -> (
-                    [String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect],
-                    [String: MKMapRect], [CountrySeed]?
-                ) in
-                guard let bundled = loadBundledGeo() else { return ([:], [:], [:], [:], nil) }
-                // Copy the bundled outline into the shared App Group container (once)
-                // so the map widget can draw it — the extension can't read this bundle.
-                await WorldMapStore.cacheFromAppBundle()
-                let geo = buildGeo(from: bundled.rings)
-                return (geo.0, geo.1, geo.2, geo.3, bundled.seeds)
-            }.value
+        // Decode the bundled country geometry. The binary format (~340 KB) is a
+        // fast synchronous parse — the heavy GeoJSON decode and Douglas-Peucker
+        // simplification were already done at build time in Tools/generate_geo.swift,
+        // so this is cheap on every launch including the first.
+        guard let bundled = loadBundledGeo() else { return }
+
+        // Copy the bundled outline into the shared App Group container on a
+        // background task so the widget extension (which can't read the bundle)
+        // can draw the map. Re-copies only when the file changes between releases.
+        Task.detached(priority: .background) {
+            WorldMapStore.cacheFromAppBundle()
+        }
+
+        // Build MapKit display types on the main actor (MKPolygon, CGPath are not
+        // Sendable and must be constructed on the actor that owns them).
+        let geo = buildGeo(from: bundled.rings)
+        let extractedPolygons = geo.0
+        let extractedPaths = geo.1
+        let extractedRects = geo.2
+        let extractedHitRects = geo.3
+        let seeds = bundled.seeds
 
         // Reconcile the database on the main actor — the only place SwiftData
         // models are touched. Seeding and reconciliation are mutually exclusive.
         if needsSeed {
-            if let seeds { seedDatabase(seeds, wiping: stale ? existing : []) }
+            if !seeds.isEmpty { seedDatabase(seeds, wiping: stale ? existing : []) }
         } else {
-            reconcileDatabase(existing, seeds: seeds ?? [])
+            reconcileDatabase(existing, seeds: seeds)
         }
 
         // Collapse any duplicate rows iCloud may have produced (two devices that
@@ -1244,7 +1249,7 @@ struct CountryListView: View {
     private var recentlySorted: [Country] {
         summary.filteredCountries.sorted { lhs, rhs in
             switch (lastVisit(lhs), lastVisit(rhs)) {
-            case let (l?, r?): return l == r ? lhs.name < rhs.name : l > r
+            case (let l?, let r?): return l == r ? lhs.name < rhs.name : l > r
             case (.some, nil): return true
             case (nil, .some): return false
             case (nil, nil): return lhs.name < rhs.name

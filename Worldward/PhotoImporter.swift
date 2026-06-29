@@ -14,16 +14,16 @@ enum ImportScanMode: String, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .fillBlanks: "Fill blanks"
-        case .overwrite:  "Overwrite"
-        case .addNew:     "Add new only"
+        case .overwrite: "Overwrite"
+        case .addNew: "Add new only"
         }
     }
 
     var detail: String {
         switch self {
         case .fillBlanks: "Keep everything and add visits that aren't already recorded."
-        case .overwrite:  "Replace previously imported visits; manual entries are kept."
-        case .addNew:     "Only scan photos newer than the latest imported visit."
+        case .overwrite: "Replace previously imported visits; manual entries are kept."
+        case .addNew: "Only scan photos newer than the latest imported visit."
         }
     }
 }
@@ -98,7 +98,10 @@ struct UnresolvedLocation: Identifiable {
         for trip in trips {
             let s = trip.impliedStatus(livedThresholdDays: livedThresholdDays)
             if (CountryStatus.allCases.firstIndex(of: s) ?? 0)
-                > (CountryStatus.allCases.firstIndex(of: status) ?? 0) { status = s }
+                > (CountryStatus.allCases.firstIndex(of: status) ?? 0)
+            {
+                status = s
+            }
         }
         return status
     }
@@ -137,10 +140,10 @@ class PhotoImporter {
     /// The full catalog, sorted by name — backs the picker's "any country" list.
     var pickableCountries: [Country] { allCountries.sorted { $0.name < $1.name } }
 
-    // Set once by `configure` and only read during a scan, so they're safe to
-    // access from the nonisolated scan without crossing the main actor.
-    @ObservationIgnored nonisolated(unsafe) private var countryBoundingRects: [String: MKMapRect] = [:]
-    @ObservationIgnored nonisolated(unsafe) private var countryPaths: [String: [CGPath]] = [:]
+    /// Set once by `configure`. Snapshotted into each scan Task so the
+    /// background scanner never touches the main-actor-bound stored properties.
+    @ObservationIgnored private var countryBoundingRects: [String: MKMapRect] = [:]
+    @ObservationIgnored private var countryPaths: [String: [CGPath]] = [:]
     @ObservationIgnored private var allCountries: [Country] = []
 
     /// Upper bound on photo identifiers stored per visit, so a long stay (or your
@@ -191,6 +194,10 @@ class PhotoImporter {
 
         // Computed on the main actor (reads SwiftData) before going off-main.
         let addNewSince = settings.scanMode == .addNew ? newestImportedDate() : nil
+        // Snapshot the geometry into the Task so the background scan never reads
+        // the main-actor-bound stored properties across an isolation boundary.
+        let rects = countryBoundingRects
+        let paths = countryPaths
 
         Task {
             let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
@@ -204,7 +211,7 @@ class PhotoImporter {
             importProgress = "Fetching photos..."
             // Runs off the main actor; returns only Sendable value types.
             let result = await scanPhotos(
-                settings: settings,
+                settings: settings, rects: rects, paths: paths,
                 addNewSince: addNewSince,
                 onProgress: { text in self.importProgress = text })
 
@@ -237,7 +244,7 @@ class PhotoImporter {
     /// coordinates to countries by id. Runs entirely off the main actor over
     /// `Sendable` data — it reads only the immutable geographic dictionaries.
     nonisolated private func scanPhotos(
-        settings: ImportSettings,
+        settings: ImportSettings, rects: [String: MKMapRect], paths: [String: [CGPath]],
         addNewSince: Date?,
         onProgress: @MainActor @Sendable @escaping (String) -> Void
     ) async -> ScanResult {
@@ -253,7 +260,7 @@ class PhotoImporter {
         let total = fetchResult.count
         Task { @MainActor in onProgress("Scanning \(total) photos...") }
 
-        let countryIDs = Array(countryBoundingRects.keys)
+        let countryIDs = Array(rects.keys)
 
         // Collect every photo (date + identifier) that falls inside each country.
         var photosByCountry: [String: [(date: Date, id: String)]] = [:]
@@ -271,11 +278,11 @@ class PhotoImporter {
             let date = asset.creationDate ?? Date()
 
             for id in countryIDs {
-                guard let countryRect = self.countryBoundingRects[id],
+                guard let countryRect = rects[id],
                     countryRect.contains(mapPoint)
                 else { continue }
 
-                for path in self.countryPaths[id] ?? [] {
+                for path in paths[id] ?? [] {
                     if path.contains(cgPoint) {
                         photosByCountry[id, default: []].append((date, asset.localIdentifier))
                         return
@@ -308,11 +315,12 @@ class PhotoImporter {
         // Turn unmatched photos into a handful of resolvable, suggestion-tagged
         // clusters rather than leaving them silently dropped.
         let unmatchedClusters = Self.clusterUnmatched(
-            unmatched, mergeGapDays: settings.mergeGapDays, rects: countryBoundingRects)
+            unmatched, mergeGapDays: settings.mergeGapDays, rects: rects)
 
         // The most-present country is the candidate for "home"; the existing-home
         // reconciliation needs SwiftData, so it happens on the main actor.
-        let homeCandidateID = settings.markHome
+        let homeCandidateID =
+            settings.markHome
             ? entries.max(by: { $0.totalDistinctDays < $1.totalDistinctDays })?.id
             : nil
 
@@ -367,7 +375,8 @@ class PhotoImporter {
                 clusters[bestIndex].photos.append((photo.date, photo.id))
             } else {
                 clusters.append(
-                    Cluster(x: photo.point.x, y: photo.point.y, count: 1,
+                    Cluster(
+                        x: photo.point.x, y: photo.point.y, count: 1,
                         photos: [(photo.date, photo.id)]))
             }
         }
@@ -380,7 +389,9 @@ class PhotoImporter {
             return ScanResult.UnmatchedCluster(trips: trips, suggestedCountryIDs: nearest)
         }
         // Most photos first, so the biggest gaps surface at the top.
-        .sorted { $0.trips.reduce(0) { $0 + $1.photoCount } > $1.trips.reduce(0) { $0 + $1.photoCount } }
+        .sorted {
+            $0.trips.reduce(0) { $0 + $1.photoCount } > $1.trips.reduce(0) { $0 + $1.photoCount }
+        }
     }
 
     /// The `limit` countries whose bounding box is closest to `point`, nearest
@@ -405,7 +416,8 @@ class PhotoImporter {
     /// Resolve scanned ids back to `Country` objects and finish the run. Runs on
     /// the main actor, the only place SwiftData models may be touched.
     private func finalizeScan(_ result: ScanResult, settings: ImportSettings) {
-        let byID = Dictionary(allCountries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let byID = Dictionary(
+            allCountries.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
         var proposed: [ProposedCountry] = []
         for entry in result.entries {
@@ -540,6 +552,9 @@ class PhotoImporter {
                     country.statusIsImported = false
                 }
             }
+            // Flush deletions before re-creating visits, so SwiftData's change
+            // tracking doesn't conflate the old deleted objects with the new ones.
+            try? modelContext.save()
         }
 
         for proposed in proposedCountries {

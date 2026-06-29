@@ -57,8 +57,10 @@ final class Country {
         set { statusRaw = newValue.rawValue }
     }
 
-    /// Convenience used by statistics and filtering.
-    var isVisited: Bool { status.isVisited }
+    /// Convenience used by statistics and filtering. Reads the raw stored property
+    /// directly so it can be `nonisolated` — SwiftData allows cross-actor reads of
+    /// stored properties, but computed `status` is main-actor-only for its setter.
+    nonisolated var isVisited: Bool { statusRaw != "notVisited" }
 
     /// The country's plan state. Writing it updates `planStatusRaw`, which SwiftData
     /// persists and publishes — driving live map, list, and stats updates.
@@ -67,8 +69,9 @@ final class Country {
         set { planStatusRaw = newValue.rawValue }
     }
 
-    /// Convenience used by the map's "Going" layer and the country list.
-    var isPlanned: Bool { planStatus.isPlanned }
+    /// Convenience used by the map's "Going" layer and the country list. Reads
+    /// the raw stored property directly — same rationale as `isVisited`.
+    nonisolated var isPlanned: Bool { planStatusRaw != "none" }
 
     /// Unicode flag derived from the ISO 3166-1 alpha-2 id, so it never needs storing.
     var flagEmoji: String {

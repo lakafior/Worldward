@@ -79,7 +79,7 @@ extension WidgetSnapshot {
 enum WidgetSnapshotStore {
     /// Must match the `com.apple.security.application-groups` entitlement on both
     /// the app and the widget extension.
-    static let appGroupID = "group.net.smigi.worldward"
+    nonisolated static let appGroupID = "group.net.smigi.worldward"
 
     private static let fileName = "widget-snapshot.json"
 
@@ -128,9 +128,9 @@ struct WorldMap {
 /// container once; the widget decodes it from there and caches the result for the
 /// life of the process.
 enum WorldMapStore {
-    private static let fileName = "countries.wmgb"
+    nonisolated private static let fileName = "countries.wmgb"
 
-    private static var containerURL: URL? {
+    nonisolated private static var containerURL: URL? {
         FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)?
             .appendingPathComponent(fileName)
@@ -140,7 +140,7 @@ enum WorldMapStore {
     /// can draw the map. Re-copies only when the bundled file's size differs from
     /// the cached copy (i.e. a new release shipped new geometry), so it's a cheap
     /// no-op on every launch after the first.
-    static func cacheFromAppBundle() {
+    nonisolated static func cacheFromAppBundle() {
         guard let containerURL,
             let bundleURL = Bundle.main.url(forResource: "countries", withExtension: "wmgb"),
             let data = try? Data(contentsOf: bundleURL)
@@ -179,12 +179,14 @@ enum WorldMapStore {
             func readU16() -> UInt16? {
                 guard need(2) else { return nil }
                 defer { offset += 2 }
-                return UInt16(littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: UInt16.self))
+                return UInt16(
+                    littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: UInt16.self))
             }
             func readU32() -> UInt32? {
                 guard need(4) else { return nil }
                 defer { offset += 4 }
-                return UInt32(littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+                return UInt32(
+                    littleEndian: raw.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
             }
             func readFloat() -> Float? {
                 guard let bits = readU32() else { return nil }
@@ -254,7 +256,7 @@ enum WorldMapStore {
 /// then runs its own location + status-picker flow, which needs permissions and
 /// the model the extension doesn't have.
 enum WidgetActionStore {
-    private static let markHereKey = "pendingMarkHere"
+    private nonisolated static let markHereKey = "pendingMarkHere"
 
     private nonisolated static var defaults: UserDefaults? {
         UserDefaults(suiteName: WidgetSnapshotStore.appGroupID)
@@ -352,7 +354,8 @@ struct WorldMapCanvas: View {
                 CGPoint(x: point.x * scale + offsetX, y: point.y * scale + offsetY)
             }
 
-            context.clip(to: Path(CGRect(x: originX, y: originY, width: drawWidth, height: drawHeight)))
+            context.clip(
+                to: Path(CGRect(x: originX, y: originY, width: drawWidth, height: drawHeight)))
 
             for shape in map.shapes {
                 var path = Path()
