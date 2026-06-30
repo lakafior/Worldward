@@ -25,7 +25,8 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - **Smart default date** — new visits default to one day after your most recent visit, reducing date-picking friction.
 
 ### Country Lists (Been / Going)
-- The **Been** tab shows everywhere you've visited; the **Going** tab splits into **Trips** and **Wishlist**.
+- The **Been** tab shows everywhere you've visited, with toolbar buttons for **Ask About Your Travels** (AI chat about your history) and **Statistics** (dashboard, timeline, charts, year recaps).
+- The **Going** tab splits into **Trips**, **Wishlist**, and **Suggestions** — the Suggestions segment shows your closest unvisited countries and AI-powered destination picks.
 - Grouped by continent with sort by name or most recently visited, plus continent and visit-year filters.
 - **Quick-add** a country directly from the list toolbar — pick any country and it's marked as visited (Been) or added to your wishlist (Going).
 - **Fuzzy search** matches names with diacritic and substring awareness ("cote" finds "Côte d'Ivoire", "USA" finds "United States").
@@ -33,7 +34,6 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### macOS
 - **Menu Bar Extra** — a globe icon in the menu bar showing your country count with quick actions: Open Worldward, Mark Current Location, and Quit.
-- **Undo / Redo** (⌘Z / ⇧⌘Z) — every status change, visit, and trip edit is undoable.
 
 ### Trips (multi-country itineraries)
 - The **Going** tab splits into **Trips** and **Wishlist**. A trip is multi-country *through its itinerary*: add ordered **stops**, each optionally tied to a country, and the trip's countries follow (Paris 🇫🇷 → Rome 🇮🇹 → Zurich 🇨🇭).
@@ -42,18 +42,37 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - **Share / export** a trip as **Markdown** through the system share sheet — send it straight to **Apple Notes**, Messages, or Mail, or copy it into any Markdown editor.
 - Adding a stop's country flips it to **Planning** on the map, so your trips light up the blue layer.
 
-### Statistics & Achievements
-- Live dashboard: total countries, continents covered, busiest year, most-visited country.
-- Gamified achievement badges (First Steps, Globetrotter, Centurion, Seven Summits, etc.).
-- Per-continent completion tracking.
-- Year-in-review breakdown with per-year charts.
-- Smart "next destinations" — nearest unvisited countries by geographic proximity.
+### Achievements 🏆
+- Dedicated **Achievements** view from the **Map** tab toolbar — a badge grid with categories (Countries, Continents, Depth & Roots, Travel Log, Continent Mastery) and a hero counter.
+- Every badge shows progress toward unlocking via an on-device computed `TravelStats` pass.
+- Tap any badge for a detail sheet with its description and progress bar.
+
+### Statistics & Timeline 📊
+- Full statistics dashboard from the **Been** tab toolbar: countries visited, continents covered, busiest year, most-visited country, per-year charts, and continent completion.
 - **Travel Timeline** — a chronological, scrollable history of every recorded visit, grouped by year with flag, date, notes, and photo thumbnails.
+- **Year-in-review** — pick any travel year to see a summary, plus an **AI recap** (on-device) that writes a prose summary of that year's travels.
 - **CSV Export** — export all your travel data as a CSV file through the system share sheet.
 
+### Suggestions ✈️
+- The **Going** tab's **Suggestions** segment shows your **closest unvisited countries** sorted by geographic distance from places you've been.
+- **Suggested for you** — Apple Intelligence picks from those candidates with a one-line rationale for each, generated on-device.
+
 ### Apple Intelligence ✨
-- **Travel Chat** – ask free-form questions about your own travels in natural language ("Which European countries haven't I been to?", "Where did I go in 2023?"). Everything runs on-device via the Foundation Models framework.
+- **Travel Chat** – ask free-form questions about your own travels in natural language ("Which European countries haven't I been to?", "Where did I go in 2023?"). Available from the **Been** tab toolbar. Everything runs on-device via the Foundation Models framework.
 - **AI Insights** – auto-generated year-in-review recaps and smart destination recommendations with rationale, powered by on-device inference.
+
+#### Translation Pipeline (LLM ↔ Device Language)
+
+Apple's on-device language models generate text exclusively in English — they are not multilingual and cannot reliably output translations. Worldward bridges this gap using Apple's **Translation framework** (the same engine powering the Translate app):
+
+1. **User input** (e.g., a chat question or a requested recap year) is translated from the device language **into English** via `AppTranslator.toEnglish()` before reaching the model.
+2. The model processes the request in English and produces an **English response**.
+3. The response is translated **from English back into the device language** via `AppTranslator.translate()`.
+4. **Fallback**: if the Translation framework does not support the user's language pair (e.g., Irish → English), the original English text is passed through unchanged — no content is ever dropped.
+
+When the device language is already English, both translation steps are skipped entirely (zero overhead).
+
+The `AppTranslator` class manages this lifecycle using a `TranslationSession.Configuration` and Swift's `translationTask` modifier, supporting arbitrary language directions and automatic session reuse.
 
 ### Photo Import
 - Scan your Photo Library to automatically detect countries from geotagged photos.
@@ -84,6 +103,11 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - Optional on-device local notifications: "on this day" travel memories, a **trip start reminder** 24 hours before an upcoming trip, a December year-in-review nudge, and a gentle prompt if you haven't logged a trip in a while.
 - **Off by default** — opt in from Settings; nothing is scheduled until you do.
 
+### Packing
+- Manage your **packing containers** (bags/cases) and **packing templates** from **Settings → Packing** — both are shared across all your trips.
+- Containers are the bags you pack into; templates let you save and reuse a complete packing list.
+- Create and customize containers with SF Symbol icons, reorder by dragging, and add items with quantities.
+
 ### Data Portability
 - **Export / Import** your travel data as a portable JSON file.
 - Only your personal data is exported (statuses, visits, notes, plans, and full trips with itineraries & packing lists) — the country catalog re-seeds from the bundled geometry file. Backups are versioned; older files still import.
@@ -94,6 +118,42 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - Unified sky-to-royal-blue brand palette throughout.
 
 ---
+
+## Localization 🌐
+
+Worldward is fully translated into **28 languages** (plus English as the source). All user-facing strings are centralized in `Localization.swift` and backed by Xcode String Catalogs — every `Text(…)` and `String(localized:)` call is automatically discovered at build time.
+
+| Language | Code | | Language | Code |
+|---|---|---|---|
+| Bulgarian | `bg` | | Latvian | `lv` |
+| Chinese (Simplified) | `zh-Hans` | | Lithuanian | `lt` |
+| Croatian | `hr` | | Maltese | `mt` |
+| Czech | `cs` | | Dutch | `nl` |
+| Danish | `da` | | Polish | `pl` |
+| Esperanto | `eo` | | Portuguese (Brazil) | `pt-BR` |
+| Estonian | `et` | | Portuguese (Portugal) | `pt-PT` |
+| Finnish | `fi` | | Romanian | `ro` |
+| French | `fr` | | Slovak | `sk` |
+| German | `de` | | Slovenian | `sl` |
+| Greek | `el` | | Spanish | `es` |
+| Hungarian | `hu` | | Swedish | `sv` |
+| Irish | `ga` | | | |
+| Italian | `it` | | | |
+| Japanese | `ja` | | | |
+| Korean | `ko` | | | |
+
+The app detects the device language automatically — no manual selection needed. To add a new language:
+
+1. **Xcode → File → New → File → String Catalog** → name it `Localizable` and add it to the Worldward target.
+2. **Build the project** — Xcode scans every `Text(…)` and `String(localized:)` call and populates the catalog automatically.
+3. **Click "+"** in the catalog to add your target language.
+4. **Translate each entry** — the key is the English string, and the context comment tells the translator where it appears.
+
+For developers: write strings inline with `Text("Hello")` or `String(localized: "Hello", comment: "…")` — the catalog catches them on the next build. The `Localization.swift` file serves as a translator-friendly reference of every string in the app.
+
+---
+
+## Screenshots
 
 ## Screenshots
 
@@ -114,7 +174,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 |---|---|
 | UI | SwiftUI (Liquid Glass `TabView`, `.sidebarAdaptable`) |
 | Mapping | MapKit (`MKPolygon`, `MKMapView`, Standard / Hybrid / Satellite styles) |
-| Persistence | SwiftData (`ModelContainer`, `@Model`, `UndoManager`) |
+| Persistence | SwiftData (`ModelContainer`, `@Model`) |
 | Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~340 KB) |
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
@@ -165,7 +225,8 @@ Worldward/
 ├── Achievement.swift           # Gamification badges, derived from TravelStats
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
 ├── SettingsView.swift          # Appearance, reminders toggle, export/import
-├── StatisticsView.swift        # Dashboard, achievements, charts, AI insights
+├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)
+├── StatisticsView.swift        # Dashboard, timeline, charts, AI year recaps (from Been toolbar)
 ├── ShareCard.swift             # Rasterised share-card view (with optional map)
 ├── ShareCustomizationView.swift # Live card preview + share flow
 ├── NotificationManager.swift   # Opt-in local travel reminders
