@@ -52,12 +52,16 @@ final class TravelIntelligence {
         return false
     }
 
-    /// A handful of starter questions shown as tappable chips.
+    /// A handful of starter questions shown as tappable chips. Localized so they
+    /// display in the user's language; the chat translates the tapped question back
+    /// to English for the model.
     static let suggestions = [
-        "How many countries have I visited?",
-        "Which European countries haven't I been to?",
-        "What was my busiest travel year?",
-        "Where have I lived?",
+        String(localized: "How many countries have I visited?", comment: "Chat starter question"),
+        String(
+            localized: "Which European countries haven't I been to?",
+            comment: "Chat starter question"),
+        String(localized: "What was my busiest travel year?", comment: "Chat starter question"),
+        String(localized: "Where have I lived?", comment: "Chat starter question"),
     ]
 
     /// Sends a question to the model and publishes the answer through `phase`.

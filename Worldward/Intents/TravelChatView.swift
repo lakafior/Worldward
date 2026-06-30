@@ -175,11 +175,14 @@ struct TravelChatView: View {
         fieldFocused = false
         translatedAnswer = nil
         Task {
-            // Stream the answer in English for responsiveness, then translate the
-            // finished answer into the user's language and swap it in.
-            await intelligence.ask(trimmed)
-            if AppTranslator.isNeeded, case .answered(let english) = intelligence.phase {
-                translatedAnswer = await translator.translate(english)
+            // The assistant is English-centric (English prompt + tool values), so
+            // translate the question to English first for better tool-calling and
+            // answers. Stream the answer in English for responsiveness, then swap in
+            // the user's language once it's complete. Both steps no-op for English.
+            let english = await translator.toEnglish(trimmed)
+            await intelligence.ask(english)
+            if AppTranslator.isNeeded, case .answered(let answer) = intelligence.phase {
+                translatedAnswer = await translator.translate(answer)
             }
         }
     }
