@@ -15,11 +15,11 @@ enum CountryStatus: String, CaseIterable, Identifiable, Codable {
     /// Human-readable name for the picker and legend.
     var label: String {
         switch self {
-        case .notVisited: "Not visited"
-        case .crossed:    "Crossed"
-        case .visited:    "Visited"
-        case .lived:      "Lived"
-        case .living:     "Living"
+        case .notVisited: String(localized: "Not visited", comment: "Travel status: never been")
+        case .crossed:    String(localized: "Crossed", comment: "Travel status: passed through")
+        case .visited:    String(localized: "Visited", comment: "Travel status: visited")
+        case .lived:      String(localized: "Lived", comment: "Travel status: lived there before")
+        case .living:     String(localized: "Living", comment: "Travel status: living there now")
         }
     }
 

@@ -223,7 +223,7 @@ struct CountryListView: View {
     private var list: some View {
         List {
             Section {
-                Text("^[\\(count) country](inflect: true)")
+                Text("^[\(count) country](inflect: true)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -1,6 +1,7 @@
 import Charts
 import MapKit
 import SwiftUI
+import Translation
 
 /// Full-page travel dashboard: a gamified summary of everywhere the user has been.
 /// Presented as a sheet from the map toolbar. All figures derive from a single
@@ -674,6 +675,7 @@ private struct SmartSuggestionsSection: View {
     @State private var picks: [ResolvedPick] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var translator = AppTranslator()
 
     private struct ResolvedPick: Identifiable {
         let id: String
@@ -729,6 +731,7 @@ private struct SmartSuggestionsSection: View {
                     .disabled(isLoading)
             }
         }
+        .appTranslation(translator)
     }
 
     private func generate() {
@@ -742,12 +745,19 @@ private struct SmartSuggestionsSection: View {
             defer { isLoading = false }
             do {
                 let raw = try await insights.suggestDestinations(candidates: descriptions)
-                picks = raw.compactMap { pick in
+                let resolved = raw.compactMap { pick -> ResolvedPick? in
                     guard let match = top.first(where: { matches(pick.country, $0.country.name) })
                     else { return nil }
                     return ResolvedPick(
                         id: match.country.id, flag: match.country.flagEmoji,
                         name: match.country.name, reason: pick.reason)
+                }
+                // Country names come from real data; only the model's reasons (free
+                // English text) need translating into the user's language.
+                let reasons = await translator.translate(resolved.map(\.reason))
+                picks = zip(resolved, reasons).map { pick, reason in
+                    ResolvedPick(
+                        id: pick.id, flag: pick.flag, name: pick.name, reason: reason)
                 }
             } catch {
                 errorMessage = error.localizedDescription
@@ -774,6 +784,7 @@ private struct AIRecapSection: View {
     @State private var generatedYear: Int?
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var translator = AppTranslator()
 
     /// The shown recap is valid only for the year it was generated for.
     private var hasCurrentRecap: Bool {
@@ -810,6 +821,7 @@ private struct AIRecapSection: View {
                 .tint(.brand)
             }
         }
+        .appTranslation(translator)
     }
 
     private func generate() {
@@ -821,8 +833,10 @@ private struct AIRecapSection: View {
         Task {
             defer { isLoading = false }
             do {
-                recap = try await insights.yearInReview(
+                // Generate in English, then translate into the user's language.
+                let english = try await insights.yearInReview(
                     year: year, countries: countries, visits: visits)
+                recap = await translator.translate(english)
                 generatedYear = year
             } catch {
                 errorMessage = error.localizedDescription

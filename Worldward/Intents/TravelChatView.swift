@@ -1,5 +1,6 @@
 import FoundationModels
 import SwiftUI
+import Translation
 
 /// A lightweight sheet that lets the user ask free-form questions about their
 /// own travels, answered on-device by `TravelIntelligence`. Single question →
@@ -9,6 +10,11 @@ import SwiftUI
 struct TravelChatView: View {
     @State private var intelligence = TravelIntelligence()
     @State private var question = ""
+    @State private var translator = AppTranslator()
+    /// The final answer translated into the user's language. Set once streaming
+    /// completes, so the live (English) stream stays responsive and the finished
+    /// answer reads in the user's language. `nil` while idle/streaming or English.
+    @State private var translatedAnswer: String?
     @FocusState private var fieldFocused: Bool
 
     @Environment(\.dismiss) private var dismiss
@@ -35,12 +41,14 @@ struct TravelChatView: View {
                         Button {
                             intelligence.reset()
                             question = ""
+                            translatedAnswer = nil
                         } label: {
                             Label("New", systemImage: "square.and.pencil")
                         }
                     }
                 }
             }
+            .appTranslation(translator)
         }
     }
 
@@ -85,7 +93,7 @@ struct TravelChatView: View {
             answerBubble(text)
 
         case .answered(let text):
-            answerBubble(text)
+            answerBubble(translatedAnswer ?? text)
 
         case .failed(let message):
             Label(message, systemImage: "exclamationmark.triangle")
@@ -165,7 +173,15 @@ struct TravelChatView: View {
         guard !trimmed.isEmpty else { return }
         question = ""
         fieldFocused = false
-        Task { await intelligence.ask(trimmed) }
+        translatedAnswer = nil
+        Task {
+            // Stream the answer in English for responsiveness, then translate the
+            // finished answer into the user's language and swap it in.
+            await intelligence.ask(trimmed)
+            if AppTranslator.isNeeded, case .answered(let english) = intelligence.phase {
+                translatedAnswer = await translator.translate(english)
+            }
+        }
     }
 
     // MARK: - Unavailable

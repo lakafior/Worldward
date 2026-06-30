@@ -14,9 +14,9 @@ enum PlanStatus: String, CaseIterable, Identifiable, Codable {
     /// Human-readable name for the picker and legend.
     var label: String {
         switch self {
-        case .none:     "Not planned"
-        case .wishlist: "Wishlist"
-        case .planning: "Planning"
+        case .none:     String(localized: "Not planned", comment: "Plan status: no plans")
+        case .wishlist: String(localized: "Wishlist", comment: "Plan status: on the wishlist")
+        case .planning: String(localized: "Planning", comment: "Plan status: actively planning")
         }
     }
 

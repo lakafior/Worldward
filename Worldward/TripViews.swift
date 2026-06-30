@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import Translation
 
 // MARK: - Markdown export
 
@@ -47,6 +48,14 @@ struct GoingView: View {
         case trips = "Trips"
         case wishlist = "Wishlist"
         var id: String { rawValue }
+
+        /// Localized title for the segmented control.
+        var label: String {
+            switch self {
+            case .trips:    Str.Trip.tabTrips
+            case .wishlist: Str.Trip.tabWishlist
+            }
+        }
     }
 
     @State private var segment: Segment = .trips
@@ -54,7 +63,7 @@ struct GoingView: View {
     var body: some View {
         VStack(spacing: 0) {
             Picker("Section", selection: $segment) {
-                ForEach(Segment.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(Segment.allCases) { Text($0.label).tag($0) }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
@@ -242,6 +251,16 @@ struct TripDetailView: View {
     @State private var showSaveTemplate = false
     @State private var newTemplateName = ""
 
+    /// Drives the Translation framework: set/invalidated to translate freshly
+    /// generated (English) assistant output into the user's language before it's
+    /// saved. The on-device LLM names items in English; Apple's translator — far
+    /// better than the LLM at translation — converts them here in the view.
+    @State private var translationConfig: TranslationSession.Configuration?
+    /// English packing suggestions awaiting translation, then insertion.
+    @State private var pendingPacking: [PackingSuggestion]?
+    /// English notes Markdown awaiting translation, then insertion.
+    @State private var pendingNotes: String?
+
     var body: some View {
         // A `List` (not `Form`) so iOS 27's `reorderContainer` can host the
         // packing drag — the drop only commits inside a real list container.
@@ -328,6 +347,44 @@ struct TripDetailView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(planner.errorMessage ?? "")
+        }
+        // Translates freshly generated assistant output via Apple's Translation
+        // framework. Runs whenever `translationConfig` is set or invalidated. The
+        // session isn't Sendable, so it's used here in the nonisolated closure; we
+        // only hop to the main actor to read the pending payload and save results,
+        // falling back to the English original if the language pair is unavailable.
+        .translationTask(translationConfig) { @Sendable session in
+            if let suggestions = await takePendingPacking() {
+                var result = suggestions
+                do {
+                    let requests = suggestions.map {
+                        TranslationSession.Request(sourceText: $0.title)
+                    }
+                    let responses = try await session.translations(from: requests)
+                    if responses.count == suggestions.count {
+                        result = zip(suggestions, responses).map { original, response in
+                            let name = response.targetText
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            return PackingSuggestion(
+                                title: name.isEmpty ? original.title : name,
+                                quantity: original.quantity,
+                                containerName: original.containerName)
+                        }
+                    }
+                } catch {
+                    // Keep the English names if translation is unavailable.
+                }
+                await insertPacking(result)
+            }
+            if let notes = await takePendingNotes() {
+                var text = notes
+                if let response = try? await session.translate(notes) {
+                    let translated = response.targetText
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !translated.isEmpty { text = translated }
+                }
+                await insertNotes(text)
+            }
         }
     }
 
@@ -763,9 +820,29 @@ struct TripDetailView: View {
 
     // MARK: On-device assistant
 
-    /// Asks the on-device model for a packing list — filed into the user's
-    /// containers — and appends any items not already present (case-insensitive),
-    /// leaving the user's own entries be.
+    /// The user's language to translate the (English) assistant output into, or
+    /// `nil` when the app already runs in English — in which case we skip the
+    /// Translation framework entirely and insert the English results as-is.
+    private var translationTarget: Locale.Language? {
+        let code = Locale.current.language.languageCode?.identifier ?? "en"
+        return code == "en" ? nil : Locale.current.language
+    }
+
+    /// Triggers `.translationTask` with an English→user-language configuration.
+    /// First call sets the configuration; later calls invalidate it to re-run with
+    /// fresh pending content (same language pair).
+    private func requestTranslation() {
+        if translationConfig == nil {
+            translationConfig = TranslationSession.Configuration(
+                source: Locale.Language(identifier: "en"), target: translationTarget)
+        } else {
+            translationConfig?.invalidate()
+        }
+    }
+
+    /// Asks the on-device model for a packing list (named in English). If the app
+    /// runs in another language, hands the suggestions to the Translation framework;
+    /// otherwise inserts them directly.
     private func fillPacking() {
         Task {
             guard
@@ -773,34 +850,68 @@ struct TripDetailView: View {
                     for: trip, containers: allContainers.map(\.name))
             else { return }
 
-            var existing = Set(trip.packing.map { $0.title.lowercased() })
-            var createdContainers: [String: PackingContainer] = [:]
-            var order = nextPackingOrder
-            for suggestion in suggestions {
-                let key = suggestion.title.lowercased()
-                guard !existing.contains(key) else { continue }
-                existing.insert(key)
-                let item = PackingItem(
-                    title: suggestion.title, quantity: suggestion.quantity, order: order, trip: trip)
-                item.container = resolveContainer(
-                    named: suggestion.containerName, cache: &createdContainers)
-                modelContext.insert(item)
-                trip.packing.append(item)
-                order += 1
+            if translationTarget != nil {
+                pendingPacking = suggestions
+                requestTranslation()
+            } else {
+                insertPacking(suggestions)
             }
         }
     }
 
-    /// Asks the on-device model for sightseeing notes and appends them, preserving
-    /// anything the user has already written.
+    /// Asks the on-device model for sightseeing notes (in English). Translates via
+    /// the Translation framework when the app isn't English; otherwise inserts as-is.
     private func fillNotes() {
         Task {
             guard let text = await planner.suggestNotes(for: trip) else { return }
-            if trip.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                trip.notes = text
+            if translationTarget != nil {
+                pendingNotes = text
+                requestTranslation()
             } else {
-                trip.notes += "\n\n" + text
+                insertNotes(text)
             }
+        }
+    }
+
+    /// Reads and clears the packing suggestions awaiting translation. Called from
+    /// the (nonisolated) translation task; returns Sendable values across the hop.
+    private func takePendingPacking() -> [PackingSuggestion]? {
+        defer { pendingPacking = nil }
+        return pendingPacking
+    }
+
+    /// Reads and clears the notes awaiting translation.
+    private func takePendingNotes() -> String? {
+        defer { pendingNotes = nil }
+        return pendingNotes
+    }
+
+    /// Appends packing suggestions, filing each into its container and skipping any
+    /// item already present (case-insensitive) so the user's own entries are kept.
+    private func insertPacking(_ suggestions: [PackingSuggestion]) {
+        var existing = Set(trip.packing.map { $0.title.lowercased() })
+        var createdContainers: [String: PackingContainer] = [:]
+        var order = nextPackingOrder
+        for suggestion in suggestions {
+            let key = suggestion.title.lowercased()
+            guard !existing.contains(key) else { continue }
+            existing.insert(key)
+            let item = PackingItem(
+                title: suggestion.title, quantity: suggestion.quantity, order: order, trip: trip)
+            item.container = resolveContainer(
+                named: suggestion.containerName, cache: &createdContainers)
+            modelContext.insert(item)
+            trip.packing.append(item)
+            order += 1
+        }
+    }
+
+    /// Appends generated notes, preserving anything the user has already written.
+    private func insertNotes(_ text: String) {
+        if trip.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            trip.notes = text
+        } else {
+            trip.notes += "\n\n" + text
         }
     }
 }

@@ -35,6 +35,8 @@ struct SettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("mapStyle") private var mapStyle: MapStyleOption = .standard
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
+    @AppStorage(TripPlanner.profileKey) private var packingProfile: PackingProfile = .unspecified
+    @AppStorage(TripPlanner.preferencesKey) private var packingPreferences = ""
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -46,6 +48,7 @@ struct SettingsView: View {
         Form {
             appearanceSection
             notificationsSection
+            packingSection
             dataSection
             aboutSection
         }
@@ -139,6 +142,26 @@ struct SettingsView: View {
             let countries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
             let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
             await NotificationManager.reschedule(enabled: true, countries: countries, trips: trips)
+        }
+    }
+
+    @ViewBuilder private var packingSection: some View {
+        Section {
+            Picker("Pack for", selection: $packingProfile) {
+                ForEach(PackingProfile.allCases) { profile in
+                    Text(profile.label).tag(profile)
+                }
+            }
+            TextField(
+                "Preferences", text: $packingPreferences,
+                prompt: Text("e.g. contact lenses, hiking gear, vegetarian"),
+                axis: .vertical)
+        } header: {
+            Text("Trip planning")
+        } footer: {
+            Text(
+                "Tailors the on-device packing assistant. “Pack for” decides whether it includes gender-specific items, and preferences are extra notes it factors in."
+            )
         }
     }
 
