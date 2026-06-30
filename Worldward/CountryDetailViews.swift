@@ -91,8 +91,15 @@ struct CountryDetailView: View {
                 }
             }
         }
-        .padding()
-        .frame(minWidth: 300)
+        // On macOS the Form already supplies grouped insets and lives in a resizable
+        // detail column, so skip the extra padding (which double-pads) and give it a
+        // comfortable ideal width; iOS keeps the padded sheet layout.
+        #if os(iOS)
+            .padding()
+            .frame(minWidth: 300)
+        #else
+            .frame(minWidth: 320, idealWidth: 380, minHeight: 480)
+        #endif
         // Advertise the country on screen so Siri and Apple Intelligence can
         // answer questions about it ("have I been here?"). Keyed on the stable
         // ISO id; the entity is rebuilt in the closure from the live model.

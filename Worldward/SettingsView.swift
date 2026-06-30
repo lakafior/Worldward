@@ -49,6 +49,9 @@ struct SettingsView: View {
     var body: some View {
         Form {
             appearanceSection
+            #if os(macOS)
+                if AppLanguages.shipped.count > 1 { LanguageSettingsSection() }
+            #endif
             notificationsSection
             packingSection
             packingManagementSection
@@ -63,7 +66,7 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         #if os(macOS)
-            .frame(width: 460, height: 440)
+            .frame(width: 480, height: 540)
         #endif
         .fileExporter(
             isPresented: $showExporter,
@@ -285,3 +288,83 @@ private struct TransferAlert: Identifiable {
 #Preview {
     SettingsView()
 }
+
+#if os(macOS)
+    import AppKit
+
+    /// macOS in-app language switching.
+    ///
+    /// iOS deep-links to the system Settings app (there is no macOS equivalent),
+    /// so the Mac gets its own picker. String Catalog strings are resolved from
+    /// `Bundle.main` at launch and can't be re-resolved in-process — `\.locale`
+    /// only changes number/date *formatting*, not which `.lproj` is read — so
+    /// switching language means writing `AppleLanguages` and relaunching.
+    enum AppLanguages {
+        /// Languages the app actually ships, excluding the "Base" pseudo-locale,
+        /// ordered by display name.
+        static var shipped: [String] {
+            Bundle.main.localizations
+                .filter { $0 != "Base" }
+                .sorted { displayName(for: $0) < displayName(for: $1) }
+        }
+
+        /// The language's name in its own script (autonym), e.g. "Deutsch", "Polski".
+        static func displayName(for code: String) -> String {
+            let locale = Locale(identifier: code)
+            return (locale.localizedString(forIdentifier: code) ?? code).localizedCapitalized
+        }
+
+        /// The BCP-47 code currently active for this running process.
+        static var current: String { Bundle.main.preferredLocalizations.first ?? "en" }
+
+        /// Native, sandbox-safe relaunch: start a fresh instance, then terminate
+        /// this one. No shell spawn, so it's allowed under the App Sandbox.
+        static func relaunch() {
+            let config = NSWorkspace.OpenConfiguration()
+            config.createsNewApplicationInstance = true
+            NSWorkspace.shared.openApplication(
+                at: Bundle.main.bundleURL, configuration: config
+            ) { _, _ in
+                DispatchQueue.main.async { NSApp.terminate(nil) }
+            }
+        }
+    }
+
+    /// Settings section to pick the app language and relaunch to apply it.
+    struct LanguageSettingsSection: View {
+        /// The language live for *this* process; compared against the picker so a
+        /// no-op selection (or a settings reset) doesn't spuriously prompt a restart.
+        private let launchLanguage = AppLanguages.current
+        @State private var selection = AppLanguages.current
+        @State private var showRestart = false
+
+        var body: some View {
+            Section {
+                Picker("Language", selection: $selection) {
+                    ForEach(AppLanguages.shipped, id: \.self) { code in
+                        Text(AppLanguages.displayName(for: code)).tag(code)
+                    }
+                }
+                .onChange(of: selection) { _, newValue in
+                    guard newValue != launchLanguage else { return }
+                    UserDefaults.standard.set([newValue], forKey: "AppleLanguages")
+                    showRestart = true
+                }
+            } header: {
+                Text("Language")
+            } footer: {
+                if selection != launchLanguage {
+                    Text("Restart Worldward to finish changing the language.")
+                }
+            }
+            .confirmationDialog(
+                "Restart to change language?", isPresented: $showRestart
+            ) {
+                Button("Restart Now") { AppLanguages.relaunch() }
+                Button("Later", role: .cancel) {}
+            } message: {
+                Text("Worldward needs to restart to switch languages.")
+            }
+        }
+    }
+#endif

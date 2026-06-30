@@ -33,9 +33,12 @@ struct TravelChatView: View {
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                #if !os(macOS)
+                    // macOS shows this in its own window; the close button dismisses.
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
+                #endif
                 if intelligence.isAvailable {
                     ToolbarItem(placement: .cancellationAction) {
                         Button {

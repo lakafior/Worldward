@@ -120,6 +120,8 @@ struct CountryListView: View {
     @Binding var selectedCountry: Country?
 
     @Environment(\.modelContext) private var modelContext
+    /// Opens the Statistics / Chat windows on macOS. Unused on iOS.
+    @Environment(\.openWindow) private var openWindow
 
     @State private var sortOrder: CountrySort = .name
     /// Cached filter/sort summary recomputed only when dependencies change,
@@ -180,14 +182,22 @@ struct CountryListView: View {
             if browseMode == .been {
                 ToolbarItem {
                     Button {
-                        showTravelChat = true
+                        #if os(macOS)
+                            openWindow(id: "travelChat")
+                        #else
+                            showTravelChat = true
+                        #endif
                     } label: {
                         Label("Ask About Your Travels", systemImage: "sparkles")
                     }
                 }
                 ToolbarItem {
                     Button {
-                        showStatistics = true
+                        #if os(macOS)
+                            openWindow(id: "statistics")
+                        #else
+                            showStatistics = true
+                        #endif
                     } label: {
                         Label("Statistics", systemImage: "chart.pie")
                     }

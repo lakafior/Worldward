@@ -128,6 +128,8 @@ struct ContentView: View {
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    /// Opens the auxiliary macOS windows (achievements, etc.). Unused on iOS.
+    @Environment(\.openWindow) private var openWindow
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
     // Map search & filters
@@ -333,7 +335,11 @@ struct ContentView: View {
 
             ToolbarItem {
                 Button {
-                    showAchievements = true
+                    #if os(macOS)
+                        openWindow(id: "achievements")
+                    #else
+                        showAchievements = true
+                    #endif
                 } label: {
                     Label("Achievements", systemImage: "trophy")
                 }
@@ -348,46 +354,122 @@ struct ContentView: View {
     /// are your history and your plans. Discovery/adding happens on the Map (tap a
     /// country → set its status or plan), so the lists stay curated collections.
     @ViewBuilder private var rootView: some View {
-        TabView(selection: $selectedTab) {
-            Tab("Map", systemImage: "map", value: AppTab.map) {
-                NavigationStack {
-                    mapContent
-                        .safeAreaInset(edge: .bottom) {
-                            mapFilterBar
-                        }
-                }
-                .searchable(text: $mapSearchText, placement: .toolbar, prompt: "Find a country…")
-                .onSubmit(of: .search, flyToFirstSearchResult)
-                .searchSuggestions {
-                    ForEach(mapSearchResults.prefix(8)) { country in
-                        Button {
-                            flyTo(country: country)
-                        } label: {
-                            Label("\(country.flagEmoji) \(country.name)", systemImage: "mappin")
+        #if os(macOS)
+            macRoot
+        #else
+            TabView(selection: $selectedTab) {
+                Tab("Map", systemImage: "map", value: AppTab.map) {
+                    NavigationStack {
+                        mapContent
+                            .safeAreaInset(edge: .bottom) {
+                                mapFilterBar
+                            }
+                    }
+                    .searchable(
+                        text: $mapSearchText, placement: .toolbar, prompt: "Find a country…"
+                    )
+                    .onSubmit(of: .search, flyToFirstSearchResult)
+                    .searchSuggestions {
+                        ForEach(mapSearchResults.prefix(8)) { country in
+                            Button {
+                                flyTo(country: country)
+                            } label: {
+                                Label(
+                                    "\(country.flagEmoji) \(country.name)", systemImage: "mappin")
+                            }
                         }
                     }
                 }
-            }
-            Tab("Been", systemImage: "checkmark.seal", value: AppTab.been) {
-                NavigationStack { countryList(.been) }
-            }
-            Tab("Going", systemImage: "airplane", value: AppTab.going) {
-                NavigationStack {
-                    GoingView(
-                        allCountries: allCountries,
-                        centroids: countryCentroids,
-                        searchText: $searchText,
-                        selectedContinent: $selectedContinent,
-                        selectedYear: $selectedYear,
-                        selectedCountry: $selectedCountry)
+                Tab("Been", systemImage: "checkmark.seal", value: AppTab.been) {
+                    NavigationStack { countryList(.been) }
+                }
+                Tab("Going", systemImage: "airplane", value: AppTab.going) {
+                    NavigationStack {
+                        GoingView(
+                            allCountries: allCountries,
+                            centroids: countryCentroids,
+                            searchText: $searchText,
+                            selectedContinent: $selectedContinent,
+                            selectedYear: $selectedYear,
+                            selectedCountry: $selectedCountry)
+                    }
                 }
             }
-        }
-        .tabViewStyle(.sidebarAdaptable)
-        #if os(iOS)
+            .tabViewStyle(.sidebarAdaptable)
             .tabBarMinimizeBehavior(.onScrollDown)
         #endif
     }
+
+    #if os(macOS)
+        /// The macOS root: a three-column split — a source-list sidebar of the
+        /// top-level sections, the selected section's surface in the middle, and the
+        /// selected country's detail on the right (replacing the iPhone detail sheet).
+        private var macRoot: some View {
+            NavigationSplitView {
+                List(selection: $selectedTab) {
+                    Label("Map", systemImage: "map").tag(AppTab.map)
+                    Label("Been", systemImage: "checkmark.seal").tag(AppTab.been)
+                    Label("Going", systemImage: "airplane").tag(AppTab.going)
+                }
+                .navigationTitle("Worldward")
+                .navigationSplitViewColumnWidth(min: 170, ideal: 200, max: 260)
+            } content: {
+                sectionContent
+                    .navigationSplitViewColumnWidth(min: 360, ideal: 540)
+            } detail: {
+                countryDetailColumn
+            }
+        }
+
+        /// The middle column: whichever top-level section the sidebar selects.
+        @ViewBuilder private var sectionContent: some View {
+            switch selectedTab {
+            case .map:
+                mapContent
+                    .safeAreaInset(edge: .bottom) { mapFilterBar }
+                    .searchable(
+                        text: $mapSearchText, placement: .toolbar, prompt: "Find a country…"
+                    )
+                    .onSubmit(of: .search, flyToFirstSearchResult)
+                    .searchSuggestions {
+                        ForEach(mapSearchResults.prefix(8)) { country in
+                            Button {
+                                flyTo(country: country)
+                            } label: {
+                                Label(
+                                    "\(country.flagEmoji) \(country.name)", systemImage: "mappin")
+                            }
+                        }
+                    }
+            case .been:
+                countryList(.been)
+            case .going:
+                GoingView(
+                    allCountries: allCountries,
+                    centroids: countryCentroids,
+                    searchText: $searchText,
+                    selectedContinent: $selectedContinent,
+                    selectedYear: $selectedYear,
+                    selectedCountry: $selectedCountry)
+            }
+        }
+
+        /// The trailing detail column: the selected country, or a placeholder.
+        @ViewBuilder private var countryDetailColumn: some View {
+            if let country = selectedCountry {
+                CountryDetailView(country: country)
+                    .navigationTitle(country.name)
+                    .navigationSubtitle(country.continent)
+            } else {
+                ContentUnavailableView(
+                    "No Country Selected",
+                    systemImage: "globe",
+                    description: Text(
+                        "Pick a country on the map or in a list to see its details.")
+                )
+            }
+        }
+    #endif
 
     private func countryList(_ mode: BrowseMode) -> some View {
         CountryListView(
@@ -426,9 +508,13 @@ struct ContentView: View {
             .sheet(isPresented: $showLogVisits) {
                 LogVisitsView(initialText: logVisitsText)
             }
-            .sheet(item: $detailCountry) { country in
-                CountryDetailSheet(country: country)
-            }
+            // iOS opens the country detail as a sheet; macOS shows it in the split
+            // view's trailing detail column (see `countryDetailColumn`).
+            #if os(iOS)
+                .sheet(item: $detailCountry) { country in
+                    CountryDetailSheet(country: country)
+                }
+            #endif
             #if !os(macOS)
                 .sheet(isPresented: $showSettings) {
                     NavigationStack {

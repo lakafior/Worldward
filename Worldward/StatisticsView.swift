@@ -1,5 +1,6 @@
 import Charts
 import MapKit
+import SwiftData
 import SwiftUI
 import Translation
 
@@ -57,21 +58,25 @@ struct StatisticsView: View {
                 .padding()
             }
             .navigationTitle("Your Travels")
-            #if !os(macOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                #if os(macOS)
-                    ToolbarItem(placement: .cancellationAction) { shareButton }
-                #else
-                    ToolbarItem(placement: .topBarLeading) { shareButton }
-                #endif
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+            #if os(macOS)
+                // Its own resizable window on Mac: Share sits at the trailing edge
+                // of the toolbar; the window close button replaces a Done button.
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) { shareButton }
                 }
-            }
+            #else
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) { shareButton }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
+                }
+            #endif
         }
-        .frame(minWidth: 380, minHeight: 520)
+        #if os(iOS)
+            .frame(minWidth: 380, minHeight: 520)
+        #endif
         .sheet(isPresented: $showShareSheet) {
             ShareCustomizationView(stats: stats, tints: stats.statusTints)
         }
@@ -481,3 +486,12 @@ struct StatRow: View {
         }
     }
 }
+
+#if os(macOS)
+    /// Hosts `StatisticsView` in its own resizable macOS window, querying the
+    /// catalog itself so `openWindow(id:)` needs no payload.
+    struct StatisticsWindowContent: View {
+        @Query(sort: \Country.name) private var countries: [Country]
+        var body: some View { StatisticsView(countries: countries) }
+    }
+#endif

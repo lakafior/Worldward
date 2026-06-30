@@ -94,6 +94,14 @@ struct Worldward: App {
         }
         .modelContainer(Self.sharedModelContainer)
         // Undo/Redo commands are omitted alongside the UndoManager (see .onAppear).
+        #if os(macOS)
+            // Open at a comfortable desktop size, and let the window grow freely
+            // while keeping the split view's own minimum.
+            .defaultSize(width: 1180, height: 760)
+            .windowResizability(.contentMinSize)
+            // Surface the auxiliary windows (and their ⌘-shortcuts) in a "Go" menu.
+            .commands { WorldwardCommands() }
+        #endif
 
         #if os(macOS)
             // Adds the standard "Worldward ▸ Settings…" menu item (⌘,). The Settings
@@ -103,6 +111,31 @@ struct Worldward: App {
                 SettingsView()
             }
             .modelContainer(Self.sharedModelContainer)
+
+            // Travel dashboard, achievements, and the AI chat each open as their own
+            // resizable window on Mac (rather than a modal sheet over the map). Each
+            // queries the catalog itself, so opening them needs no payload.
+            WindowGroup("Your Travels", id: "statistics") {
+                StatisticsWindowContent()
+                    .preferredColorScheme(appTheme.colorScheme)
+            }
+            .modelContainer(Self.sharedModelContainer)
+            .defaultSize(width: 860, height: 720)
+
+            WindowGroup("Achievements", id: "achievements") {
+                AchievementsWindowContent()
+                    .preferredColorScheme(appTheme.colorScheme)
+            }
+            .modelContainer(Self.sharedModelContainer)
+            .defaultSize(width: 700, height: 740)
+
+            WindowGroup("Ask About Your Travels", id: "travelChat") {
+                TravelChatView()
+                    .preferredColorScheme(appTheme.colorScheme)
+                    .frame(minWidth: 460, minHeight: 560)
+            }
+            .modelContainer(Self.sharedModelContainer)
+            .defaultSize(width: 520, height: 680)
 
             // Menu bar extra with glanceable stats and quick actions.
             MenuBarExtra {
@@ -145,3 +178,22 @@ struct Worldward: App {
         #endif
     }
 }
+
+#if os(macOS)
+    /// A "Go" menu exposing the auxiliary windows as first-class Mac commands with
+    /// keyboard shortcuts, so they're reachable without hunting through toolbars.
+    struct WorldwardCommands: Commands {
+        @Environment(\.openWindow) private var openWindow
+
+        var body: some Commands {
+            CommandMenu("Go") {
+                Button("Your Travels") { openWindow(id: "statistics") }
+                    .keyboardShortcut("2", modifiers: .command)
+                Button("Achievements") { openWindow(id: "achievements") }
+                    .keyboardShortcut("3", modifiers: .command)
+                Button("Ask About Your Travels") { openWindow(id: "travelChat") }
+                    .keyboardShortcut("4", modifiers: .command)
+            }
+        }
+    }
+#endif
