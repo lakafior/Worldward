@@ -3,15 +3,11 @@ import MapKit
 import SwiftUI
 import Translation
 
-/// Full-page travel dashboard: a gamified summary of everywhere the user has been.
-/// Presented as a sheet from the map toolbar. All figures derive from a single
-/// `TravelStats` pass; nothing here is persisted.
+/// Full-page travel dashboard: stats, timeline, and recaps for countries you've
+/// visited. Presented as a sheet from the **Been** tab toolbar. All figures
+/// derive from a single `TravelStats` pass; nothing here is persisted.
 struct StatisticsView: View {
     let countries: [Country]
-    /// Country centroids (id → coordinate) used for the "next closest" suggestions.
-    /// Empty until the map's GeoJSON has finished loading, in which case that
-    /// section is simply hidden.
-    let centroids: [String: CLLocationCoordinate2D]
 
     @Environment(\.dismiss) private var dismiss
 
@@ -24,9 +20,8 @@ struct StatisticsView: View {
     /// it as a stored `let` instead of a computed property avoids repeating that work.
     private let stats: TravelStats
 
-    init(countries: [Country], centroids: [String: CLLocationCoordinate2D] = [:]) {
+    init(countries: [Country]) {
         self.countries = countries
-        self.centroids = centroids
         self.stats = TravelStats(countries: countries)
     }
 
@@ -39,32 +34,15 @@ struct StatisticsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
-                    HeroSection(stats: stats)
-
-                    AchievementsSection(achievements: Achievement.all(for: stats))
-
                     TimelineSection(countries: countries)
 
                     StatCardsSection(stats: stats)
-
-                    if stats.hasPlans {
-                        PlansSection(stats: stats)
-                    }
 
                     if stats.years.contains(where: { $0.countries > 0 }) {
                         YearChartSection(years: stats.years)
                     }
 
                     ContinentSection(continents: stats.continents)
-
-                    let suggestions = nearestUnvisited(countries: countries, centroids: centroids)
-                    if !suggestions.isEmpty {
-                        NextClosestSection(suggestions: suggestions)
-
-                        if insights.isAvailable {
-                            SmartSuggestionsSection(insights: insights, candidates: suggestions)
-                        }
-                    }
 
                     if let yearStat = selectedYearStat {
                         YearInReviewSection(
@@ -74,10 +52,6 @@ struct StatisticsView: View {
                                 get: { yearStat.year },
                                 set: { selectedYear = $0 }),
                             yearStat: yearStat)
-
-                        if insights.isAvailable {
-                            AIRecapSection(insights: insights, stats: stats, yearStat: yearStat)
-                        }
                     }
                 }
                 .padding()
@@ -185,155 +159,6 @@ private struct HeroSection: View {
     }
 }
 
-// MARK: - Achievements
-
-private struct AchievementsSection: View {
-    let achievements: [Achievement]
-
-    private let columns = [GridItem(.adaptive(minimum: 96), spacing: 12)]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            let unlocked = achievements.filter(\.isUnlocked).count
-            SectionHeader(
-                title: "Achievements", trailing: "\(unlocked) / \(achievements.count)")
-
-            // Split into labelled groups so the wall of badges reads as themed
-            // collections (Countries, Continents, …) rather than one long grid.
-            ForEach(Achievement.Category.allCases) { category in
-                let group = achievements.filter { $0.category == category }
-                if !group.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text(category.title)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text("\(group.filter(\.isUnlocked).count) / \(group.count)")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                                .monospacedDigit()
-                        }
-
-                        LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-                            ForEach(group) { achievement in
-                                AchievementBadge(achievement: achievement)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-private struct AchievementBadge: View {
-    let achievement: Achievement
-
-    /// Drives the tap-to-reveal description. macOS users get the same text on
-    /// hover via `.help`, but a touch device has no hover, so tapping a badge
-    /// surfaces it in a popover.
-    @State private var showingDetail = false
-
-    var body: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .fill(
-                        achievement.isUnlocked
-                            ? achievement.tint.opacity(0.2) : Color.gray.opacity(0.12)
-                    )
-                    .frame(width: 56, height: 56)
-                Image(systemName: achievement.symbol)
-                    .font(.title2)
-                    .foregroundStyle(
-                        achievement.isUnlocked ? achievement.tint : Color.secondary)
-            }
-            .overlay(alignment: .bottomTrailing) {
-                if achievement.isUnlocked {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.white, achievement.tint)
-                }
-            }
-
-            Text(achievement.title)
-                .font(.caption2.weight(.semibold))
-                .multilineTextAlignment(.center)
-                .lineLimit(2, reservesSpace: true)
-
-            // Every badge shares this footer — a progress bar (full once unlocked)
-            // plus one status line — so locked and unlocked tiles have identical
-            // height and the grid stays even across all columns.
-            ProgressView(value: achievement.progress)
-                .tint(achievement.tint)
-            Text(achievement.isUnlocked ? "Unlocked" : achievement.progressLabel)
-                .font(.caption2)
-                .foregroundStyle(achievement.isUnlocked ? achievement.tint : .secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(8)
-        .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
-        .opacity(achievement.isUnlocked ? 1 : 0.85)
-        .contentShape(RoundedRectangle(cornerRadius: 12))
-        .help(achievement.detail)
-        .onTapGesture { showingDetail = true }
-        // A touch device has no hover tooltip, so reveal the description on tap.
-        .popover(isPresented: $showingDetail) {
-            AchievementDetailPopover(achievement: achievement)
-                .presentationCompactAdaptation(.popover)
-        }
-        // Read as one element to VoiceOver, with the description as the hint.
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            "\(achievement.title), "
-                + (achievement.isUnlocked ? "unlocked" : "locked, \(achievement.progressLabel)")
-        )
-        .accessibilityHint(achievement.detail)
-    }
-}
-
-/// The small bubble shown when a badge is tapped — the only way to read a badge's
-/// description on a touch device, where there's no hover tooltip.
-private struct AchievementDetailPopover: View {
-    let achievement: Achievement
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Image(systemName: achievement.symbol)
-                    .font(.title3)
-                    .foregroundStyle(achievement.isUnlocked ? achievement.tint : Color.secondary)
-                Text(achievement.title)
-                    .font(.headline)
-            }
-
-            Text(achievement.detail)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            HStack(spacing: 8) {
-                if achievement.isUnlocked {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(achievement.tint)
-                    Text("Unlocked")
-                        .foregroundStyle(achievement.tint)
-                } else {
-                    ProgressView(value: achievement.progress)
-                        .tint(achievement.tint)
-                    Text(achievement.progressLabel)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
-            }
-            .font(.caption.weight(.medium))
-        }
-        .padding()
-        .frame(width: 240)
-    }
-}
-
 // MARK: - Stat cards
 
 private struct StatCardsSection: View {
@@ -359,28 +184,6 @@ private struct StatCardsSection: View {
                     title: "Busiest year",
                     value: "\(busiest.year) · \(busiest.countries)",
                     symbol: "flame.fill", tint: .brandIndigo)
-            }
-        }
-    }
-}
-
-/// The "Going" counterpart to the visited stat cards: how many countries are on
-/// your wishlist and how many you're actively planning, in the blue plan scale.
-private struct PlansSection: View {
-    let stats: TravelStats
-
-    private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "On your list", trailing: "\(stats.plannedCount)")
-            LazyVGrid(columns: columns, spacing: 12) {
-                StatCard(
-                    title: "Wishlist", value: "\(stats.wishlistCount)",
-                    symbol: PlanStatus.wishlist.symbolName, tint: PlanStatus.wishlist.color)
-                StatCard(
-                    title: "Planning", value: "\(stats.planningCount)",
-                    symbol: PlanStatus.planning.symbolName, tint: PlanStatus.planning.color)
             }
         }
     }
@@ -451,37 +254,6 @@ private struct ContinentSection: View {
                         percent: continent.fraction * 100)
                 }
             }
-        }
-    }
-}
-
-// MARK: - Next closest
-
-private struct NextClosestSection: View {
-    let suggestions: [(country: Country, distanceKM: Double)]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Closest unvisited")
-
-            VStack(spacing: 0) {
-                ForEach(Array(suggestions.enumerated()), id: \.element.country.id) {
-                    index, item in
-                    HStack {
-                        Text(item.country.flagEmoji)
-                        Text(item.country.name)
-                        Spacer()
-                        Text("\(Int(item.distanceKM.rounded())) km away")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-                    }
-                    .padding(.vertical, 8)
-                    if index < suggestions.count - 1 { Divider() }
-                }
-            }
-            .padding(.horizontal)
-            .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }
@@ -659,188 +431,6 @@ private struct YearInReviewSection: View {
             }
             .padding()
             .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
-        }
-    }
-}
-
-// MARK: - Smart suggestions (Apple Intelligence)
-
-/// Opt-in next-destination picks with a one-line rationale, generated on-device
-/// from the closest-unvisited candidates. The model only phrases and ranks — the
-/// candidate set and flags come from real data, so it can't invent a country.
-private struct SmartSuggestionsSection: View {
-    let insights: TravelInsights
-    let candidates: [(country: Country, distanceKM: Double)]
-
-    @State private var picks: [ResolvedPick] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    @State private var translator = AppTranslator()
-
-    private struct ResolvedPick: Identifiable {
-        let id: String
-        let flag: String
-        let name: String
-        let reason: String
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Suggested for you")
-
-            if isLoading {
-                HStack(spacing: 10) {
-                    ProgressView()
-                    Text("Thinking about where to go next…")
-                        .foregroundStyle(.secondary)
-                }
-            } else if let errorMessage {
-                Label(errorMessage, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-            } else if picks.isEmpty {
-                Button(action: generate) {
-                    Label("Suggest with Apple Intelligence", systemImage: "sparkles")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.brand)
-            }
-
-            if !picks.isEmpty {
-                VStack(spacing: 0) {
-                    ForEach(Array(picks.enumerated()), id: \.element.id) { index, pick in
-                        HStack(alignment: .top, spacing: 10) {
-                            Text(pick.flag)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(pick.name).fontWeight(.medium)
-                                Text(pick.reason)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                        if index < picks.count - 1 { Divider() }
-                    }
-                }
-                .padding(.horizontal)
-                .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
-
-                Button("Suggest again", action: generate)
-                    .font(.caption)
-                    .disabled(isLoading)
-            }
-        }
-        .appTranslation(translator)
-    }
-
-    private func generate() {
-        isLoading = true
-        errorMessage = nil
-        let top = Array(candidates.prefix(8))
-        let descriptions = top.map { item in
-            "\(item.country.name) (\(item.country.continent), ~\(Int(item.distanceKM.rounded())) km away)"
-        }
-        Task {
-            defer { isLoading = false }
-            do {
-                let raw = try await insights.suggestDestinations(candidates: descriptions)
-                let resolved = raw.compactMap { pick -> ResolvedPick? in
-                    guard let match = top.first(where: { matches(pick.country, $0.country.name) })
-                    else { return nil }
-                    return ResolvedPick(
-                        id: match.country.id, flag: match.country.flagEmoji,
-                        name: match.country.name, reason: pick.reason)
-                }
-                // Country names come from real data; only the model's reasons (free
-                // English text) need translating into the user's language.
-                let reasons = await translator.translate(resolved.map(\.reason))
-                picks = zip(resolved, reasons).map { pick, reason in
-                    ResolvedPick(
-                        id: pick.id, flag: pick.flag, name: pick.name, reason: reason)
-                }
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
-
-    /// Loose name match so a model paraphrase still resolves to a candidate.
-    private func matches(_ a: String, _ b: String) -> Bool {
-        a.localizedCaseInsensitiveContains(b) || b.localizedCaseInsensitiveContains(a)
-    }
-}
-
-// MARK: - AI year recap (Apple Intelligence)
-
-/// Opt-in, on-device prose recap of the selected year. Regenerated per year; the
-/// model phrases facts already computed by `TravelStats` and never adds figures.
-private struct AIRecapSection: View {
-    let insights: TravelInsights
-    let stats: TravelStats
-    let yearStat: TravelStats.YearStat
-
-    @State private var recap = ""
-    @State private var generatedYear: Int?
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    @State private var translator = AppTranslator()
-
-    /// The shown recap is valid only for the year it was generated for.
-    private var hasCurrentRecap: Bool {
-        !recap.isEmpty && generatedYear == yearStat.year
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "AI recap")
-
-            if isLoading {
-                HStack(spacing: 10) {
-                    ProgressView()
-                    Text("Writing your \(String(yearStat.year)) recap…")
-                        .foregroundStyle(.secondary)
-                }
-            } else if let errorMessage {
-                Label(errorMessage, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-            } else if hasCurrentRecap {
-                Text(recap)
-                    .font(.callout)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.brand.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-                Button("Rewrite", action: generate)
-                    .font(.caption)
-            } else {
-                Button(action: generate) {
-                    Label("Write \(String(yearStat.year)) recap", systemImage: "sparkles")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.brand)
-            }
-        }
-        .appTranslation(translator)
-    }
-
-    private func generate() {
-        isLoading = true
-        errorMessage = nil
-        let year = yearStat.year
-        let countries = stats.countries(inYear: year).map { "\($0.flag) \($0.name)" }
-        let visits = yearStat.visits
-        Task {
-            defer { isLoading = false }
-            do {
-                // Generate in English, then translate into the user's language.
-                let english = try await insights.yearInReview(
-                    year: year, countries: countries, visits: visits)
-                recap = await translator.translate(english)
-                generatedYear = year
-            } catch {
-                errorMessage = error.localizedDescription
-            }
         }
     }
 }

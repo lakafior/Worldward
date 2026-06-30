@@ -111,8 +111,7 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var selectedCountry: Country?
     @State private var detailCountry: Country?
-    @State private var showStats = false
-    @State private var showChat = false
+    @State private var showAchievements = false
     @State private var showLogVisits = false
     @State private var logVisitsText = ""
     @State private var intentRouter = IntentRouter.shared
@@ -334,17 +333,9 @@ struct ContentView: View {
 
             ToolbarItem {
                 Button {
-                    showChat = true
+                    showAchievements = true
                 } label: {
-                    Label("Ask About Your Travels", systemImage: "sparkles")
-                }
-            }
-
-            ToolbarItem {
-                Button {
-                    showStats = true
-                } label: {
-                    Label("Statistics", systemImage: "chart.pie")
+                    Label("Achievements", systemImage: "trophy")
                 }
             }
         }
@@ -384,6 +375,7 @@ struct ContentView: View {
                 NavigationStack {
                     GoingView(
                         allCountries: allCountries,
+                        centroids: countryCentroids,
                         searchText: $searchText,
                         selectedContinent: $selectedContinent,
                         selectedYear: $selectedYear,
@@ -428,11 +420,8 @@ struct ContentView: View {
             .sheet(isPresented: $photoImporter.showImporterSheet) {
                 ImportPreviewView(importer: photoImporter, modelContext: modelContext)
             }
-            .sheet(isPresented: $showStats) {
-                StatisticsView(countries: allCountries, centroids: countryCentroids)
-            }
-            .sheet(isPresented: $showChat) {
-                TravelChatView()
+            .sheet(isPresented: $showAchievements) {
+                AchievementsView(countries: allCountries)
             }
             .sheet(isPresented: $showLogVisits) {
                 LogVisitsView(initialText: logVisitsText)
@@ -582,7 +571,7 @@ struct ContentView: View {
     private func consumePendingOpenStats() {
         guard intentRouter.pendingOpenStats else { return }
         intentRouter.pendingOpenStats = false
-        showStats = true
+        showAchievements = true
     }
 
     /// Selects a country an intent requested. Waits for the catalog to load

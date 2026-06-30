@@ -43,14 +43,23 @@ struct SettingsView: View {
     @State private var showExporter = false
     @State private var showImporter = false
     @State private var transferAlert: TransferAlert?
+    @State private var showManageContainers = false
+    @State private var showManageTemplates = false
 
     var body: some View {
         Form {
             appearanceSection
             notificationsSection
             packingSection
+            packingManagementSection
             dataSection
             aboutSection
+        }
+        .sheet(isPresented: $showManageContainers) {
+            ManageContainersView()
+        }
+        .sheet(isPresented: $showManageTemplates) {
+            ManageTemplatesView()
         }
         .formStyle(.grouped)
         #if os(macOS)
@@ -161,6 +170,27 @@ struct SettingsView: View {
         } footer: {
             Text(
                 "Tailors the on-device packing assistant. “Pack for” decides whether it includes gender-specific items, and preferences are extra notes it factors in."
+            )
+        }
+    }
+
+    @ViewBuilder private var packingManagementSection: some View {
+        Section {
+            Button {
+                showManageContainers = true
+            } label: {
+                Label("Manage Containers", systemImage: "bag")
+            }
+            Button {
+                showManageTemplates = true
+            } label: {
+                Label("Manage Templates", systemImage: "list.bullet.rectangle.portrait")
+            }
+        } header: {
+            Text("Packing")
+        } footer: {
+            Text(
+                "Containers are the bags you pack into (shared across all trips). Templates let you save and reuse a packing list."
             )
         }
     }

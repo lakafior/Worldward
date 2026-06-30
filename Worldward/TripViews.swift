@@ -1,3 +1,4 @@
+import MapKit
 import SwiftData
 import SwiftUI
 import Translation
@@ -34,11 +35,15 @@ struct ExportableTrip: Transferable {
 
 // MARK: - Going tab
 
-/// The Going tab: your **Trips** (multi-country plans) and your **Wishlist**
-/// (countries you want to visit but haven't planned yet), behind a segmented
-/// control. Trips lead; the wishlist is the Phase-1 planned-countries list.
+/// The Going tab: your **Trips** (multi-country plans), your **Wishlist**
+/// (countries you want to visit but haven't planned yet), and **Suggestions**
+/// (closest unvisited + AI picks for your next destination).
 struct GoingView: View {
     let allCountries: [Country]
+    /// Country centroids (id → coordinate) used for the "next closest" suggestions.
+    /// Empty until the map's GeoJSON has finished loading, in which case that
+    /// section is simply hidden.
+    let centroids: [String: CLLocationCoordinate2D]
     @Binding var searchText: String
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
@@ -47,13 +52,15 @@ struct GoingView: View {
     enum Segment: String, CaseIterable, Identifiable {
         case trips = "Trips"
         case wishlist = "Wishlist"
+        case suggestions = "Suggestions"
         var id: String { rawValue }
 
         /// Localized title for the segmented control.
         var label: String {
             switch self {
-            case .trips:    Str.Trip.tabTrips
+            case .trips: Str.Trip.tabTrips
             case .wishlist: Str.Trip.tabWishlist
+            case .suggestions: "Suggestions"
             }
         }
     }
@@ -80,6 +87,10 @@ struct GoingView: View {
                     selectedContinent: $selectedContinent,
                     selectedYear: $selectedYear,
                     selectedCountry: $selectedCountry)
+            case .suggestions:
+                SuggestionsView(
+                    allCountries: allCountries,
+                    centroids: centroids)
             }
         }
     }
@@ -93,8 +104,6 @@ private struct TripsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var trips: [Trip]
     @State private var editingTrip: Trip?
-    @State private var showManageContainers = false
-    @State private var showManageTemplates = false
 
     /// Upcoming trips first (soonest start), then finished trips (most recent).
     private var orderedTrips: [Trip] {
@@ -130,22 +139,6 @@ private struct TripsListView: View {
         #endif
         .toolbar {
             ToolbarItem {
-                Menu {
-                    Button {
-                        showManageContainers = true
-                    } label: {
-                        Label("Manage Containers", systemImage: "bag")
-                    }
-                    Button {
-                        showManageTemplates = true
-                    } label: {
-                        Label("Manage Templates", systemImage: "list.bullet.rectangle.portrait")
-                    }
-                } label: {
-                    Label("Manage", systemImage: "slider.horizontal.3")
-                }
-            }
-            ToolbarItem {
                 Button {
                     addTrip()
                 } label: {
@@ -155,12 +148,6 @@ private struct TripsListView: View {
         }
         .sheet(item: $editingTrip) { trip in
             TripDetailSheet(trip: trip, allCountries: allCountries)
-        }
-        .sheet(isPresented: $showManageContainers) {
-            ManageContainersView()
-        }
-        .sheet(isPresented: $showManageTemplates) {
-            ManageTemplatesView()
         }
     }
 
@@ -1062,6 +1049,213 @@ struct CountryPickerSheet: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+            }
+        }
+    }
+}
+
+// MARK: - Suggestions
+
+/// Closest unvisited countries + AI-powered destination suggestions, shown as
+/// the **Suggestions** segment in the Going tab.
+private struct SuggestionsView: View {
+    let allCountries: [Country]
+    let centroids: [String: CLLocationCoordinate2D]
+
+    @State private var insights = TravelInsights()
+
+    /// Pre-computed once per init so the body never re-runs the O(n*m) pass.
+    private let suggestions: [(country: Country, distanceKM: Double)]
+
+    init(allCountries: [Country], centroids: [String: CLLocationCoordinate2D]) {
+        self.allCountries = allCountries
+        self.centroids = centroids
+        self.suggestions = nearestUnvisited(countries: allCountries, centroids: centroids)
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                if centroids.isEmpty {
+                    ContentUnavailableView(
+                        "Map not ready",
+                        systemImage: "globe",
+                        description: Text("Country locations are still loading. Try again shortly.")
+                    )
+                } else if suggestions.isEmpty {
+                    ContentUnavailableView(
+                        "Nothing left to discover",
+                        systemImage: "globe.desk.fill",
+                        description: Text(
+                            "You've visited every country — there's nothing left to suggest!"))
+                } else {
+                    closestSection
+
+                    if insights.isAvailable {
+                        SmartSuggestionsSection(
+                            insights: insights,
+                            candidates: Array(suggestions.prefix(8)))
+                    }
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Suggestions")
+        #if !os(macOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+
+    private var closestSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Closest unvisited")
+
+            VStack(spacing: 0) {
+                ForEach(Array(suggestions.enumerated()), id: \.element.country.id) { index, item in
+                    HStack {
+                        Text(item.country.flagEmoji)
+                        Text(item.country.name)
+                        Spacer()
+                        Text("\(Int(item.distanceKM.rounded())) km away")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    .padding(.vertical, 8)
+                    if index < suggestions.count - 1 { Divider() }
+                }
+            }
+            .padding(.horizontal)
+            .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+}
+
+// MARK: - Smart suggestions (Apple Intelligence)
+
+/// Opt-in next-destination picks with a one-line rationale, generated on-device
+/// from the closest-unvisited candidates. The model only phrases and ranks — the
+/// candidate set and flags come from real data, so it can't invent a country.
+private struct SmartSuggestionsSection: View {
+    let insights: TravelInsights
+    let candidates: [(country: Country, distanceKM: Double)]
+
+    @State private var picks: [ResolvedPick] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var translator = AppTranslator()
+
+    private struct ResolvedPick: Identifiable {
+        let id: String
+        let flag: String
+        let name: String
+        let reason: String
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Suggested for you")
+
+            if isLoading {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Thinking about where to go next…")
+                        .foregroundStyle(.secondary)
+                }
+            } else if let errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            } else if picks.isEmpty {
+                Button(action: generate) {
+                    Label("Suggest with Apple Intelligence", systemImage: "sparkles")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brand)
+            }
+
+            if !picks.isEmpty {
+                VStack(spacing: 0) {
+                    ForEach(Array(picks.enumerated()), id: \.element.id) { index, pick in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text(pick.flag)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(pick.name).fontWeight(.medium)
+                                Text(pick.reason)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
+                        if index < picks.count - 1 { Divider() }
+                    }
+                }
+                .padding(.horizontal)
+                .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+
+                Button("Suggest again", action: generate)
+                    .font(.caption)
+                    .disabled(isLoading)
+            }
+        }
+        .appTranslation(translator)
+    }
+
+    private func generate() {
+        isLoading = true
+        errorMessage = nil
+        let descriptions = candidates.map { item in
+            "\(item.country.name) (\(item.country.continent), ~\(Int(item.distanceKM.rounded())) km away)"
+        }
+        Task {
+            defer { isLoading = false }
+            do {
+                let raw = try await insights.suggestDestinations(candidates: descriptions)
+                let resolved = raw.compactMap { pick -> ResolvedPick? in
+                    guard
+                        let match = candidates.first(where: {
+                            matches(pick.country, $0.country.name)
+                        })
+                    else { return nil }
+                    return ResolvedPick(
+                        id: match.country.id, flag: match.country.flagEmoji,
+                        name: match.country.name, reason: pick.reason)
+                }
+                // Country names come from real data; only the model's reasons (free
+                // English text) need translating into the user's language.
+                let reasons = await translator.translate(resolved.map(\.reason))
+                picks = zip(resolved, reasons).map { pick, reason in
+                    ResolvedPick(
+                        id: pick.id, flag: pick.flag, name: pick.name, reason: reason)
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    /// Loose name match so a model paraphrase still resolves to a candidate.
+    private func matches(_ a: String, _ b: String) -> Bool {
+        a.localizedCaseInsensitiveContains(b) || b.localizedCaseInsensitiveContains(a)
+    }
+}
+
+/// Simple section header reused inside the suggestions views.
+private struct SectionHeader: View {
+    let title: String
+    var trailing: String? = nil
+
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.headline)
+            if let trailing {
+                Spacer()
+                Text(trailing)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
             }
         }
     }

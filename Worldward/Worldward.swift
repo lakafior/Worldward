@@ -85,36 +85,15 @@ struct Worldward: App {
             ContentView()
                 .preferredColorScheme(appTheme.colorScheme)
                 .onAppear {
-                    // Set up UndoManager on the model context so every change
-                    // (status, visit, trip edit) is undoable. SwiftData records
-                    // undo actions automatically once the manager is attached.
-                    let context = Self.sharedModelContainer.mainContext
-                    if context.undoManager == nil {
-                        context.undoManager = UndoManager()
-                    }
+                    // UndoManager is intentionally omitted: a SwiftData runtime bug
+                    // (FB13659086) crashes with "A snapshot should exist before
+                    // creating a new snapshot for undo" when the manager is attached
+                    // and rapid changes occur. Remove this comment block once the
+                    // framework issue is resolved in a future OS release.
                 }
         }
         .modelContainer(Self.sharedModelContainer)
-        #if os(macOS)
-            // Standard Edit menu with Undo (⌘Z) / Redo (⇧⌘Z).
-            .commands {
-                CommandGroup(replacing: .undoRedo) {
-                    Button("Undo") {
-                        Self.sharedModelContainer.mainContext.undoManager?.undo()
-                    }
-                    .keyboardShortcut("z", modifiers: .command)
-                    .disabled(
-                        !(Self.sharedModelContainer.mainContext.undoManager?.canUndo ?? false))
-
-                    Button("Redo") {
-                        Self.sharedModelContainer.mainContext.undoManager?.redo()
-                    }
-                    .keyboardShortcut("z", modifiers: [.command, .shift])
-                    .disabled(
-                        !(Self.sharedModelContainer.mainContext.undoManager?.canRedo ?? false))
-                }
-            }
-        #endif
+        // Undo/Redo commands are omitted alongside the UndoManager (see .onAppear).
 
         #if os(macOS)
             // Adds the standard "Worldward ▸ Settings…" menu item (⌘,). The Settings

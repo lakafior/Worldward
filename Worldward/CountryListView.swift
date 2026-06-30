@@ -127,6 +127,9 @@ struct CountryListView: View {
     @State private var summary = CountryListSummary()
     /// Sheet for quick-adding a country from the list toolbar.
     @State private var showAddCountry = false
+    /// Sheets for Been-only toolbar features.
+    @State private var showStatistics = false
+    @State private var showTravelChat = false
 
     /// `true` once the summary has been initialized. Avoids flashing empty states
     /// when the view first appears before `rebuildSummary` fires via `onAppear`.
@@ -174,6 +177,22 @@ struct CountryListView: View {
             .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
+            if browseMode == .been {
+                ToolbarItem {
+                    Button {
+                        showTravelChat = true
+                    } label: {
+                        Label("Ask About Your Travels", systemImage: "sparkles")
+                    }
+                }
+                ToolbarItem {
+                    Button {
+                        showStatistics = true
+                    } label: {
+                        Label("Statistics", systemImage: "chart.pie")
+                    }
+                }
+            }
             ToolbarItem {
                 Button {
                     showAddCountry = true
@@ -187,6 +206,12 @@ struct CountryListView: View {
             CountryPickerSheet(allCountries: allCountries) { country in
                 addCountry(country)
             }
+        }
+        .sheet(isPresented: $showStatistics) {
+            StatisticsView(countries: allCountries)
+        }
+        .sheet(isPresented: $showTravelChat) {
+            TravelChatView()
         }
         .onAppear { rebuildSummary() }
         .onChange(of: searchText) { rebuildSummary() }
