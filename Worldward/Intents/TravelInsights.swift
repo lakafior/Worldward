@@ -11,7 +11,9 @@ struct DestinationPick {
     @Guide(description: "The country name, copied exactly from the provided candidate list.")
     var country: String
 
-    @Guide(description: "A short, friendly reason to go next — at most 15 words.")
+    @Guide(
+        description:
+            "One concrete, specific reason to go — a single sentence of at most 25 words, naming a real sight, season, food, or how it fits the traveler's plans.")
     var reason: String
 }
 
@@ -60,24 +62,35 @@ final class TravelInsights {
     }
 
     /// Picks up to three next destinations from a candidate list, each with a
-    /// one-line reason. Candidates are pre-formatted descriptive strings.
-    func suggestDestinations(candidates: [String]) async throws -> [DestinationPick] {
+    /// concrete reason. `profile` is an English summary of the traveler's footprint
+    /// and wishlist; `guidance` describes the current suggestion mode (close to
+    /// home, fill a gap, build a trip). Candidates are pre-formatted strings, and
+    /// the model only ever picks from them — it can't invent a country.
+    func suggestDestinations(profile: String, guidance: String, candidates: [String]) async throws
+        -> [DestinationPick]
+    {
         let session = LanguageModelSession {
             "You recommend a traveler's next destinations from a fixed candidate list."
             """
-            Choose only from the candidates provided — never suggest a country \
-            that isn't listed. Pick the most appealing two or three and give each \
-            a short, specific reason. Copy country names exactly as written.
+            Choose only from the candidates provided — never suggest a country that \
+            isn't listed, and copy country names exactly as written. Tailor your two \
+            or three picks to the traveler's profile and the guidance. Give each pick \
+            one concrete, specific reason citing something real about the place.
             """
         }
         let list = candidates.enumerated()
             .map { "\($0.offset + 1). \($0.element)" }
             .joined(separator: "\n")
         let prompt = """
-            Candidates (closest unvisited countries):
+            Traveler profile:
+            \(profile)
+
+            \(guidance)
+
+            Candidates:
             \(list)
 
-            Recommend the best next destinations.
+            Recommend the best next destinations for this traveler.
             """
         let response = try await session.respond(to: prompt, generating: DestinationPicks.self)
         return response.content.picks

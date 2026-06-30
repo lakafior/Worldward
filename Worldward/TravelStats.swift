@@ -246,3 +246,98 @@ func nearestUnvisited(
 
     return Array(scored.sorted { $0.distanceKM < $1.distanceKM }.prefix(limit))
 }
+
+/// Unvisited countries in the regions the traveler has explored *least*, nearest
+/// first within those regions. Surfaces gaps on the map (a whole continent barely
+/// touched) rather than just the next country over. Empty until there's some
+/// travel to measure against.
+func unvisitedFillingGaps(
+    countries: [Country],
+    centroids: [String: CLLocationCoordinate2D],
+    limit: Int = 8
+) -> [(country: Country, distanceKM: Double)] {
+    let stats = TravelStats(countries: countries)
+    guard stats.hasTravel else { return [] }
+
+    // The continents with the most still to see, weakest coverage first.
+    let weakest =
+        stats.continents
+        .filter { $0.total > $0.visited }
+        .sorted { $0.fraction < $1.fraction }
+        .prefix(3)
+        .map(\.name)
+    let target = Set(weakest)
+    guard !target.isEmpty else { return [] }
+
+    let poolIDs = Set(
+        countries
+            .filter { !$0.isVisited && target.contains($0.continent) }
+            .map(\.id))
+
+    // Reuse the distance ranking, then keep only the gap regions' countries.
+    let ranked = nearestUnvisited(countries: countries, centroids: centroids, limit: countries.count)
+    return Array(ranked.filter { poolIDs.contains($0.country.id) }.prefix(limit))
+}
+
+/// A tight geographic cluster of unvisited countries that could form one trip: the
+/// nearest unvisited country as an anchor, plus the unvisited countries closest
+/// *to that anchor*. Ordered anchor-first; `distanceKM` is each country's distance
+/// from the anchor. Empty when there's nowhere left or no centroids yet.
+func tripCluster(
+    countries: [Country],
+    centroids: [String: CLLocationCoordinate2D],
+    limit: Int = 4
+) -> [(country: Country, distanceKM: Double)] {
+    guard
+        let anchor = nearestUnvisited(countries: countries, centroids: centroids, limit: 1).first,
+        let anchorCoord = centroids[anchor.country.id]
+    else { return [] }
+
+    let anchorLocation = CLLocation(
+        latitude: anchorCoord.latitude, longitude: anchorCoord.longitude)
+    var scored: [(country: Country, distanceKM: Double)] = []
+    for country in countries where !country.isVisited && country.id != anchor.country.id {
+        guard let coord = centroids[country.id] else { continue }
+        let location = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+        scored.append((country, anchorLocation.distance(from: location) / 1000))
+    }
+    let neighbors = scored.sorted { $0.distanceKM < $1.distanceKM }.prefix(max(0, limit - 1))
+
+    var cluster: [(country: Country, distanceKM: Double)] = [(country: anchor.country, distanceKM: 0)]
+    cluster.append(contentsOf: neighbors)
+    return cluster
+}
+
+extension TravelStats {
+    /// A short English description of the traveler's footprint, fed to the on-device
+    /// model so its picks reflect *this* person rather than generic advice. The model
+    /// generates in English; the resulting reasons are translated in the view.
+    var explorationSummary: String {
+        guard hasTravel else {
+            return "This traveler is just getting started and hasn't recorded any countries yet."
+        }
+
+        var parts: [String] = []
+        let continentWord = visitedContinents == 1 ? "continent" : "continents"
+        parts.append(
+            "Visited \(visitedCountries) countries across \(visitedContinents) \(continentWord).")
+
+        let explored = continents.filter { $0.visited > 0 }
+        let top = explored.max { $0.visited < $1.visited }
+        if let top {
+            parts.append("Most explored: \(top.name) (\(top.visited) of \(top.total)).")
+        }
+        // A region they've started but barely covered (distinct from the strongest).
+        if let thin = explored
+            .filter({ !$0.isComplete && $0.name != top?.name })
+            .min(by: { $0.fraction < $1.fraction })
+        {
+            parts.append("Barely explored: \(thin.name) (\(thin.visited) of \(thin.total)).")
+        }
+        let untouched = continents.filter { $0.visited == 0 }.map(\.name)
+        if !untouched.isEmpty {
+            parts.append("Not yet been to \(untouched.prefix(3).joined(separator: ", ")).")
+        }
+        return parts.joined(separator: " ")
+    }
+}

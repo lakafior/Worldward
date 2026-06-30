@@ -1056,21 +1056,80 @@ struct CountryPickerSheet: View {
 
 // MARK: - Suggestions
 
+/// The lens the smart suggestions are generated through. Each mode feeds the model
+/// a different candidate set and guidance, so the picks answer a different question:
+/// what's *easy* next, what *broadens* the map, or what *clusters* into one trip.
+private enum SuggestionMode: String, CaseIterable, Identifiable {
+    case closeToHome
+    case fillAGap
+    case buildATrip
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .closeToHome: "Close to home"
+        case .fillAGap: "Fill a gap"
+        case .buildATrip: "Build a trip"
+        }
+    }
+
+    /// The instruction handed to the model alongside the traveler profile.
+    var guidance: String {
+        switch self {
+        case .closeToHome:
+            "These candidates are the unvisited countries closest to where the traveler has already been. Favor easy, natural next trips."
+        case .fillAGap:
+            "These candidates are in regions the traveler has barely explored. Favor picks that broaden their map to new continents and regions."
+        case .buildATrip:
+            "These candidates lie close together and could be combined into one multi-country trip. Favor picks that pair into a single itinerary, and say how they connect."
+        }
+    }
+
+    /// Shown when a mode has no candidates to offer yet.
+    var emptyMessage: String {
+        switch self {
+        case .closeToHome: "Nothing nearby left to suggest right now."
+        case .fillAGap:
+            "Visit a few more places first — then we can spot the gaps on your map."
+        case .buildATrip: "No nearby cluster to build a trip from yet."
+        }
+    }
+}
+
 /// Closest unvisited countries + AI-powered destination suggestions, shown as
 /// the **Suggestions** segment in the Going tab.
 private struct SuggestionsView: View {
     let allCountries: [Country]
     let centroids: [String: CLLocationCoordinate2D]
 
+    @Environment(\.modelContext) private var modelContext
     @State private var insights = TravelInsights()
+    /// Set to open the trip editor right after a suggestion creates a trip.
+    @State private var editingTrip: Trip?
 
     /// Pre-computed once per init so the body never re-runs the O(n*m) pass.
     private let suggestions: [(country: Country, distanceKM: Double)]
+    /// English summary of the traveler, fed to the model for tailored picks.
+    private let profile: String
 
     init(allCountries: [Country], centroids: [String: CLLocationCoordinate2D]) {
         self.allCountries = allCountries
         self.centroids = centroids
         self.suggestions = nearestUnvisited(countries: allCountries, centroids: centroids)
+        self.profile = Self.makeProfile(countries: allCountries)
+    }
+
+    /// The traveler's footprint plus their wishlist, in English, for the model.
+    private static func makeProfile(countries: [Country]) -> String {
+        var summary = TravelStats(countries: countries).explorationSummary
+        let wishlist =
+            countries
+            .filter { $0.planStatus == .wishlist }
+            .map(\.name)
+        if !wishlist.isEmpty {
+            summary += " On the wishlist: \(wishlist.prefix(6).joined(separator: ", "))."
+        }
+        return summary
     }
 
     var body: some View {
@@ -1094,7 +1153,11 @@ private struct SuggestionsView: View {
                     if insights.isAvailable {
                         SmartSuggestionsSection(
                             insights: insights,
-                            candidates: Array(suggestions.prefix(8)))
+                            allCountries: allCountries,
+                            centroids: centroids,
+                            profile: profile,
+                            onAddToWishlist: addToWishlist,
+                            onCreateTrip: createTrip)
                     }
                 }
             }
@@ -1104,6 +1167,38 @@ private struct SuggestionsView: View {
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
+        .sheet(item: $editingTrip) { trip in
+            TripDetailSheet(trip: trip, allCountries: allCountries)
+        }
+    }
+
+    /// Adds a suggested country to the wishlist (the blue "going" plan axis),
+    /// leaving any stronger plan it already has untouched.
+    private func addToWishlist(_ country: Country) {
+        if country.planStatus == .none { country.planStatus = .wishlist }
+    }
+
+    /// Builds a trip from one or more suggested countries — each becomes an ordered
+    /// stop and joins the map's "going" layer — then opens the editor so the
+    /// traveler can fill in dates and details.
+    private func createTrip(_ countries: [Country]) {
+        guard !countries.isEmpty else { return }
+        let trip = Trip(title: Self.tripTitle(for: countries))
+        modelContext.insert(trip)
+        for (index, country) in countries.enumerated() {
+            let stop = ItineraryItem(order: index, country: country, trip: trip)
+            modelContext.insert(stop)
+            trip.itinerary.append(stop)
+            if country.planStatus == .none { country.planStatus = .planning }
+        }
+        editingTrip = trip
+    }
+
+    /// A starter title for a freshly created trip; the user edits it in the sheet.
+    private static func tripTitle(for countries: [Country]) -> String {
+        guard let first = countries.first else { return "New Trip" }
+        if countries.count == 1 { return first.name }
+        return "\(first.name) & \(countries.count - 1) more"
     }
 
     private var closestSection: some View {
@@ -1133,28 +1228,60 @@ private struct SuggestionsView: View {
 
 // MARK: - Smart suggestions (Apple Intelligence)
 
-/// Opt-in next-destination picks with a one-line rationale, generated on-device
-/// from the closest-unvisited candidates. The model only phrases and ranks — the
-/// candidate set and flags come from real data, so it can't invent a country.
+/// Opt-in next-destination picks with a concrete rationale, generated on-device.
+/// A mode picker drives *which* unvisited countries are offered (nearby, gap-filling,
+/// or a cluster for one trip); the model only phrases, ranks, and tailors to the
+/// traveler — the candidate set and flags come from real data, so it can't invent a
+/// country. Each pick is actionable: add it to the wishlist or spin it into a trip.
 private struct SmartSuggestionsSection: View {
     let insights: TravelInsights
-    let candidates: [(country: Country, distanceKM: Double)]
+    let allCountries: [Country]
+    let centroids: [String: CLLocationCoordinate2D]
+    let profile: String
+    let onAddToWishlist: (Country) -> Void
+    let onCreateTrip: ([Country]) -> Void
 
+    @State private var mode: SuggestionMode = .closeToHome
     @State private var picks: [ResolvedPick] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    /// Country ids the user added to the wishlist this session, so the button can
+    /// flip to a confirmed state without re-querying the model.
+    @State private var wishlisted: Set<String> = []
     @State private var translator = AppTranslator()
 
     private struct ResolvedPick: Identifiable {
-        let id: String
-        let flag: String
-        let name: String
+        let country: Country
         let reason: String
+        var id: String { country.id }
+        var flag: String { country.flagEmoji }
+        var name: String { country.name }
+    }
+
+    /// The candidate countries for the selected mode, with a distance for context.
+    private var candidates: [(country: Country, distanceKM: Double)] {
+        switch mode {
+        case .closeToHome:
+            nearestUnvisited(countries: allCountries, centroids: centroids, limit: 8)
+        case .fillAGap:
+            unvisitedFillingGaps(countries: allCountries, centroids: centroids, limit: 8)
+        case .buildATrip:
+            tripCluster(countries: allCountries, centroids: centroids, limit: 4)
+        }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "Suggested for you")
+
+            Picker("Mode", selection: $mode) {
+                ForEach(SuggestionMode.allCases) { Text($0.label).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: mode) { _, _ in
+                picks = []
+                errorMessage = nil
+            }
 
             if isLoading {
                 HStack(spacing: 10) {
@@ -1167,32 +1294,40 @@ private struct SmartSuggestionsSection: View {
                     .font(.caption)
                     .foregroundStyle(.orange)
             } else if picks.isEmpty {
-                Button(action: generate) {
-                    Label("Suggest with Apple Intelligence", systemImage: "sparkles")
+                if candidates.isEmpty {
+                    Text(mode.emptyMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Button(action: generate) {
+                        Label("Suggest with Apple Intelligence", systemImage: "sparkles")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.brand)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.brand)
             }
 
             if !picks.isEmpty {
                 VStack(spacing: 0) {
                     ForEach(Array(picks.enumerated()), id: \.element.id) { index, pick in
-                        HStack(alignment: .top, spacing: 10) {
-                            Text(pick.flag)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(pick.name).fontWeight(.medium)
-                                Text(pick.reason)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
+                        pickRow(pick)
                         if index < picks.count - 1 { Divider() }
                     }
                 }
                 .padding(.horizontal)
                 .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+
+                // In trip-building mode the picks are a single cluster, so offer to
+                // turn the whole set into one multi-stop trip.
+                if mode == .buildATrip && picks.count > 1 {
+                    Button {
+                        onCreateTrip(picks.map(\.country))
+                    } label: {
+                        Label("Create one trip with all \(picks.count)", systemImage: "suitcase")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.brand)
+                }
 
                 Button("Suggest again", action: generate)
                     .font(.caption)
@@ -1202,32 +1337,72 @@ private struct SmartSuggestionsSection: View {
         .appTranslation(translator)
     }
 
+    /// One pick: flag, name, the model's reason, and the two actions.
+    private func pickRow(_ pick: ResolvedPick) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(pick.flag)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(pick.name).fontWeight(.medium)
+                Text(pick.reason)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 16) {
+                    Button {
+                        onAddToWishlist(pick.country)
+                        wishlisted.insert(pick.country.id)
+                    } label: {
+                        Label(
+                            isWishlisted(pick) ? "On wishlist" : "Wishlist",
+                            systemImage: isWishlisted(pick) ? "star.fill" : "star")
+                    }
+                    .disabled(isWishlisted(pick))
+
+                    Button {
+                        onCreateTrip([pick.country])
+                    } label: {
+                        Label("Create trip", systemImage: "airplane")
+                    }
+                }
+                .font(.caption)
+                .buttonStyle(.borderless)
+                .tint(.brand)
+                .padding(.top, 2)
+            }
+            Spacer()
+        }
+        .padding(.vertical, 8)
+    }
+
+    /// `true` once added here, or if the country was already on any plan.
+    private func isWishlisted(_ pick: ResolvedPick) -> Bool {
+        wishlisted.contains(pick.country.id) || pick.country.planStatus != .none
+    }
+
     private func generate() {
         isLoading = true
         errorMessage = nil
-        let descriptions = candidates.map { item in
-            "\(item.country.name) (\(item.country.continent), ~\(Int(item.distanceKM.rounded())) km away)"
-        }
+        let candidates = self.candidates
+        let descriptions = candidates.map { "\($0.country.name) (\($0.country.continent))" }
+        let profile = self.profile
+        let guidance = mode.guidance
         Task {
             defer { isLoading = false }
             do {
-                let raw = try await insights.suggestDestinations(candidates: descriptions)
+                let raw = try await insights.suggestDestinations(
+                    profile: profile, guidance: guidance, candidates: descriptions)
                 let resolved = raw.compactMap { pick -> ResolvedPick? in
                     guard
                         let match = candidates.first(where: {
                             matches(pick.country, $0.country.name)
                         })
                     else { return nil }
-                    return ResolvedPick(
-                        id: match.country.id, flag: match.country.flagEmoji,
-                        name: match.country.name, reason: pick.reason)
+                    return ResolvedPick(country: match.country, reason: pick.reason)
                 }
                 // Country names come from real data; only the model's reasons (free
                 // English text) need translating into the user's language.
                 let reasons = await translator.translate(resolved.map(\.reason))
                 picks = zip(resolved, reasons).map { pick, reason in
-                    ResolvedPick(
-                        id: pick.id, flag: pick.flag, name: pick.name, reason: reason)
+                    ResolvedPick(country: pick.country, reason: reason)
                 }
             } catch {
                 errorMessage = error.localizedDescription
