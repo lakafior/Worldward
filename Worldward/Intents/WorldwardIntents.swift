@@ -150,9 +150,9 @@ struct OpenCountryMapIntent: OpenIntent {
 // MARK: - 3b. Search Countries (system.search schema)
 
 /// Routes a free-text query into the app's country list, conforming to the
-/// `system.search` assistant schema so Siri and Apple Intelligence understand
+/// `system.searchInApp` assistant schema so Siri and Apple Intelligence understand
 /// "search Worldward for…" as a genuine in-app search.
-@AppIntent(schema: .system.search)
+@AppIntent(schema: .system.searchInApp)
 struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
     static let searchScopes: [StringSearchScope] = [.general]
 

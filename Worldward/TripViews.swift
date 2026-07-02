@@ -48,6 +48,9 @@ struct GoingView: View {
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
     @Binding var selectedCountry: Country?
+    /// The trip shown in the macOS detail column. Ignored on iOS, where the
+    /// trips list presents a sheet instead.
+    @Binding var selectedTrip: Trip?
 
     enum Segment: String, CaseIterable, Identifiable {
         case trips = "Trips"
@@ -78,7 +81,7 @@ struct GoingView: View {
 
             switch segment {
             case .trips:
-                TripsListView(allCountries: allCountries)
+                TripsListView(allCountries: allCountries, selectedTrip: $selectedTrip)
             case .wishlist:
                 CountryListView(
                     allCountries: allCountries,
@@ -100,6 +103,8 @@ struct GoingView: View {
 
 private struct TripsListView: View {
     let allCountries: [Country]
+    /// Drives the split view's detail column on macOS; unused on iOS.
+    @Binding var selectedTrip: Trip?
 
     @Environment(\.modelContext) private var modelContext
     @Query private var trips: [Trip]
@@ -121,16 +126,35 @@ private struct TripsListView: View {
                     systemImage: "suitcase",
                     description: Text("Plan your next adventure — tap ＋ to start a trip."))
             } else {
-                List {
-                    ForEach(orderedTrips) { trip in
-                        Button {
-                            editingTrip = trip
-                        } label: {
+                #if os(macOS)
+                    // Selection drives the split view's detail column (like
+                    // Mail's message list) instead of presenting a sheet.
+                    List(selection: $selectedTrip) {
+                        ForEach(orderedTrips) { trip in
                             TripRow(trip: trip)
+                                .tag(trip)
+                                .contextMenu {
+                                    Button("Delete Trip", role: .destructive) {
+                                        delete(trip)
+                                    }
+                                }
                         }
                     }
-                    .onDelete(perform: deleteTrips)
-                }
+                    .onDeleteCommand {
+                        if let trip = selectedTrip { delete(trip) }
+                    }
+                #else
+                    List {
+                        ForEach(orderedTrips) { trip in
+                            Button {
+                                editingTrip = trip
+                            } label: {
+                                TripRow(trip: trip)
+                            }
+                        }
+                        .onDelete(perform: deleteTrips)
+                    }
+                #endif
             }
         }
         .navigationTitle("Going")
@@ -154,12 +178,23 @@ private struct TripsListView: View {
     private func addTrip() {
         let trip = Trip(title: "New Trip")
         modelContext.insert(trip)
-        editingTrip = trip
+        #if os(macOS)
+            selectedTrip = trip
+        #else
+            editingTrip = trip
+        #endif
+    }
+
+    /// Delete a single trip (macOS context menu / ⌫), clearing the detail
+    /// column first if it was showing that trip.
+    private func delete(_ trip: Trip) {
+        if selectedTrip == trip { selectedTrip = nil }
+        modelContext.delete(trip)
     }
 
     private func deleteTrips(at offsets: IndexSet) {
         let ordered = orderedTrips
-        for index in offsets { modelContext.delete(ordered[index]) }
+        for index in offsets { delete(ordered[index]) }
     }
 }
 

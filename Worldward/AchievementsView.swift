@@ -1,4 +1,3 @@
-import SwiftData
 import SwiftUI
 
 /// A focused, full-screen achievements viewer — badges only, no stats,
@@ -35,7 +34,8 @@ struct AchievementsView: View {
             #if !os(macOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    // macOS shows this in its own window; the close button dismisses.
+                    // macOS shows this as a sidebar section of the main window,
+                    // so only the iOS sheet needs a Done button.
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }
                     }
@@ -47,15 +47,6 @@ struct AchievementsView: View {
         #endif
     }
 }
-
-#if os(macOS)
-    /// Hosts `AchievementsView` in its own resizable macOS window, querying the
-    /// catalog itself so `openWindow(id:)` needs no payload.
-    struct AchievementsWindowContent: View {
-        @Query(sort: \Country.name) private var countries: [Country]
-        var body: some View { AchievementsView(countries: countries) }
-    }
-#endif
 
 // MARK: - Hero
 

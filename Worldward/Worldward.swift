@@ -112,22 +112,16 @@ struct Worldward: App {
             }
             .modelContainer(Self.sharedModelContainer)
 
-            // Travel dashboard, achievements, and the AI chat each open as their own
-            // resizable window on Mac (rather than a modal sheet over the map). Each
-            // queries the catalog itself, so opening them needs no payload.
+            // The travel dashboard and the AI chat each open as their own
+            // resizable window on Mac (rather than a modal sheet over the map).
+            // Each queries the catalog itself, so opening them needs no payload.
+            // Achievements lives in the main window's sidebar instead.
             WindowGroup("Your Travels", id: "statistics") {
                 StatisticsWindowContent()
                     .preferredColorScheme(appTheme.colorScheme)
             }
             .modelContainer(Self.sharedModelContainer)
             .defaultSize(width: 860, height: 720)
-
-            WindowGroup("Achievements", id: "achievements") {
-                AchievementsWindowContent()
-                    .preferredColorScheme(appTheme.colorScheme)
-            }
-            .modelContainer(Self.sharedModelContainer)
-            .defaultSize(width: 700, height: 740)
 
             WindowGroup("Ask About Your Travels", id: "travelChat") {
                 TravelChatView()
@@ -180,17 +174,22 @@ struct Worldward: App {
 }
 
 #if os(macOS)
-    /// A "Go" menu exposing the auxiliary windows as first-class Mac commands with
-    /// keyboard shortcuts, so they're reachable without hunting through toolbars.
+    /// A "Go" menu exposing the auxiliary windows and main-window sections as
+    /// first-class Mac commands with keyboard shortcuts, so they're reachable
+    /// without hunting through toolbars.
     struct WorldwardCommands: Commands {
         @Environment(\.openWindow) private var openWindow
+        /// The main window's sidebar selection, published by `ContentView` via
+        /// `focusedSceneValue`. `nil` when no main window has focus.
+        @FocusedBinding(\.selectedAppTab) private var selectedAppTab: AppTab?
 
         var body: some Commands {
             CommandMenu("Go") {
                 Button("Your Travels") { openWindow(id: "statistics") }
                     .keyboardShortcut("2", modifiers: .command)
-                Button("Achievements") { openWindow(id: "achievements") }
+                Button("Achievements") { selectedAppTab = .achievements }
                     .keyboardShortcut("3", modifiers: .command)
+                    .disabled(selectedAppTab == nil)
                 Button("Ask About Your Travels") { openWindow(id: "travelChat") }
                     .keyboardShortcut("4", modifiers: .command)
             }

@@ -13,9 +13,17 @@ enum BrowseMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-/// The app's three top-level tabs.
+/// The app's top-level sections. iOS shows the first three as tabs;
+/// `achievements` is a macOS-only sidebar section (iOS opens it as a sheet
+/// from the Map toolbar instead).
 enum AppTab: Hashable {
-    case map, been, going
+    case map, been, going, achievements
+}
+
+/// Lets the macOS menu bar commands (see `WorldwardCommands`) drive the main
+/// window's sidebar selection without a shared model.
+extension FocusedValues {
+    @Entry var selectedAppTab: Binding<AppTab>?
 }
 
 /// Which countries to show on the map. `all` shows every visited/planned country;
@@ -120,6 +128,10 @@ struct ContentView: View {
     @State private var hasCenteredOnHome = false
     /// The selected top-level tab (Map / Been / Going).
     @State private var selectedTab: AppTab = .map
+    /// The trip shown in the macOS detail column. Mutually exclusive with
+    /// `selectedCountry` so the trailing pane always has one unambiguous
+    /// subject. Unused on iOS, where trips open as a sheet instead.
+    @State private var selectedTrip: Trip?
     /// Cached subset of `allCountries` that should appear on the map.
     /// Rebuilt via `onChange(of: allCountries.count)` so we don't filter all 250+
     /// rows on every SwiftUI body evaluation.
@@ -128,8 +140,6 @@ struct ContentView: View {
     @State private var photoImporter = PhotoImporter()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
-    /// Opens the auxiliary macOS windows (achievements, etc.). Unused on iOS.
-    @Environment(\.openWindow) private var openWindow
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
     // Map search & filters
@@ -333,17 +343,16 @@ struct ContentView: View {
                 }
             }
 
-            ToolbarItem {
-                Button {
-                    #if os(macOS)
-                        openWindow(id: "achievements")
-                    #else
+            // macOS reaches Achievements through the sidebar (or Go ▸ ⌘3).
+            #if !os(macOS)
+                ToolbarItem {
+                    Button {
                         showAchievements = true
-                    #endif
-                } label: {
-                    Label("Achievements", systemImage: "trophy")
+                    } label: {
+                        Label("Achievements", systemImage: "trophy")
+                    }
                 }
-            }
+            #endif
         }
     }
 
@@ -391,7 +400,8 @@ struct ContentView: View {
                             searchText: $searchText,
                             selectedContinent: $selectedContinent,
                             selectedYear: $selectedYear,
-                            selectedCountry: $selectedCountry)
+                            selectedCountry: $selectedCountry,
+                            selectedTrip: $selectedTrip)
                     }
                 }
             }
@@ -410,6 +420,7 @@ struct ContentView: View {
                     Label("Map", systemImage: "map").tag(AppTab.map)
                     Label("Been", systemImage: "checkmark.seal").tag(AppTab.been)
                     Label("Going", systemImage: "airplane").tag(AppTab.going)
+                    Label("Achievements", systemImage: "trophy").tag(AppTab.achievements)
                 }
                 .navigationTitle("Worldward")
                 .navigationSplitViewColumnWidth(min: 170, ideal: 200, max: 260)
@@ -417,7 +428,7 @@ struct ContentView: View {
                 sectionContent
                     .navigationSplitViewColumnWidth(min: 360, ideal: 540)
             } detail: {
-                countryDetailColumn
+                detailColumn
             }
         }
 
@@ -450,22 +461,30 @@ struct ContentView: View {
                     searchText: $searchText,
                     selectedContinent: $selectedContinent,
                     selectedYear: $selectedYear,
-                    selectedCountry: $selectedCountry)
+                    selectedCountry: $selectedCountry,
+                    selectedTrip: $selectedTrip)
+            case .achievements:
+                AchievementsView(countries: allCountries)
             }
         }
 
-        /// The trailing detail column: the selected country, or a placeholder.
-        @ViewBuilder private var countryDetailColumn: some View {
-            if let country = selectedCountry {
+        /// The trailing detail column: the selected trip or country, or a
+        /// placeholder. Trips take precedence — selecting one clears the country
+        /// and vice-versa (see the `onChange` pair in `body`).
+        @ViewBuilder private var detailColumn: some View {
+            if let trip = selectedTrip {
+                TripDetailView(trip: trip, allCountries: allCountries)
+                    .navigationTitle(trip.title.isEmpty ? "Trip" : trip.title)
+            } else if let country = selectedCountry {
                 CountryDetailView(country: country)
                     .navigationTitle(country.name)
                     .navigationSubtitle(country.continent)
             } else {
                 ContentUnavailableView(
-                    "No Country Selected",
+                    "Nothing Selected",
                     systemImage: "globe",
                     description: Text(
-                        "Pick a country on the map or in a list to see its details.")
+                        "Pick a country on the map or a trip in the list to see its details.")
                 )
             }
         }
@@ -484,9 +503,13 @@ struct ContentView: View {
 
     var body: some View {
         rootView
+            // Lets the macOS Go menu switch sections (see WorldwardCommands).
+            .focusedSceneValue(\.selectedAppTab, $selectedTab)
             .onChange(of: selectedCountry) {
                 if let country = selectedCountry {
                     detailCountry = country
+                    // A country selection claims the macOS detail column.
+                    selectedTrip = nil
 
                     // Center the map on the selected country
                     if let rect = mapRect(for: country) {
@@ -555,6 +578,12 @@ struct ContentView: View {
             }
             .onChange(of: selectedCountry) {
                 rebuildVisibleCache()
+            }
+            // The reverse of the clearing above: a trip selection claims the
+            // macOS detail column from the country. Setting the other side to
+            // nil can't loop — each handler only acts on a non-nil value.
+            .onChange(of: selectedTrip) {
+                if selectedTrip != nil { selectedCountry = nil }
             }
             .onChange(of: mapFilter) {
                 rebuildVisibleCache()
@@ -653,11 +682,16 @@ struct ContentView: View {
         showLogVisits = true
     }
 
-    /// Presents the stats dashboard if an intent requested it.
+    /// Presents the stats dashboard if an intent requested it. On macOS the
+    /// achievements grid is a sidebar section of the main window, not a sheet.
     private func consumePendingOpenStats() {
         guard intentRouter.pendingOpenStats else { return }
         intentRouter.pendingOpenStats = false
-        showAchievements = true
+        #if os(macOS)
+            selectedTab = .achievements
+        #else
+            showAchievements = true
+        #endif
     }
 
     /// Selects a country an intent requested. Waits for the catalog to load
