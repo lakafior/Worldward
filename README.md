@@ -7,6 +7,16 @@
 
 Worldward is a native macOS / iOS app that visualises every country you've visited — crossed, lived in, or simply passed through — on an interactive world map. Built entirely with SwiftUI, MapKit, and SwiftData.
 
+![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-000000?logo=swift&logoColor=white)
+![macOS 15+](https://img.shields.io/badge/macOS-26+-000000?logo=apple&logoColor=white)
+![iOS 18+](https://img.shields.io/badge/iOS-26+-000000?logo=apple&logoColor=white)
+
+![GPLv3](https://img.shields.io/badge/License-GPLv3-1793D1?logo=gnu&logoColor=white)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?logo=github)
+
+
+
 ---
 
 ## Features
