@@ -134,7 +134,7 @@ The `AppTranslator` class manages this lifecycle using a `TranslationSession.Con
 Worldward is fully translated into **28 languages** (plus English as the source). All user-facing strings are centralized in `Localization.swift` and backed by Xcode String Catalogs — every `Text(…)` and `String(localized:)` call is automatically discovered at build time.
 
 | Language | Code | | Language | Code |
-|---|---|---|---|
+|---|---|---|---|---|
 | Bulgarian | `bg` | | Latvian | `lv` |
 | Chinese (Simplified) | `zh-Hans` | | Lithuanian | `lt` |
 | Croatian | `hr` | | Maltese | `mt` |
