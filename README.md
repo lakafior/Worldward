@@ -46,23 +46,23 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - **Share / export** a trip as **Markdown** through the system share sheet — send it straight to **Apple Notes**, Messages, or Mail, or copy it into any Markdown editor.
 - Adding a stop's country flips it to **Planning** on the map, so your trips light up the blue layer.
 
-### Achievements 🏆
+### Achievements 
 - Dedicated **Achievements** view from the **Map** tab toolbar — a badge grid with categories (Countries, Continents, Depth & Roots, Travel Log, Continent Mastery) and a hero counter.
 - Every badge shows progress toward unlocking via an on-device computed `TravelStats` pass.
 - Tap any badge for a detail sheet with its description and progress bar.
 
-### Statistics & Timeline 📊
+### Statistics & Timeline 
 - Full statistics dashboard from the **Been** tab toolbar: countries visited, continents covered, busiest year, most-visited country, per-year charts, and continent completion.
 - **Travel Timeline** — a chronological, scrollable history of every recorded visit, grouped by year with flag, date, notes, and photo thumbnails.
 - **Year-in-review** — pick any travel year to see a summary, plus an **AI recap** (on-device) that writes a prose summary of that year's travels.
 - **Year share card** — share any travel year as a customizable card whose map is tinted with just that year's countries.
 - **CSV Export** — export all your travel data as a CSV file through the system share sheet.
 
-### Suggestions ✈️
+### Suggestions 
 - The **Going** tab's **Suggestions** segment shows your **closest unvisited countries** sorted by geographic distance from places you've been.
 - **Suggested for you** — Apple Intelligence picks from those candidates with a one-line rationale for each, generated on-device.
 
-### Apple Intelligence ✨
+### Apple Intelligence 
 - **Travel Chat** – ask free-form questions about your own travels in natural language ("Which European countries haven't I been to?", "Where did I go in 2023?"). Available from the **Been** tab toolbar. Everything runs on-device via the Foundation Models framework.
 - **AI Insights** – auto-generated year-in-review recaps and smart destination recommendations with rationale, powered by on-device inference.
 
@@ -129,7 +129,7 @@ The `AppTranslator` class manages this lifecycle using a `TranslationSession.Con
 
 ---
 
-## Localization 🌐
+## Localization
 
 Worldward is fully translated into **28 languages** (plus English as the source). All user-facing strings are centralized in `Localization.swift` and backed by Xcode String Catalogs — every `Text(…)` and `String(localized:)` call is automatically discovered at build time.
 
