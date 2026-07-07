@@ -22,6 +22,7 @@ struct ShareCustomizationView: View {
     @State private var showSecondMetric = true
     @State private var showMostVisited = true
     @State private var showCountryList = true
+    @State private var showQRCode = true
     @State private var theme: ShareCardTheme = .ocean
     @State private var messageText: String
     @State private var renderedImage: Image?
@@ -38,7 +39,7 @@ struct ShareCustomizationView: View {
             headline: headline, caption: caption,
             showContinents: showContinents, showSecondMetric: showSecondMetric,
             showMostVisited: showMostVisited, showCountryList: showCountryList,
-            showMap: showMap)
+            showMap: showMap, showQRCode: showQRCode)
     }
 
     var body: some View {
@@ -74,6 +75,7 @@ struct ShareCustomizationView: View {
                     Toggle(year == nil ? "Busiest year" : "Visits", isOn: $showSecondMetric)
                     Toggle("Most visited", isOn: $showMostVisited)
                     Toggle("Country list", isOn: $showCountryList)
+                    Toggle("QR code", isOn: $showQRCode)
                 }
 
                 Section("Message") {
@@ -114,6 +116,7 @@ struct ShareCustomizationView: View {
         .onChange(of: showSecondMetric) { _, _ in regenerate() }
         .onChange(of: showMostVisited) { _, _ in regenerate() }
         .onChange(of: showCountryList) { _, _ in regenerate() }
+        .onChange(of: showQRCode) { _, _ in regenerate() }
         .onChange(of: theme) { _, _ in regenerate() }
     }
 

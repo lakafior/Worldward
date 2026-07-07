@@ -22,6 +22,8 @@ struct ShareCardConfig: Equatable {
     var showCountryList = true
     /// The tinted world map, featured below the headline.
     var showMap = true
+    /// The small QR code badge linking to the app.
+    var showQRCode = true
 }
 
 /// A self-contained, fixed-size card summarizing the user's travels, designed to
@@ -125,9 +127,11 @@ struct ShareCard: View {
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            QRCodeView(url: "https://github.com/lakafior/Worldward")
-                .frame(width: 32, height: 32)
-                .padding(12)
+            if config.showQRCode {
+                QRCodeView(url: "https://github.com/lakafior/Worldward")
+                    .frame(width: 32, height: 32)
+                    .padding(12)
+            }
         }
         .padding(28)
         .frame(width: 380, alignment: .topLeading)
