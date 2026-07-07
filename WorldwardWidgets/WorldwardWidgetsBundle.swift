@@ -9,6 +9,7 @@ struct WorldwardWidgetsBundle: WidgetBundle {
         TravelSnapshotWidget()
         FlagStripWidget()
         MiniMapWidget()
+        UpcomingTripWidget()
         // Lock Screen accessories and the Control Center control are iOS-only
         // (see WorldwardWidgets.swift).
         #if os(iOS)

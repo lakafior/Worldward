@@ -126,6 +126,10 @@ struct ContentView: View {
     @Query(sort: [SortDescriptor(\Country.continent), SortDescriptor(\Country.name)]) private
         var allCountries: [Country]
 
+    /// Feeds the upcoming-trip widget; watched via `tripsKey` the same way
+    /// `allCountries` is watched via `catalogKey`.
+    @Query private var allTrips: [Trip]
+
     @State private var searchText = ""
     @State private var selectedCountry: Country?
     @State private var detailCountry: Country?
@@ -760,6 +764,13 @@ struct ContentView: View {
                 updateWidgetSnapshot()
                 rebuildVisibleCache()
             }
+            // Trips reach the widget snapshot too. Trip editing mutates the
+            // model live through `@Bindable` bindings — there's no save
+            // chokepoint to hook — so, like `catalogKey`, a signature watched
+            // from the root view is the one reliable invalidation point.
+            .onChange(of: tripsKey) {
+                updateWidgetSnapshot()
+            }
             .onAppear {
                 // Cold launch: an intent may have set these before the view existed.
                 consumePendingLogVisits()
@@ -1203,12 +1214,27 @@ struct ContentView: View {
         return hasher.finalize()
     }
 
+    /// `catalogKey`'s companion for trips: everything the upcoming-trip widget
+    /// shows (title, dates, flags) feeds the hash, so edits to any of them —
+    /// including a stop gaining or losing a country — rewrite the snapshot.
+    private var tripsKey: Int {
+        var hasher = Hasher()
+        for trip in allTrips {
+            hasher.combine(trip.dedupID)
+            hasher.combine(trip.title)
+            hasher.combine(trip.startDate)
+            hasher.combine(trip.endDate)
+            hasher.combine(trip.flags)
+        }
+        return hasher.finalize()
+    }
+
     /// Recompute the travel summary and hand it to the shared App Group store,
     /// which redraws the widgets. Delegates to the same helper the mutating
     /// intents use (see WorldwardIntents.swift) so both paths build the snapshot
     /// identically.
     private func updateWidgetSnapshot() {
-        refreshWidgetSnapshot(countries: allCountries)
+        refreshWidgetSnapshot(countries: allCountries, trips: allTrips)
     }
 
     /// Fold a duplicate country's user data into the row that will survive

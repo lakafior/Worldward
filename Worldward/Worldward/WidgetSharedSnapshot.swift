@@ -34,6 +34,21 @@ struct WidgetSnapshot: Codable, Hashable {
     /// Written by the app so widgets can adapt their tint to match.
     var appTheme: String = "system"
 
+    /// The next planned journeys, soonest first, capped at three by the writer.
+    /// A short list — rather than just the next trip — lets the widget roll over
+    /// to the following journey on its own when one ends, even if the app isn't
+    /// launched for weeks. `endDate` lets it show an "underway" state mid-trip.
+    var upcomingTrips: [UpcomingTrip] = []
+
+    /// A planned trip as the widget needs it: title, pre-joined flag emoji
+    /// (mirroring `Trip.flags`), and the date range.
+    struct UpcomingTrip: Codable, Hashable {
+        var title: String
+        var flags: String
+        var startDate: Date
+        var endDate: Date
+    }
+
     /// Share of the world's countries visited, `0...1`.
     var fraction: Double {
         totalCountries > 0 ? Double(visitedCountries) / Double(totalCountries) : 0
@@ -58,18 +73,24 @@ struct WidgetSnapshot: Codable, Hashable {
             "JP": 2, "FR": 4, "IT": 2, "ES": 3, "DE": 2, "PT": 2, "GR": 2, "NL": 2,
             "US": 3, "CA": 2, "MX": 2, "BR": 2, "AR": 2, "ZA": 2, "EG": 1, "MA": 1,
             "AU": 2, "TH": 2, "VN": 1, "KR": 2, "IS": 2, "NO": 2,
+        ],
+        upcomingTrips: [
+            UpcomingTrip(
+                title: "Japan & Korea", flags: "🇯🇵 🇰🇷",
+                startDate: Date.now.addingTimeInterval(12 * 86_400),
+                endDate: Date.now.addingTimeInterval(19 * 86_400))
         ])
 }
 
 extension WidgetSnapshot {
     private enum CodingKeys: String, CodingKey {
         case visitedCountries, totalCountries, visitedContinents, totalContinents, flags, tints,
-            appTheme
+            appTheme, upcomingTrips
     }
 
     /// Custom decoding so a snapshot written by an older app build (without
-    /// `tints` or `appTheme`) still loads — new fields default to sensible
-    /// values until the app rewrites the snapshot.
+    /// `tints`, `appTheme`, or `upcomingTrips`) still loads — new fields default
+    /// to sensible values until the app rewrites the snapshot.
     init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         visitedCountries = try c.decode(Int.self, forKey: .visitedCountries)
@@ -79,6 +100,7 @@ extension WidgetSnapshot {
         flags = try c.decode([String].self, forKey: .flags)
         tints = try c.decodeIfPresent([String: Int].self, forKey: .tints) ?? [:]
         appTheme = try c.decodeIfPresent(String.self, forKey: .appTheme) ?? "system"
+        upcomingTrips = try c.decodeIfPresent([UpcomingTrip].self, forKey: .upcomingTrips) ?? []
     }
 }
 

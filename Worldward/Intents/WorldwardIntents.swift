@@ -66,9 +66,21 @@ enum ContinentName: String, AppEnum {
 /// after every mutation is cheap. Also reused by `ContentView` so both paths
 /// build the snapshot identically.
 @MainActor
-func refreshWidgetSnapshot(countries: [Country]) {
+func refreshWidgetSnapshot(countries: [Country], trips: [Trip]) {
     let stats = TravelStats(countries: countries)
     let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "system"
+    let now = Date()
+    // Up to three upcoming trips, soonest first, so the widget can roll over to
+    // the next journey on its own when one ends (see WidgetSnapshot.UpcomingTrip).
+    let upcoming = trips
+        .filter { $0.isUpcoming(asOf: now) }
+        .sorted { $0.startDate < $1.startDate }
+        .prefix(3)
+        .map {
+            WidgetSnapshot.UpcomingTrip(
+                title: $0.title, flags: $0.flags,
+                startDate: $0.startDate, endDate: $0.endDate)
+        }
     WidgetSnapshotStore.write(
         WidgetSnapshot(
             visitedCountries: stats.visitedCountries,
@@ -77,14 +89,16 @@ func refreshWidgetSnapshot(countries: [Country]) {
             totalContinents: stats.totalContinents,
             flags: stats.visitedFlags,
             tints: stats.statusTints,
-            appTheme: theme))
+            appTheme: theme,
+            upcomingTrips: Array(upcoming)))
 }
 
 /// Convenience for intents, which fetch from their own short-lived context.
 @MainActor
 private func refreshWidgetSnapshot(using context: ModelContext) {
     let countries = (try? context.fetch(FetchDescriptor<Country>())) ?? []
-    refreshWidgetSnapshot(countries: countries)
+    let trips = (try? context.fetch(FetchDescriptor<Trip>())) ?? []
+    refreshWidgetSnapshot(countries: countries, trips: trips)
 }
 
 // MARK: - 1. Mark Country Status

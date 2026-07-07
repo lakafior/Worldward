@@ -195,6 +195,145 @@ struct MiniMapView: View {
     }
 }
 
+// MARK: - Upcoming Trip
+
+/// Like `WorldwardProvider`, but a countdown is time-based: the entry must be
+/// re-rendered at each midnight so "in N days" ticks over without the app
+/// running. With no trip to count down to there's nothing scheduled — the next
+/// snapshot write reloads the timeline anyway.
+struct UpcomingTripProvider: TimelineProvider {
+    func placeholder(in context: Context) -> WorldwardEntry {
+        WorldwardEntry(date: .now, snapshot: .sample)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (WorldwardEntry) -> Void) {
+        let snapshot = context.isPreview ? .sample : WidgetSnapshotStore.read()
+        completion(WorldwardEntry(date: .now, snapshot: snapshot))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<WorldwardEntry>) -> Void)
+    {
+        let entry = WorldwardEntry(date: .now, snapshot: WidgetSnapshotStore.read())
+        let policy: TimelineReloadPolicy
+        if entry.snapshot.upcomingTrips.isEmpty {
+            policy = .never
+        } else {
+            let calendar = Calendar.current
+            let nextMidnight = calendar.date(
+                byAdding: .day, value: 1, to: calendar.startOfDay(for: entry.date))
+            policy = .after(nextMidnight ?? entry.date.addingTimeInterval(86_400))
+        }
+        completion(Timeline(entries: [entry], policy: policy))
+    }
+}
+
+/// Counts down to the next planned trip — "🇯🇵 🇰🇷 Japan & Korea · in 12 days".
+/// Small shows flags, title, and the countdown; medium adds the date range and
+/// a big day count. Trips the snapshot stored that have since ended are skipped
+/// at render, so the widget rolls over on its own (see `UpcomingTrip`).
+struct UpcomingTripView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: WorldwardEntry
+
+    private var trip: WidgetSnapshot.UpcomingTrip? {
+        entry.snapshot.upcomingTrips.first { $0.endDate >= entry.date }
+    }
+
+    var body: some View {
+        if let trip {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(trip.flags.isEmpty ? "✈️" : trip.flags)
+                        .font(.title3)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    Text(trip.title.isEmpty ? "Next trip" : trip.title)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                    if daysToGo(trip) <= 0 {
+                        Text("Traveling now ✈️")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white.opacity(0.85))
+                    } else {
+                        // The system formatter localizes the whole phrase
+                        // ("in 12 days", "tomorrow") for free.
+                        Text(countdown(days: daysToGo(trip)))
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                    if family != .systemSmall {
+                        Text(dateRange(trip))
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.75))
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if family != .systemSmall {
+                    VStack(spacing: 0) {
+                        if daysToGo(trip) > 0 {
+                            Text("\(daysToGo(trip))")
+                                .font(.system(size: 44, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .contentTransition(.numericText())
+                            if daysToGo(trip) == 1 {
+                                Text("day").font(.caption.weight(.medium))
+                                    .foregroundStyle(.white.opacity(0.85))
+                            } else {
+                                Text("days").font(.caption.weight(.medium))
+                                    .foregroundStyle(.white.opacity(0.85))
+                            }
+                        } else {
+                            Image(systemName: "airplane.departure")
+                                .font(.system(size: 40))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: "airplane.departure")
+                    .font(.title3)
+                    .foregroundStyle(.white.opacity(0.9))
+                Spacer(minLength: 0)
+                Text("No trips planned")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Text("Plan your next adventure in Worldward.")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.8))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Whole days from the entry's day to the trip's start day; 0 on departure
+    /// day, negative once underway.
+    private func daysToGo(_ trip: WidgetSnapshot.UpcomingTrip) -> Int {
+        let calendar = Calendar.current
+        return calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: entry.date),
+            to: calendar.startOfDay(for: trip.startDate)
+        ).day ?? 0
+    }
+
+    private func countdown(days: Int) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.dateTimeStyle = .named  // "tomorrow", not "in 1 day"
+        return formatter.localizedString(from: DateComponents(day: days))
+    }
+
+    private func dateRange(_ trip: WidgetSnapshot.UpcomingTrip) -> String {
+        let start = trip.startDate.formatted(date: .abbreviated, time: .omitted)
+        let end = trip.endDate.formatted(date: .abbreviated, time: .omitted)
+        return start == end ? start : "\(start) – \(end)"
+    }
+}
+
 // MARK: - Widgets
 
 struct TravelSnapshotWidget: Widget {
@@ -219,6 +358,19 @@ struct FlagStripWidget: Widget {
         }
         .configurationDisplayName("Flags Visited")
         .description("A grid of the flags of every country you've visited.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+struct UpcomingTripWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "WorldwardUpcomingTrip", provider: UpcomingTripProvider()) {
+            entry in
+            UpcomingTripView(entry: entry)
+                .modifier(ThemedGradientBackground(theme: entry.snapshot.appTheme))
+        }
+        .configurationDisplayName("Upcoming Trip")
+        .description("A countdown to your next planned trip.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -363,6 +515,13 @@ private struct ForceColorScheme: ViewModifier {
     MiniMapWidget()
 } timeline: {
     WorldwardEntry(date: .now, snapshot: .sample)
+}
+
+#Preview("Upcoming Trip", as: .systemMedium) {
+    UpcomingTripWidget()
+} timeline: {
+    WorldwardEntry(date: .now, snapshot: .sample)
+    WorldwardEntry(date: .now, snapshot: .placeholder)
 }
 
 #if os(iOS)

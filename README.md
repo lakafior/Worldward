@@ -108,7 +108,7 @@ The `AppTranslator` class manages this lifecycle using a `TranslationSession.Con
 - Share as image, plain-text summary, or **CSV export** of every visit.
 
 ### Widgets & Controls
-- **Home Screen / desktop widgets**: Travel Snapshot (countries, continents, % of the world), Flags Visited, and a tinted World Map.
+- **Home Screen / desktop widgets**: Travel Snapshot (countries, continents, % of the world), Flags Visited, a tinted World Map, and an Upcoming Trip countdown ("🇯🇵 🇰🇷 Japan & Korea · in 12 days") that rolls over to your next trip on its own.
 - **Lock Screen accessories**: a circular progress gauge, a rectangular summary, and an inline count.
 - **Control Center / Action button**: a "Mark where I am" control that opens the app to log your current country.
 - Widgets respect your **Light / Dark / System** appearance preference from Settings.
@@ -204,7 +204,7 @@ For developers: write strings inline with `Text("Hello")` or `String(localized: 
 | Calendar | `EventKit` (write-only, "Add to Apple Calendar") |
 | Share | `ImageRenderer` → `ShareLink`, `CIFilter` (QR codes) |
 | Localization | `String(localized:)` backed by Xcode String Catalogs |
-| Platforms | macOS 15+, iOS 18+ |
+| Platforms | macOS 26+, iOS 26+ |
 
 ---
 
@@ -273,7 +273,7 @@ Worldward/
 
 WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Control Center)
 ├── WorldwardWidgetsBundle.swift # @main WidgetBundle (widgets + control)
-└── WorldwardWidgets.swift      # Snapshot/Flags/Map widgets, accessories, "Mark where I am" control
+└── WorldwardWidgets.swift      # Snapshot/Flags/Map/Trip widgets, accessories, "Mark where I am" control
 ```
 
 > The app and the widget extension share data through an **App Group** (`group.net.smigi.worldward`): the app writes a small `WidgetSnapshot` and a copy of the map geometry; the widgets read them. `WidgetSharedSnapshot.swift` is a member of both targets.
@@ -308,8 +308,6 @@ WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Co
 Planned next, in rough priority order — everything below stays native-only, lightweight, and local-first:
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, defaults on every property, converging de-duplication); flipping it on awaits a paid Apple Developer membership. See the note on `cloudKitContainerID` in `Worldward.swift`.
-- **Upcoming-trip widget** — extend the shared `WidgetSnapshot` with the next trip's title, flags, and start date, and add a Home Screen countdown widget ("🇯🇵🇰🇷 Japan & Korea · in 12 days").
-
 - **Achievement unlock moments** — persist the set of unlocked badge ids, diff on change, and celebrate newly earned badges with a toast instead of unlocking silently.
 - **Cumulative travel chart & streaks** — a countries-over-time line chart (it only goes up) and a "new country N years running" streak stat, both derived from the existing `TravelStats` pass.
 - **CSV import** — a forgiving importer (fuzzy country-name matching via the existing `VisitLogParser.resolve`, optional date column) for switching from other trackers or spreadsheets.
