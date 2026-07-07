@@ -18,8 +18,9 @@ struct Worldward: App {
 
     static let sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Country.self, Visit.self, Trip.self, ItineraryItem.self, PackingItem.self,
-            PackingContainer.self, PackingTemplate.self, PackingTemplateItem.self,
+            Country.self, Visit.self, Trip.self, ItineraryItem.self, StopPlace.self,
+            PackingItem.self, PackingContainer.self, PackingTemplate.self,
+            PackingTemplateItem.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

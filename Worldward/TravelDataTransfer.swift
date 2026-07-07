@@ -127,6 +127,7 @@ struct ItineraryItemRecord: Codable {
     var date: Date?
     var order: Int
     var countryID: String?  // ISO alpha-2; re-linked on import, skipped if unknown
+    var places: [StopPlaceRecord]?  // optional so pre-places backups still decode
 
     @MainActor
     init(from item: ItineraryItem) {
@@ -135,6 +136,24 @@ struct ItineraryItemRecord: Codable {
         self.date = item.date
         self.order = item.order
         self.countryID = item.country?.id
+        self.places = item.sortedPlaces.map(StopPlaceRecord.init)
+    }
+}
+
+struct StopPlaceRecord: Codable {
+    var title: String
+    var detail: String
+    var latitude: Double?
+    var longitude: Double?
+    var order: Int
+
+    @MainActor
+    init(from place: StopPlace) {
+        self.title = place.title
+        self.detail = place.detail
+        self.latitude = place.latitude
+        self.longitude = place.longitude
+        self.order = place.order
     }
 }
 
@@ -213,6 +232,14 @@ enum TravelDataTransfer {
                     country: stop.countryID.flatMap { byID[$0] }, trip: trip)
                 context.insert(item)
                 trip.itinerary.append(item)
+                for record in (stop.places ?? []).sorted(by: { $0.order < $1.order }) {
+                    let place = StopPlace(
+                        title: record.title, detail: record.detail,
+                        latitude: record.latitude, longitude: record.longitude,
+                        order: record.order, stop: item)
+                    context.insert(place)
+                    item.places.append(place)
+                }
             }
             for pack in record.packing {
                 let item = PackingItem(title: pack.title, isPacked: pack.isPacked, trip: trip)

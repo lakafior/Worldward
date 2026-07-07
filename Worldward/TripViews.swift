@@ -1004,10 +1004,12 @@ private struct PackingItemRow: View {
 }
 
 /// An inline-editable itinerary stop: its country flag, an optional custom name,
-/// an optional date, and a note.
+/// an optional date, a note, and the places to see there.
 private struct StopRow: View {
     @Bindable var stop: ItineraryItem
+    @Environment(\.modelContext) private var modelContext
     @State private var hasDate: Bool
+    @State private var showPlaceSearch = false
 
     init(stop: ItineraryItem) {
         self.stop = stop
@@ -1039,8 +1041,291 @@ private struct StopRow: View {
             TextField("Note", text: $stop.note, axis: .vertical)
                 .font(.caption)
                 .lineLimit(1...3)
+
+            ForEach(stop.sortedPlaces) { place in
+                StopPlaceRow(place: place) { delete(place) }
+            }
+
+            Button {
+                showPlaceSearch = true
+            } label: {
+                Label("Add a place to see", systemImage: "mappin.and.ellipse")
+                    .font(.caption)
+            }
+            .buttonStyle(.borderless)
         }
         .padding(.vertical, 2)
+        .sheet(isPresented: $showPlaceSearch) {
+            PlaceSearchSheet(country: stop.country) { item in add(item) }
+        }
+    }
+
+    /// Saves a picked search result as a place under this stop.
+    private func add(_ item: MKMapItem) {
+        let nextOrder = (stop.places.map(\.order).max() ?? -1) + 1
+        let coordinate = item.location.coordinate
+        let place = StopPlace(
+            title: item.name ?? String(localized: "Place"),
+            detail: item.address?.shortAddress ?? item.address?.fullAddress ?? "",
+            latitude: coordinate.latitude, longitude: coordinate.longitude,
+            order: nextOrder, stop: stop)
+        modelContext.insert(place)
+        stop.places.append(place)
+    }
+
+    private func delete(_ place: StopPlace) {
+        modelContext.delete(place)
+    }
+}
+
+/// One place-to-see under a stop: a pin, the name and location line, a button to
+/// open it in Apple Maps (when it has a coordinate), and a remove button.
+private struct StopPlaceRow: View {
+    let place: StopPlace
+    let onDelete: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: "mappin.circle.fill")
+                .foregroundStyle(Color.brand)
+                .font(.caption)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(place.title).font(.caption)
+                if !place.detail.isEmpty {
+                    Text(place.detail)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            if place.coordinate != nil {
+                Button {
+                    openInMaps()
+                } label: {
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.borderless)
+                .help("Open in Apple Maps")
+            }
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .help("Remove place")
+        }
+        .padding(.leading, 4)
+    }
+
+    private func openInMaps() {
+        guard let coordinate = place.coordinate else { return }
+        let item = MKMapItem(
+            location: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude),
+            address: nil)
+        item.name = place.title
+        item.openInMaps()
+    }
+}
+
+// MARK: - Place search
+
+/// A MapKit-backed place chooser for a stop: search for museums, landmarks,
+/// restaurants… biased toward the stop's country. Results come from
+/// `MKLocalSearch`, so each pick carries a real coordinate and address.
+private struct PlaceSearchSheet: View {
+    /// The stop's country, used to bias the search toward its region. `nil` for
+    /// a free-form stop — the search is then simply worldwide.
+    let country: Country?
+    let onPick: (MKMapItem) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var search = ""
+    @State private var results: [MKMapItem] = []
+    @State private var isSearching = false
+    /// Resolves the country's bounding region exactly once, shared by every
+    /// search. A task (rather than the region itself) so the first search can
+    /// *await* the lookup instead of racing it — an unbiased worldwide query
+    /// returns a single arbitrary global match, not places in the country.
+    @State private var regionTask: Task<MKCoordinateRegion?, Never>?
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(results, id: \.self) { item in
+                    Button {
+                        onPick(item)
+                        dismiss()
+                    } label: {
+                        resultRow(item)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .overlay {
+                if isSearching && results.isEmpty {
+                    ProgressView()
+                } else if results.isEmpty {
+                    ContentUnavailableView(
+                        "Find places to see",
+                        systemImage: "mappin.and.ellipse",
+                        description: Text(emptyDescription))
+                }
+            }
+            .searchable(text: $search, prompt: "Museums, landmarks, restaurants…")
+            .navigationTitle("Add a place")
+            #if !os(macOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+            }
+            .task { _ = await countryRegion() }
+            .task(id: search) { await runSearch() }
+        }
+    }
+
+    private var emptyDescription: String {
+        if let country {
+            return String(
+                localized: "Search for sights and spots to visit in \(country.name).")
+        }
+        return String(localized: "Search for sights and spots to visit at this stop.")
+    }
+
+    private func resultRow(_ item: MKMapItem) -> some View {
+        let category = Self.categoryStyle(for: item.pointOfInterestCategory)
+        // "Museum · 99 Rue de Rivoli, 75001 Paris, France" — the category names
+        // what kind of place it is, the full address pins down which one.
+        let subtitle = [category.label, fullAddress(of: item)]
+            .compactMap { $0 }
+            .joined(separator: " · ")
+        return HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Image(systemName: category.symbol)
+                .foregroundStyle(Color.brand)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.name ?? String(localized: "Place"))
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            Spacer()
+        }
+        .contentShape(Rectangle())
+        .padding(.vertical, 2)
+    }
+
+    /// The most complete one-line address available for a result — street, city
+    /// and country when MapKit knows them.
+    private func fullAddress(of item: MKMapItem) -> String? {
+        item.addressRepresentations?.fullAddress(includingRegion: true, singleLine: true)
+            ?? item.address?.fullAddress
+            ?? item.address?.shortAddress
+    }
+
+    /// An icon and label for the common tourist-facing point-of-interest
+    /// categories, so a result reads as "a museum" or "a park" at a glance.
+    /// Anything unmapped falls back to a plain pin with no label.
+    private static func categoryStyle(
+        for category: MKPointOfInterestCategory?
+    ) -> (symbol: String, label: String?) {
+        switch category {
+        case .museum:
+            ("building.columns.fill", String(localized: "Museum"))
+        case .landmark, .nationalMonument:
+            ("star.circle.fill", String(localized: "Landmark"))
+        case .castle, .fortress:
+            ("building.fill", String(localized: "Castle"))
+        case .park, .nationalPark:
+            ("tree.fill", String(localized: "Park"))
+        case .beach:
+            ("beach.umbrella.fill", String(localized: "Beach"))
+        case .zoo:
+            ("pawprint.fill", String(localized: "Zoo"))
+        case .aquarium:
+            ("fish.fill", String(localized: "Aquarium"))
+        case .amusementPark:
+            ("sparkles", String(localized: "Amusement park"))
+        case .restaurant:
+            ("fork.knife", String(localized: "Restaurant"))
+        case .cafe, .bakery:
+            ("cup.and.saucer.fill", String(localized: "Café"))
+        case .brewery, .winery:
+            ("wineglass.fill", String(localized: "Bar"))
+        case .hotel:
+            ("bed.double.fill", String(localized: "Hotel"))
+        case .theater, .movieTheater:
+            ("theatermasks.fill", String(localized: "Theater"))
+        case .stadium:
+            ("sportscourt.fill", String(localized: "Stadium"))
+        case .library:
+            ("books.vertical.fill", String(localized: "Library"))
+        case .store:
+            ("bag.fill", String(localized: "Store"))
+        case .marina:
+            ("sailboat.fill", String(localized: "Marina"))
+        case .campground:
+            ("tent.fill", String(localized: "Campground"))
+        default:
+            ("mappin.circle.fill", nil)
+        }
+    }
+
+    /// The country's bounding region, looked up on first use and cached. `nil`
+    /// for free-form stops or when the lookup finds nothing. No `resultTypes`
+    /// restriction on the lookup — a country isn't an *address*, so restricting
+    /// to `.address` made the lookup fail and left every search unbiased.
+    private func countryRegion() async -> MKCoordinateRegion? {
+        if let regionTask { return await regionTask.value }
+        guard let country else { return nil }
+        let name = country.name
+        let task = Task { () -> MKCoordinateRegion? in
+            let request = MKLocalSearch.Request()
+            request.naturalLanguageQuery = name
+            let response = try? await MKLocalSearch(request: request).start()
+            return response?.boundingRegion
+        }
+        regionTask = task
+        return await task.value
+    }
+
+    /// Debounced live search: re-runs as the query changes, cancelling stale runs.
+    private func runSearch() async {
+        let term = search.trimmingCharacters(in: .whitespaces)
+        guard !term.isEmpty else {
+            results = []
+            return
+        }
+        try? await Task.sleep(for: .milliseconds(300))
+        guard !Task.isCancelled else { return }
+
+        isSearching = true
+        defer { isSearching = false }
+
+        let request = MKLocalSearch.Request()
+        if let region = await countryRegion() {
+            request.naturalLanguageQuery = term
+            request.region = region
+            // Keep results inside the country — a mere hint still lets "castle"
+            // resolve to a stronger match on the other side of the world.
+            request.regionPriority = .required
+        } else if let country {
+            // Region lookup failed: bias the query textually instead.
+            request.naturalLanguageQuery = "\(term), \(country.name)"
+        } else {
+            request.naturalLanguageQuery = term
+        }
+        let response = try? await MKLocalSearch(request: request).start()
+        guard !Task.isCancelled else { return }
+        results = response?.mapItems ?? []
     }
 }
 

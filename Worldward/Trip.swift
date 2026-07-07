@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import SwiftData
 
@@ -109,6 +110,9 @@ final class Trip {
                 }
                 lines.append(line)
                 if !stop.note.isEmpty { lines.append("   \(stop.note)") }
+                for place in stop.sortedPlaces {
+                    lines.append("   - 📍 \(place.title)")
+                }
             }
         }
 
@@ -152,6 +156,9 @@ final class ItineraryItem {
     var country: Country?
     var trip: Trip?
 
+    @Relationship(deleteRule: .cascade, inverse: \StopPlace.stop)
+    var places: [StopPlace] = []
+
     init(
         title: String = "", note: String = "", date: Date? = nil, order: Int = 0,
         country: Country? = nil, trip: Trip? = nil
@@ -169,6 +176,45 @@ final class ItineraryItem {
         if !title.isEmpty { return title }
         if let country { return country.name }
         return "Stop"
+    }
+
+    /// The stop's places-to-see in the order they were added.
+    var sortedPlaces: [StopPlace] {
+        places.sorted { $0.order < $1.order }
+    }
+}
+
+/// A specific sight to see within an itinerary stop — a museum, landmark,
+/// viewpoint… — usually picked from MapKit search. The coordinate is kept (when
+/// the place came from search) so it can be reopened in Apple Maps later.
+/// CloudKit-safe: defaults on every property and a to-one back to its stop.
+@Model
+final class StopPlace {
+    var title: String = ""
+    /// A short, human-readable location line from the search result
+    /// (e.g. "Rue de Rivoli, Paris"). Empty for hand-typed places.
+    var detail: String = ""
+    var latitude: Double?
+    var longitude: Double?
+    var order: Int = 0
+    var stop: ItineraryItem?
+
+    init(
+        title: String = "", detail: String = "", latitude: Double? = nil,
+        longitude: Double? = nil, order: Int = 0, stop: ItineraryItem? = nil
+    ) {
+        self.title = title
+        self.detail = detail
+        self.latitude = latitude
+        self.longitude = longitude
+        self.order = order
+        self.stop = stop
+    }
+
+    /// The place's map coordinate, or `nil` when it wasn't picked from search.
+    var coordinate: CLLocationCoordinate2D? {
+        guard let latitude, let longitude else { return nil }
+        return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
 
