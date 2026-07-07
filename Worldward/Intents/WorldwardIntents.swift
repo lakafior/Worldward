@@ -178,38 +178,41 @@ struct OpenTravelStatsIntent: AppIntent {
 
 // MARK: - 3. Show Country on Map
 
-/// Opens the app and selects a specific country on the world map, centering the
-/// camera on its bounding rect. Useful for "show me where I went in Japan".
-@AppIntent(schema: .system.open)
-struct OpenCountryMapIntent: OpenIntent {
-    @Parameter(title: "Country")
-    var target: CountryEntity
-
-    @MainActor
-    func perform() async throws -> some IntentResult {
-        IntentRouter.shared.pendingOpenCountryID = target.id
-        return .result()
-    }
-}
+// ── macOS 27+ only ────────────────────────────────────────────────
+// Re‑enable when MACOSX_DEPLOYMENT_TARGET ≥ 27.0:
+//
+// @AppIntent(schema: .system.open)
+// struct OpenCountryMapIntent: OpenIntent {
+//     @Parameter(title: "Country")
+//     var target: CountryEntity
+//
+//     @MainActor
+//     func perform() async throws -> some IntentResult {
+//         IntentRouter.shared.pendingOpenCountryID = target.id
+//         return .result()
+//     }
+// }
+// ──────────────────────────────────────────────────────────────────
 
 // MARK: - 3b. Search Countries (system.search schema)
 
-/// Routes a free-text query into the app's country list, conforming to the
-/// `system.searchInApp` assistant schema so Siri and Apple Intelligence understand
-/// "search Worldward for…" as a genuine in-app search.
-@AppIntent(schema: .system.searchInApp)
-struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
-    static let searchScopes: [StringSearchScope] = [.general]
-
-    @Parameter(title: "Search")
-    var criteria: StringSearchCriteria
-
-    @MainActor
-    func perform() async throws -> some IntentResult {
-        IntentRouter.shared.pendingSearchText = criteria.term
-        return .result()
-    }
-}
+// ── macOS 27+ only ────────────────────────────────────────────────
+// Re‑enable when MACOSX_DEPLOYMENT_TARGET ≥ 27.0:
+//
+// @AppIntent(schema: .system.searchInApp)
+// struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
+//     static let searchScopes: [StringSearchScope] = [.general]
+//
+//     @Parameter(title: "Search")
+//     var criteria: StringSearchCriteria
+//
+//     @MainActor
+//     func perform() async throws -> some IntentResult {
+//         IntentRouter.shared.pendingSearchText = criteria.term
+//         return .result()
+//     }
+// }
+// ──────────────────────────────────────────────────────────────────
 
 // MARK: - 4. Get Visit Count
 

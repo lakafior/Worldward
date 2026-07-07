@@ -293,9 +293,9 @@ struct TripDetailView: View {
     @State private var pendingNotes: String?
 
     var body: some View {
-        // A `List` (not `Form`) so iOS 27's `reorderContainer` can host the
-        // packing drag — the drop only commits inside a real list container.
-        // `.insetGrouped` keeps the familiar grouped-form appearance.
+        // Uses a `List` (rather than `Form`) for consistent drag-to-reorder
+        // behaviour across sections. `.insetGrouped` keeps the familiar
+        // grouped-form appearance.
         List {
             Section {
                 TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
@@ -335,17 +335,12 @@ struct TripDetailView: View {
         }
         // Drag-to-reorder packing items within and across container groups; the
         // closure rewrites each moved item's container + `order`. The itinerary's
-        // own `.onMove` is keyed to `ItineraryItem` and coexists.
-        // Both reorderable collections use the new iOS 27 API so the list has a
-        // single, consistent reorder system — mixing the legacy `.onMove` with a
-        // `reorderContainer` in the same List corrupts UIKit's move bookkeeping
-        // and crashes on drop.
-        .reorderContainer(for: ItineraryItem.self) { difference in
-            applyItineraryReorder(difference)
-        }
-        .reorderContainer(for: PackingItem.self, in: String.self) { difference in
-            applyPackingReorder(difference)
-        }
+        // own `.onMove` is also handled below.
+        //
+        // Both use the legacy `.onMove` API (available since macOS 14 / iOS 17)
+        // instead of the newer `reorderContainer` + `reorderable` scheme that was
+        // introduced in macOS 27 / iOS 27. Switch to that API when the deployment
+        // target reaches 27.0.
         #if os(iOS)
             .listStyle(.insetGrouped)
             .toolbar { EditButton() }
@@ -451,7 +446,7 @@ struct TripDetailView: View {
                 ForEach(trip.sortedStops) { stop in
                     StopRow(stop: stop)
                 }
-                .reorderable()
+                .onMove(perform: moveItineraryStop)
                 .onDelete(perform: deleteStops)
             }
             Button {
@@ -486,7 +481,9 @@ struct TripDetailView: View {
                             isAddingContainer = true
                         }
                     }
-                    .reorderable(collectionID: group.id)
+                    .onMove { sources, destination in
+                        movePackingItem(in: group, from: sources, to: destination)
+                    }
                     .onDelete { offsets in
                         for index in offsets { modelContext.delete(group.items[index]) }
                     }
@@ -659,25 +656,10 @@ struct TripDetailView: View {
 
     /// Applies a drag-to-reorder of the itinerary (a single collection) and
     /// renumbers every stop's `order` so the new arrangement persists.
-    private func applyItineraryReorder(
-        _ difference: ReorderDifference<PersistentIdentifier, ReorderableSingleCollectionIdentifier>
-    ) {
+    /// Uses the legacy `.onMove` API (available since macOS 14 / iOS 17).
+    private func moveItineraryStop(from source: IndexSet, to destination: Int) {
         var ordered = trip.sortedStops
-        let movingSet = Set(difference.sources)
-        let moved = difference.sources.compactMap { id in
-            ordered.first { $0.persistentModelID == id }
-        }
-        guard !moved.isEmpty else { return }
-        ordered.removeAll { movingSet.contains($0.persistentModelID) }
-
-        switch difference.destination.position {
-        case .before(let targetID):
-            let index = ordered.firstIndex { $0.persistentModelID == targetID } ?? ordered.endIndex
-            ordered.insert(contentsOf: moved, at: index)
-        case .end:
-            ordered.append(contentsOf: moved)
-        }
-
+        ordered.move(fromOffsets: source, toOffset: destination)
         for (index, stop) in ordered.enumerated() { stop.order = index }
     }
 
@@ -697,51 +679,15 @@ struct TripDetailView: View {
         for item in trip.packing { modelContext.delete(item) }
     }
 
-    /// Applies a drag-to-reorder *within a single container*, renumbering that
-    /// group's items so `order` stays contiguous.
+    /// Applies a drag-to-reorder *within a single container group*, renumbering
+    /// that group's items so `order` stays contiguous.
     ///
-    /// Cross-container drags are intentionally ignored (the drop reverts): moving
-    /// an item between containers changes two sections' row counts at once, which
-    /// reliably crashes `UICollectionView`'s interactive-reorder commit ("invalid
-    /// number of items in section"). Use the row's container menu to move an item
-    /// to a different bag instead. Same-container reorders never change a section's
-    /// count, so they commit cleanly.
-    private func applyPackingReorder(
-        _ difference: ReorderDifference<PersistentIdentifier, String>
-    ) {
-        let destID = difference.destination.collectionID
-        let destContainer: PackingContainer? =
-            destID == "ungrouped" ? nil : allContainers.first { $0.dedupID == destID }
-        let destContainerID = destContainer?.persistentModelID
-
-        let movingSet = Set(difference.sources)
-        let moved = difference.sources.compactMap { id in
-            trip.packing.first { $0.persistentModelID == id }
-        }
-        guard !moved.isEmpty else { return }
-
-        // Ignore (revert) any drop that would move an item into a different
-        // container — that path is handled by the per-row container menu.
-        guard moved.allSatisfy({ $0.container?.persistentModelID == destContainerID })
-        else { return }
-
-        // The group's current items, minus the ones being dragged.
-        var items =
-            trip.packing
-            .filter {
-                $0.container?.persistentModelID == destContainerID
-                    && !movingSet.contains($0.persistentModelID)
-            }
-            .sorted { $0.order < $1.order }
-
-        switch difference.destination.position {
-        case .before(let targetID):
-            let index = items.firstIndex { $0.persistentModelID == targetID } ?? items.endIndex
-            items.insert(contentsOf: moved, at: index)
-        case .end:
-            items.append(contentsOf: moved)
-        }
-
+    /// Cross-container drags are intentionally not supported by the legacy `.onMove`
+    /// API (each `ForEach` is scoped to its section), which matches the old
+    /// behaviour — use the row's container menu to move an item to a different bag.
+    private func movePackingItem(in group: PackingGroup, from source: IndexSet, to destination: Int) {
+        var items = group.items
+        items.move(fromOffsets: source, toOffset: destination)
         for (index, item) in items.enumerated() { item.order = index }
     }
 
