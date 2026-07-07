@@ -264,8 +264,9 @@ final class TripPlanner {
     }
 
     /// A compact, factual description of the trip for the prompt: its countries,
-    /// its dates, the travel month (so the model can reason about the season), and
-    /// its length in days. Formatted in English since generation runs in English.
+    /// its dates, the travel month (so the model can reason about the season), its
+    /// length in days, and per-country facts relevant to packing (plug types, driving
+    /// side). Formatted in English since generation runs in English.
     private static func facts(for trip: Trip) -> String {
         let names = trip.countries.map { "\($0.flagEmoji) \($0.name)" }
         let destinations =
@@ -281,10 +282,22 @@ final class TripPlanner {
             (Calendar.current.dateComponents([.day], from: trip.startDate, to: trip.endDate).day
                 ?? 0) + 1)
 
-        return """
+        var result = """
             Destinations: \(destinations).
             Dates: \(start) to \(end) (\(days) day\(days == 1 ? "" : "s")).
             Travel month: \(month).
             """
+
+        // Per-country facts the model uses to tailor packing suggestions.
+        for country in trip.countries {
+            if let facts = CountryFactsDB.facts(for: country.id) {
+                let plugs = facts.plugTypes.map { "Type \($0)" }
+                    .formatted(.list(type: .and))
+                let driving = facts.drivingSide.promptHint
+                result += "\n\(country.name) uses \(plugs) plug adapters and \(driving)."
+            }
+        }
+
+        return result
     }
 }

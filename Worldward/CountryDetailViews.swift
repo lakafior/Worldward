@@ -54,6 +54,24 @@ struct CountryDetailView: View {
                 }
             }
 
+            // MARK: Country Facts
+            if let facts = CountryFactsDB.facts(for: country.id) {
+                Section("Facts") {
+                    LabeledContent("Currency", value: facts.currency)
+                    LabeledContent(
+                        "Languages",
+                        value: facts.languages.formatted(.list(type: .and))
+                    )
+                    LabeledContent(
+                        "Plug Types",
+                        value: facts.plugTypes.map { "Type \($0)" }
+                            .formatted(.list(type: .and))
+                    )
+                    LabeledContent("Driving Side", value: facts.drivingSide.label)
+                    LabeledContent("Emergency Number", value: facts.emergencyNumber)
+                }
+            }
+
             if country.status.isVisited {
                 Section("Visits") {
                     if country.visits.isEmpty {
