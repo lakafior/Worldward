@@ -1152,6 +1152,9 @@ private struct PlaceSearchSheet: View {
             .task { _ = await countryRegion() }
             .task(id: search) { await runSearch() }
         }
+        #if os(macOS)
+            .frame(minWidth: 420, minHeight: 480)
+        #endif
     }
 
     private var emptyDescription: String {
@@ -1336,6 +1339,9 @@ struct CountryPickerSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
             }
         }
+        #if os(macOS)
+            .frame(minWidth: 400, minHeight: 450)
+        #endif
     }
 }
 
