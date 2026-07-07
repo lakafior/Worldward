@@ -16,8 +16,8 @@ struct CSVImportView: View {
     @Query(sort: \Country.name) private var countries: [Country]
 
     @State private var table: CSVTable?
-    @State private var mapping = CSVImport.Mapping()
-    @State private var plan = CSVImport.Plan()
+    @State private var mapping = CSVTransfer.Mapping()
+    @State private var plan = CSVTransfer.Plan()
     /// Import errors surface here rather than silently closing the sheet.
     @State private var applyError: String?
 
@@ -174,7 +174,7 @@ struct CSVImportView: View {
         }
     }
 
-    private func detailLine(for entry: CSVImport.CountryPlan) -> String {
+    private func detailLine(for entry: CSVTransfer.CountryPlan) -> String {
         if entry.dates.isEmpty {
             return String(localized: "status only", comment: "CSV import row: no dated visits")
         }
@@ -194,18 +194,18 @@ struct CSVImportView: View {
     private func load() {
         guard let parsed = CSVTable.parse(text) else { return }
         table = parsed
-        mapping = CSVImport.guessMapping(table: parsed, countries: countries)
+        mapping = CSVTransfer.guessMapping(table: parsed, countries: countries)
         rebuild()
     }
 
     private func rebuild() {
         guard let table else { return }
-        plan = CSVImport.plan(table: table, mapping: mapping, countries: countries)
+        plan = CSVTransfer.plan(table: table, mapping: mapping, countries: countries)
     }
 
     private func runImport() {
         do {
-            let result = try CSVImport.apply(plan, in: modelContext)
+            let result = try CSVTransfer.apply(plan, in: modelContext)
             dismiss()
             onCompletion(result.countries, result.visits)
         } catch {

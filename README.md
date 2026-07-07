@@ -67,8 +67,6 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - **Travel Timeline** — a chronological, scrollable history of every recorded visit, grouped by year with flag, date, notes, and photo thumbnails.
 - **Year-in-review** — pick any travel year to see a summary, plus an **AI recap** (on-device) that writes a prose summary of that year's travels.
 - **Year share card** — share any travel year as a customizable card whose map is tinted with just that year's countries.
-- **CSV Export** — export all your travel data as a CSV file through the system share sheet.
-- **CSV Import** — bring data in from another tracker or a spreadsheet (Settings ▸ Data): delimiter and columns auto-detected (and overridable), fuzzy country matching incl. ISO codes and flag emoji, forgiving dates, and a preview before anything is written. Additive — it never overwrites what's already recorded.
 
 ### Suggestions 
 - The **Going** tab's **Suggestions** segment shows your **closest unvisited countries** sorted by geographic distance from places you've been.
@@ -107,7 +105,12 @@ The `AppTranslator` class manages this lifecycle using a `TranslationSession.Con
 ### Share
 - Generate a beautiful share card (rasterised image) with your travel stats.
 - Customisable headline, caption, metrics, and gradient theme — optionally featuring your tinted world map and a **QR code** linking to the GitHub repository.
-- Share as image, plain-text summary, or **CSV export** of every visit.
+- Share as image or plain-text summary.
+
+### Data transfer
+Two deliberately separate flows in **Settings**:
+- **Backup (JSON)** — the app's own full-fidelity format: statuses, visits, notes, plans, and trips. Restoring **replaces** the travel data of every country in the file. For safekeeping and moving between devices.
+- **Spreadsheet (CSV)** — the outward-facing exchange format. Export lists every visited country and its visits (`Country,Status,Date,Notes`). Import is forgiving — delimiter and columns auto-detected (and overridable), fuzzy country matching incl. ISO codes and flag emoji, lenient dates, preview before writing — and **additive**: it fills in and adds, never overwrites. An export round-trips cleanly through the importer.
 
 ### Widgets & Controls
 - **Home Screen / desktop widgets**: Travel Snapshot (countries, continents, % of the world), Flags Visited, a tinted World Map, and an Upcoming Trip countdown ("🇯🇵 🇰🇷 Japan & Korea · in 12 days") that rolls over to your next trip on its own.
@@ -247,8 +250,8 @@ Worldward/
 ├── TravelStats.swift           # All computed statistics + nearest-unvisited helper
 ├── Achievement.swift           # Gamification badges, derived from TravelStats
 ├── AchievementCelebration.swift # Unlock diffing (persisted ids) + celebration toast
-├── CSVImport.swift             # Forgiving CSV parser, column guessing, additive import
-├── CSVImportView.swift         # CSV preview-and-confirm sheet (from Settings ▸ Data)
+├── CSVTransfer.swift           # CSV parser + column guessing, additive import, CSV export
+├── CSVImportView.swift         # CSV preview-and-confirm sheet (from Settings)
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
 ├── SettingsView.swift          # Appearance, reminders toggle, export/import
 ├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)

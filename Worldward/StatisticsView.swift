@@ -110,47 +110,15 @@ struct StatisticsView: View {
         return stats.statusTints.filter { ids.contains($0.key) }
     }
 
+    /// Opens the share-card customizer. CSV export lives in Settings ▸ Data with
+    /// the other transfer flows, so this is a plain button rather than a menu.
     private var shareButton: some View {
-        Menu {
-            Button {
-                showShareSheet = true
-            } label: {
-                Label("Share Image Card", systemImage: "photo")
-            }
-
-            ShareLink(item: csvString, subject: Text("Worldward Travel Data")) {
-                Label("Export CSV", systemImage: "tablecells")
-            }
+        Button {
+            showShareSheet = true
         } label: {
-            Label("Share", systemImage: "square.and.arrow.up")
+            Label("Share Image Card", systemImage: "square.and.arrow.up")
         }
         .disabled(!stats.hasTravel)
-    }
-
-    /// A CSV representation of every visited country and its visits.
-    private var csvString: String {
-        var lines = ["Country,Status,Date,Notes"]
-        for country in countries where country.isVisited {
-            let name = csvEscape(country.name)
-            let status = csvEscape(country.status.label)
-            if country.visits.isEmpty {
-                lines.append("\(name),\(status),,")
-            }
-            for visit in country.visits.sorted(by: { $0.date < $1.date }) {
-                let date = visit.date.formatted(date: .numeric, time: .omitted)
-                let notes = csvEscape(visit.notes)
-                lines.append("\(name),\(status),\(date),\(notes)")
-            }
-        }
-        return lines.joined(separator: "\n")
-    }
-
-    /// Escapes a string for CSV (wraps in quotes if it contains a comma or newline).
-    private func csvEscape(_ value: String) -> String {
-        if value.contains(",") || value.contains("\n") {
-            return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
-        }
-        return value
     }
 }
 

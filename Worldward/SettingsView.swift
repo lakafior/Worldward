@@ -42,6 +42,8 @@ struct SettingsView: View {
     @State private var exportDocument: JSONDocument?
     @State private var showExporter = false
     @State private var showImporter = false
+    @State private var csvExportDocument: CSVDocument?
+    @State private var showCSVExporter = false
     @State private var showCSVImporter = false
     /// The CSV text awaiting preview, set after the picked file is read.
     @State private var csvPayload: CSVPayload?
@@ -82,6 +84,13 @@ struct SettingsView: View {
             isPresented: $showImporter,
             allowedContentTypes: [.json],
             onCompletion: handleImport
+        )
+        .fileExporter(
+            isPresented: $showCSVExporter,
+            document: csvExportDocument,
+            contentType: .commaSeparatedText,
+            defaultFilename: "Worldward Travel Data",
+            onCompletion: handleExport
         )
         .fileImporter(
             isPresented: $showCSVImporter,
@@ -216,16 +225,30 @@ struct SettingsView: View {
         }
     }
 
+    /// The two transfer flows, kept deliberately separate: the JSON backup is the
+    /// app's own full-fidelity format (restore replaces), while CSV is the
+    /// outward-facing exchange format for spreadsheets and other trackers
+    /// (import only adds).
     @ViewBuilder private var dataSection: some View {
         Section {
             Button("Export Travel Data…", action: startExport)
             Button("Import Travel Data…") { showImporter = true }
-            Button("Import from CSV…") { showCSVImporter = true }
         } header: {
-            Text("Data")
+            Text("Backup")
         } footer: {
             Text(
-                "Export saves your country statuses and visits to a JSON file. Importing matches that file to your countries and replaces their travel data. CSV import adds countries and visits from a spreadsheet or another tracker without touching what's already recorded."
+                "A complete backup of your travel data — statuses, visits, notes, plans, and trips — as a JSON file for safekeeping or moving between devices. Importing replaces the travel data of every country in the file."
+            )
+        }
+
+        Section {
+            Button("Export CSV…", action: startCSVExport)
+            Button("Import from CSV…") { showCSVImporter = true }
+        } header: {
+            Text("Spreadsheet (CSV)")
+        } footer: {
+            Text(
+                "For exchanging with spreadsheets and other trackers. Export lists your visited countries and their visits; import adds countries and visits without touching what's already recorded."
             )
         }
     }
@@ -306,6 +329,12 @@ struct SettingsView: View {
             transferAlert = TransferAlert(
                 title: "Export Failed", message: error.localizedDescription)
         }
+    }
+
+    private func startCSVExport() {
+        let countries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
+        csvExportDocument = CSVDocument(text: CSVTransfer.export(countries: countries))
+        showCSVExporter = true
     }
 
     private func performImport(from url: URL) {

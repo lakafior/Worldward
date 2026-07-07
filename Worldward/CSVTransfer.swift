@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - CSV table
 
@@ -148,7 +149,7 @@ extension Array {
 /// import only *fills in* — it never downgrades a status or deletes a visit —
 /// because its job is migrating data from another tracker into a live catalog.
 @MainActor
-enum CSVImport {
+enum CSVTransfer {
 
     /// Which table column feeds which field. Only the country column is
     /// required; everything else is optional, matching the roadmap's "forgiving
@@ -412,5 +413,61 @@ enum CSVImport {
 
         try context.save()
         return (countriesTouched, visitsAdded)
+    }
+
+    // MARK: Exporting
+
+    /// A CSV of every visited country and its visits — the outward-facing
+    /// counterpart of the JSON backup, for spreadsheets and other trackers.
+    /// Uses the same `Country,Status,Date,Notes` header the importer's column
+    /// guesser recognises, so an export round-trips cleanly.
+    static func export(countries: [Country]) -> String {
+        var lines = ["Country,Status,Date,Notes"]
+        for country in countries.sorted(by: { $0.name < $1.name }) where country.isVisited {
+            let name = escape(country.name)
+            let status = escape(country.status.label)
+            if country.visits.isEmpty {
+                lines.append("\(name),\(status),,")
+            }
+            for visit in country.visits.sorted(by: { $0.date < $1.date }) {
+                let date = visit.date.formatted(date: .numeric, time: .omitted)
+                let notes = escape(visit.notes)
+                lines.append("\(name),\(status),\(date),\(notes)")
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// Escapes a CSV field (quotes it when it contains a comma, quote, or newline).
+    private static func escape(_ value: String) -> String {
+        if value.contains(",") || value.contains("\n") || value.contains("\"") {
+            return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
+        }
+        return value
+    }
+}
+
+/// A minimal `FileDocument` carrying CSV text, so `fileExporter` can write it
+/// natively on both platforms — `JSONDocument`'s CSV sibling.
+struct CSVDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.commaSeparatedText] }
+
+    var text: String
+
+    init(text: String) {
+        self.text = text
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let contents = configuration.file.regularFileContents,
+            let text = String(data: contents, encoding: .utf8)
+        else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        self.text = text
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: Data(text.utf8))
     }
 }
