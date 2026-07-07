@@ -31,6 +31,12 @@ extension PHAsset: @retroactive Identifiable {
 /// viewer in a sheet. Photos that no longer exist are simply skipped.
 struct VisitPhotosView: View {
     let identifiers: [String]
+    /// When provided, each thumbnail gains a context-menu action to detach the
+    /// photo from the visit. The photo itself is never touched — only the stored
+    /// identifier is removed. `nil` (the default) keeps the strip read-only, as
+    /// the timeline and import preview use it.
+    var onRemove: ((String) -> Void)? = nil
+
     @State private var viewerAsset: PHAsset?
 
     var body: some View {
@@ -39,6 +45,15 @@ struct VisitPhotosView: View {
                 ForEach(identifiers, id: \.self) { identifier in
                     PhotoThumbnail(identifier: identifier) { asset in
                         viewerAsset = asset
+                    }
+                    .contextMenu {
+                        if let onRemove {
+                            Button(role: .destructive) {
+                                onRemove(identifier)
+                            } label: {
+                                Label("Remove from Visit", systemImage: "trash")
+                            }
+                        }
                     }
                 }
             }

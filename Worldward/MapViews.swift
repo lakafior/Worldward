@@ -1,4 +1,5 @@
 import MapKit
+import SwiftData
 import SwiftUI
 
 // MARK: - Map views
@@ -31,6 +32,88 @@ struct CountryMapPolygons: MapContent {
             MapPolygon(polygons[index])
                 .foregroundStyle(fillColor)
                 .stroke(strokeColor, lineWidth: lineWidth)
+        }
+    }
+}
+
+/// Draws a trip's itinerary on the world map: a dashed line connecting its stops
+/// in order, a numbered flag badge per stop, and a small pin for each saved
+/// place. A stop anchors on its first saved place when it has one (a real
+/// coordinate from search), else on its country's centroid; stops with neither
+/// are skipped.
+struct TripRouteContent: MapContent {
+    let trip: Trip
+    let centroids: [String: CLLocationCoordinate2D]
+
+    /// One drawable stop: its itinerary position and resolved coordinate.
+    struct RoutePoint: Identifiable {
+        let id: PersistentIdentifier
+        let index: Int
+        let title: String
+        let flag: String
+        let coordinate: CLLocationCoordinate2D
+    }
+
+    /// Resolves each stop to a coordinate, in itinerary order. Shared with
+    /// `ContentView`, which uses the same points to frame the camera.
+    static func routePoints(
+        for trip: Trip, centroids: [String: CLLocationCoordinate2D]
+    ) -> [RoutePoint] {
+        var points: [RoutePoint] = []
+        for stop in trip.sortedStops {
+            let coordinate =
+                stop.sortedPlaces.compactMap(\.coordinate).first
+                ?? stop.country.flatMap { centroids[$0.id] }
+            guard let coordinate else { continue }
+            points.append(
+                RoutePoint(
+                    id: stop.persistentModelID, index: points.count,
+                    title: stop.displayTitle, flag: stop.country?.flagEmoji ?? "📍",
+                    coordinate: coordinate))
+        }
+        return points
+    }
+
+    private var points: [RoutePoint] {
+        Self.routePoints(for: trip, centroids: centroids)
+    }
+
+    /// Every saved place with a real coordinate, for the fine-grained pins.
+    private var places: [StopPlace] {
+        trip.sortedStops.flatMap(\.sortedPlaces).filter { $0.coordinate != nil }
+    }
+
+    var body: some MapContent {
+        if points.count > 1 {
+            MapPolyline(coordinates: points.map(\.coordinate))
+                .stroke(
+                    Color.brand,
+                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: [7, 5]))
+        }
+
+        ForEach(places, id: \.persistentModelID) { place in
+            if let coordinate = place.coordinate {
+                Annotation(place.title, coordinate: coordinate, anchor: .bottom) {
+                    Image(systemName: "mappin.circle.fill")
+                        .foregroundStyle(Color.brand, .white)
+                }
+            }
+        }
+
+        ForEach(points) { point in
+            Annotation(point.title, coordinate: point.coordinate, anchor: .bottom) {
+                HStack(spacing: 4) {
+                    Text("\(point.index + 1)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Color.brand, in: Capsule())
+                    Text(point.flag)
+                }
+                .padding(4)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+            }
         }
     }
 }

@@ -216,6 +216,20 @@ struct TravelStats {
             \(list)
             """
     }
+
+    /// A single year's summary for sharing as plain text — the year-in-review
+    /// counterpart of `shareText`. Falls back to the all-time text when the year
+    /// has no recorded countries.
+    func shareText(forYear year: YearStat) -> String {
+        let list = countries(inYear: year.year)
+        guard !list.isEmpty else { return shareText }
+        let countryWord = list.count == 1 ? "country" : "countries"
+        let names = list.map { "\($0.flag) \($0.name)" }.joined(separator: ", ")
+        return """
+            🌍 In \(year.year) I visited \(list.count) \(countryWord), tracked with Worldward:
+            \(names)
+            """
+    }
 }
 
 /// The unvisited countries closest to anywhere the user has already been, nearest

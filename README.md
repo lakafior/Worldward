@@ -17,11 +17,12 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - **Status filter bar** — toggle the map between All, Visited only, or Planning only countries.
 - **Map style picker** (in Settings → Appearance) — choose from **Standard**, **Hybrid** (satellite + labels), or **Satellite** (pure imagery).
 - A selected country's **flag annotation** floats above its location on the map.
+- **Trip routes** — "View Route on Map" in any trip draws its itinerary as a dashed line with numbered stop badges and pins for saved places.
 
 ### Travel Log
 - Record visits with dates and notes for every country you've been to.
-- Attach photo thumbnails fetched live from your Photo Library — no image data is ever stored.
-- Multiple visits per country, each with its own date and photo set.
+- **Attach photos to any visit** from the system photo picker — thumbnails are fetched live from your Photo Library, and no image data is ever stored (only stable identifiers).
+- Multiple visits per country, each with its own date and photo set; long-press a thumbnail to detach it.
 - **Smart default date** — new visits default to one day after your most recent visit, reducing date-picking friction.
 
 ### Country Lists (Been / Going)
@@ -51,6 +52,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - Full statistics dashboard from the **Been** tab toolbar: countries visited, continents covered, busiest year, most-visited country, per-year charts, and continent completion.
 - **Travel Timeline** — a chronological, scrollable history of every recorded visit, grouped by year with flag, date, notes, and photo thumbnails.
 - **Year-in-review** — pick any travel year to see a summary, plus an **AI recap** (on-device) that writes a prose summary of that year's travels.
+- **Year share card** — share any travel year as a customizable card whose map is tinted with just that year's countries.
 - **CSV Export** — export all your travel data as a CSV file through the system share sheet.
 
 ### Suggestions ✈️
@@ -279,6 +281,26 @@ WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Co
 - AI inference runs entirely on-device via `FoundationModels` — no network calls.
 - Country geometry is loaded from the bundled `countries.wmgb` — Natural Earth data (public domain), pre-simplified at build time by `Tools/generate_geo.swift` so the app ships ~340 KB instead of a 14 MB GeoJSON and never decodes map data on-device.
 - Photo identifiers (`PHAsset.localIdentifier`) are stored instead of image data, so the library is the source of truth and the app stays lightweight.
+
+---
+
+## Roadmap
+
+Planned next, in rough priority order — everything below stays native-only, lightweight, and local-first:
+
+- **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, defaults on every property, converging de-duplication); flipping it on awaits a paid Apple Developer membership. See the note on `cloudKitContainerID` in `Worldward.swift`.
+- **Upcoming-trip widget** — extend the shared `WidgetSnapshot` with the next trip's title, flags, and start date, and add a Home Screen countdown widget ("🇯🇵🇰🇷 Japan & Korea · in 12 days").
+- **Country facts** — a small bundled offline table per country (currency, languages, plug type, driving side, emergency number) shown in the country detail and fed into the packing assistant's prompt so it can name the exact plug adapter.
+- **Achievement unlock moments** — persist the set of unlocked badge ids, diff on change, and celebrate newly earned badges with a toast instead of unlocking silently.
+- **Cumulative travel chart & streaks** — a countries-over-time line chart (it only goes up) and a "new country N years running" streak stat, both derived from the existing `TravelStats` pass.
+- **CSV import** — a forgiving importer (fuzzy country-name matching via the existing `VisitLogParser.resolve`, optional date column) for switching from other trackers or spreadsheets.
+- **December "Wrapped"** — a paged, animated year recap built from `TravelStats` and the on-device AI summary, ending on the year share card.
+
+Under consideration (bigger bets):
+
+- **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
+- **Region-level tracking** — states/provinces via a second pre-baked geometry file from the `generate_geo.swift` pipeline; opt-in per country to keep the bundle small.
+- **Interactive packing widget** — check items off from the Home Screen using the pending-action-over-App-Group pattern the "Mark where I am" control already uses.
 
 ---
 

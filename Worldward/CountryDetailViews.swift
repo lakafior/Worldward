@@ -1,4 +1,6 @@
 import AppIntents
+import Photos
+import PhotosUI
 import SwiftData
 import SwiftUI
 
@@ -141,6 +143,10 @@ struct VisitRow: View {
     @State private var isEditing = false
     @State private var editDate: Date
     @State private var editNotes: String
+    /// Photos picked to attach to this visit; consumed (and cleared) as soon as
+    /// the picker returns. Only the stable identifiers are stored, matching the
+    /// importer's no-image-data policy.
+    @State private var pickedPhotos: [PhotosPickerItem] = []
 
     init(visit: Visit, onDelete: @escaping () -> Void) {
         self.visit = visit
@@ -182,6 +188,13 @@ struct VisitRow: View {
                         }
                     }
                     Spacer()
+                    PhotosPicker(
+                        selection: $pickedPhotos, matching: .images, photoLibrary: .shared()
+                    ) {
+                        Image(systemName: "photo.badge.plus")
+                    }
+                    .buttonStyle(.plain)
+                    .help("Attach photos from your library")
                     Button(action: { isEditing = true }) {
                         Image(systemName: "pencil")
                     }
@@ -194,10 +207,29 @@ struct VisitRow: View {
                 }
 
                 if !visit.photoIdentifiers.isEmpty {
-                    VisitPhotosView(identifiers: visit.photoIdentifiers)
+                    VisitPhotosView(identifiers: visit.photoIdentifiers) { identifier in
+                        visit.photoIdentifiers.removeAll { $0 == identifier }
+                    }
                 }
             }
             .padding(.vertical, 4)
+            .onChange(of: pickedPhotos) { _, items in
+                guard !items.isEmpty else { return }
+                // `photoLibrary: .shared()` guarantees each item carries the
+                // asset's stable localIdentifier — the same key the importer
+                // stores — so the thumbnails re-fetch from the library on demand.
+                let new = items.compactMap(\.itemIdentifier)
+                    .filter { !visit.photoIdentifiers.contains($0) }
+                pickedPhotos = []
+                guard !new.isEmpty else { return }
+                Task {
+                    // The picker itself needs no permission, but re-fetching the
+                    // thumbnails through PhotoKit does — ask on first use so the
+                    // strip doesn't render as gray placeholders.
+                    _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+                    visit.photoIdentifiers.append(contentsOf: new)
+                }
+            }
         }
     }
 }

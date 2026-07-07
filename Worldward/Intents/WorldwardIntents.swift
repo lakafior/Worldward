@@ -335,6 +335,12 @@ final class IntentRouter {
 
     /// A search term to apply to the country list, set by `SearchCountriesIntent`.
     var pendingSearchText: String?
+
+    /// A trip whose itinerary should be drawn on the map, set by the trip
+    /// editor's "View Route on Map" button — which may live in a sheet several
+    /// presentation layers away from the map. Not an intent, but the same
+    /// hand-off problem, so it travels the same way.
+    var pendingMapTrip: Trip?
 }
 
 // MARK: - 5b. Log Visits from a Description

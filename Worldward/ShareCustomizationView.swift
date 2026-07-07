@@ -9,6 +9,9 @@ struct ShareCustomizationView: View {
     /// ISO 3166-1 alpha-2 id → status rank for visited countries, used to tint the
     /// optional map on the card.
     let tints: [String: Int]
+    /// When set, the card and message summarize this single year (a
+    /// year-in-review card) instead of the all-time footprint.
+    let year: TravelStats.YearStat?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -23,10 +26,11 @@ struct ShareCustomizationView: View {
     @State private var messageText: String
     @State private var renderedImage: Image?
 
-    init(stats: TravelStats, tints: [String: Int] = [:]) {
+    init(stats: TravelStats, tints: [String: Int] = [:], year: TravelStats.YearStat? = nil) {
         self.stats = stats
         self.tints = tints
-        _messageText = State(initialValue: stats.shareText)
+        self.year = year
+        _messageText = State(initialValue: year.map(stats.shareText(forYear:)) ?? stats.shareText)
     }
 
     private var config: ShareCardConfig {
@@ -48,7 +52,9 @@ struct ShareCustomizationView: View {
                 }
 
                 Section("Card") {
-                    TextField("Headline", text: $headline, prompt: Text("My World"))
+                    TextField(
+                        "Headline", text: $headline,
+                        prompt: Text(year.map { "\($0.year) in Travel" } ?? "My World"))
                     TextField("Caption", text: $caption)
                     Picker("Theme", selection: $theme) {
                         ForEach(ShareCardTheme.allCases) { theme in
@@ -63,7 +69,9 @@ struct ShareCustomizationView: View {
                         Toggle("World map", isOn: $showMap)
                     }
                     Toggle("Continents", isOn: $showContinents)
-                    Toggle("Busiest year", isOn: $showSecondMetric)
+                    // The card's middle metric is the busiest year on the
+                    // all-time card and the visit count on a year card.
+                    Toggle(year == nil ? "Busiest year" : "Visits", isOn: $showSecondMetric)
                     Toggle("Most visited", isOn: $showMostVisited)
                     Toggle("Country list", isOn: $showCountryList)
                 }
@@ -127,6 +135,6 @@ struct ShareCustomizationView: View {
 
     private func regenerate() {
         renderedImage = renderShareImage(
-            ShareCard(stats: stats, config: config, theme: theme, tints: tints))
+            ShareCard(stats: stats, year: year, config: config, theme: theme, tints: tints))
     }
 }

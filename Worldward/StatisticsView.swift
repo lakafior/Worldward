@@ -14,6 +14,8 @@ struct StatisticsView: View {
 
     @State private var selectedYear: Int?
     @State private var showShareSheet = false
+    /// The year being shared as a year-in-review card, or `nil` when none.
+    @State private var shareCardYear: TravelStats.YearStat?
     @State private var insights = TravelInsights()
 
     /// Computed once per view instance. `TravelStats` is a full O(n) pass, and the
@@ -52,7 +54,8 @@ struct StatisticsView: View {
                             selectedYear: Binding(
                                 get: { yearStat.year },
                                 set: { selectedYear = $0 }),
-                            yearStat: yearStat)
+                            yearStat: yearStat,
+                            onShare: { shareCardYear = yearStat })
                     }
                 }
                 .padding()
@@ -80,6 +83,17 @@ struct StatisticsView: View {
         .sheet(isPresented: $showShareSheet) {
             ShareCustomizationView(stats: stats, tints: stats.statusTints)
         }
+        .sheet(item: $shareCardYear) { year in
+            ShareCustomizationView(stats: stats, tints: yearTints(for: year.year), year: year)
+        }
+    }
+
+    /// Map tints restricted to the countries recorded in `year`, so the year
+    /// card's map highlights that year's travels rather than the all-time
+    /// footprint.
+    private func yearTints(for year: Int) -> [String: Int] {
+        let ids = stats.countryIDsByYear[year] ?? []
+        return stats.statusTints.filter { ids.contains($0.key) }
     }
 
     private var shareButton: some View {
@@ -402,6 +416,8 @@ private struct YearInReviewSection: View {
     let years: [TravelStats.YearStat]
     @Binding var selectedYear: Int
     let yearStat: TravelStats.YearStat
+    /// Opens the year-in-review share card for `yearStat`.
+    let onShare: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -437,6 +453,15 @@ private struct YearInReviewSection: View {
             }
             .padding()
             .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+
+            if yearStat.countries > 0 {
+                Button(action: onShare) {
+                    Label("Share This Year", systemImage: "square.and.arrow.up")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderless)
+                .tint(.brand)
+            }
         }
     }
 }

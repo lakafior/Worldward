@@ -132,6 +132,9 @@ struct ContentView: View {
     /// `selectedCountry` so the trailing pane always has one unambiguous
     /// subject. Unused on iOS, where trips open as a sheet instead.
     @State private var selectedTrip: Trip?
+    /// The trip whose itinerary route is drawn on the map, set via the trip
+    /// editor's "View Route on Map" button. Cleared from the on-map chip.
+    @State private var mapTrip: Trip?
     /// Cached subset of `allCountries` that should appear on the map.
     /// Rebuilt via `onChange(of: allCountries.count)` so we don't filter all 250+
     /// rows on every SwiftUI body evaluation.
@@ -226,6 +229,12 @@ struct ContentView: View {
                         }
                     }
                 }
+
+                // The active trip's itinerary route. The modelContext check guards
+                // against drawing a trip deleted while its route was showing.
+                if let trip = mapTrip, trip.modelContext != nil {
+                    TripRouteContent(trip: trip, centroids: countryCentroids)
+                }
             }
             .mapStyle(mapStyle.mapStyle)
             .mapControls {
@@ -298,6 +307,12 @@ struct ContentView: View {
                     .padding([.horizontal, .top])
                     .padding(.bottom, 40)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+
+                if let trip = mapTrip, trip.modelContext != nil {
+                    tripRouteChip(trip)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .padding(.top, 8)
+                }
             }
         }
         #if os(macOS)
@@ -581,6 +596,7 @@ struct ContentView: View {
             .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
             .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
             .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
+            .onChange(of: intentRouter.pendingMapTrip) { consumePendingMapTrip() }
             // The catalog arrives after `loadGeoJSON`; re-try a pending country
             // selection once it does, so a cold-launched intent still resolves.
             // The count also changes as iCloud syncs rows in, so collapse any
@@ -670,6 +686,58 @@ struct ContentView: View {
         }
         .padding(.horizontal)
         .padding(.bottom, 8)
+    }
+
+    /// The floating banner naming the trip whose route is on the map, with a
+    /// button to clear it.
+    private func tripRouteChip(_ trip: Trip) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "point.topleft.down.to.point.bottomright.curvepath")
+                .foregroundStyle(Color.brand)
+            Text(trip.title.isEmpty ? String(localized: "Trip route") : trip.title)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+            Button {
+                mapTrip = nil
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    /// Switches to the Map tab and frames the camera around the trip's stops,
+    /// with the route drawn via `mapTrip`. The minimum padding keeps a sensible
+    /// zoom when the trip has a single stop (a zero-size rect otherwise).
+    private func showTripOnMap(_ trip: Trip) {
+        selectedCountry = nil
+        selectedTab = .map
+        mapTrip = trip
+
+        let points = TripRouteContent.routePoints(for: trip, centroids: countryCentroids)
+        guard !points.isEmpty else { return }
+        var rect = MKMapRect.null
+        for point in points {
+            rect = rect.union(MKMapRect(origin: MKMapPoint(point.coordinate), size: MKMapSize()))
+        }
+        let padded = rect.insetBy(
+            dx: -max(rect.width * 0.25, 2_000_000),
+            dy: -max(rect.height * 0.25, 2_000_000))
+        withAnimation(.easeInOut(duration: 0.5)) {
+            cameraPosition = .rect(padded)
+        }
+    }
+
+    /// Draws the route of a trip the trip editor asked to see, then clears the
+    /// request so it's consumed exactly once. Safe to call repeatedly.
+    private func consumePendingMapTrip() {
+        guard let trip = intentRouter.pendingMapTrip else { return }
+        intentRouter.pendingMapTrip = nil
+        showTripOnMap(trip)
     }
 
     /// Fly the map to a country's bounding rect and select it.

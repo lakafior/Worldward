@@ -250,6 +250,9 @@ struct TripDetailView: View {
     let allCountries: [Country]
 
     @Environment(\.modelContext) private var modelContext
+    /// Dismisses the containing sheet on iOS when jumping to the map; a no-op
+    /// in the macOS detail column, where no sheet is presented.
+    @Environment(\.dismiss) private var dismiss
     /// The shared container catalog, used for the move menu, the assistant, and
     /// first-run seeding. Sorted so groups appear in a stable order everywhere.
     @Query(sort: \PackingContainer.sortOrder) private var allContainers: [PackingContainer]
@@ -308,6 +311,16 @@ struct TripDetailView: View {
                 ) {
                     Label("Share / Export (Markdown)", systemImage: "square.and.arrow.up")
                 }
+                Button {
+                    // Hands the trip to ContentView through the router (the map
+                    // lives several presentation layers away), which switches to
+                    // the Map tab and frames the route.
+                    IntentRouter.shared.pendingMapTrip = trip
+                    dismiss()
+                } label: {
+                    Label("View Route on Map", systemImage: "map")
+                }
+                .disabled(trip.itinerary.isEmpty)
             }
 
             itinerarySection
