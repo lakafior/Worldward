@@ -26,6 +26,14 @@ struct TravelStats {
         var id: Int { year }
     }
 
+    /// One point on the countries-over-time chart: the distinct countries visited
+    /// by the end of `year`, cumulatively — the line only ever goes up.
+    struct CumulativeStat: Identifiable {
+        let year: Int
+        let total: Int
+        var id: Int { year }
+    }
+
     let totalCountries: Int
     let visitedCountries: Int
     let statusCounts: [CountryStatus: Int]
@@ -186,6 +194,44 @@ struct TravelStats {
 
     /// Count of distinct calendar years that have at least one recorded visit.
     var activeYears: Int { years.filter { $0.visits > 0 }.count }
+
+    /// Running total of distinct countries visited by the end of each year, from
+    /// the first recorded year to the last. Gap years are filled in with the
+    /// unchanged total so the chart shows plateaus rather than skipping them.
+    var cumulativeCountries: [CumulativeStat] {
+        guard let first = years.first?.year, let last = years.last?.year else { return [] }
+        var seen = Set<String>()
+        return (first...last).map { year in
+            seen.formUnion(countryIDsByYear[year] ?? [])
+            return CumulativeStat(year: year, total: seen.count)
+        }
+    }
+
+    /// How many years running the traveler has visited at least one *new* country
+    /// (one never recorded in any earlier year). Because the current year isn't
+    /// over, a streak whose latest new country was last year still counts as
+    /// alive; anything older has lapsed and returns 0.
+    var newCountryStreak: Int {
+        var seen = Set<String>()
+        var yearsWithNewCountry = Set<Int>()
+        for stat in years {
+            let ids = countryIDsByYear[stat.year] ?? []
+            if !ids.subtracting(seen).isEmpty { yearsWithNewCountry.insert(stat.year) }
+            seen.formUnion(ids)
+        }
+
+        guard let latest = yearsWithNewCountry.max() else { return 0 }
+        let currentYear = Calendar.current.component(.year, from: .now)
+        guard latest >= currentYear - 1 else { return 0 }
+
+        var streak = 0
+        var year = latest
+        while yearsWithNewCountry.contains(year) {
+            streak += 1
+            year -= 1
+        }
+        return streak
+    }
 
     /// The year with the most countries visited, if any travel is recorded.
     var busiestYear: YearStat? { years.max { $0.countries < $1.countries } }

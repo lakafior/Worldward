@@ -60,9 +60,10 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - Dedicated **Achievements** view from the **Map** tab toolbar — a badge grid with categories (Countries, Continents, Depth & Roots, Travel Log, Continent Mastery) and a hero counter.
 - Every badge shows progress toward unlocking via an on-device computed `TravelStats` pass.
 - Tap any badge for a detail sheet with its description and progress bar.
+- **Unlock toasts** — newly earned badges are celebrated with a floating toast (tap it to open the grid); several badges earned at once roll up into a single toast.
 
 ### Statistics & Timeline 
-- Full statistics dashboard from the **Been** tab toolbar: countries visited, continents covered, busiest year, most-visited country, per-year charts, and continent completion.
+- Full statistics dashboard from the **Been** tab toolbar: countries visited, continents covered, busiest year, most-visited country, per-year charts, a cumulative **countries-over-time** line chart, a **new-country streak** stat, and continent completion.
 - **Travel Timeline** — a chronological, scrollable history of every recorded visit, grouped by year with flag, date, notes, and photo thumbnails.
 - **Year-in-review** — pick any travel year to see a summary, plus an **AI recap** (on-device) that writes a prose summary of that year's travels.
 - **Year share card** — share any travel year as a customizable card whose map is tinted with just that year's countries.
@@ -244,6 +245,7 @@ Worldward/
 ├── Continents.swift            # ISO → continent lookup table
 ├── TravelStats.swift           # All computed statistics + nearest-unvisited helper
 ├── Achievement.swift           # Gamification badges, derived from TravelStats
+├── AchievementCelebration.swift # Unlock diffing (persisted ids) + celebration toast
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
 ├── SettingsView.swift          # Appearance, reminders toggle, export/import
 ├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)
@@ -308,8 +310,6 @@ WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Co
 Planned next, in rough priority order — everything below stays native-only, lightweight, and local-first:
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, defaults on every property, converging de-duplication); flipping it on awaits a paid Apple Developer membership. See the note on `cloudKitContainerID` in `Worldward.swift`.
-- **Achievement unlock moments** — persist the set of unlocked badge ids, diff on change, and celebrate newly earned badges with a toast instead of unlocking silently.
-- **Cumulative travel chart & streaks** — a countries-over-time line chart (it only goes up) and a "new country N years running" streak stat, both derived from the existing `TravelStats` pass.
 - **CSV import** — a forgiving importer (fuzzy country-name matching via the existing `VisitLogParser.resolve`, optional date column) for switching from other trackers or spreadsheets.
 - **December "Wrapped"** — a paged, animated year recap built from `TravelStats` and the on-device AI summary, ending on the year share card.
 

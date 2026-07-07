@@ -78,6 +78,12 @@ struct StatisticsView: View {
                     YearChartSection(years: stats.years)
                 }
 
+                // A single point isn't a line; the cumulative chart appears once
+                // there's a second year to draw toward.
+                if stats.cumulativeCountries.count > 1 {
+                    CumulativeChartSection(points: stats.cumulativeCountries)
+                }
+
                 ContinentSection(continents: stats.continents)
 
                 if let yearStat = selectedYearStat {
@@ -212,6 +218,18 @@ private struct StatCardsSection: View {
                     value: "\(busiest.year) · \(busiest.countries)",
                     symbol: "flame.fill", tint: .brandIndigo)
             }
+            // A one-year "streak" is just travel; the card earns its spot once
+            // there are consecutive years to brag about.
+            if stats.newCountryStreak >= 2 {
+                StatCard(
+                    title: String(
+                        localized: "New country streak",
+                        comment: "Stat card: consecutive years with a first-time country"),
+                    value: String(
+                        localized: "\(stats.newCountryStreak) years running",
+                        comment: "Stat card value: length of the new-country streak"),
+                    symbol: "laurel.leading", tint: .brandSky)
+            }
         }
     }
 }
@@ -257,6 +275,46 @@ private struct YearChartSection: View {
                 )
                 .foregroundStyle(Color.brand.gradient)
                 .cornerRadius(4)
+            }
+            .frame(height: 200)
+        }
+    }
+}
+
+// MARK: - Cumulative chart
+
+/// The countries-over-time line: cumulative distinct countries by year, so the
+/// footprint's growth reads at a glance. Categorical year labels match the
+/// per-year bar chart above it (and avoid "2,024"-style number formatting).
+private struct CumulativeChartSection: View {
+    let points: [TravelStats.CumulativeStat]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(
+                title: String(
+                    localized: "Countries over time",
+                    comment: "Chart section header: cumulative countries by year"))
+
+            Chart(points) { point in
+                AreaMark(
+                    x: .value("Year", String(point.year)),
+                    y: .value("Countries", point.total)
+                )
+                .foregroundStyle(
+                    .linearGradient(
+                        colors: [Color.brand.opacity(0.3), Color.brand.opacity(0.02)],
+                        startPoint: .top, endPoint: .bottom)
+                )
+                .interpolationMethod(.monotone)
+
+                LineMark(
+                    x: .value("Year", String(point.year)),
+                    y: .value("Countries", point.total)
+                )
+                .foregroundStyle(Color.brand)
+                .interpolationMethod(.monotone)
+                .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
             }
             .frame(height: 200)
         }

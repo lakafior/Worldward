@@ -130,10 +130,18 @@ struct ContentView: View {
     /// `allCountries` is watched via `catalogKey`.
     @Query private var allTrips: [Trip]
 
+    /// Feeds the achievement-unlock diff via `achievementsKey`: several badges
+    /// (visit milestones, active years, repeat visits) derive from visits, which
+    /// the status/plan hash in `catalogKey` can't see.
+    @Query(sort: \Visit.date) private var allVisits: [Visit]
+
     @State private var searchText = ""
     @State private var selectedCountry: Country?
     @State private var detailCountry: Country?
     @State private var showAchievements = false
+    /// The achievement-unlock toast currently on screen, if any. A newer unlock
+    /// replaces it (and restarts the auto-dismiss timer via `.task(id:)`).
+    @State private var celebration: AchievementCelebration?
     @State private var showLogVisits = false
     @State private var logVisitsText = ""
     @State private var intentRouter = IntentRouter.shared
@@ -645,6 +653,30 @@ struct ContentView: View {
 
     var body: some View {
         rootView
+            // The achievement-unlock toast floats over whichever tab is
+            // frontmost. `.task(id:)` restarts the auto-dismiss timer whenever
+            // a newer unlock replaces the toast mid-display.
+            .overlay(alignment: .top) {
+                if let celebration {
+                    AchievementToastView(celebration: celebration) {
+                        withAnimation(.easeOut(duration: 0.25)) { self.celebration = nil }
+                        openAchievements()
+                    }
+                    .task(id: celebration) {
+                        try? await Task.sleep(for: .seconds(4))
+                        guard !Task.isCancelled else { return }
+                        withAnimation(.easeOut(duration: 0.3)) { self.celebration = nil }
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+            .sensoryFeedback(.success, trigger: celebration) { _, new in new != nil }
+            // Diff the badge set whenever anything achievements derive from
+            // changes; `initial` also catches changes applied outside this view's
+            // lifetime (intents, a future iCloud sync) on the next launch.
+            .onChange(of: achievementsKey, initial: true) {
+                celebrateNewAchievements()
+            }
             .onChange(of: selectedCountry) {
                 // The selected country is part of the visible set even when
                 // unvisited/unplanned, so selection changes rebuild the cache too.
@@ -1227,6 +1259,41 @@ struct ContentView: View {
             hasher.combine(trip.flags)
         }
         return hasher.finalize()
+    }
+
+    /// `catalogKey`'s companion for achievements: badges also derive from
+    /// recorded visits (visit-count milestones, active years, repeat visits), so
+    /// visit dates feed the hash alongside the status/plan signature. Watched by
+    /// the unlock-toast diff.
+    private var achievementsKey: Int {
+        var hasher = Hasher()
+        hasher.combine(catalogKey)
+        for visit in allVisits {
+            hasher.combine(visit.date)
+        }
+        return hasher.finalize()
+    }
+
+    /// Diffs the current badge set against the persisted one and toasts anything
+    /// newly earned. Skipped while the catalog is empty (cold launch before the
+    /// store loads) so the persisted set can't be wiped and every badge then
+    /// "re-earned" in one giant toast when the rows arrive.
+    private func celebrateNewAchievements() {
+        guard !allCountries.isEmpty else { return }
+        let achievements = Achievement.all(for: TravelStats(countries: allCountries))
+        let newlyUnlocked = AchievementUnlocks.consumeNewlyUnlocked(from: achievements)
+        guard let toast = AchievementCelebration(newlyUnlocked: newlyUnlocked) else { return }
+        withAnimation(.spring(duration: 0.5)) { celebration = toast }
+    }
+
+    /// Opens the achievements grid: the sheet on iOS, or the in-window Your
+    /// Travels dashboard on macOS (which hosts the achievements page).
+    private func openAchievements() {
+        #if os(macOS)
+            push(.travels)
+        #else
+            showAchievements = true
+        #endif
     }
 
     /// Recompute the travel summary and hand it to the shared App Group store,
