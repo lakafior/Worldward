@@ -22,29 +22,34 @@ struct AchievementsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    HeroSection(unlocked: unlockedCount, total: achievements.count)
-                    AchievementsSection(achievements: achievements)
-                }
-                .padding()
-            }
-            .navigationTitle("Achievements")
-            #if !os(macOS)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    // macOS shows this as a sidebar section of the main window,
-                    // so only the iOS sheet needs a Done button.
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { dismiss() }
+        // macOS shows this inside the main window's "Your Travels" destination,
+        // which is already on a navigation stack — nesting another would break
+        // the back button. Only the iOS sheet needs its own stack and Done.
+        #if os(macOS)
+            grid
+        #else
+            NavigationStack {
+                grid
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { dismiss() }
+                        }
                     }
-                }
-            #endif
-        }
-        #if os(iOS)
+            }
             .frame(minWidth: 380, minHeight: 400)
         #endif
+    }
+
+    private var grid: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                HeroSection(unlocked: unlockedCount, total: achievements.count)
+                AchievementsSection(achievements: achievements)
+            }
+            .padding()
+        }
+        .navigationTitle("Achievements")
     }
 }
 
@@ -144,11 +149,23 @@ private struct AchievementBadge: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .contentShape(Rectangle())
         .onTapGesture { showingDetail = true }
-        .sheet(isPresented: $showingDetail) {
-            AchievementDetailPopover(achievement: achievement)
-                .presentationDetents([.height(260)])
-        }
+        // macOS: description on hover, and the detail as an anchored popover
+        // (click-away or ✕-free Esc dismiss) instead of a modal sheet, which
+        // on Mac had no visible way to close. iOS keeps the compact sheet.
+        #if os(macOS)
+            .help(achievement.detail)
+            .popover(isPresented: $showingDetail, arrowEdge: .bottom) {
+                AchievementDetailPopover(achievement: achievement)
+                    .frame(width: 280)
+            }
+        #else
+            .sheet(isPresented: $showingDetail) {
+                AchievementDetailPopover(achievement: achievement)
+                    .presentationDetents([.height(260)])
+            }
+        #endif
     }
 }
 

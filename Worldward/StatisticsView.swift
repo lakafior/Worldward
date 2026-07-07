@@ -34,58 +34,66 @@ struct StatisticsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    TimelineSection(countries: countries)
-
-                    StatCardsSection(stats: stats)
-
-                    if stats.years.contains(where: { $0.countries > 0 }) {
-                        YearChartSection(years: stats.years)
-                    }
-
-                    ContinentSection(continents: stats.continents)
-
-                    if let yearStat = selectedYearStat {
-                        YearInReviewSection(
-                            stats: stats,
-                            years: stats.years,
-                            selectedYear: Binding(
-                                get: { yearStat.year },
-                                set: { selectedYear = $0 }),
-                            yearStat: yearStat,
-                            onShare: { shareCardYear = yearStat })
-                    }
-                }
-                .padding()
-            }
-            .navigationTitle("Your Travels")
-            #if os(macOS)
-                // Its own resizable window on Mac: Share sits at the trailing edge
-                // of the toolbar; the window close button replaces a Done button.
-                .toolbar {
-                    ToolbarItem(placement: .primaryAction) { shareButton }
-                }
-            #else
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) { shareButton }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { dismiss() }
-                    }
-                }
-            #endif
-        }
-        #if os(iOS)
-            .frame(minWidth: 380, minHeight: 520)
-        #endif
+        dashboard
         .sheet(isPresented: $showShareSheet) {
             ShareCustomizationView(stats: stats, tints: stats.statusTints)
         }
         .sheet(item: $shareCardYear) { year in
             ShareCustomizationView(stats: stats, tints: yearTints(for: year.year), year: year)
         }
+    }
+
+    /// macOS shows the dashboard inside the main window's navigation stack (via
+    /// `TravelsDashboardView`), so it must not nest another stack; the iOS sheet
+    /// brings its own with a Done button.
+    @ViewBuilder private var dashboard: some View {
+        #if os(macOS)
+            scrollContent
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) { shareButton }
+                }
+        #else
+            NavigationStack {
+                scrollContent
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) { shareButton }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { dismiss() }
+                        }
+                    }
+            }
+            .frame(minWidth: 380, minHeight: 520)
+        #endif
+    }
+
+    private var scrollContent: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                TimelineSection(countries: countries)
+
+                StatCardsSection(stats: stats)
+
+                if stats.years.contains(where: { $0.countries > 0 }) {
+                    YearChartSection(years: stats.years)
+                }
+
+                ContinentSection(continents: stats.continents)
+
+                if let yearStat = selectedYearStat {
+                    YearInReviewSection(
+                        stats: stats,
+                        years: stats.years,
+                        selectedYear: Binding(
+                            get: { yearStat.year },
+                            set: { selectedYear = $0 }),
+                        yearStat: yearStat,
+                        onShare: { shareCardYear = yearStat })
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Your Travels")
     }
 
     /// Map tints restricted to the countries recorded in `year`, so the year
@@ -514,10 +522,37 @@ struct StatRow: View {
 }
 
 #if os(macOS)
-    /// Hosts `StatisticsView` in its own resizable macOS window, querying the
-    /// catalog itself so `openWindow(id:)` needs no payload.
-    struct StatisticsWindowContent: View {
+    /// The in-window "Your Travels" destination: statistics and achievements in
+    /// one dashboard, pushed over the map on the main window's navigation stack
+    /// (replacing the old auxiliary Statistics window and Achievements sidebar
+    /// section). Queries the catalog itself so pushing it needs no payload.
+    struct TravelsDashboardView: View {
         @Query(sort: \Country.name) private var countries: [Country]
-        var body: some View { StatisticsView(countries: countries) }
+
+        private enum Page: String, CaseIterable {
+            case statistics, achievements
+        }
+        @State private var page: Page = .statistics
+
+        var body: some View {
+            Group {
+                switch page {
+                case .statistics:
+                    StatisticsView(countries: countries)
+                case .achievements:
+                    AchievementsView(countries: countries)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Picker("Section", selection: $page) {
+                        Text("Statistics").tag(Page.statistics)
+                        Text("Achievements").tag(Page.achievements)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
+            }
+        }
     }
 #endif

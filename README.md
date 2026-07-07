@@ -2,6 +2,9 @@
 
 **Track your travels. Explore your world.**
 
+![iOS Mockup](Assets/Mockups/ios-mockup.png)
+![MacOS Mockup](Assets/Mockups/macos-mockup.png)
+
 Worldward is a native macOS / iOS app that visualises every country you've visited — crossed, lived in, or simply passed through — on an interactive world map. Built entirely with SwiftUI, MapKit, and SwiftData.
 
 ---
@@ -110,6 +113,11 @@ The `AppTranslator` class manages this lifecycle using a `TranslationSession.Con
 - Containers are the bags you pack into; templates let you save and reuse a complete packing list.
 - Create and customize containers with SF Symbol icons, reorder by dragging, and add items with quantities.
 
+### Country Facts
+- A bundled offline table of **country facts** — currency, languages, plug types, driving side, and emergency number — for every country.
+- Facts are shown inline in the country detail sheet, giving you essential travel info at a glance.
+- The packing assistant feeds country facts into its prompt so it can recommend the exact plug adapter and other locale-specific items.
+
 ### Data Portability
 - **Export / Import** your travel data as a portable JSON file.
 - Only your personal data is exported (statuses, visits, notes, plans, and full trips with itineraries & packing lists) — the country catalog re-seeds from the bundled geometry file. Backups are versioned; older files still import.
@@ -157,7 +165,7 @@ For developers: write strings inline with `Text("Hello")` or `String(localized: 
 
 ## Screenshots
 
-## Screenshots
+### Screenshots - iOS
 
 | | | |
 |---|---|---
@@ -213,6 +221,7 @@ Worldward/
 ├── ContentView.swift           # Tabs (Map/Been/Going), map view, intents, sheets
 ├── CountryListView.swift       # Been/Going list with sort & filter
 ├── CountryDetailViews.swift    # Country detail, visit row, detail/location sheets
+├── CountryFacts.swift          # Bundled offline facts (currency, plug types, driving side, …)
 ├── MapViews.swift              # Map polygons, legend, loading splash, country row
 ├── GeoLoading.swift            # Binary format decoder, polygon builder, CountrySeed
 ├── Country.swift               # SwiftData model for a country (been + plan axes, trip stops)
@@ -290,7 +299,7 @@ Planned next, in rough priority order — everything below stays native-only, li
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, defaults on every property, converging de-duplication); flipping it on awaits a paid Apple Developer membership. See the note on `cloudKitContainerID` in `Worldward.swift`.
 - **Upcoming-trip widget** — extend the shared `WidgetSnapshot` with the next trip's title, flags, and start date, and add a Home Screen countdown widget ("🇯🇵🇰🇷 Japan & Korea · in 12 days").
-- **Country facts** — a small bundled offline table per country (currency, languages, plug type, driving side, emergency number) shown in the country detail and fed into the packing assistant's prompt so it can name the exact plug adapter.
+
 - **Achievement unlock moments** — persist the set of unlocked badge ids, diff on change, and celebrate newly earned badges with a toast instead of unlocking silently.
 - **Cumulative travel chart & streaks** — a countries-over-time line chart (it only goes up) and a "new country N years running" streak stat, both derived from the existing `TravelStats` pass.
 - **CSV import** — a forgiving importer (fuzzy country-name matching via the existing `VisitLogParser.resolve`, optional date column) for switching from other trackers or spreadsheets.

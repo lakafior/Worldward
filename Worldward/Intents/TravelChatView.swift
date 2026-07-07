@@ -20,39 +20,47 @@ struct TravelChatView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if intelligence.isAvailable {
-                    chatSurface
-                } else {
-                    unavailableView
-                }
-            }
-            .navigationTitle("Ask About Your Travels")
-            #if !os(macOS)
-                .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar {
-                #if !os(macOS)
-                    // macOS shows this in its own window; the close button dismisses.
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { dismiss() }
-                    }
-                #endif
-                if intelligence.isAvailable {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button {
-                            intelligence.reset()
-                            question = ""
-                            translatedAnswer = nil
-                        } label: {
-                            Label("New", systemImage: "square.and.pencil")
+        // macOS pushes this onto the main window's navigation stack (the back
+        // button dismisses), so it must not nest another stack; the iOS sheet
+        // brings its own with a Done button.
+        #if os(macOS)
+            chatRoot
+        #else
+            NavigationStack {
+                chatRoot
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { dismiss() }
                         }
                     }
+            }
+        #endif
+    }
+
+    private var chatRoot: some View {
+        Group {
+            if intelligence.isAvailable {
+                chatSurface
+            } else {
+                unavailableView
+            }
+        }
+        .navigationTitle("Ask About Your Travels")
+        .toolbar {
+            if intelligence.isAvailable {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        intelligence.reset()
+                        question = ""
+                        translatedAnswer = nil
+                    } label: {
+                        Label("New", systemImage: "square.and.pencil")
+                    }
                 }
             }
-            .appTranslation(translator)
         }
+        .appTranslation(translator)
     }
 
     // MARK: - Available

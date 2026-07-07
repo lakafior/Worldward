@@ -13,18 +13,28 @@ enum BrowseMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-/// The app's top-level sections. iOS shows the first three as tabs;
-/// `achievements` is a macOS-only sidebar section (iOS opens it as a sheet
-/// from the Map toolbar instead).
+/// The app's top-level sections, shown as iOS tabs. macOS has no tab
+/// selection: the sidebar holds the lists and the map owns the detail column.
 enum AppTab: Hashable {
-    case map, been, going, achievements
+    case map, been, going
 }
 
-/// Lets the macOS menu bar commands (see `WorldwardCommands`) drive the main
-/// window's sidebar selection without a shared model.
-extension FocusedValues {
-    @Entry var selectedAppTab: Binding<AppTab>?
-}
+#if os(macOS)
+    /// The in-window destinations that push over the map on macOS, replacing
+    /// the old auxiliary windows so everything lives in the main window.
+    enum MacDestination: Hashable {
+        /// Statistics + achievements dashboard (see `TravelsDashboardView`).
+        case travels
+        /// On-device travel Q&A.
+        case chat
+    }
+
+    /// Lets the macOS menu bar commands (see `WorldwardCommands`) drive the main
+    /// window's navigation stack without a shared model.
+    extension FocusedValues {
+        @Entry var macDestinations: Binding<[MacDestination]>?
+    }
+#endif
 
 /// Which countries to show on the map. `all` shows every visited/planned country;
 /// `visited` hides planned-only countries; `planning` hides visited-only countries.
@@ -126,8 +136,15 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var hasCenteredOnHome = false
-    /// The selected top-level tab (Map / Been / Going).
+    /// The selected top-level tab (Map / Been / Going). iOS only.
     @State private var selectedTab: AppTab = .map
+    #if os(macOS)
+        /// The in-window destinations pushed over the map (Your Travels, Chat).
+        /// Published to the Go menu via `focusedSceneValue` in `macRoot`.
+        @State private var macPath: [MacDestination] = []
+        /// Which list the macOS sidebar shows (Been or Going).
+        @State private var sidebarMode: BrowseMode = .been
+    #endif
     /// The trip shown in the macOS detail column. Mutually exclusive with
     /// `selectedCountry` so the trailing pane always has one unambiguous
     /// subject. Unused on iOS, where trips open as a sheet instead.
@@ -316,9 +333,35 @@ struct ContentView: View {
             }
         }
         #if os(macOS)
-            .navigationSubtitle("Tap a country to see details")
+            .navigationSubtitle("Click a country to see its details")
         #endif
         .toolbar {
+            // On macOS the map filter is a native segmented control in the
+            // toolbar; iOS keeps the floating capsule bar (see mapFilterBar).
+            #if os(macOS)
+                ToolbarItem {
+                    Picker("Filter", selection: $mapFilter) {
+                        ForEach(MapFilter.allCases) { filter in
+                            Text(filter.label).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+                ToolbarItem {
+                    Button {
+                        push(.travels)
+                    } label: {
+                        Label("Your Travels", systemImage: "chart.pie")
+                    }
+                }
+                ToolbarItem {
+                    Button {
+                        push(.chat)
+                    } label: {
+                        Label("Ask About Your Travels", systemImage: "sparkles")
+                    }
+                }
+            #endif
             #if !os(macOS)
                 // macOS reaches Settings through the app menu (⌘,) instead.
                 ToolbarItem(placement: .topBarLeading) {
@@ -361,7 +404,7 @@ struct ContentView: View {
                 }
             }
 
-            // macOS reaches Achievements through the sidebar (or Go ▸ ⌘3).
+            // macOS reaches Achievements inside Your Travels (Go ▸ ⌘2).
             #if !os(macOS)
                 ToolbarItem {
                     Button {
@@ -429,82 +472,159 @@ struct ContentView: View {
     }
 
     #if os(macOS)
-        /// The macOS root: a three-column split — a source-list sidebar of the
-        /// top-level sections, the selected section's surface in the middle, and the
-        /// selected country's detail on the right (replacing the iPhone detail sheet).
+        /// The macOS root: a two-column split. The sidebar holds the actual data —
+        /// a Been/Going switch over the country lists and trips — and the map owns
+        /// the detail column permanently. "Your Travels" and Chat push over the
+        /// map on a navigation stack (no auxiliary windows), and the selected
+        /// country or trip appears in a trailing inspector.
         private var macRoot: some View {
             NavigationSplitView {
-                List(selection: $selectedTab) {
-                    Label("Map", systemImage: "map").tag(AppTab.map)
-                    Label("Been", systemImage: "checkmark.seal").tag(AppTab.been)
-                    Label("Going", systemImage: "airplane").tag(AppTab.going)
-                    Label("Achievements", systemImage: "trophy").tag(AppTab.achievements)
-                }
-                .navigationTitle("Worldward")
-                .navigationSplitViewColumnWidth(min: 170, ideal: 200, max: 260)
-            } content: {
-                sectionContent
-                    .navigationSplitViewColumnWidth(min: 360, ideal: 540)
+                sidebar
+                    .navigationSplitViewColumnWidth(min: 280, ideal: 320, max: 420)
             } detail: {
-                detailColumn
-            }
-        }
-
-        /// The middle column: whichever top-level section the sidebar selects.
-        @ViewBuilder private var sectionContent: some View {
-            switch selectedTab {
-            case .map:
-                mapContent
-                    .safeAreaInset(edge: .bottom) { mapFilterBar }
-                    .searchable(
-                        text: $mapSearchText, placement: .toolbar, prompt: "Find a country…"
-                    )
-                    .onSubmit(of: .search, flyToFirstSearchResult)
-                    .searchSuggestions {
-                        ForEach(mapSearchResults.prefix(8)) { country in
-                            Button {
-                                flyTo(country: country)
-                            } label: {
-                                Label(
-                                    "\(country.flagEmoji) \(country.name)", systemImage: "mappin")
+                NavigationStack(path: $macPath) {
+                    mapContent
+                        .searchable(
+                            text: $mapSearchText, placement: .toolbar, prompt: "Find a country…"
+                        )
+                        .onSubmit(of: .search, flyToFirstSearchResult)
+                        .searchSuggestions {
+                            ForEach(mapSearchResults.prefix(8)) { country in
+                                Button {
+                                    flyTo(country: country)
+                                } label: {
+                                    Label(
+                                        "\(country.flagEmoji) \(country.name)",
+                                        systemImage: "mappin")
+                                }
                             }
                         }
+                        // Attached to the map (not the stack) so a pushed
+                        // destination gets the full width; popping back restores
+                        // the inspector because the selection binding still holds.
+                        .inspector(isPresented: inspectorPresented) {
+                            inspectorContent
+                                .inspectorColumnWidth(min: 320, ideal: 380, max: 520)
+                        }
+                        .navigationDestination(for: MacDestination.self) { destination in
+                            switch destination {
+                            case .travels:
+                                TravelsDashboardView()
+                            case .chat:
+                                TravelChatView()
+                            }
+                        }
+                }
+            }
+            // Lets the Go menu (⌘2 / ⌘4) push the in-window destinations.
+            .focusedSceneValue(\.macDestinations, $macPath)
+        }
+
+        /// The sidebar: a segmented Been/Going switch over the country lists and
+        /// trips, so the column carries real content instead of four static rows.
+        private var sidebar: some View {
+            VStack(spacing: 0) {
+                Picker("Show", selection: $sidebarMode) {
+                    Text(Str.Tab.been).tag(BrowseMode.been)
+                    Text(Str.Tab.going).tag(BrowseMode.going)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+
+                Group {
+                    switch sidebarMode {
+                    case .been:
+                        countryList(.been)
+                    case .going:
+                        GoingView(
+                            allCountries: allCountries,
+                            centroids: countryCentroids,
+                            searchText: $searchText,
+                            selectedContinent: $selectedContinent,
+                            selectedYear: $selectedYear,
+                            selectedCountry: $selectedCountry,
+                            selectedTrip: $selectedTrip)
                     }
-            case .been:
-                countryList(.been)
-            case .going:
-                GoingView(
-                    allCountries: allCountries,
-                    centroids: countryCentroids,
-                    searchText: $searchText,
-                    selectedContinent: $selectedContinent,
-                    selectedYear: $selectedYear,
-                    selectedCountry: $selectedCountry,
-                    selectedTrip: $selectedTrip)
-            case .achievements:
-                AchievementsView(countries: allCountries)
+                }
+                // Fills the column so the picker stays pinned to the top even
+                // when the list shows a compact empty state.
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
 
-        /// The trailing detail column: the selected trip or country, or a
-        /// placeholder. Trips take precedence — selecting one clears the country
-        /// and vice-versa (see the `onChange` pair in `body`).
-        @ViewBuilder private var detailColumn: some View {
+        /// Whether the trailing inspector is showing. Closing it (the ✕ in the
+        /// inspector header) clears whichever selection was populating it.
+        private var inspectorPresented: Binding<Bool> {
+            Binding(
+                get: { selectedTrip != nil || selectedCountry != nil },
+                set: { shown in
+                    if !shown {
+                        selectedTrip = nil
+                        selectedCountry = nil
+                    }
+                })
+        }
+
+        /// The inspector: the selected trip or country under a title/close
+        /// header. Trips take precedence — selecting one clears the country and
+        /// vice-versa (see the `onChange` pair in `body`).
+        @ViewBuilder private var inspectorContent: some View {
             if let trip = selectedTrip {
-                TripDetailView(trip: trip, allCountries: allCountries)
-                    .navigationTitle(trip.title.isEmpty ? "Trip" : trip.title)
+                inspectorPane(
+                    title: trip.title.isEmpty ? String(localized: "Trip") : trip.title,
+                    subtitle: nil
+                ) {
+                    TripDetailView(trip: trip, allCountries: allCountries)
+                }
             } else if let country = selectedCountry {
-                CountryDetailView(country: country)
-                    .navigationTitle(country.name)
-                    .navigationSubtitle(country.continent)
-            } else {
-                ContentUnavailableView(
-                    "Nothing Selected",
-                    systemImage: "globe",
-                    description: Text(
-                        "Pick a country on the map or a trip in the list to see its details.")
-                )
+                inspectorPane(title: country.name, subtitle: country.continent) {
+                    CountryDetailView(country: country)
+                }
             }
+        }
+
+        /// Wraps inspector content with a header naming the subject and an
+        /// explicit close button (inspectors have no built-in dismiss control).
+        private func inspectorPane(
+            title: String, subtitle: String?, @ViewBuilder content: () -> some View
+        ) -> some View {
+            VStack(spacing: 0) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(title)
+                            .font(.headline)
+                            .lineLimit(1)
+                        if let subtitle {
+                            Text(subtitle)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Button {
+                        inspectorPresented.wrappedValue = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                            .imageScale(.large)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Close details")
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+
+                Divider()
+
+                content()
+            }
+        }
+
+        /// Pushes an in-window destination over the map, unless it's already on top.
+        private func push(_ destination: MacDestination) {
+            if macPath.last != destination { macPath.append(destination) }
         }
     #endif
 
@@ -521,8 +641,6 @@ struct ContentView: View {
 
     var body: some View {
         rootView
-            // Lets the macOS Go menu switch sections (see WorldwardCommands).
-            .focusedSceneValue(\.selectedAppTab, $selectedTab)
             .onChange(of: selectedCountry) {
                 // The selected country is part of the visible set even when
                 // unvisited/unplanned, so selection changes rebuild the cache too.
@@ -715,7 +833,7 @@ struct ContentView: View {
     /// zoom when the trip has a single stop (a zero-size rect otherwise).
     private func showTripOnMap(_ trip: Trip) {
         selectedCountry = nil
-        selectedTab = .map
+        showMap()
         mapTrip = trip
 
         let points = TripRouteContent.routePoints(for: trip, centroids: countryCentroids)
@@ -740,10 +858,20 @@ struct ContentView: View {
         showTripOnMap(trip)
     }
 
+    /// Brings the map to the front: pops any pushed destination on macOS, or
+    /// switches to the Map tab on iOS.
+    private func showMap() {
+        #if os(macOS)
+            macPath.removeAll()
+        #else
+            selectedTab = .map
+        #endif
+    }
+
     /// Fly the map to a country's bounding rect and select it.
     private func flyTo(country: Country) {
         mapSearchText = ""
-        selectedTab = .map
+        showMap()
         if let rect = mapRect(for: country) {
             withAnimation(.easeInOut(duration: 0.5)) {
                 cameraPosition = .rect(rect)
@@ -776,12 +904,12 @@ struct ContentView: View {
     }
 
     /// Presents the stats dashboard if an intent requested it. On macOS the
-    /// achievements grid is a sidebar section of the main window, not a sheet.
+    /// dashboard (stats + achievements) pushes over the map in the main window.
     private func consumePendingOpenStats() {
         guard intentRouter.pendingOpenStats else { return }
         intentRouter.pendingOpenStats = false
         #if os(macOS)
-            selectedTab = .achievements
+            macPath = [.travels]
         #else
             showAchievements = true
         #endif
@@ -792,7 +920,7 @@ struct ContentView: View {
     private func consumePendingOpenCountry() {
         guard let id = intentRouter.pendingOpenCountryID, !allCountries.isEmpty else { return }
         intentRouter.pendingOpenCountryID = nil
-        selectedTab = .map
+        showMap()
         selectedCountry = allCountries.first { $0.id == id }
     }
 
@@ -802,7 +930,11 @@ struct ContentView: View {
         guard let term = intentRouter.pendingSearchText else { return }
         intentRouter.pendingSearchText = nil
         searchText = term
-        selectedTab = .been
+        #if os(macOS)
+            sidebarMode = .been
+        #else
+            selectedTab = .been
+        #endif
     }
 
     /// Picks up a pending "Mark where I am" request left by the Control Center

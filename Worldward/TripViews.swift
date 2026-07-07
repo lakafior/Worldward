@@ -76,25 +76,31 @@ struct GoingView: View {
                 ForEach(Segment.allCases) { Text($0.label).tag($0) }
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             .padding(.horizontal)
             .padding(.bottom, 8)
 
-            switch segment {
-            case .trips:
-                TripsListView(allCountries: allCountries, selectedTrip: $selectedTrip)
-            case .wishlist:
-                CountryListView(
-                    allCountries: allCountries,
-                    browseMode: .going,
-                    searchText: $searchText,
-                    selectedContinent: $selectedContinent,
-                    selectedYear: $selectedYear,
-                    selectedCountry: $selectedCountry)
-            case .suggestions:
-                SuggestionsView(
-                    allCountries: allCountries,
-                    centroids: centroids)
+            Group {
+                switch segment {
+                case .trips:
+                    TripsListView(allCountries: allCountries, selectedTrip: $selectedTrip)
+                case .wishlist:
+                    CountryListView(
+                        allCountries: allCountries,
+                        browseMode: .going,
+                        searchText: $searchText,
+                        selectedContinent: $selectedContinent,
+                        selectedYear: $selectedYear,
+                        selectedCountry: $selectedCountry)
+                case .suggestions:
+                    SuggestionsView(
+                        allCountries: allCountries,
+                        centroids: centroids)
+                }
             }
+            // Fills the column so the picker stays pinned to the top even when
+            // the selected section shows a compact empty state.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

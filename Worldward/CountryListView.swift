@@ -120,8 +120,6 @@ struct CountryListView: View {
     @Binding var selectedCountry: Country?
 
     @Environment(\.modelContext) private var modelContext
-    /// Opens the Statistics / Chat windows on macOS. Unused on iOS.
-    @Environment(\.openWindow) private var openWindow
 
     @State private var sortOrder: CountrySort = .name
     /// Cached filter/sort summary recomputed only when dependencies change,
@@ -188,36 +186,40 @@ struct CountryListView: View {
                 list
             }
         }
-        .searchable(text: $searchText, prompt: Str.List.searchPlaceholder)
+        // macOS anchors the search field inside the sidebar itself: the map's
+        // toolbar search already owns the window toolbar's search slot, and
+        // AppKit crashes on a second toolbar search item in the same window.
+        #if os(macOS)
+            .searchable(text: $searchText, placement: .sidebar, prompt: Str.List.searchPlaceholder)
+        #else
+            .searchable(text: $searchText, prompt: Str.List.searchPlaceholder)
+        #endif
         .navigationTitle(browseMode == .been ? Str.Tab.been : Str.Tab.going)
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
-            if browseMode == .been {
-                ToolbarItem {
-                    Button {
-                        #if os(macOS)
-                            openWindow(id: "travelChat")
-                        #else
+            // macOS reaches Statistics and Chat from the map toolbar and the Go
+            // menu (⌘2 / ⌘4) — they push over the map in the main window, so the
+            // sidebar list doesn't duplicate them.
+            #if !os(macOS)
+                if browseMode == .been {
+                    ToolbarItem {
+                        Button {
                             showTravelChat = true
-                        #endif
-                    } label: {
-                        Label("Ask About Your Travels", systemImage: "sparkles")
+                        } label: {
+                            Label("Ask About Your Travels", systemImage: "sparkles")
+                        }
                     }
-                }
-                ToolbarItem {
-                    Button {
-                        #if os(macOS)
-                            openWindow(id: "statistics")
-                        #else
+                    ToolbarItem {
+                        Button {
                             showStatistics = true
-                        #endif
-                    } label: {
-                        Label("Statistics", systemImage: "chart.pie")
+                        } label: {
+                            Label("Statistics", systemImage: "chart.pie")
+                        }
                     }
                 }
-            }
+            #endif
             ToolbarItem {
                 Button {
                     showAddCountry = true
