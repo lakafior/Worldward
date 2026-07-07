@@ -68,6 +68,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 - **Year-in-review** — pick any travel year to see a summary, plus an **AI recap** (on-device) that writes a prose summary of that year's travels.
 - **Year share card** — share any travel year as a customizable card whose map is tinted with just that year's countries.
 - **CSV Export** — export all your travel data as a CSV file through the system share sheet.
+- **CSV Import** — bring data in from another tracker or a spreadsheet (Settings ▸ Data): delimiter and columns auto-detected (and overridable), fuzzy country matching incl. ISO codes and flag emoji, forgiving dates, and a preview before anything is written. Additive — it never overwrites what's already recorded.
 
 ### Suggestions 
 - The **Going** tab's **Suggestions** segment shows your **closest unvisited countries** sorted by geographic distance from places you've been.
@@ -246,6 +247,8 @@ Worldward/
 ├── TravelStats.swift           # All computed statistics + nearest-unvisited helper
 ├── Achievement.swift           # Gamification badges, derived from TravelStats
 ├── AchievementCelebration.swift # Unlock diffing (persisted ids) + celebration toast
+├── CSVImport.swift             # Forgiving CSV parser, column guessing, additive import
+├── CSVImportView.swift         # CSV preview-and-confirm sheet (from Settings ▸ Data)
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
 ├── SettingsView.swift          # Appearance, reminders toggle, export/import
 ├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)
@@ -310,7 +313,6 @@ WorldwardWidgets/               # Widget extension target (Home/Lock Screen + Co
 Planned next, in rough priority order — everything below stays native-only, lightweight, and local-first:
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, defaults on every property, converging de-duplication); flipping it on awaits a paid Apple Developer membership. See the note on `cloudKitContainerID` in `Worldward.swift`.
-- **CSV import** — a forgiving importer (fuzzy country-name matching via the existing `VisitLogParser.resolve`, optional date column) for switching from other trackers or spreadsheets.
 - **December "Wrapped"** — a paged, animated year recap built from `TravelStats` and the on-device AI summary, ending on the year share card.
 
 Under consideration (bigger bets):

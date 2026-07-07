@@ -42,6 +42,9 @@ struct SettingsView: View {
     @State private var exportDocument: JSONDocument?
     @State private var showExporter = false
     @State private var showImporter = false
+    @State private var showCSVImporter = false
+    /// The CSV text awaiting preview, set after the picked file is read.
+    @State private var csvPayload: CSVPayload?
     @State private var transferAlert: TransferAlert?
     @State private var showManageContainers = false
     @State private var showManageTemplates = false
@@ -80,6 +83,21 @@ struct SettingsView: View {
             allowedContentTypes: [.json],
             onCompletion: handleImport
         )
+        .fileImporter(
+            isPresented: $showCSVImporter,
+            allowedContentTypes: [.commaSeparatedText, .tabSeparatedText, .plainText],
+            onCompletion: handleCSVImport
+        )
+        .sheet(item: $csvPayload) { payload in
+            CSVImportView(text: payload.text) { countries, visits in
+                transferAlert = TransferAlert(
+                    title: "Import Complete",
+                    message: String(
+                        localized: "Added \(visits) visits across \(countries) countries.",
+                        comment: "Alert after a CSV import")
+                )
+            }
+        }
         .alert(
             Text(transferAlert?.title ?? ""),
             isPresented: alertIsPresented,
@@ -202,11 +220,12 @@ struct SettingsView: View {
         Section {
             Button("Export Travel Data…", action: startExport)
             Button("Import Travel Data…") { showImporter = true }
+            Button("Import from CSV…") { showCSVImporter = true }
         } header: {
             Text("Data")
         } footer: {
             Text(
-                "Export saves your country statuses and visits to a JSON file. Importing matches that file to your countries and replaces their travel data."
+                "Export saves your country statuses and visits to a JSON file. Importing matches that file to your countries and replaces their travel data. CSV import adds countries and visits from a spreadsheet or another tracker without touching what's already recorded."
             )
         }
     }
@@ -228,6 +247,37 @@ struct SettingsView: View {
     private func handleImport(_ result: Result<URL, Error>) {
         switch result {
         case .success(let url): performImport(from: url)
+        case .failure(let error):
+            transferAlert = TransferAlert(
+                title: "Import Failed", message: error.localizedDescription)
+        }
+    }
+
+    /// Reads the picked CSV as text (trying a few encodings, since spreadsheet
+    /// exports vary) and hands it to the preview sheet.
+    private func handleCSVImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            let needsAccess = url.startAccessingSecurityScopedResource()
+            defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                guard
+                    let text = String(data: data, encoding: .utf8)
+                        ?? String(data: data, encoding: .utf16)
+                        ?? String(data: data, encoding: .isoLatin1),
+                    !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                else {
+                    transferAlert = TransferAlert(
+                        title: "Import Failed",
+                        message: String(localized: "The file couldn't be read as text."))
+                    return
+                }
+                csvPayload = CSVPayload(text: text)
+            } catch {
+                transferAlert = TransferAlert(
+                    title: "Import Failed", message: error.localizedDescription)
+            }
         case .failure(let error):
             transferAlert = TransferAlert(
                 title: "Import Failed", message: error.localizedDescription)
@@ -283,6 +333,12 @@ private struct TransferAlert: Identifiable {
     let id = UUID()
     let title: LocalizedStringKey
     let message: String
+}
+
+/// The text of a picked CSV file, wrapped so `sheet(item:)` can present it.
+private struct CSVPayload: Identifiable {
+    let id = UUID()
+    let text: String
 }
 
 #Preview {
