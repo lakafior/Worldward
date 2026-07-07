@@ -63,7 +63,7 @@ enum CountryFactsDB {
 
     /// Flat list so the compiler can type-check manageable chunks.
     /// Organised by continent, mirroring `Continents.byISO`.
-    private static let allEntries: [(String, CountryFacts)] =
+    private nonisolated static let allEntries: [(String, CountryFacts)] =
 
         // MARK: - Europe
 
@@ -326,7 +326,7 @@ enum CountryFactsDB {
     // MARK: Helper
 
     /// Wraps one fact entry into a single-element array so `+` concatenation works.
-    private static func entry(
+    private nonisolated static func entry(
         _ id: String,
         _ currency: String,
         _ languages: [String],
