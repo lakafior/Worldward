@@ -12,6 +12,14 @@ enum Continent: String, CaseIterable, Identifiable, Codable {
     case antarctica = "Antarctica"
 
     var id: String { rawValue }
+
+    /// The continent name in the user's language. Continent names mostly flow
+    /// through `String`-typed view parameters (which SwiftUI renders verbatim,
+    /// with no catalog lookup), so localization needs this explicit dynamic
+    /// lookup; the raw English value is the catalog key.
+    var localizedName: String {
+        String(localized: String.LocalizationValue(rawValue))
+    }
 }
 
 /// Authoritative ISO 3166-1 alpha-2 → continent lookup, in English.

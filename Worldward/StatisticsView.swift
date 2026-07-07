@@ -202,19 +202,19 @@ private struct StatCardsSection: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             StatCard(
-                title: "Recorded visits", value: "\(stats.totalVisits)",
+                title: String(localized: "Recorded visits"), value: "\(stats.totalVisits)",
                 symbol: "calendar", tint: .brandRoyal)
             StatCard(
-                title: "Years traveling", value: "\(stats.activeYears)",
+                title: String(localized: "Years traveling"), value: "\(stats.activeYears)",
                 symbol: "clock.arrow.circlepath", tint: .brandTeal)
             if let most = stats.mostVisited {
                 StatCard(
-                    title: "Most visited", value: "\(most.flag) ×\(most.count)",
+                    title: String(localized: "Most visited"), value: "\(most.flag) ×\(most.count)",
                     symbol: "star.fill", tint: .brandAzure)
             }
             if let busiest = stats.busiestYear, busiest.countries > 0 {
                 StatCard(
-                    title: "Busiest year",
+                    title: String(localized: "Busiest year"),
                     value: "\(busiest.year) · \(busiest.countries)",
                     symbol: "flame.fill", tint: .brandIndigo)
             }
@@ -266,7 +266,7 @@ private struct YearChartSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Countries per year")
+            SectionHeader(title: String(localized: "Countries per year"))
 
             Chart(years) { year in
                 BarMark(
@@ -328,13 +328,13 @@ private struct ContinentSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "By continent")
+            SectionHeader(title: String(localized: "By continent"))
 
             VStack(spacing: 12) {
                 ForEach(continents) { continent in
                     StatRow(
                         title: continent.isComplete
-                            ? "\(continent.name) ✓" : continent.name,
+                            ? "\(continent.displayName) ✓" : continent.displayName,
                         value: "\(continent.visited) / \(continent.total)",
                         percent: continent.fraction * 100)
                 }
@@ -386,7 +386,7 @@ private struct TimelineSection: View {
                             Text(String(group.year))
                                 .font(.title3.weight(.bold))
                             Text(
-                                "\(group.visits.count) \(group.visits.count == 1 ? "visit" : "visits")"
+                                "\(group.visits.count) \(group.visits.count == 1 ? String(localized: "visit") : String(localized: "visits"))"
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -418,7 +418,7 @@ private struct TimelineSection: View {
 private struct TimelineHeader: View {
     var body: some View {
         HStack {
-            SectionHeader(title: "Travel Timeline")
+            SectionHeader(title: String(localized: "Travel Timeline"))
             Spacer()
         }
     }
@@ -488,7 +488,7 @@ private struct YearInReviewSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                SectionHeader(title: "Year in review")
+                SectionHeader(title: String(localized: "Year in review"))
                 Spacer()
                 Picker("Year", selection: $selectedYear) {
                     ForEach(years.filter { $0.countries > 0 }.reversed()) { year in
@@ -504,13 +504,11 @@ private struct YearInReviewSection: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Text(
-                        "\(yearStat.countries) "
-                            + (yearStat.countries == 1 ? "country" : "countries")
+                        "\(yearStat.countries) \(yearStat.countries == 1 ? String(localized: "country") : String(localized: "countries"))"
                     )
                     .font(.title2.bold())
                     Text(
-                        "\(yearStat.visits) recorded "
-                            + (yearStat.visits == 1 ? "visit" : "visits")
+                        "\(yearStat.visits) recorded \(yearStat.visits == 1 ? String(localized: "visit") : String(localized: "visits"))"
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)

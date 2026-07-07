@@ -16,6 +16,9 @@ struct TravelStats {
         var id: String { name }
         var fraction: Double { total > 0 ? Double(visited) / Double(total) : 0 }
         var isComplete: Bool { total > 0 && visited == total }
+        /// The continent name to show: translated when it's one of the seven
+        /// canonical continents, the raw bucket name otherwise.
+        var displayName: String { continent?.localizedName ?? name }
     }
 
     /// One year's travel summary, used by the per-year chart and year-in-review.
@@ -207,30 +210,50 @@ struct TravelStats {
         }
     }
 
+    /// Calendar years in which at least one country was recorded for the first
+    /// time. Feeds both streak figures below.
+    private var yearsWithNewCountry: Set<Int> {
+        var seen = Set<String>()
+        var result = Set<Int>()
+        for stat in years {
+            let ids = countryIDsByYear[stat.year] ?? []
+            if !ids.subtracting(seen).isEmpty { result.insert(stat.year) }
+            seen.formUnion(ids)
+        }
+        return result
+    }
+
     /// How many years running the traveler has visited at least one *new* country
     /// (one never recorded in any earlier year). Because the current year isn't
     /// over, a streak whose latest new country was last year still counts as
     /// alive; anything older has lapsed and returns 0.
     var newCountryStreak: Int {
-        var seen = Set<String>()
-        var yearsWithNewCountry = Set<Int>()
-        for stat in years {
-            let ids = countryIDsByYear[stat.year] ?? []
-            if !ids.subtracting(seen).isEmpty { yearsWithNewCountry.insert(stat.year) }
-            seen.formUnion(ids)
-        }
-
-        guard let latest = yearsWithNewCountry.max() else { return 0 }
+        let newYears = yearsWithNewCountry
+        guard let latest = newYears.max() else { return 0 }
         let currentYear = Calendar.current.component(.year, from: .now)
         guard latest >= currentYear - 1 else { return 0 }
 
         var streak = 0
         var year = latest
-        while yearsWithNewCountry.contains(year) {
+        while newYears.contains(year) {
             streak += 1
             year -= 1
         }
         return streak
+    }
+
+    /// The longest new-country streak ever achieved, lapsed or not. Drives the
+    /// streak achievements, so a badge once earned doesn't re-lock just because
+    /// time passed — unlike `newCountryStreak`, which is the *live* figure.
+    var longestNewCountryStreak: Int {
+        let newYears = yearsWithNewCountry
+        var best = 0
+        for year in newYears where !newYears.contains(year - 1) {
+            var length = 1
+            while newYears.contains(year + length) { length += 1 }
+            best = max(best, length)
+        }
+        return best
     }
 
     /// The year with the most countries visited, if any travel is recorded.
