@@ -504,7 +504,7 @@ struct StatRow: View {
             HStack {
                 ProgressView(value: percent, total: 100)
                     .tint(.brand)
-                Text(String(format: "%.0f%%", percent))
+                Text((percent / 100).formatted(.percent))
                     .font(.caption)
                     .monospacedDigit()
                     .frame(width: 40, alignment: .trailing)

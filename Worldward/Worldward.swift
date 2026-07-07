@@ -142,15 +142,13 @@ struct Worldward: App {
             // Menu bar extra with glanceable stats and quick actions.
             MenuBarExtra {
                 let snapshot = WidgetSnapshotStore.read()
-                let percent =
+                let fraction =
                     snapshot.totalCountries > 0
-                    ? Int(
-                        (Double(snapshot.visitedCountries) / Double(snapshot.totalCountries) * 100)
-                            .rounded())
-                    : 0
+                    ? Double(snapshot.visitedCountries) / Double(snapshot.totalCountries)
+                    : 0.0
 
                 Text(
-                    "\(snapshot.visitedCountries) countries · \(snapshot.visitedContinents) continents · \(percent)%"
+                    "\(snapshot.visitedCountries) countries · \(snapshot.visitedContinents) continents · \(fraction.formatted(.percent))"
                 )
                 .font(.subheadline)
                 .padding(.horizontal, 8)

@@ -74,8 +74,6 @@ struct TravelSnapshotView: View {
     @Environment(\.widgetFamily) private var family
     let snapshot: WidgetSnapshot
 
-    private var percent: Int { Int((snapshot.fraction * 100).rounded()) }
-
     var body: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
@@ -91,7 +89,7 @@ struct TravelSnapshotView: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.white.opacity(0.85))
                 Text(
-                    "\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents · \(percent)% of the world"
+                    "\(snapshot.visitedContinents) of \(snapshot.totalContinents) continents · \(snapshot.fraction.formatted(.percent)) of the world"
                 )
                 .font(.caption2)
                 .foregroundStyle(.white.opacity(0.8))
@@ -251,8 +249,6 @@ struct MiniMapWidget: Widget {
         @Environment(\.widgetFamily) private var family
         let snapshot: WidgetSnapshot
 
-        private var percent: Int { Int((snapshot.fraction * 100).rounded()) }
-
         var body: some View {
             switch family {
             case .accessoryInline:
@@ -271,7 +267,7 @@ struct MiniMapWidget: Widget {
             case .accessoryRectangular:
                 HStack(spacing: 10) {
                     Gauge(value: snapshot.fraction) {
-                        Text("\(percent)%")
+                        Text(snapshot.fraction.formatted(.percent))
                     }
                     .gaugeStyle(.accessoryCircularCapacity)
 
