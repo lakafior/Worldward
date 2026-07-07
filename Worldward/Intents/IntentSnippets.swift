@@ -81,7 +81,7 @@ struct ContinentProgressSnippet: View {
                 .foregroundStyle(Color.brand)
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(Int((fraction * 100).rounded()))%")
+                Text(fraction, format: .percent.precision(.fractionLength(0)).rounded(rule: .toNearestOrAwayFromZero))
                     .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.brand)
                 Text("\(visited) of \(total) countries")
