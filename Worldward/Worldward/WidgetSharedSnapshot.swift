@@ -99,8 +99,11 @@ enum WidgetSnapshotStore {
 
     /// Persist the latest snapshot and ask WidgetKit to redraw. A missing
     /// container — e.g. the app group isn't provisioned on a free team — is
-    /// ignored so the app keeps working without widgets.
+    /// ignored so the app keeps working without widgets. An unchanged snapshot
+    /// is skipped entirely (the app writes once on every launch), preserving
+    /// the system's widget-refresh budget.
     static func write(_ snapshot: WidgetSnapshot) {
+        guard snapshot != read() else { return }
         guard let fileURL, let data = try? JSONEncoder().encode(snapshot) else { return }
         try? data.write(to: fileURL, options: .atomic)
         WidgetCenter.shared.reloadAllTimelines()
@@ -147,7 +150,9 @@ enum WorldMapStore {
     /// App side: copy the bundled geometry into the shared container so the widget
     /// can draw the map. Re-copies only when the bundled file's size differs from
     /// the cached copy (i.e. a new release shipped new geometry), so it's a cheap
-    /// no-op on every launch after the first.
+    /// no-op on every launch after the first. A successful copy asks WidgetKit to
+    /// redraw, so the map widget fills in as soon as the geometry exists — the
+    /// snapshot write no longer reloads unconditionally.
     nonisolated static func cacheFromAppBundle() {
         guard let containerURL,
             let bundleURL = Bundle.main.url(forResource: "countries", withExtension: "wmgb"),
@@ -156,6 +161,7 @@ enum WorldMapStore {
         let cachedSize = (try? containerURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
         guard cachedSize != data.count else { return }
         try? data.write(to: containerURL, options: .atomic)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Widget side: the decoded geometry, cached for the lifetime of the

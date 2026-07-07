@@ -163,6 +163,21 @@ struct CountryListView: View {
         return dates.max()
     }
 
+    /// A cheap signature of everything the cached summary derives from. Statuses,
+    /// plans, and visits all change without the row count changing (map/detail
+    /// edits beside this list on macOS and iPad, intents, photo imports), so
+    /// watching `allCountries.count` alone would leave the list membership stale.
+    private var catalogKey: Int {
+        var hasher = Hasher()
+        for country in allCountries {
+            hasher.combine(country.id)
+            hasher.combine(country.statusRaw)
+            hasher.combine(country.planStatusRaw)
+            hasher.combine(country.visits.count)
+        }
+        return hasher.finalize()
+    }
+
     var body: some View {
         Group {
             if allCountries.isEmpty {
@@ -227,7 +242,9 @@ struct CountryListView: View {
         .onChange(of: searchText) { rebuildSummary() }
         .onChange(of: selectedContinent) { rebuildSummary() }
         .onChange(of: selectedYear) { rebuildSummary() }
-        .onChange(of: allCountries.count) { rebuildSummary() }
+        // Covers count changes and any status/plan/visit edit made elsewhere
+        // (map detail column, intents, photo import) while this list is visible.
+        .onChange(of: catalogKey) { rebuildSummary() }
     }
 
     /// Quick-add a country: in Been mode, mark as visited; in Going mode,

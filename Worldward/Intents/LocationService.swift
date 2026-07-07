@@ -15,7 +15,6 @@ enum LocationService {
         }
 
         let mapItems = try await request.mapItems
-        // Zastępujemy .placemark nowym API:
         return mapItems.first?.addressRepresentations?.region?.identifier
     }
 

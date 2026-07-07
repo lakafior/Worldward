@@ -1427,16 +1427,28 @@ private struct SuggestionsView: View {
     /// Set to open the trip editor right after a suggestion creates a trip.
     @State private var editingTrip: Trip?
 
-    /// Pre-computed once per init so the body never re-runs the O(n*m) pass.
-    private let suggestions: [(country: Country, distanceKM: Double)]
+    /// Cached distance ranking. Computing it in `init` re-ran the O(n·m) pass
+    /// (tens of thousands of distance calls) on every parent render — e.g. each
+    /// keystroke in the shared search field — so it's derived once per catalog
+    /// change via `.task(id:)` instead.
+    @State private var suggestions: [(country: Country, distanceKM: Double)] = []
     /// English summary of the traveler, fed to the model for tailored picks.
-    private let profile: String
+    @State private var profile = ""
+    /// `false` until the first derivation completes, so the "all visited" empty
+    /// state can't flash before the suggestions exist.
+    @State private var suggestionsReady = false
 
-    init(allCountries: [Country], centroids: [String: CLLocationCoordinate2D]) {
-        self.allCountries = allCountries
-        self.centroids = centroids
-        self.suggestions = nearestUnvisited(countries: allCountries, centroids: centroids)
-        self.profile = Self.makeProfile(countries: allCountries)
+    /// Signature of everything the suggestions derive from: the visited set and
+    /// whether the centroids have loaded.
+    private var suggestionsKey: Int {
+        var hasher = Hasher()
+        for country in allCountries {
+            hasher.combine(country.id)
+            hasher.combine(country.statusRaw)
+            hasher.combine(country.planStatusRaw)
+        }
+        hasher.combine(centroids.count)
+        return hasher.finalize()
     }
 
     /// The traveler's footprint plus their wishlist, in English, for the model.
@@ -1455,7 +1467,7 @@ private struct SuggestionsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                if centroids.isEmpty {
+                if centroids.isEmpty || !suggestionsReady {
                     ContentUnavailableView(
                         "Map not ready",
                         systemImage: "globe",
@@ -1487,6 +1499,13 @@ private struct SuggestionsView: View {
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
+        // Re-derives when the visited set or the centroids change; body renders
+        // in between just reuse the cached values.
+        .task(id: suggestionsKey) {
+            suggestions = nearestUnvisited(countries: allCountries, centroids: centroids)
+            profile = Self.makeProfile(countries: allCountries)
+            suggestionsReady = true
+        }
         .sheet(item: $editingTrip) { trip in
             TripDetailSheet(trip: trip, allCountries: allCountries)
         }
@@ -1579,15 +1598,31 @@ private struct SmartSuggestionsSection: View {
     }
 
     /// The candidate countries for the selected mode, with a distance for context.
-    private var candidates: [(country: Country, distanceKM: Double)] {
-        switch mode {
-        case .closeToHome:
-            nearestUnvisited(countries: allCountries, centroids: centroids, limit: 8)
-        case .fillAGap:
-            unvisitedFillingGaps(countries: allCountries, centroids: centroids, limit: 8)
-        case .buildATrip:
-            tripCluster(countries: allCountries, centroids: centroids, limit: 4)
+    /// Cached in `@State` (recomputed via `.task(id:)` below) — as a computed
+    /// property this O(n·m) pass re-ran on every body evaluation.
+    @State private var candidates: [(country: Country, distanceKM: Double)] = []
+
+    /// Signature of the candidate inputs: the mode plus the visited set.
+    private var candidatesKey: Int {
+        var hasher = Hasher()
+        hasher.combine(mode)
+        for country in allCountries {
+            hasher.combine(country.id)
+            hasher.combine(country.statusRaw)
         }
+        return hasher.finalize()
+    }
+
+    private func rebuildCandidates() {
+        candidates =
+            switch mode {
+            case .closeToHome:
+                nearestUnvisited(countries: allCountries, centroids: centroids, limit: 8)
+            case .fillAGap:
+                unvisitedFillingGaps(countries: allCountries, centroids: centroids, limit: 8)
+            case .buildATrip:
+                tripCluster(countries: allCountries, centroids: centroids, limit: 4)
+            }
     }
 
     var body: some View {
@@ -1654,6 +1689,7 @@ private struct SmartSuggestionsSection: View {
                     .disabled(isLoading)
             }
         }
+        .task(id: candidatesKey) { rebuildCandidates() }
         .appTranslation(translator)
     }
 

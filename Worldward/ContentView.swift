@@ -154,6 +154,9 @@ struct ContentView: View {
     @State private var locationCountry: Country?
     @State private var showLocationPicker = false
     @State private var locationStatus: CountryStatusOption = .visited
+    /// Why the last "From Current Location" attempt failed, shown in an alert.
+    /// Without it a denial or geocode failure just stopped the spinner silently.
+    @State private var locationError: String?
     /// Set when the Control Center "Mark where I am" control opened the app; held
     /// until the catalog is ready so a cold launch still resolves.
     @State private var pendingMarkHere = false
@@ -506,6 +509,9 @@ struct ContentView: View {
             // Lets the macOS Go menu switch sections (see WorldwardCommands).
             .focusedSceneValue(\.selectedAppTab, $selectedTab)
             .onChange(of: selectedCountry) {
+                // The selected country is part of the visible set even when
+                // unvisited/unplanned, so selection changes rebuild the cache too.
+                rebuildVisibleCache()
                 if let country = selectedCountry {
                     detailCountry = country
                     // A country selection claims the macOS detail column.
@@ -562,6 +568,15 @@ struct ContentView: View {
                     )
                 }
             }
+            .alert(
+                "Current Location",
+                isPresented: Binding(
+                    get: { locationError != nil }, set: { if !$0 { locationError = nil } })
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(locationError ?? "")
+            }
             .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
             .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
             .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
@@ -570,14 +585,12 @@ struct ContentView: View {
             // selection once it does, so a cold-launched intent still resolves.
             // The count also changes as iCloud syncs rows in, so collapse any
             // duplicates that arrive from another device that seeded offline.
+            // Cache rebuilds are handled by the `catalogKey` change above, which
+            // fires for count changes too.
             .onChange(of: allCountries.count) {
                 consumePendingOpenCountry()
                 consumePendingMarkHere()
                 deduplicateCountries()
-                rebuildVisibleCache()
-            }
-            .onChange(of: selectedCountry) {
-                rebuildVisibleCache()
             }
             // The reverse of the clearing above: a trip selection claims the
             // macOS detail column from the country. Setting the other side to
@@ -592,15 +605,27 @@ struct ContentView: View {
             // App Group's UserDefaults before opening the app (the OpenIntent runs
             // first), so it's always present when .active fires. If it somehow misses,
             // the flag persists and is picked up on the next foreground cycle.
+            // Backgrounding rebuilds the reminder schedule, so trips created or
+            // edited this session get their start reminders without a relaunch.
             .onChange(of: scenePhase) { _, phase in
-                guard phase == .active else { return }
-                checkControlRequest()
+                switch phase {
+                case .active:
+                    checkControlRequest()
+                case .background:
+                    Task { await rescheduleNotifications() }
+                default:
+                    break
+                }
             }
-            // Keep the Home/Lock Screen widgets in sync. `widgetSnapshotKey`
-            // changes whenever a country is added, removed, or its status edited
-            // (by hand, by an intent, or by the photo importer); `initial` also
-            // writes once on launch so a fresh install populates the widget.
-            .onChange(of: widgetSnapshotKey, initial: true) { updateWidgetSnapshot() }
+            // Keep the Home/Lock Screen widgets and the map's visible-country
+            // cache in sync. `catalogKey` changes whenever a country is added,
+            // removed, or its status/plan edited (by hand, by an intent, or by the
+            // photo importer); `initial` also writes once on launch so a fresh
+            // install populates the widget.
+            .onChange(of: catalogKey, initial: true) {
+                updateWidgetSnapshot()
+                rebuildVisibleCache()
+            }
             .onAppear {
                 // Cold launch: an intent may have set these before the view existed.
                 consumePendingLogVisits()
@@ -728,17 +753,34 @@ struct ContentView: View {
     }
 
     /// Requests the user's location, reverse‑geocodes it to a country, and presents
-    /// a status picker. Called from the toolbar button.
+    /// a status picker. Called from the toolbar button. Failures (denied access,
+    /// no fix, no matching country) surface in an alert rather than silently
+    /// stopping the spinner.
     private func markCurrentLocation() async {
         isLocating = true
         defer { isLocating = false }
 
-        guard let isoCode = try? await LocationService.currentISOCountryCode() else { return }
+        let isoCode: String?
+        do {
+            isoCode = try await LocationService.currentISOCountryCode()
+        } catch {
+            locationError = error.localizedDescription
+            return
+        }
+        guard let isoCode else {
+            locationError = String(
+                localized: "Could not determine your current country from your location.")
+            return
+        }
         guard
             let country = allCountries.first(where: {
                 $0.id == isoCode || $0.iso3 == isoCode
             })
-        else { return }
+        else {
+            locationError = String(
+                localized: "Your current country (\(isoCode)) isn't in the Worldward catalog.")
+            return
+        }
 
         locationCountry = country
         locationStatus = .visited
@@ -857,8 +899,19 @@ struct ContentView: View {
 
         // Refresh local travel reminders from the freshly loaded catalog. A no-op
         // when the user hasn't enabled reminders (off by default — see SettingsView).
+        await rescheduleNotifications()
+    }
+
+    /// Rebuilds the reminder schedule from the store. Trips must be included:
+    /// `reschedule` rebuilds from scratch, so omitting them (as an earlier build
+    /// did on launch) silently wiped trip-start reminders. Called after the
+    /// catalog loads and again whenever the app backgrounds, so trips created or
+    /// edited this session are covered too.
+    private func rescheduleNotifications() async {
+        let countries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
+        let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
         await NotificationManager.reschedule(
-            enabled: notificationsEnabled, countries: seededCountries)
+            enabled: notificationsEnabled, countries: countries, trips: trips)
     }
 
     /// Seed an empty (or freshly wiped) store from decoded GeoJSON metadata. Drops
@@ -934,33 +987,28 @@ struct ContentView: View {
         if changed { try? modelContext.save() }
     }
 
-    /// A cheap signature of every country's id and status. Recomputed each render
-    /// (≈250 hashes, negligible) and watched by `onChange` so the widget snapshot
-    /// is rewritten only when something the widgets show actually changes.
-    private var widgetSnapshotKey: Int {
+    /// A cheap signature of every country's id, status, and plan. Recomputed each
+    /// render (≈250 hashes, negligible) and watched by `onChange` as the single
+    /// invalidation point for everything derived from the catalog: the widget
+    /// snapshot and the map's visible-country cache. Statuses and plans change
+    /// without the row count changing (detail edits, intents, photo imports), so
+    /// watching `allCountries.count` alone would leave those caches stale.
+    private var catalogKey: Int {
         var hasher = Hasher()
         for country in allCountries {
             hasher.combine(country.id)
             hasher.combine(country.statusRaw)
+            hasher.combine(country.planStatusRaw)
         }
         return hasher.finalize()
     }
 
     /// Recompute the travel summary and hand it to the shared App Group store,
-    /// which redraws the widgets. Reuses `TravelStats` so the figures always match
-    /// the dashboard.
-    @AppStorage("appTheme") private var widgetAppTheme: AppTheme = .system
+    /// which redraws the widgets. Delegates to the same helper the mutating
+    /// intents use (see WorldwardIntents.swift) so both paths build the snapshot
+    /// identically.
     private func updateWidgetSnapshot() {
-        let stats = TravelStats(countries: allCountries)
-        WidgetSnapshotStore.write(
-            WidgetSnapshot(
-                visitedCountries: stats.visitedCountries,
-                totalCountries: stats.totalCountries,
-                visitedContinents: stats.visitedContinents,
-                totalContinents: stats.totalContinents,
-                flags: stats.visitedFlags,
-                tints: stats.statusTints,
-                appTheme: widgetAppTheme.rawValue))
+        refreshWidgetSnapshot(countries: allCountries)
     }
 
     /// Fold a duplicate country's user data into the row that will survive

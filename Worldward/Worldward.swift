@@ -32,11 +32,18 @@ struct Worldward: App {
             // the catalog and the map are always keyed by the same ids.
             return container
         } catch {
-            // During development, schema changes can make the existing store incompatible.
-            // Remove the old database and create a new clean one.
+            // The store couldn't be opened — usually a dev-time schema change, but
+            // this can also be a transient failure (disk full, file protection).
+            // Move the store aside — never delete user data — and start fresh. The
+            // -wal/-shm sidecars must move too, or the new store could replay the
+            // old write-ahead log.
             let url = modelConfiguration.url
-            try? FileManager.default.removeItem(at: url)
-            // Try to create the container again after deleting the store
+            let stamp = Int(Date().timeIntervalSince1970)
+            for suffix in ["", "-wal", "-shm"] {
+                let source = URL(fileURLWithPath: url.path + suffix)
+                let destination = URL(fileURLWithPath: url.path + ".incompatible-\(stamp)" + suffix)
+                try? FileManager.default.moveItem(at: source, to: destination)
+            }
             if let newContainer = try? ModelContainer(
                 for: schema, configurations: [modelConfiguration])
             {

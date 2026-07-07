@@ -15,7 +15,7 @@ struct CountryDetailView: View {
         self.country = country
         // Default to one day after the most recent visit, so adding
         // consecutive visits requires less date-picking.
-        let lastDate = country.visits.sorted { $0.date > $1.date }.first?.date
+        let lastDate = country.visits.max { $0.date < $1.date }?.date
         _newVisitDate = State(
             initialValue: lastDate.map {
                 Calendar.current.date(byAdding: .day, value: 1, to: $0) ?? Date()

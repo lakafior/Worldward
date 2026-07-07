@@ -146,48 +146,30 @@ struct ShareCard: View {
     }
 }
 
-/// A tiny QR code generated on-device from a URL, using Core Image.
+/// A tiny QR code generated on-device from a URL, using Core Image. Rendered
+/// through a `CIContext` into a bitmap-backed `CGImage`: a `UIImage(ciImage:)`
+/// has no bitmap backing and draws blank in SwiftUI and `ImageRenderer`, which
+/// silently dropped the QR code from shared cards on iOS.
 private struct QRCodeView: View {
     let url: String
 
     var body: some View {
-        if let image = generateQRCode(from: url) {
-            #if canImport(UIKit)
-                Image(uiImage: image)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-            #else
-                Image(nsImage: image)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-            #endif
+        if let cgImage = Self.generateQRCode(from: url) {
+            Image(decorative: cgImage, scale: 1)
+                .interpolation(.none)
+                .resizable()
+                .scaledToFit()
         }
     }
 
-    #if canImport(UIKit)
-        private func generateQRCode(from string: String) -> UIImage? {
-            let filter = CIFilter.qrCodeGenerator()
-            filter.message = Data(string.utf8)
-            guard let output = filter.outputImage else { return nil }
-            let transform = CGAffineTransform(scaleX: 6, y: 6)
-            let scaled = output.transformed(by: transform)
-            return UIImage(ciImage: scaled)
-        }
-    #else
-        private func generateQRCode(from string: String) -> NSImage? {
-            let filter = CIFilter.qrCodeGenerator()
-            filter.message = Data(string.utf8)
-            guard let output = filter.outputImage else { return nil }
-            let transform = CGAffineTransform(scaleX: 6, y: 6)
-            let scaled = output.transformed(by: transform)
-            let rep = NSCIImageRep(ciImage: scaled)
-            let image = NSImage(size: rep.size)
-            image.addRepresentation(rep)
-            return image
-        }
-    #endif
+    private static func generateQRCode(from string: String) -> CGImage? {
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        guard let output = filter.outputImage?
+            .transformed(by: CGAffineTransform(scaleX: 6, y: 6))
+        else { return nil }
+        return CIContext().createCGImage(output, from: output.extent)
+    }
 }
 
 /// Rasterizes a SwiftUI view into a shareable `Image`, bridging the AppKit/UIKit

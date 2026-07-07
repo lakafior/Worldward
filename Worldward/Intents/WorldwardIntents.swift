@@ -57,6 +57,36 @@ enum ContinentName: String, AppEnum {
     ]
 }
 
+// MARK: - Widget refresh
+
+/// Recomputes the widget snapshot from the store. Called by every intent that
+/// mutates travel data: intents can run via Siri/Shortcuts without `ContentView`
+/// ever existing, so without this the widgets stay stale until the next app
+/// launch. `WidgetSnapshotStore.write` skips unchanged snapshots, so calling it
+/// after every mutation is cheap. Also reused by `ContentView` so both paths
+/// build the snapshot identically.
+@MainActor
+func refreshWidgetSnapshot(countries: [Country]) {
+    let stats = TravelStats(countries: countries)
+    let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "system"
+    WidgetSnapshotStore.write(
+        WidgetSnapshot(
+            visitedCountries: stats.visitedCountries,
+            totalCountries: stats.totalCountries,
+            visitedContinents: stats.visitedContinents,
+            totalContinents: stats.totalContinents,
+            flags: stats.visitedFlags,
+            tints: stats.statusTints,
+            appTheme: theme))
+}
+
+/// Convenience for intents, which fetch from their own short-lived context.
+@MainActor
+private func refreshWidgetSnapshot(using context: ModelContext) {
+    let countries = (try? context.fetch(FetchDescriptor<Country>())) ?? []
+    refreshWidgetSnapshot(countries: countries)
+}
+
 // MARK: - 1. Mark Country Status
 
 /// Sets the travel status of a country. The primary action — "Mark Japan as visited",
@@ -93,6 +123,7 @@ struct MarkCountryStatusIntent: AppIntent {
         model.status = status.domainStatus
         model.statusIsImported = false
         try context.save()
+        refreshWidgetSnapshot(using: context)
 
         return .result(
             value:
@@ -264,6 +295,7 @@ struct LogVisitIntent: AppIntent {
         }
 
         try context.save()
+        refreshWidgetSnapshot(using: context)
 
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -368,7 +400,8 @@ struct GetContinentProgressIntent: AppIntent {
         let visitedCountries = countries.filter { $0.isVisited }
         let visited = visitedCountries.count
         let total = countries.count
-        let pct = total > 0 ? Int(Double(visited) / Double(total) * 100) : 0
+        // Rounded (not truncated), matching the ContinentProgressTool's math.
+        let pct = total > 0 ? Int((Double(visited) / Double(total) * 100).rounded()) : 0
 
         let value = "\(continent.rawValue): \(visited) of \(total) countries visited (\(pct)%)."
         let dialog = IntentDialog(
@@ -422,6 +455,7 @@ struct MarkCurrentLocationIntent: AppIntent {
         model.status = status.domainStatus
         model.statusIsImported = false
         try context.save()
+        refreshWidgetSnapshot(using: context)
 
         return .result(
             value:

@@ -297,9 +297,9 @@ private struct TimelineSection: View {
             VStack(alignment: .leading, spacing: 12) {
                 TimelineHeader()
 
-                ForEach(groupedByYear.indices, id: \.self) { sectionIndex in
-                    let group = groupedByYear[sectionIndex]
-
+                // Keyed on stable identity (year / model id) rather than array
+                // indices, so deleting a visit elsewhere can't mis-animate rows.
+                ForEach(groupedByYear, id: \.year) { group in
                     VStack(alignment: .leading, spacing: 0) {
                         // Year header with count
                         HStack(spacing: 6) {
@@ -314,14 +314,15 @@ private struct TimelineSection: View {
                         .padding(.vertical, 8)
 
                         // Timeline line + entries
-                        ForEach(group.visits.indices, id: \.self) { index in
+                        ForEach(group.visits, id: \.persistentModelID) { visit in
                             TimelineEntryRow(
-                                visit: group.visits[index],
-                                isLast: index == group.visits.count - 1
+                                visit: visit,
+                                isLast: visit.persistentModelID
+                                    == group.visits.last?.persistentModelID
                             )
                         }
 
-                        if sectionIndex < groupedByYear.count - 1 {
+                        if group.year != groupedByYear.last?.year {
                             Divider()
                                 .padding(.vertical, 4)
                         }

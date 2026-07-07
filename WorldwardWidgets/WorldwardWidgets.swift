@@ -45,12 +45,24 @@ private let darkBrandGradient = LinearGradient(
     colors: [Color(red: 0.70, green: 0.50, blue: 0.14), Color(red: 0.59, green: 0.21, blue: 0.04)],
     startPoint: .topLeading, endPoint: .bottomTrailing)
 
-/// Returns the appropriate gradient for the snapshot's theme setting.
-private func widgetGradient(for theme: String) -> LinearGradient {
-    // system defers to the system color scheme; light maps to light; dark maps to dark
-    switch theme {
-    case "dark": return darkBrandGradient
-    default: return brandGradient
+/// Applies the brand gradient as the widget background, honoring the app's theme
+/// preference: "light"/"dark" force a variant, and "system" follows the actual
+/// system color scheme (which a bare function couldn't read — it needs the
+/// environment, hence a modifier).
+private struct ThemedGradientBackground: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    let theme: String
+
+    private var gradient: LinearGradient {
+        switch theme {
+        case "dark": darkBrandGradient
+        case "light": brandGradient
+        default: colorScheme == .dark ? darkBrandGradient : brandGradient
+        }
+    }
+
+    func body(content: Content) -> some View {
+        content.containerBackground(for: .widget) { gradient }
     }
 }
 
@@ -192,7 +204,7 @@ struct TravelSnapshotWidget: Widget {
         StaticConfiguration(kind: "WorldwardTravelSnapshot", provider: WorldwardProvider()) {
             entry in
             TravelSnapshotView(snapshot: entry.snapshot)
-                .containerBackground(for: .widget) { widgetGradient(for: entry.snapshot.appTheme) }
+                .modifier(ThemedGradientBackground(theme: entry.snapshot.appTheme))
         }
         .configurationDisplayName("Travel Snapshot")
         .description("Countries visited, continents reached, and your share of the world.")

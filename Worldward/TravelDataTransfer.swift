@@ -160,17 +160,29 @@ struct StopPlaceRecord: Codable {
 struct PackingItemRecord: Codable {
     var title: String
     var isPacked: Bool
+    /// Optional so v2 backups — written before these fields existed — still
+    /// decode; a missing value falls back to the model's defaults on import.
+    var quantity: Int?
+    var order: Int?
+    /// The container's *name* (the same portable convention as
+    /// `PackingTemplateItem.containerName`); resolved or created on import.
+    var containerName: String?
 
     @MainActor
     init(from item: PackingItem) {
         self.title = item.title
         self.isPacked = item.isPacked
+        self.quantity = item.quantity
+        self.order = item.order
+        self.containerName = item.container?.name
     }
 }
 
 /// Encodes and decodes the travel-data backup, and applies an import to the store.
 enum TravelDataTransfer {
-    static let currentVersion = 2
+    /// v3 added quantity/order/containerName to packing items. Older files still
+    /// decode (the fields are optional), and older builds ignore the extra keys.
+    static let currentVersion = 3
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -221,6 +233,25 @@ enum TravelDataTransfer {
         for trip in try context.fetch(FetchDescriptor<Trip>()) {
             context.delete(trip)
         }
+
+        // Resolve packing containers by name against the shared catalog, creating
+        // missing ones once and reusing them across every trip in the backup.
+        let existingContainers = try context.fetch(FetchDescriptor<PackingContainer>())
+        var containersByName = Dictionary(
+            existingContainers.map { ($0.name.lowercased(), $0) },
+            uniquingKeysWith: { first, _ in first })
+        func container(named raw: String?) -> PackingContainer? {
+            guard let name = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty
+            else { return nil }
+            let key = name.lowercased()
+            if let existing = containersByName[key] { return existing }
+            let order = (containersByName.values.map(\.sortOrder).max() ?? -1) + 1
+            let created = PackingContainer(name: name, sortOrder: order)
+            context.insert(created)
+            containersByName[key] = created
+            return created
+        }
+
         for record in file.trips {
             let trip = Trip(
                 title: record.title, startDate: record.startDate,
@@ -241,8 +272,13 @@ enum TravelDataTransfer {
                     item.places.append(place)
                 }
             }
-            for pack in record.packing {
-                let item = PackingItem(title: pack.title, isPacked: pack.isPacked, trip: trip)
+            for (index, pack) in record.packing.enumerated() {
+                let item = PackingItem(
+                    title: pack.title, isPacked: pack.isPacked,
+                    quantity: pack.quantity ?? 1,
+                    order: pack.order ?? index,
+                    trip: trip,
+                    container: container(named: pack.containerName))
                 context.insert(item)
                 trip.packing.append(item)
             }

@@ -116,7 +116,8 @@ enum NotificationManager {
     /// are skipped so the reminder only arrives when it's actually useful.
     private static func tripStartRequests(trips: [Trip]) -> [UNNotificationRequest] {
         let now = Date()
-        let fireLimit = now.addingTimeInterval(24 * 3600)  // skip trips starting within the hour
+        // Trips starting within 24 hours can't get a "24 hours before" reminder.
+        let fireLimit = now.addingTimeInterval(24 * 3600)
 
         return
             trips
