@@ -12,7 +12,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 ![macOS 15+](https://img.shields.io/badge/macOS-26+-000000?logo=apple&logoColor=white)
 ![iOS 18+](https://img.shields.io/badge/iOS-26+-000000?logo=apple&logoColor=white)
 
-![GPLv3](https://img.shields.io/badge/License-GPLv3-1793D1?logo=gnu&logoColor=white)
+[![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?logo=github)
 
 
@@ -328,8 +328,10 @@ Under consideration (bigger bets):
 
 ## License
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)** with an additional exception for distribution via the Apple App Store.
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
+See the [LICENSE](LICENSE) file for the full text.
 
-- **Full license text**: [LICENSE](LICENSE)
-- **Summary**: You are free to use, modify, and distribute this software under the GPL-3.0 terms, including for commercial use, **as long as you also open-source your modifications**.
-- **App Store Exception**: Distribution via the Apple App Store is permitted, provided that the source code is made available to users (e.g., via a public repository).
+You are free to use, modify, and distribute this software, including for
+commercial purposes. Modifications to existing MPL-licensed files must be
+made available under the same license (MPL-2.0). You may combine this code
+with proprietary code in separate files as part of a larger work.
