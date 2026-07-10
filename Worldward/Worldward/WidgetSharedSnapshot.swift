@@ -195,7 +195,15 @@ enum WorldMapStore {
     nonisolated(unsafe) private static var cached: WorldMap?
     static var shared: WorldMap? {
         if let cached { return cached }
-        guard let containerURL, let data = try? Data(contentsOf: containerURL) else { return nil }
+        // The App Group copy is written by the app after first launch; fall back
+        // to reading the app's own bundle so the launch map preview works on a
+        // fresh install too. In the widget process the bundle holds no such
+        // resource, so the fallback is a harmless no-op there.
+        let data =
+            containerURL.flatMap { try? Data(contentsOf: $0) }
+            ?? Bundle.main.url(forResource: "countries", withExtension: "wmgb")
+                .flatMap { try? Data(contentsOf: $0) }
+        guard let data else { return nil }
         cached = decode(data)
         return cached
     }
@@ -357,6 +365,10 @@ func worldwardLandColor(rank: Int) -> Color {
     case 2: Color(red: 1.00, green: 0.72, blue: 0.20)  // visited
     case 3: Color(red: 0.96, green: 0.51, blue: 0.09)  // lived
     case 4: Color(red: 0.84, green: 0.30, blue: 0.05)  // living
+    // Plan-only blues (mirror `PlanStatus.color`), used by the app's launch map
+    // preview. Widget snapshots never write these ranks.
+    case 5: Color(red: 0.40, green: 0.72, blue: 0.95)  // wishlist
+    case 6: Color(red: 0.13, green: 0.42, blue: 0.80)  // planning
     default: Color(red: 0.82, green: 0.85, blue: 0.88)  // unvisited
     }
 }

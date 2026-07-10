@@ -154,6 +154,39 @@ struct MapLegend: View {
     }
 }
 
+/// Instant self-drawn world map shown between the data load finishing and
+/// MapKit's first render. It reuses the widget's `WorldMapCanvas` (a plain
+/// Canvas fill of the bundled geometry, tinted with the user's statuses and
+/// plans), so the user sees *their* map within a few hundred milliseconds while
+/// MapKit's cold start — Metal setup, tile downloads — completes behind it.
+struct MapLaunchPreview: View {
+    /// ISO id → status rank (1-4 warm statuses, 5-6 plan blues).
+    let tints: [String: Int]
+    let isDark: Bool
+
+    var body: some View {
+        ZStack {
+            if isDark {
+                // Matches the widget's deep-ocean gradient for dark map styles.
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.07, green: 0.15, blue: 0.25),
+                        Color(red: 0.03, green: 0.08, blue: 0.15),
+                    ],
+                    startPoint: .top, endPoint: .bottom)
+            } else {
+                // Soft ocean blue in the neighborhood of MapKit's standard style,
+                // so the crossfade into the live map reads as a focus change.
+                Color(red: 0.66, green: 0.80, blue: 0.87)
+            }
+
+            WorldMapCanvas(tints: tints)
+                .padding(8)
+        }
+        .ignoresSafeArea()
+    }
+}
+
 /// Full-screen launch splash shown while the country geometry is being built.
 /// A branded, opaque cover (rather than a bare spinner over an empty gray map)
 /// makes the one-time first-run setup read as deliberate progress, not a freeze.

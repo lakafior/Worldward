@@ -203,9 +203,14 @@ struct ContentView: View {
     /// The viewport when the camera is zoomed in enough for minor islands to be
     /// visible; `nil` at world zoom. Updated by `onMapCameraChange`.
     @State private var detailMapRect: MKMapRect? = nil
-    /// Whether the map has delivered its first camera callback — used only to
-    /// timestamp MapKit readiness in the DEBUG launch log.
+    /// Whether the map has delivered its first camera callback — timestamps
+    /// MapKit readiness in the DEBUG launch log and starts the launch-preview
+    /// crossfade.
     @State private var mapBecameLive = false
+    /// `true` once the live map has been revealed from behind `MapLaunchPreview`.
+    @State private var mapRevealed = false
+    /// Status/plan ranks for `MapLaunchPreview`, built once during the data load.
+    @State private var launchTints: [String: Int] = [:]
     @State private var countryPaths: [String: [CGPath]] = [:]
     /// Per-country rect of the *largest* polygon only — used to zoom to a country's
     /// mainland rather than a far-flung territory.
@@ -298,6 +303,13 @@ struct ContentView: View {
                 if !mapBecameLive {
                     mapBecameLive = true
                     LaunchClock.mark("map: first camera callback (live)")
+                    // Give the first tiles a beat to render behind the launch
+                    // preview, then crossfade it away.
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(400))
+                        LaunchClock.mark("map: revealing")
+                        withAnimation(.easeInOut(duration: 0.8)) { mapRevealed = true }
+                    }
                 }
                 if context.rect.width < MKMapSize.world.width / 4 {
                     detailMapRect = context.rect.insetBy(
@@ -371,10 +383,21 @@ struct ContentView: View {
             // the overlays fill in when the geometry lands.
             mapView
 
+            // Between the data load and MapKit's first render, cover the map
+            // with an instant Canvas drawing of the user's world — so a cold
+            // start shows *their map* in well under a second while tiles
+            // download behind it. Never traps input: by the time anything is
+            // tappable underneath, the reveal is already under way.
+            if !isLoadingMapData && !mapRevealed {
+                MapLaunchPreview(tints: launchTints, isDark: mapStyle.isDark)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+
             if isLoadingMapData {
                 MapLoadingView(message: mapLoadingMessage)
                     .transition(.opacity)
-            } else {
+            } else if mapRevealed {
                 MapLegend(isDark: mapStyle.isDark)
                     .padding([.horizontal, .top])
                     .padding(.bottom, 40)
@@ -1163,6 +1186,23 @@ struct ContentView: View {
                 y: rect.origin.y + rect.size.height / 2
             ).coordinate
         }
+        // Re-fetch (rather than trust `allCountries`) so the launch preview, the
+        // photo importer, and Spotlight all see every seeded country even if the
+        // `@Query` hasn't refreshed yet this run loop.
+        let seededCountries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? allCountries
+
+        // Ranks for the launch map preview, mirroring the live map's fill rules:
+        // a visited status wins; a country that's only planned shows its blue.
+        var tints: [String: Int] = [:]
+        for country in seededCountries {
+            if country.status.isVisited {
+                tints[country.id] = CountryStatus.allCases.firstIndex(of: country.status) ?? 0
+            } else if country.planStatus != .none {
+                tints[country.id] = country.planStatus == .wishlist ? 5 : 6
+            }
+        }
+        launchTints = tints
+
         withAnimation(.easeInOut(duration: 0.4)) {
             self.isLoadingMapData = false
         }
@@ -1176,11 +1216,8 @@ struct ContentView: View {
         LaunchClock.mark("loadGeoJSON: widget snapshot written")
 
         // Hand the geographic data to the photo importer now that it's ready.
-        // Re-fetch so the importer gets every seeded country even if the `@Query`
-        // hasn't refreshed yet this run loop. Doing this here (rather than via
-        // onChange) guarantees it runs exactly once, so the "Import from Photos"
-        // button reliably enables.
-        let seededCountries = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? allCountries
+        // Doing this here (rather than via onChange) guarantees it runs exactly
+        // once, so the "Import from Photos" button reliably enables.
         photoImporter.configure(
             countryBoundingRects: extractedHitRects,
             countryPaths: extractedPaths,
