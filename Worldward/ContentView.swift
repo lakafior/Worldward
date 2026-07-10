@@ -203,6 +203,9 @@ struct ContentView: View {
     /// The viewport when the camera is zoomed in enough for minor islands to be
     /// visible; `nil` at world zoom. Updated by `onMapCameraChange`.
     @State private var detailMapRect: MKMapRect? = nil
+    /// Whether the map has delivered its first camera callback — used only to
+    /// timestamp MapKit readiness in the DEBUG launch log.
+    @State private var mapBecameLive = false
     @State private var countryPaths: [String: [CGPath]] = [:]
     /// Per-country rect of the *largest* polygon only — used to zoom to a country's
     /// mainland rather than a far-flung territory.
@@ -292,6 +295,10 @@ struct ContentView: View {
             // are already filled when a pan ends on them. `.onEnd` keeps the
             // overlay set stable during the gesture itself.
             .onMapCameraChange(frequency: .onEnd) { context in
+                if !mapBecameLive {
+                    mapBecameLive = true
+                    LaunchClock.mark("map: first camera callback (live)")
+                }
                 if context.rect.width < MKMapSize.world.width / 4 {
                     detailMapRect = context.rect.insetBy(
                         dx: -context.rect.width * 0.25, dy: -context.rect.height * 0.25)
@@ -356,15 +363,18 @@ struct ContentView: View {
     /// of a `NavigationStack`; on macOS it's the detail pane of a split view.
     private var mapContent: some View {
         ZStack {
-            // Render only the splash while loading, so it paints on the first
-            // frame without MapKit/Metal initialization competing for it. The
-            // map is built once the geometry is ready.
+            // Build the map immediately, even though the splash covers it, so
+            // MapKit's one-time costs — Metal setup and the tile download for
+            // the initial camera — run concurrently with the catalog/geometry
+            // load instead of starting only after the splash clears. On a cold
+            // first launch the tile fetch dominates, and this overlaps it fully;
+            // the overlays fill in when the geometry lands.
+            mapView
+
             if isLoadingMapData {
                 MapLoadingView(message: mapLoadingMessage)
                     .transition(.opacity)
             } else {
-                mapView
-
                 MapLegend(isDark: mapStyle.isDark)
                     .padding([.horizontal, .top])
                     .padding(.bottom, 40)
@@ -1084,10 +1094,12 @@ struct ContentView: View {
     }
 
     private func loadGeoJSON() async {
+        LaunchClock.mark("loadGeoJSON: start")
         // Decide what database work is needed up front, on the main context, so the
         // background build knows whether it must also produce seed metadata. The
         // store needs seeding when it's empty or holds stale ids from an old build.
         let existing = (try? modelContext.fetch(FetchDescriptor<Country>())) ?? []
+        LaunchClock.mark("loadGeoJSON: fetched \(existing.count) countries")
         let stale = Worldward.hasStaleIDs(existing)
         let needsSeed = existing.isEmpty || stale
 
@@ -1103,6 +1115,7 @@ struct ContentView: View {
         // simplification were already done at build time in Tools/generate_geo.swift,
         // so this is cheap on every launch including the first.
         guard let bundled = loadBundledGeo() else { return }
+        LaunchClock.mark("loadGeoJSON: geometry decoded")
 
         // Copy the bundled outline into the shared App Group container on a
         // background task so the widget extension (which can't read the bundle)
@@ -1120,6 +1133,7 @@ struct ContentView: View {
         let extractedRects = geo.rects
         let extractedHitRects = geo.hitRects
         let seeds = bundled.seeds
+        LaunchClock.mark("loadGeoJSON: polygons built")
 
         // Reconcile the database on the main actor — the only place SwiftData
         // models are touched. Seeding and reconciliation are mutually exclusive.
@@ -1128,10 +1142,12 @@ struct ContentView: View {
         } else {
             reconcileDatabase(existing, seeds: seeds)
         }
+        LaunchClock.mark(needsSeed ? "loadGeoJSON: seeded" : "loadGeoJSON: reconciled")
 
         // Collapse any duplicate rows iCloud may have produced (two devices that
         // both seeded offline). Cheap and idempotent on a clean store.
         deduplicateCountries()
+        LaunchClock.mark("loadGeoJSON: deduplicated")
 
         self.countryPolygons = extractedPolygons
         self.countryDetailPolygons = extractedDetailPolygons
@@ -1150,12 +1166,14 @@ struct ContentView: View {
         withAnimation(.easeInOut(duration: 0.4)) {
             self.isLoadingMapData = false
         }
+        LaunchClock.mark("loadGeoJSON: splash cleared")
 
         // The map geometry has now been cached into the App Group (inside the
         // detached task above). Rewrite the snapshot so the reload it triggers
         // happens *after* the geometry file exists — the map widget then finds it
         // on its next refresh and fills in.
         updateWidgetSnapshot()
+        LaunchClock.mark("loadGeoJSON: widget snapshot written")
 
         // Hand the geographic data to the photo importer now that it's ready.
         // Re-fetch so the importer gets every seeded country even if the `@Query`
@@ -1168,6 +1186,7 @@ struct ContentView: View {
             countryPaths: extractedPaths,
             allCountries: seededCountries
         )
+        LaunchClock.mark("loadGeoJSON: photo importer configured")
 
         // Publish the catalog to Spotlight (and Apple Intelligence) once it's
         // settled. Gated internally, so this is a no-op on warm launches.
@@ -1177,7 +1196,9 @@ struct ContentView: View {
 
         // Refresh local travel reminders from the freshly loaded catalog. A no-op
         // when the user hasn't enabled reminders (off by default — see SettingsView).
+        LaunchClock.mark("loadGeoJSON: rescheduling reminders")
         await rescheduleNotifications()
+        LaunchClock.mark("loadGeoJSON: done")
     }
 
     /// Rebuilds the reminder schedule from the store. Trips must be included:

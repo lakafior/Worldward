@@ -19,6 +19,7 @@ struct Worldward: App {
     static let cloudKitContainerID = "iCloud.net.smigi.worldward"
 
     static let sharedModelContainer: ModelContainer = {
+        LaunchClock.mark("model container: creating")
         let schema = Schema([
             Country.self, Visit.self, Trip.self, ItineraryItem.self, StopPlace.self,
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
@@ -32,6 +33,7 @@ struct Worldward: App {
             // Seeding and reconciliation happen once in `ContentView`, fed by the
             // same bundled geometry file (`countries.wmgb`) that builds the map — so
             // the catalog and the map are always keyed by the same ids.
+            LaunchClock.mark("model container: ready")
             return container
         } catch {
             // The store couldn't be opened — usually a dev-time schema change, but

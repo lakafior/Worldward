@@ -50,8 +50,13 @@ enum NotificationManager {
         requests.append(yearRecapRequest())
         requests.append(inactivityRequest())
 
+        // Fire-and-forget: each awaited `add` is a round-trip to the
+        // notifications daemon, and ~27 of them in series measurably stalled
+        // launch by seconds on iOS. Failures were already swallowed, so
+        // enqueue without waiting; the daemon preserves ordering after the
+        // removeAll above.
         for request in requests {
-            try? await center.add(request)
+            center.add(request, withCompletionHandler: nil)
         }
     }
 
