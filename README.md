@@ -33,7 +33,7 @@ Worldward is a native macOS / iOS app that visualises every country you've visit
 
 ### Interactive Map
 
-Every country rendered as a tap-able map polygon from Natural Earth data (~250 countries). Warm yellow-to-orange fill per status (**Crossed → Visited → Lived → Living**), with a cool-blue **planning layer** for Wishlist and Planning destinations.
+Every country rendered as a tap-able map polygon from Natural Earth data (~250 countries), including outlying territories and islands — Hawaii, Kaliningrad, the Greek archipelagos. Warm yellow-to-orange fill per status (**Crossed → Visited → Lived → Living**), with a cool-blue **planning layer** for Wishlist and Planning destinations.
 
 - **Tap any country** to zoom in and open its detail sheet with visits, flag, and notes.
 - **Search & fly-to** — type a country name and tap a suggestion to animate the map directly to it.
@@ -198,7 +198,7 @@ Two flows in **Settings**:
 | UI | SwiftUI (Liquid Glass `TabView`, `.sidebarAdaptable`) |
 | Mapping | MapKit (`MKPolygon`, `MKMapView`) |
 | Persistence | SwiftData (`ModelContainer`, `@Model`) |
-| Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~340 KB) |
+| Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~675 KB) |
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
 | Intents | `AppIntents` framework (Shortcuts, Siri, Control Center) |
@@ -321,7 +321,7 @@ WorldwardWidgets/               # Widget extension target
 
 - All travel data is stored **locally on-device** via SwiftData. Nothing is sent to a server.
 - AI inference runs entirely on-device via `FoundationModels` — no network calls.
-- Country geometry is loaded from the bundled `countries.wmgb` (Natural Earth data, public domain), pre-simplified at build time by `Tools/generate_geo.swift`. The app ships ~340 KB instead of a 14 MB GeoJSON.
+- Country geometry is loaded from the bundled `countries.wmgb` (Natural Earth data, public domain), pre-simplified at build time by `Tools/generate_geo.swift`. The app ships ~675 KB instead of a 14 MB GeoJSON, including outlying territories and islands down to ~25 km across (Hawaii, Kaliningrad, the Greek archipelagos, …). One deviation from the Natural Earth default view: Crimea is shown as part of Ukraine.
 - Photo identifiers (`PHAsset.localIdentifier`) are stored instead of image data — the library stays the source of truth.
 
 ---
@@ -336,7 +336,6 @@ Planned next, in rough priority order — everything stays native-only, lightwei
 Under consideration:
 
 - **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
-- **Region-level tracking** — states/provinces via a second pre-baked geometry file; opt-in per country.
 - **Interactive packing widget** — check items off from the Home Screen.
 
 ---

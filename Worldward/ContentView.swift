@@ -197,6 +197,12 @@ struct ContentView: View {
 
     // Geographic data
     @State private var countryPolygons: [String: [MKPolygon]] = [:]
+    /// Minor islands per country (below 0.5% of the mainland's size), drawn only
+    /// when the camera is zoomed in — see `mapPolygons(for:)`.
+    @State private var countryDetailPolygons: [String: [MKPolygon]] = [:]
+    /// The viewport when the camera is zoomed in enough for minor islands to be
+    /// visible; `nil` at world zoom. Updated by `onMapCameraChange`.
+    @State private var detailMapRect: MKMapRect? = nil
     @State private var countryPaths: [String: [CGPath]] = [:]
     /// Per-country rect of the *largest* polygon only — used to zoom to a country's
     /// mainland rather than a far-flung territory.
@@ -228,6 +234,18 @@ struct ContentView: View {
         }
     }
 
+    /// Polygons to draw for one country: the major rings always, plus the minor
+    /// islands only when the camera is zoomed in and they intersect the viewport.
+    /// Minor islands are sub-pixel at world zoom, and drawing all ~1,000 of them
+    /// unconditionally made MapKit's initial overlay build take seconds. Tap
+    /// accuracy is unaffected — `countryPaths` always contains every ring.
+    private func mapPolygons(for id: String) -> [MKPolygon] {
+        let majors = countryPolygons[id] ?? []
+        guard let detailMapRect, let minors = countryDetailPolygons[id] else { return majors }
+        let visible = minors.filter { $0.boundingMapRect.intersects(detailMapRect) }
+        return visible.isEmpty ? majors : majors + visible
+    }
+
     /// Countries matching the map search text, used for search suggestions.
     private var mapSearchResults: [Country] {
         let term = mapSearchText.trimmingCharacters(in: .whitespaces)
@@ -246,7 +264,7 @@ struct ContentView: View {
                         country: country,
                         status: country.status,
                         planStatus: country.planStatus,
-                        polygons: countryPolygons[country.id] ?? [])
+                        polygons: mapPolygons(for: country.id))
                 }
 
                 if let sel = selectedCountry {
@@ -268,6 +286,19 @@ struct ContentView: View {
                 }
             }
             .mapStyle(mapStyle.mapStyle)
+            // Track when the camera is zoomed in past a quarter of the world's
+            // width (~90° of longitude — a continent-ish view). Only then are
+            // minor islands drawn; the rect is padded so islands just off-screen
+            // are already filled when a pan ends on them. `.onEnd` keeps the
+            // overlay set stable during the gesture itself.
+            .onMapCameraChange(frequency: .onEnd) { context in
+                if context.rect.width < MKMapSize.world.width / 4 {
+                    detailMapRect = context.rect.insetBy(
+                        dx: -context.rect.width * 0.25, dy: -context.rect.height * 0.25)
+                } else if detailMapRect != nil {
+                    detailMapRect = nil
+                }
+            }
             .mapControls {
                 // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
                 #if os(macOS)
@@ -1067,7 +1098,7 @@ struct ContentView: View {
             ? "Setting up your map…\nThis only happens once."
             : "Loading map…"
 
-        // Decode the bundled country geometry. The binary format (~340 KB) is a
+        // Decode the bundled country geometry. The binary format (~675 KB) is a
         // fast synchronous parse — the heavy GeoJSON decode and Douglas-Peucker
         // simplification were already done at build time in Tools/generate_geo.swift,
         // so this is cheap on every launch including the first.
@@ -1083,10 +1114,11 @@ struct ContentView: View {
         // Build MapKit display types on the main actor (MKPolygon, CGPath are not
         // Sendable and must be constructed on the actor that owns them).
         let geo = buildGeo(from: bundled.rings)
-        let extractedPolygons = geo.0
-        let extractedPaths = geo.1
-        let extractedRects = geo.2
-        let extractedHitRects = geo.3
+        let extractedPolygons = geo.polys
+        let extractedDetailPolygons = geo.detailPolys
+        let extractedPaths = geo.paths
+        let extractedRects = geo.rects
+        let extractedHitRects = geo.hitRects
         let seeds = bundled.seeds
 
         // Reconcile the database on the main actor — the only place SwiftData
@@ -1102,6 +1134,7 @@ struct ContentView: View {
         deduplicateCountries()
 
         self.countryPolygons = extractedPolygons
+        self.countryDetailPolygons = extractedDetailPolygons
         self.countryPaths = extractedPaths
         self.countryBoundingRects = extractedRects
         self.countryHitRects = extractedHitRects

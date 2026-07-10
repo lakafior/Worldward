@@ -14,7 +14,7 @@ struct CountrySeed: Sendable {
 /// Decodes the bundled `countries.wmgb` — the pre-simplified country outlines and
 /// seed metadata produced once per release by `Tools/generate_geo.swift`. Because
 /// the heavy GeoJSON decode and Douglas-Peucker simplification happen at build
-/// time (not on-device), the app ships ~340 KB instead of a 14 MB GeoJSON and the
+/// time (not on-device), the app ships ~675 KB instead of a 14 MB GeoJSON and the
 /// first launch is as fast as every later one — no download, no on-device decode.
 ///
 /// Binary format ("WMGB" v1), little-endian — kept in sync with the writer in
@@ -104,18 +104,29 @@ func loadBundledGeo() -> (
 }
 
 /// Rebuilds the drawable polygons, hit-test paths, and per-country bounding rects
-/// from simplified rings. Shared by both the cache and fresh-decode paths so the
-/// map and tap targets are identical whichever produced the rings.
+/// from simplified rings.
+///
+/// Polygons come back in two tiers: `polys` holds each country's major rings
+/// (mainland plus islands at least 0.5% of its size) and `detailPolys` the minor
+/// islands below that — the ones the generator's 25 km floor keeps (Hawaii,
+/// Kaliningrad, small archipelagos). The map draws majors always and minors only
+/// when zoomed in: minor islands are sub-pixel at world zoom, and the thousands
+/// of extra overlays made MapKit's initial build take seconds. `paths` and
+/// `hitRects` always cover *every* ring, so tap accuracy never depends on zoom.
 func buildGeo(
     from rings: [String: [[MKMapPoint]]]
-) -> ([String: [MKPolygon]], [String: [CGPath]], [String: MKMapRect], [String: MKMapRect]) {
+) -> (
+    polys: [String: [MKPolygon]], detailPolys: [String: [MKPolygon]],
+    paths: [String: [CGPath]], rects: [String: MKMapRect], hitRects: [String: MKMapRect]
+) {
     var polys: [String: [MKPolygon]] = [:]
+    var detailPolys: [String: [MKPolygon]] = [:]
     var paths: [String: [CGPath]] = [:]
     var rects: [String: MKMapRect] = [:]
     var hitRects: [String: MKMapRect] = [:]
 
     for (id, ringList) in rings {
-        var polygons: [MKPolygon] = []
+        var built: [(polygon: MKPolygon, rect: MKMapRect)] = []
         var cgPaths: [CGPath] = []
         var largestRect: MKMapRect?
         var unionRect: MKMapRect?
@@ -124,7 +135,6 @@ func buildGeo(
             guard points.count >= 3 else { continue }
 
             let polygon = MKPolygon(points: points, count: points.count)
-            polygons.append(polygon)
 
             let path = CGMutablePath()
             path.move(to: CGPoint(x: points[0].x, y: points[0].y))
@@ -135,17 +145,23 @@ func buildGeo(
             cgPaths.append(path)
 
             let rect = polygon.boundingMapRect
+            built.append((polygon, rect))
             if largestRect == nil || rect.area > largestRect!.area { largestRect = rect }
             unionRect = unionRect.map { $0.union(rect) } ?? rect
         }
 
-        guard !polygons.isEmpty, let largestRect, let unionRect else { continue }
-        polys[id] = polygons
+        guard !built.isEmpty, let largestRect, let unionRect else { continue }
+
+        let minMajorArea = largestRect.area * 0.005
+        polys[id] = built.filter { $0.rect.area >= minMajorArea }.map(\.polygon)
+        let minors = built.filter { $0.rect.area < minMajorArea }.map(\.polygon)
+        if !minors.isEmpty { detailPolys[id] = minors }
+
         paths[id] = cgPaths
         rects[id] = largestRect
         hitRects[id] = unionRect
     }
-    return (polys, paths, rects, hitRects)
+    return (polys, detailPolys, paths, rects, hitRects)
 }
 
 extension MKMapRect {
