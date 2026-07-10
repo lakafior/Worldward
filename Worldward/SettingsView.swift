@@ -312,8 +312,14 @@ struct SettingsView: View {
     @ViewBuilder private var aboutSection: some View {
         Section {
             LabeledContent("App Name", value: "Worldward")
-            LabeledContent("License", value: "GPL 3.0")
+            LabeledContent("License", value: "MPL 2.0")
             LabeledContent("Author", value: "Smigi")
+            Link(
+                "Website",
+                destination: URL(string: "https://worldward.smigi.net")!)
+            Link(
+                "Privacy Policy",
+                destination: URL(string: "https://worldward.smigi.net/privacy")!)
             Link(
                 "GitHub Repository",
                 destination: URL(string: "https://github.com/lakafior/Worldward")!)

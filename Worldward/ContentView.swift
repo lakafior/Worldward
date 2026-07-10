@@ -1406,6 +1406,12 @@ struct ContentView: View {
             visit.country = winner
         }
 
+        // Trip stops pointing at the loser would be nullified by its deletion
+        // (losing their flag and map route), so re-point them at the winner.
+        for item in Array(loser.itineraryItems) {
+            item.country = winner
+        }
+
         if winner.status == .notVisited && loser.status != .notVisited {
             winner.status = loser.status
             winner.statusIsImported = loser.statusIsImported
@@ -1424,5 +1430,9 @@ struct ContentView: View {
         }
 
         if winner.visitDate == nil { winner.visitDate = loser.visitDate }
+
+        // A wishlist/planning mark set on the other device lives on the loser;
+        // without this it would vanish with the row.
+        if winner.planStatus == .none { winner.planStatus = loser.planStatus }
     }
 }

@@ -6,39 +6,15 @@
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>
 	<array/>
+	<!--
+		No collected data types: in Apple's definition "collected" means
+		transmitted off-device in a way the developer (or partners) can access.
+		Worldward keeps everything on-device (and, once iCloud sync ships, in the
+		user's private CloudKit database, which the developer cannot read) — so
+		photos, location, and calendar access are used but never collected.
+	-->
 	<key>NSPrivacyCollectedDataTypes</key>
-	<array>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypePhotos</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeLocation</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeCalendars</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
-			<true/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
-			</array>
-		</dict>
-	</array>
+	<array/>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>
@@ -46,7 +22,11 @@
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
+				<!-- CA92.1: app-private defaults (settings, achievement diffs). -->
 				<string>CA92.1</string>
+				<!-- 1C8F.1: App Group defaults shared with the widget extension
+				     (widget snapshot handshake, Control Center mark-here flag). -->
+				<string>1C8F.1</string>
 			</array>
 		</dict>
 		<dict>
@@ -54,7 +34,9 @@
 			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
-				<string>0A2A.1</string>
+				<!-- C617.1: timestamps/sizes of files inside the app's own
+				     container (geometry cache freshness check). -->
+				<string>C617.1</string>
 			</array>
 		</dict>
 	</array>

@@ -323,6 +323,7 @@ WorldwardWidgets/               # Widget extension target
 - AI inference runs entirely on-device via `FoundationModels` — no network calls.
 - Country geometry is loaded from the bundled `countries.wmgb` (Natural Earth data, public domain), pre-simplified at build time by `Tools/generate_geo.swift`. The app ships ~675 KB instead of a 14 MB GeoJSON, including outlying territories and islands down to ~25 km across (Hawaii, Kaliningrad, the Greek archipelagos, …). One deviation from the Natural Earth default view: Crimea is shown as part of Ukraine.
 - Photo identifiers (`PHAsset.localIdentifier`) are stored instead of image data — the library stays the source of truth.
+- Website: [worldward.smigi.net](https://worldward.smigi.net) · Privacy policy: [worldward.smigi.net/privacy](https://worldward.smigi.net/privacy)
 
 ---
 
