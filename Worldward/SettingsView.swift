@@ -39,6 +39,7 @@ struct SettingsView: View {
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
     @AppStorage(TripPlanner.profileKey) private var packingProfile: PackingProfile = .unspecified
     @AppStorage(TripPlanner.preferencesKey) private var packingPreferences = ""
+    @AppStorage(TripPlanner.interestsKey) private var sightseeingInterests = ""
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -197,11 +198,15 @@ struct SettingsView: View {
                 "Preferences", text: $packingPreferences,
                 prompt: Text("e.g. contact lenses, hiking gear, vegetarian"),
                 axis: .vertical)
+            TextField(
+                "Interests", text: $sightseeingInterests,
+                prompt: Text("e.g. hiking, street food, traveling with kids"),
+                axis: .vertical)
         } header: {
             Text("Trip planning")
         } footer: {
             Text(
-                "Tailors the on-device packing assistant. “Pack for” decides whether it includes gender-specific items, and preferences are extra notes it factors in."
+                "Tailors the on-device trip assistant. “Pack for” decides whether the packing list includes gender-specific items, preferences are extra packing notes it factors in, and interests steer the sightseeing suggestions."
             )
         }
     }

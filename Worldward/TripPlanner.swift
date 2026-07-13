@@ -117,6 +117,7 @@ final class TripPlanner {
     /// `@AppStorage` keys for the traveler profile, shared with `SettingsView`.
     static let profileKey = "packingProfile"
     static let preferencesKey = "packingPreferences"
+    static let interestsKey = "sightseeingInterests"
 
     /// Which section is currently generating, for in-place spinners. `nil` when idle.
     enum Field { case packing, notes }
@@ -217,6 +218,7 @@ final class TripPlanner {
                 bullets) of must-see sights, experiences or tips. Be specific and \
                 practical — name real places — and write no preamble.
                 """
+                Self.interestsInstruction()
             }
             let text = try await session.respond(
                 to: "Suggest things to see and do on this trip.\n\(Self.facts(for: trip))",
@@ -244,6 +246,23 @@ final class TripPlanner {
             line += " Also account for the traveler's own notes: \(prefs)."
         }
         return line
+    }
+
+    /// Instruction steering sightseeing notes toward the traveler's saved interests
+    /// (a free-text Settings field, like the packing preferences). Falls back to a
+    /// broad-appeal instruction when nothing is set, so the builder always gets a
+    /// meaningful line. The interests may be written in any language; the model is
+    /// told to keep answering in English so the translation pass stays reliable.
+    private static func interestsInstruction() -> String {
+        let interests = (UserDefaults.standard.string(forKey: interestsKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !interests.isEmpty else {
+            return "Suggest a broad mix of highlights that would suit most travelers."
+        }
+        return """
+            Tailor the suggestions to the traveler's interests: \(interests). \
+            These interests may be written in any language — still reply in English.
+            """
     }
 
     /// Instruction telling the model which containers to file items into. When the
