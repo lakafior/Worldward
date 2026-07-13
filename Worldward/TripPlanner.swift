@@ -48,7 +48,11 @@ enum PackingProfile: String, CaseIterable, Identifiable {
 /// the model packs.
 @Generable
 private struct GeneratedPackingItem {
-    @Guide(description: "Short item name, e.g. 'Underwear', 'Rain jacket', 'Toothbrush'.")
+    @Guide(
+        description:
+            "A concrete, packable object named in English, e.g. 'Underwear', 'Rain jacket', "
+            + "'Plug adapter (Type G)'. Never a category or placeholder such as "
+            + "'country-specific items' or 'essentials'.")
     var name: String
 
     @Guide(
@@ -148,8 +152,21 @@ final class TripPlanner {
                 and season: clothing basics (underwear, socks, tops, bottoms, \
                 sleepwear); season-appropriate layers & outerwear; suitable footwear; \
                 toiletries; health items (personal medication, sunscreen); \
-                electronics (chargers, a plug adapter for the destination); travel \
-                documents (passport, tickets, cards); a few destination-specific items.
+                electronics (chargers); and travel documents (passport, tickets, cards).
+                """
+                """
+                Use the trip facts to choose concrete extras. Pack exactly one plug \
+                adapter, naming the destination's plug types in the item, e.g. \
+                'Plug adapter (Type G)'. Add whatever else these specific places and \
+                this season genuinely call for — insect repellent in the tropics, a \
+                compact umbrella for a rainy season, swimwear for a beach trip.
+                """
+                """
+                Every item name must be a single concrete, packable object, written \
+                in English (the traveler's own notes may be in another language — \
+                still answer in English). Never output category placeholders such as \
+                'country-specific items', 'destination-specific items', 'essentials' \
+                or 'miscellaneous'.
                 """
                 """
                 Set quantity from the trip length: about one of each daily basic \
@@ -195,10 +212,10 @@ final class TripPlanner {
                 landmarks, culture and seasonal highlights.
                 """
                 """
-                Reply in concise Markdown. Group suggestions by country with a bold \
-                heading per country, then a short bulleted list (about 3–5 bullets) of \
-                must-see sights, experiences or tips. Be specific and practical; no \
-                preamble.
+                Reply in concise English Markdown. Group suggestions by country with a \
+                bold heading per country, then a short bulleted list (about 3–5 \
+                bullets) of must-see sights, experiences or tips. Be specific and \
+                practical — name real places — and write no preamble.
                 """
             }
             let text = try await session.respond(
@@ -285,6 +302,7 @@ final class TripPlanner {
                 ?? 0) + 1)
 
         var result = """
+            Trip facts:
             Destinations: \(destinations).
             Dates: \(start) to \(end) (\(days) day\(days == 1 ? "" : "s")).
             Travel month: \(month).

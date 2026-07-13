@@ -3,7 +3,6 @@
 import MapKit
 import SwiftData
 import SwiftUI
-import Translation
 
 // MARK: - Markdown export
 
@@ -284,15 +283,17 @@ struct TripDetailView: View {
     @State private var showSaveTemplate = false
     @State private var newTemplateName = ""
 
-    /// Drives the Translation framework: set/invalidated to translate freshly
-    /// generated (English) assistant output into the user's language before it's
-    /// saved. The on-device LLM names items in English; Apple's translator — far
-    /// better than the LLM at translation — converts them here in the view.
-    @State private var translationConfig: TranslationSession.Configuration?
-    /// English packing suggestions awaiting translation, then insertion.
-    @State private var pendingPacking: [PackingSuggestion]?
-    /// English notes Markdown awaiting translation, then insertion.
-    @State private var pendingNotes: String?
+    /// Translates freshly generated (English) assistant output into the user's
+    /// language before it's saved. The on-device LLM names items in English;
+    /// Apple's translator — far better than the LLM at translation — converts
+    /// them here in the view. No-op when the app runs in English, and falls back
+    /// to the English original when the language pair is unavailable, so
+    /// generated content is never dropped.
+    @State private var translator = AppTranslator()
+    /// Which section is being translated + inserted, so the "Generating…" spinner
+    /// stays up through the whole pipeline instead of ending when the (English)
+    /// generation finishes — which used to read as "nothing happened".
+    @State private var translating: TripPlanner.Field?
 
     var body: some View {
         // Uses a `List` (rather than `Form`) for consistent drag-to-reorder
@@ -386,44 +387,9 @@ struct TripDetailView: View {
         } message: {
             Text(planner.errorMessage ?? "")
         }
-        // Translates freshly generated assistant output via Apple's Translation
-        // framework. Runs whenever `translationConfig` is set or invalidated. The
-        // session isn't Sendable, so it's used here in the nonisolated closure; we
-        // only hop to the main actor to read the pending payload and save results,
-        // falling back to the English original if the language pair is unavailable.
-        .translationTask(translationConfig) { @Sendable session in
-            if let suggestions = await takePendingPacking() {
-                var result = suggestions
-                do {
-                    let requests = suggestions.map {
-                        TranslationSession.Request(sourceText: $0.title)
-                    }
-                    let responses = try await session.translations(from: requests)
-                    if responses.count == suggestions.count {
-                        result = zip(suggestions, responses).map { original, response in
-                            let name = response.targetText
-                                .trimmingCharacters(in: .whitespacesAndNewlines)
-                            return PackingSuggestion(
-                                title: name.isEmpty ? original.title : name,
-                                quantity: original.quantity,
-                                containerName: original.containerName)
-                        }
-                    }
-                } catch {
-                    // Keep the English names if translation is unavailable.
-                }
-                await insertPacking(result)
-            }
-            if let notes = await takePendingNotes() {
-                var text = notes
-                if let response = try? await session.translate(notes) {
-                    let translated = response.targetText
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !translated.isEmpty { text = translated }
-                }
-                await insertNotes(text)
-            }
-        }
+        // Hosts the translation session that `translator.translate(_:)` awaits in
+        // `fillPacking` / `fillNotes`.
+        .appTranslation(translator)
     }
 
     private func addToCalendar() {
@@ -625,10 +591,10 @@ struct TripDetailView: View {
     }
 
     /// A shared "Fill with LLM" row that shows a spinner while its field generates
-    /// and disables itself while any generation is in flight.
+    /// or translates, and disables itself while any generation is in flight.
     private func fillButton(field: TripPlanner.Field, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            if planner.busy == field {
+            if planner.busy == field || translating == field {
                 HStack(spacing: 8) {
                     ProgressView()
                     Text("Generating…")
@@ -637,7 +603,7 @@ struct TripDetailView: View {
                 Label("Fill with LLM", systemImage: "sparkles")
             }
         }
-        .disabled(planner.busy != nil)
+        .disabled(planner.busy != nil || translating != nil)
     }
 
     // MARK: Mutations
@@ -809,29 +775,10 @@ struct TripDetailView: View {
 
     // MARK: On-device assistant
 
-    /// The user's language to translate the (English) assistant output into, or
-    /// `nil` when the app already runs in English — in which case we skip the
-    /// Translation framework entirely and insert the English results as-is.
-    private var translationTarget: Locale.Language? {
-        let code = Locale.current.language.languageCode?.identifier ?? "en"
-        return code == "en" ? nil : Locale.current.language
-    }
-
-    /// Triggers `.translationTask` with an English→user-language configuration.
-    /// First call sets the configuration; later calls invalidate it to re-run with
-    /// fresh pending content (same language pair).
-    private func requestTranslation() {
-        if translationConfig == nil {
-            translationConfig = TranslationSession.Configuration(
-                source: Locale.Language(identifier: "en"), target: translationTarget)
-        } else {
-            translationConfig?.invalidate()
-        }
-    }
-
-    /// Asks the on-device model for a packing list (named in English). If the app
-    /// runs in another language, hands the suggestions to the Translation framework;
-    /// otherwise inserts them directly.
+    /// Asks the on-device model for a packing list (named in English), translates
+    /// the item names into the user's language, then inserts them. `translator`
+    /// returns the English names unchanged when the app runs in English or the
+    /// language pair is unavailable, so the list always lands.
     private func fillPacking() {
         Task {
             guard
@@ -839,40 +786,31 @@ struct TripDetailView: View {
                     for: trip, containers: allContainers.map(\.name))
             else { return }
 
-            if translationTarget != nil {
-                pendingPacking = suggestions
-                requestTranslation()
-            } else {
-                insertPacking(suggestions)
-            }
+            translating = .packing
+            defer { translating = nil }
+            let titles = await translator.translate(suggestions.map(\.title))
+            insertPacking(
+                zip(suggestions, titles).map { suggestion, title in
+                    let name = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return PackingSuggestion(
+                        title: name.isEmpty ? suggestion.title : name,
+                        quantity: suggestion.quantity,
+                        containerName: suggestion.containerName)
+                })
         }
     }
 
-    /// Asks the on-device model for sightseeing notes (in English). Translates via
-    /// the Translation framework when the app isn't English; otherwise inserts as-is.
+    /// Asks the on-device model for sightseeing notes (in English), translates them
+    /// into the user's language (English passes straight through), then appends.
     private func fillNotes() {
         Task {
             guard let text = await planner.suggestNotes(for: trip) else { return }
-            if translationTarget != nil {
-                pendingNotes = text
-                requestTranslation()
-            } else {
-                insertNotes(text)
-            }
+            translating = .notes
+            defer { translating = nil }
+            let translated = await translator.translate(text)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            insertNotes(translated.isEmpty ? text : translated)
         }
-    }
-
-    /// Reads and clears the packing suggestions awaiting translation. Called from
-    /// the (nonisolated) translation task; returns Sendable values across the hop.
-    private func takePendingPacking() -> [PackingSuggestion]? {
-        defer { pendingPacking = nil }
-        return pendingPacking
-    }
-
-    /// Reads and clears the notes awaiting translation.
-    private func takePendingNotes() -> String? {
-        defer { pendingNotes = nil }
-        return pendingNotes
     }
 
     /// Appends packing suggestions, filing each into its container and skipping any

@@ -25,6 +25,12 @@ final class AppTranslator {
     private var pending: [String]?
     /// Resumed with the translated strings once the task completes.
     private var continuation: CheckedContinuation<[String], Never>?
+    /// Safety net: resumes the waiter with the untranslated originals if the
+    /// translation task never runs (view not installed, language pack stuck
+    /// downloading, framework not re-firing after `invalidate()`). Without it a
+    /// missed firing left callers awaiting forever and generated content was
+    /// silently dropped.
+    private var watchdog: Task<Void, Never>?
     /// The language pair the current `configuration` was built for, so a same-pair
     /// request re-runs via `invalidate()` while a direction change makes a fresh one.
     private var activePair: String?
@@ -50,6 +56,7 @@ final class AppTranslator {
         // avoids a leaked continuation hanging forever).
         continuation?.resume(returning: pending ?? texts)
         continuation = nil
+        watchdog?.cancel()
 
         pending = texts
         let pair = "\(source.languageCode?.identifier ?? "?")>\(target.languageCode?.identifier ?? "?")"
@@ -60,6 +67,13 @@ final class AppTranslator {
             // First run, or a direction change: build a fresh session.
             configuration = TranslationSession.Configuration(source: source, target: target)
             activePair = pair
+        }
+        // Generous enough for a slow first-time language-pack download prompt,
+        // short enough that the user isn't left staring at nothing.
+        watchdog = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(20))
+            guard !Task.isCancelled else { return }
+            self?.finish(with: texts)
         }
         return await withCheckedContinuation { continuation = $0 }
     }
@@ -88,8 +102,12 @@ final class AppTranslator {
         return pending
     }
 
-    /// Resumes the awaiting `translate(_:)` call with its results.
+    /// Resumes the awaiting `translate(_:)` call with its results. Also invoked by
+    /// the watchdog with the originals; whichever runs first wins, the other is a
+    /// no-op because `continuation` is already nil.
     fileprivate func finish(with results: [String]) {
+        watchdog?.cancel()
+        watchdog = nil
         let waiting = continuation
         continuation = nil
         waiting?.resume(returning: results)
