@@ -92,6 +92,8 @@ struct Worldward: App {
         }
     }
 
+    @Environment(\.openWindow) private var openWindow
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -111,8 +113,16 @@ struct Worldward: App {
             // while keeping the split view's own minimum.
             .defaultSize(width: 1180, height: 760)
             .windowResizability(.contentMinSize)
-            // Surface the in-window destinations (and their ⌘-shortcuts) in a "Go" menu.
-            .commands { WorldwardCommands() }
+            // Surface the in-window destinations (and their ⌘-shortcuts) in a "Go" menu,
+            // and replace the generic About panel with our custom window.
+            .commands {
+                WorldwardCommands()
+                CommandGroup(replacing: .appInfo) {
+                    Button("About Worldward") {
+                        openWindow(id: "about")
+                    }
+                }
+            }
         #endif
 
         #if os(macOS)
@@ -123,6 +133,12 @@ struct Worldward: App {
                 SettingsView()
             }
             .modelContainer(Self.sharedModelContainer)
+
+            // Custom About window, opened from the app menu instead of the default panel.
+            Window("About Worldward", id: "about") {
+                AboutView()
+            }
+            .windowResizability(.contentSize)
 
             // Menu bar extra with glanceable stats and quick actions.
             MenuBarExtra {

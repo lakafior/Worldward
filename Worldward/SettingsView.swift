@@ -75,7 +75,9 @@ struct SettingsView: View {
             packingManagementSection
             remindersSection
             dataSection
-            aboutSection
+            #if !os(macOS)
+                aboutSection
+            #endif
         }
         .sheet(isPresented: $showManageContainers) {
             ManageContainersView()

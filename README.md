@@ -263,7 +263,10 @@ Worldward/
 ├── Country.swift               # SwiftData model for a country
 ├── Visit.swift                 # SwiftData model for a dated visit
 ├── Trip.swift                  # SwiftData models: Trip, ItineraryItem, PackingItem
+├── TripPlanner.swift           # Traveler profile, packing prompt builder, AI suggestions
 ├── TripViews.swift             # Going tab, trips list, trip editor, Markdown share
+├── ManageContainersView.swift  # Packing container list editor
+├── ManageTemplatesView.swift   # Packing template save/load/delete
 ├── CalendarExporter.swift      # EventKit "Add to Apple Calendar" (write-only)
 ├── ReminderSync.swift          # EventKit two-way packing-list ↔ Apple Reminders sync
 ├── CountryStatus.swift         # "Been there" status enum
@@ -276,8 +279,10 @@ Worldward/
 ├── CSVImportView.swift         # CSV preview-and-confirm sheet
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
 ├── SettingsView.swift          # Appearance, notifications, Reminders sync, export/import
+├── AboutView.swift             # macOS custom About window (app menu)
 ├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)
 ├── StatisticsView.swift        # Dashboard, timeline, charts, AI recaps
+├── WrappedView.swift           # Year-in-review recap ("Wrapped")
 ├── ShareCard.swift             # Rasterised share-card view
 ├── ShareCustomizationView.swift# Live card preview + share flow
 ├── NotificationManager.swift   # Opt-in local travel reminders
@@ -285,6 +290,9 @@ Worldward/
 ├── PhotoImporter.swift         # Photo Library scan → proposed trips
 ├── ImportPreviewView.swift     # Scan configuration & results UI
 ├── VisitPhotosView.swift       # Photo thumbnail strip + full-size viewer
+├── Translator.swift            # On-device LLM translation pipeline
+├── Localization.swift          # String catalog helpers & language picker
+├── LaunchTiming.swift          # DEBUG-only launch performance instrumentation
 ├── TravelDataTransfer.swift    # JSON backup/restore
 ├── Intents/
 │   ├── WorldwardIntents.swift   # AppIntents + Shortcuts provider
