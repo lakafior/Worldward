@@ -14,7 +14,12 @@
     },
     {
       "appearance" : "dark",
-      "value" : "system-dark"
+      "value" : {
+        "linear-gradient" : [
+          "extended-gray:0.00000,1.00000",
+          "srgb:0.16078,0.34902,0.83137,1.00000"
+        ]
+      }
     }
   ],
   "groups" : [
@@ -96,7 +101,7 @@
             {
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "display-p3:1.00000,0.96078,0.54902,1.00000",
                   "srgb:0.57647,0.73725,0.95686,1.00000"
                 ],
                 "orientation" : {
@@ -115,7 +120,7 @@
               "appearance" : "dark",
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "display-p3:1.00000,0.96078,0.54902,1.00000",
                   "extended-gray:0.25000,1.00000"
                 ],
                 "orientation" : {
@@ -146,7 +151,7 @@
             {
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "display-p3:1.00000,0.96078,0.54902,1.00000",
                   "srgb:0.57647,0.73725,0.95686,1.00000"
                 ],
                 "orientation" : {
@@ -165,7 +170,7 @@
               "appearance" : "dark",
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "display-p3:1.00000,0.96078,0.54902,1.00000",
                   "extended-gray:0.25000,1.00000"
                 ],
                 "orientation" : {
@@ -181,6 +186,7 @@
               }
             }
           ],
+          "glass" : true,
           "image-name" : "layer-1-beam-right.svg",
           "name" : "layer-1-beam-right"
         }
