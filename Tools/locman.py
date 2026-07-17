@@ -8,7 +8,14 @@ Usage:
   # Quick overview
   python3 locman.py Localizable.xcstrings
 
-  # Check which strings are missing
+  # LLM translation workflow (token-efficient):
+  #  1. Export every missing string once, with the list of target languages
+  python3 locman.py Localizable.xcstrings --export missing.json
+  #  2. Translate: write translated.json as { "de": { "Key": "Übersetzung" }, ... }
+  #  3. Apply all languages in one pass (format-only keys auto-filled)
+  python3 locman.py Localizable.xcstrings --apply --from translated.json
+
+  # Check which strings are missing (counts only; add -v for full keys)
   python3 locman.py Localizable.xcstrings --check
   python3 locman.py Localizable.xcstrings --check --langs de,fr
 
@@ -69,7 +76,9 @@ def non_empty_keys(data):
 
 
 def is_format_only(key):
-    return key in FORMAT_ONLY
+    # Explicit list, plus anything with no letters at all
+    # (pure placeholders, numbers, emoji, symbols)
+    return key in FORMAT_ONLY or not any(c.isalpha() for c in key)
 
 
 def get_languages(data, exclude_en=True):
@@ -221,6 +230,97 @@ def add_language(data, lang_code, translations):
     return {"added": added, "unmatched": unmatched}
 
 
+def export_missing(data, output_path, langs=None):
+    """
+    Write a compact work file for an LLM translator: the union of all
+    missing strings (each source string appears once, no matter how many
+    languages need it), plus per-language missing counts.
+    Format-only keys are excluded — --apply fills them automatically.
+    Returns the payload, or None if nothing is missing.
+    """
+    missing, _ = check_missing(data, langs=langs)
+    missing.pop("en", None)
+    if not missing:
+        return None
+
+    strings = data.get("strings", {})
+    needed = set()
+    for keys in missing.values():
+        needed.update(k for k in keys if not is_format_only(k))
+
+    out_strings = {}
+    for key in strings:  # preserve file order
+        if key in needed:
+            locs = strings[key].get("localizations", {})
+            out_strings[key] = (
+                locs.get("en", {}).get("stringUnit", {}).get("value", key)
+            )
+
+    payload = {
+        "instructions": (
+            "Translate each value in 'strings' from English into every language "
+            "in 'languages'. Keep %@/%lld placeholders and \\n exactly as-is. "
+            "Write the result as JSON { lang: { key: translation } } and run: "
+            "locman.py <xcstrings> --apply --from <that file>"
+        ),
+        "languages": {
+            lang: sum(1 for k in keys if not is_format_only(k))
+            for lang, keys in sorted(missing.items())
+        },
+        "strings": out_strings,
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    return payload
+
+
+def apply_translations(data, translations, overwrite=False):
+    """
+    Apply a nested { lang: { key: translation } } dict for many languages
+    at once. Fills format-only keys from English automatically.
+    Returns { lang: {added, skipped, unmatched} }.
+    """
+    strings = data.get("strings", {})
+    init_english(data)
+    results = {}
+
+    for lang, tmap in translations.items():
+        if lang == "en" or not isinstance(tmap, dict):
+            continue
+        added = 0
+        skipped = 0
+        unmatched = []
+
+        for key, val in tmap.items():
+            if key not in strings or key == "" or not isinstance(val, str):
+                unmatched.append(key)
+                continue
+            locs = ensure_localizations(strings[key])
+            if lang in locs and not overwrite:
+                skipped += 1
+                continue
+            locs[lang] = {"stringUnit": {"state": "translated", "value": val}}
+            added += 1
+
+        # Auto-fill format-only keys this language is still missing
+        for key, value in strings.items():
+            if key == "" or not is_format_only(key):
+                continue
+            locs = ensure_localizations(value)
+            if lang not in locs:
+                en_val = locs.get("en", {}).get("stringUnit", {}).get("value", key)
+                locs[lang] = {
+                    "stringUnit": {"state": "translated", "value": en_val}
+                }
+                added += 1
+
+        results[lang] = {"added": added, "skipped": skipped, "unmatched": unmatched}
+
+    return results
+
+
 # ── Templates & Reports ──
 
 
@@ -324,7 +424,19 @@ def main():
     group.add_argument(
         "--check",
         action="store_true",
-        help="Check which strings are missing translations",
+        help="Check which strings are missing translations (counts; -v for keys)",
+    )
+    group.add_argument(
+        "--export",
+        metavar="FILE",
+        nargs="?",
+        const="missing.json",
+        help="Export all missing strings once into an LLM work file (default: missing.json)",
+    )
+    group.add_argument(
+        "--apply",
+        action="store_true",
+        help="Apply a nested {lang: {key: translation}} JSON (use with --from)",
     )
     group.add_argument(
         "--fill",
@@ -364,6 +476,11 @@ def main():
     parser.add_argument(
         "--source", default="en", help="Source language for --fill (default: en)"
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="With --apply: replace existing translations (e.g. English fallbacks from --fill)",
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
@@ -382,6 +499,8 @@ def main():
     if args.report or not any(
         [
             args.check,
+            args.export,
+            args.apply,
             args.fill,
             args.init,
             args.add_language,
@@ -396,24 +515,68 @@ def main():
         missing, untranslated = check_missing(data, langs=lang_filter)
 
         if untranslated:
-            print(
-                f"\n⚠️  {len(untranslated)} keys have NO localizations at all (run --init to fix):"
-            )
-            for k in untranslated:
-                print(f"    {repr(k[:80])}")
+            print(f"⚠️  {len(untranslated)} keys have no localizations at all")
 
         if not missing:
             print("✅ All selected languages have 100% translation coverage!")
         else:
+            union = set()
             for lang, keys in sorted(missing.items()):
-                # Separate truly missing from never-translated
-                never = [k for k in keys if k in untranslated]
-                truly = [k for k in keys if k not in untranslated]
-                print(f"\n⚠️  {lang} is missing {len(keys)} translations:")
-                if never:
-                    print(f"      🆕 {len(never)} need --init first")
-                for k in truly:
-                    print(f"      {repr(k[:80])}")
+                union.update(keys)
+                print(f"  {lang}: {len(keys)} missing")
+            print(f"\n{len(union)} unique strings missing overall.")
+            if args.verbose:
+                for k in sorted(union):
+                    print(f"    {repr(k[:80])}")
+            else:
+                print("Run --export to write them to a work file, or -v to list them.")
+
+    # ── Export (LLM work file) ──
+    if args.export:
+        payload = export_missing(data, args.export, langs=lang_filter)
+        if payload is None:
+            print("✅ Nothing missing — no file written.")
+        else:
+            n = len(payload["strings"])
+            langs = payload["languages"]
+            print(f"📝 {args.export}: {n} strings × {len(langs)} languages")
+            print(
+                f"   Translate into {{lang: {{key: translation}}}} JSON, then run:"
+            )
+            print(f"   python3 {sys.argv[0]} {args.xcstrings} --apply --from <file>")
+
+    # ── Apply (nested multi-language JSON) ──
+    if args.apply:
+        if not args.from_file:
+            print("❌ --apply requires --from <translations_file>")
+            sys.exit(1)
+        with open(args.from_file, "r", encoding="utf-8") as f:
+            nested = json.load(f)
+        if not isinstance(nested, dict) or not any(
+            isinstance(v, dict) for v in nested.values()
+        ):
+            print("❌ Expected nested JSON: { lang: { key: translation } }")
+            sys.exit(1)
+        results = apply_translations(data, nested, overwrite=args.overwrite)
+        total = 0
+        for lang, r in sorted(results.items()):
+            total += r["added"]
+            line = f"  {lang}: +{r['added']}"
+            if r["skipped"]:
+                line += f" ({r['skipped']} kept, use --overwrite to replace)"
+            print(line)
+            if r["unmatched"]:
+                print(f"      ⚠️  {len(r['unmatched'])} unmatched keys:")
+                for k in r["unmatched"][:5]:
+                    print(f"      {repr(str(k)[:60])}")
+        save(args.xcstrings, data)
+        print(f"✅ Applied {total} translations → {args.xcstrings}")
+        remaining, _ = check_missing(data, langs=lang_filter)
+        if remaining:
+            counts = ", ".join(f"{l}: {len(k)}" for l, k in sorted(remaining.items()))
+            print(f"⚠️  Still missing — {counts}")
+        else:
+            print("✅ Full coverage.")
 
     # ── Init ──
     if args.init:
