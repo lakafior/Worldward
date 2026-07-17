@@ -79,6 +79,7 @@ Every country rendered as a tap-able map polygon from Natural Earth data (~250 c
 - Dashboard: countries visited, continents covered, busiest year, per-year charts, cumulative **countries-over-time** line chart, **new-country streak**, continent completion.
 - **Travel Timeline** — chronological history of every visit, grouped by year.
 - **Year-in-review** with an **AI recap** (on-device).
+- **Wrapped** — a full-screen, stories-style animated recap of any year: countries, first-time visits, continents, busiest month, most-visited country, and the AI recap, ending in the year share card.
 - **Year share card** — customizable card with that year's countries tinted on the map.
 
 ### Suggestions
@@ -332,7 +333,6 @@ WorldwardWidgets/               # Widget extension target
 Planned next, in rough priority order — everything stays native-only, lightweight, and local-first:
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, converging de-duplication); flipping it on awaits a paid Apple Developer membership.
-- **December "Wrapped"** — a paged, animated year recap built from `TravelStats` and the on-device AI summary.
 
 Under consideration:
 

@@ -18,7 +18,8 @@ struct StatisticsView: View {
     @State private var showShareSheet = false
     /// The year being shared as a year-in-review card, or `nil` when none.
     @State private var shareCardYear: TravelStats.YearStat?
-    @State private var insights = TravelInsights()
+    /// The year being played as a Wrapped recap, or `nil` when none.
+    @State private var wrappedYear: TravelStats.YearStat?
 
     /// Computed once per view instance. `TravelStats` is a full O(n) pass, and the
     /// body, the year picker, and the share-image render all read it — recomputing
@@ -42,6 +43,9 @@ struct StatisticsView: View {
         }
         .sheet(item: $shareCardYear) { year in
             ShareCustomizationView(stats: stats, tints: yearTints(for: year.year), year: year)
+        }
+        .wrappedCover(item: $wrappedYear) { year in
+            WrappedView(countries: countries, stats: stats, year: year)
         }
     }
 
@@ -96,7 +100,8 @@ struct StatisticsView: View {
                             get: { yearStat.year },
                             set: { selectedYear = $0 }),
                         yearStat: yearStat,
-                        onShare: { shareCardYear = yearStat })
+                        onShare: { shareCardYear = yearStat },
+                        onPlayWrapped: { wrappedYear = yearStat })
                 }
             }
             .padding()
@@ -454,6 +459,8 @@ private struct YearInReviewSection: View {
     let yearStat: TravelStats.YearStat
     /// Opens the year-in-review share card for `yearStat`.
     let onShare: () -> Void
+    /// Plays the animated Wrapped recap for `yearStat`.
+    let onPlayWrapped: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -489,12 +496,26 @@ private struct YearInReviewSection: View {
             .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
 
             if yearStat.countries > 0 {
-                Button(action: onShare) {
-                    Label("Share This Year", systemImage: "square.and.arrow.up")
+                HStack(spacing: 16) {
+                    Button(action: onPlayWrapped) {
+                        Label(
+                            String(
+                                localized: "Play Wrapped",
+                                comment: "Button: open the animated year recap"),
+                            systemImage: "sparkles.tv"
+                        )
                         .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.borderless)
+                    .tint(.brand)
+
+                    Button(action: onShare) {
+                        Label("Share This Year", systemImage: "square.and.arrow.up")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.borderless)
+                    .tint(.brand)
                 }
-                .buttonStyle(.borderless)
-                .tint(.brand)
             }
         }
     }
