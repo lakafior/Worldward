@@ -63,6 +63,12 @@ struct SettingsView: View {
     @State private var showManageContainers = false
     @State private var showManageTemplates = false
     @State private var remindersAccessDenied = false
+    #if os(macOS)
+        /// Lets the File ▸ Import/Export menu commands (see `DataTransferCommands`
+        /// in Worldward.swift) trigger the same pickers as the buttons below,
+        /// even though those commands live outside this view's hierarchy.
+        @State private var intentRouter = IntentRouter.shared
+    #endif
 
     var body: some View {
         Form {
@@ -132,7 +138,41 @@ struct SettingsView: View {
         } message: { alert in
             Text(alert.message)
         }
+        #if os(macOS)
+            .onChange(of: intentRouter.pendingOpenExportJSON) { consumePendingDataTransferRequests() }
+            .onChange(of: intentRouter.pendingOpenExportCSV) { consumePendingDataTransferRequests() }
+            .onChange(of: intentRouter.pendingOpenImportJSON) { consumePendingDataTransferRequests() }
+            .onChange(of: intentRouter.pendingOpenImportCSV) { consumePendingDataTransferRequests() }
+            .onAppear {
+                // Cold open: the menu command may have set these before this
+                // window existed.
+                consumePendingDataTransferRequests()
+            }
+        #endif
     }
+
+    #if os(macOS)
+        /// Runs whichever File ▸ Import/Export menu command requested this
+        /// window, mirroring the `dataSection` buttons below.
+        private func consumePendingDataTransferRequests() {
+            if intentRouter.pendingOpenExportJSON {
+                intentRouter.pendingOpenExportJSON = false
+                startExport()
+            }
+            if intentRouter.pendingOpenExportCSV {
+                intentRouter.pendingOpenExportCSV = false
+                startCSVExport()
+            }
+            if intentRouter.pendingOpenImportJSON {
+                intentRouter.pendingOpenImportJSON = false
+                showImporter = true
+            }
+            if intentRouter.pendingOpenImportCSV {
+                intentRouter.pendingOpenImportCSV = false
+                showCSVImporter = true
+            }
+        }
+    #endif
 
     @ViewBuilder private var appearanceSection: some View {
         Section("Appearance") {

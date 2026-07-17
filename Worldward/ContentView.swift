@@ -36,6 +36,9 @@ enum AppTab: Hashable {
     /// window's navigation stack without a shared model.
     extension FocusedValues {
         @Entry var macDestinations: Binding<[MacDestination]>?
+        /// Lets the "View ▸ Filter" menu commands (see `MapFilterCommands`) read
+        /// and change the map filter of whichever main window is key.
+        @Entry var mapFilter: Binding<MapFilter>?
     }
 #endif
 
@@ -599,6 +602,8 @@ struct ContentView: View {
             }
             // Lets the Go menu (⌘2 / ⌘4) push the in-window destinations.
             .focusedSceneValue(\.macDestinations, $macPath)
+            // Lets the View ▸ Filter menu commands drive the map filter.
+            .focusedSceneValue(\.mapFilter, $mapFilter)
         }
 
         /// The sidebar: a segmented Been/Going switch over the country lists and
@@ -817,6 +822,7 @@ struct ContentView: View {
             }
             .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
             .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
+            .onChange(of: intentRouter.pendingOpenPhotoImporter) { consumePendingOpenPhotoImporter() }
             .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
             .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
             .onChange(of: intentRouter.pendingMapTrip) { consumePendingMapTrip() }
@@ -896,6 +902,7 @@ struct ContentView: View {
                 consumePendingOpenStats()
                 consumePendingOpenCountry()
                 consumePendingSearch()
+                consumePendingOpenPhotoImporter()
                 checkControlRequest()
             }
     }
@@ -1057,6 +1064,14 @@ struct ContentView: View {
         #else
             showAchievements = true
         #endif
+    }
+
+    /// Presents the photo importer's configuration if the macOS "Add ▸ From
+    /// Photos…" menu command requested it.
+    private func consumePendingOpenPhotoImporter() {
+        guard intentRouter.pendingOpenPhotoImporter else { return }
+        intentRouter.pendingOpenPhotoImporter = false
+        photoImporter.presentConfiguration()
     }
 
     /// Selects a country an intent requested. Waits for the catalog to load

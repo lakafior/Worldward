@@ -391,6 +391,24 @@ final class IntentRouter {
     /// presentation layers away from the map. Not an intent, but the same
     /// hand-off problem, so it travels the same way.
     var pendingMapTrip: Trip?
+
+    /// Set by the macOS "Add ▸ From Photos…" menu command, which lives outside
+    /// the main window's view hierarchy (see `AddCommands` in Worldward.swift)
+    /// and so needs the same hand-off as an intent.
+    var pendingOpenPhotoImporter = false
+
+    /// Set by the macOS "File ▸ Export ▸ Travel Data (JSON)…" menu command.
+    /// `SettingsView` consumes it once its own window is frontmost.
+    var pendingOpenExportJSON = false
+
+    /// Set by the macOS "File ▸ Export ▸ CSV…" menu command.
+    var pendingOpenExportCSV = false
+
+    /// Set by the macOS "File ▸ Import ▸ Travel Data (JSON)…" menu command.
+    var pendingOpenImportJSON = false
+
+    /// Set by the macOS "File ▸ Import ▸ CSV…" menu command.
+    var pendingOpenImportCSV = false
 }
 
 // MARK: - 5b. Log Visits from a Description

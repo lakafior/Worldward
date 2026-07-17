@@ -114,9 +114,13 @@ struct Worldward: App {
             .defaultSize(width: 1180, height: 760)
             .windowResizability(.contentMinSize)
             // Surface the in-window destinations (and their ⌘-shortcuts) in a "Go" menu,
-            // and replace the generic About panel with our custom window.
+            // mirror the map toolbar's remaining actions into the menu bar, and
+            // replace the generic About panel with our custom window.
             .commands {
                 WorldwardCommands()
+                AddCommands()
+                MapFilterCommands()
+                DataTransferCommands()
                 CommandGroup(replacing: .appInfo) {
                     Button("About Worldward") {
                         openWindow(id: "about")
@@ -205,6 +209,90 @@ struct Worldward: App {
         private func go(_ destination: MacDestination) {
             guard destinations?.last != destination else { return }
             destinations = [destination]
+        }
+    }
+
+    /// Mirrors the map toolbar's "+" menu (see `ContentView`) as a top-level
+    /// "Add" menu. Every item works even with no main window key: Current
+    /// Location reuses the widget-style request the menu bar extra already
+    /// makes, and Photos/Description hand off through `IntentRouter` the same
+    /// way an App Intent would, so the app activates and opens a window itself.
+    struct AddCommands: Commands {
+        var body: some Commands {
+            CommandMenu("Add") {
+                Button("From Current Location") {
+                    WidgetActionStore.requestMarkHere()
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                Button("From Photos…") {
+                    IntentRouter.shared.pendingOpenPhotoImporter = true
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                Button("From Description…") {
+                    IntentRouter.shared.pendingLogVisitsText = ""
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+            }
+        }
+    }
+
+    /// Mirrors the map toolbar's filter picker as a "View ▸ Filter" submenu,
+    /// the HIG-standard home for display/filter toggles. Disabled when no main
+    /// window is key, since the filter has no meaning without a map to apply to.
+    struct MapFilterCommands: Commands {
+        @FocusedBinding(\.mapFilter) private var mapFilter: MapFilter?
+
+        var body: some Commands {
+            CommandGroup(after: .toolbar) {
+                Menu("Filter") {
+                    ForEach(MapFilter.allCases) { filter in
+                        Button {
+                            mapFilter = filter
+                        } label: {
+                            if mapFilter == filter {
+                                Label(filter.label, systemImage: "checkmark")
+                            } else {
+                                Text(filter.label)
+                            }
+                        }
+                    }
+                }
+                .disabled(mapFilter == nil)
+            }
+        }
+    }
+
+    /// Mirrors Settings' Backup/CSV actions (see `SettingsView.dataSection`) as
+    /// File ▸ Import/Export submenus. Each item opens the Settings window and
+    /// hands off through `IntentRouter`, the same cold-launch-safe mechanism an
+    /// App Intent uses, so the picker opens whether or not Settings was already
+    /// showing.
+    struct DataTransferCommands: Commands {
+        @Environment(\.openSettings) private var openSettings
+
+        var body: some Commands {
+            CommandGroup(after: .importExport) {
+                Menu("Import") {
+                    Button("Travel Data (JSON)…") {
+                        IntentRouter.shared.pendingOpenImportJSON = true
+                        openSettings()
+                    }
+                    Button("CSV…") {
+                        IntentRouter.shared.pendingOpenImportCSV = true
+                        openSettings()
+                    }
+                }
+                Menu("Export") {
+                    Button("Travel Data (JSON)…") {
+                        IntentRouter.shared.pendingOpenExportJSON = true
+                        openSettings()
+                    }
+                    Button("CSV…") {
+                        IntentRouter.shared.pendingOpenExportCSV = true
+                        openSettings()
+                    }
+                }
+            }
         }
     }
 #endif
