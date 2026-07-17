@@ -48,8 +48,9 @@ private let darkBrandGradient = LinearGradient(
 /// Applies the brand gradient as the widget background, honoring the app's theme
 /// preference: "light"/"dark" force a variant, and "system" follows the actual
 /// system color scheme (which a bare function couldn't read — it needs the
-/// environment, hence a modifier).
-private struct ThemedGradientBackground: ViewModifier {
+/// environment, hence a modifier). Internal (not private) because the packing
+/// widget in its own file wears the same background.
+struct ThemedGradientBackground: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
     let theme: String
 

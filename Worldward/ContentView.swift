@@ -847,6 +847,7 @@ struct ContentView: View {
                 switch phase {
                 case .active:
                     checkControlRequest()
+                    consumePendingPackingToggles()
                 case .background:
                     Task { await rescheduleNotifications() }
                 default:
@@ -1339,9 +1340,11 @@ struct ContentView: View {
         return hasher.finalize()
     }
 
-    /// `catalogKey`'s companion for trips: everything the upcoming-trip widget
-    /// shows (title, dates, flags) feeds the hash, so edits to any of them —
-    /// including a stop gaining or losing a country — rewrite the snapshot.
+    /// `catalogKey`'s companion for trips: everything the upcoming-trip and
+    /// packing widgets show (title, dates, flags, the packing list) feeds the
+    /// hash, so edits to any of them — including a stop gaining or losing a
+    /// country, or an item being ticked off in the trip editor — rewrite the
+    /// snapshot.
     private var tripsKey: Int {
         var hasher = Hasher()
         for trip in allTrips {
@@ -1350,6 +1353,13 @@ struct ContentView: View {
             hasher.combine(trip.startDate)
             hasher.combine(trip.endDate)
             hasher.combine(trip.flags)
+            for item in trip.packing {
+                hasher.combine(item.dedupID)
+                hasher.combine(item.title)
+                hasher.combine(item.isPacked)
+                hasher.combine(item.quantity)
+                hasher.combine(item.order)
+            }
         }
         return hasher.finalize()
     }
@@ -1394,7 +1404,31 @@ struct ContentView: View {
     /// intents use (see WorldwardIntents.swift) so both paths build the snapshot
     /// identically.
     private func updateWidgetSnapshot() {
+        // Fold in any toggles made on the packing widget first, so the snapshot
+        // about to be written can't clobber them with stale model state (a cold
+        // launch writes the snapshot before the scenePhase handler runs).
+        consumePendingPackingToggles()
         refreshWidgetSnapshot(countries: allCountries, trips: allTrips)
+    }
+
+    /// Applies packing-list toggles made on the widget to the model. Ids that no
+    /// longer resolve (item deleted, possibly on another device) are dropped. A
+    /// real change saves, which bumps `tripsKey` and rewrites the snapshot from
+    /// the model as the new truth. Safe to call on every activation.
+    private func consumePendingPackingToggles() {
+        let toggles = PackingToggleStore.consume()
+        guard !toggles.isEmpty else { return }
+        // Packing lists are tiny (tens of rows), so fetch-all beats building a
+        // per-id predicate.
+        let items = (try? modelContext.fetch(FetchDescriptor<PackingItem>())) ?? []
+        var changed = false
+        for item in items {
+            if let packed = toggles[item.dedupID], item.isPacked != packed {
+                item.isPacked = packed
+                changed = true
+            }
+        }
+        if changed { try? modelContext.save() }
     }
 
     /// Fold a duplicate country's user data into the row that will survive

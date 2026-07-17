@@ -93,6 +93,37 @@ func refreshWidgetSnapshot(countries: [Country], trips: [Trip]) {
             tints: stats.statusTints,
             appTheme: theme,
             upcomingTrips: Array(upcoming)))
+
+    // Lightweight migration can stamp every pre-existing item with the SAME
+    // dedupID (the default expression is evaluated once per schema, not per
+    // row), which would make one widget toggle hit several items. Re-key any
+    // duplicates before the ids leave the app; after the one-time heal this is
+    // just a set-insert per item.
+    var seenItemIDs = Set<String>()
+    for trip in trips {
+        for item in trip.packing where !seenItemIDs.insert(item.dedupID).inserted {
+            item.dedupID = UUID().uuidString
+        }
+    }
+
+    // The packing widget follows one trip: the journey underway, else the
+    // soonest upcoming one, that actually has a packing list. Sorting by start
+    // date gives that for free — a trip already underway started earliest.
+    let packingTrip = trips
+        .filter { $0.isUpcoming(asOf: now) && !$0.packing.isEmpty }
+        .sorted { $0.startDate < $1.startDate }
+        .first
+    let packingItems = (packingTrip?.packingGroups ?? []).flatMap(\.items).map {
+        PackingSnapshot.Item(
+            id: $0.dedupID, title: $0.title, quantity: $0.quantity, isPacked: $0.isPacked)
+    }
+    PackingSnapshotStore.write(
+        PackingSnapshot(
+            tripTitle: packingTrip?.title ?? "",
+            tripFlags: packingTrip?.flags ?? "",
+            tripEndDate: packingTrip?.endDate ?? .distantPast,
+            appTheme: theme,
+            items: packingItems))
 }
 
 /// Convenience for intents, which fetch from their own short-lived context.

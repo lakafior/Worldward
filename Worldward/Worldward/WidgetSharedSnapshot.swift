@@ -354,6 +354,157 @@ struct MarkHereOpenIntent: OpenIntent {
     }
 }
 
+// MARK: - Packing widget
+
+/// The packing list of one trip — the trip underway, else the soonest upcoming
+/// one that has a list — as the interactive packing widget needs it. Like
+/// `WidgetSnapshot` it's a plain-value stand-in for the model, but this file is
+/// written from BOTH sides: the app rewrites it from the model, and the widget's
+/// toggle intent rewrites it optimistically so the checkmark appears before the
+/// app has run. `PackingToggleStore` carries the toggles back to the model.
+struct PackingSnapshot: Codable, Hashable {
+    var tripTitle: String = ""
+    var tripFlags: String = ""
+    /// Lets the widget retire a finished trip's list at render time, since the
+    /// app may not run again for weeks after the journey ends.
+    var tripEndDate: Date = .distantPast
+    /// The app's appearance preference, mirroring `WidgetSnapshot.appTheme`.
+    var appTheme: String = "system"
+    /// Items in the app's grouped display order (containers, then ungrouped).
+    var items: [Item] = []
+
+    /// One checkable row: the `PackingItem.dedupID`, what to pack, and how many.
+    struct Item: Codable, Hashable {
+        var id: String
+        var title: String
+        var quantity: Int
+        var isPacked: Bool
+    }
+
+    var packedCount: Int { items.filter(\.isPacked).count }
+
+    /// A fresh install, or no upcoming trip with a packing list.
+    static let empty = PackingSnapshot()
+
+    /// A populated example for the widget gallery and previews.
+    static let sample = PackingSnapshot(
+        tripTitle: "Japan & Korea", tripFlags: "🇯🇵 🇰🇷",
+        tripEndDate: Date.now.addingTimeInterval(19 * 86_400),
+        items: [
+            Item(id: "1", title: "Passport", quantity: 1, isPacked: true),
+            Item(id: "2", title: "Chargers", quantity: 3, isPacked: true),
+            Item(id: "3", title: "Rail pass", quantity: 2, isPacked: false),
+            Item(id: "4", title: "Camera", quantity: 1, isPacked: false),
+            Item(id: "5", title: "Walking shoes", quantity: 1, isPacked: false),
+            Item(id: "6", title: "Adapter", quantity: 2, isPacked: false),
+            Item(id: "7", title: "Guidebook", quantity: 1, isPacked: false),
+        ])
+}
+
+/// Reads and writes the shared `PackingSnapshot`. Kept apart from
+/// `WidgetSnapshotStore`'s file because the widget extension rewrites this one
+/// (optimistic toggles) and must not race the app's launch-time write of the
+/// main snapshot.
+enum PackingSnapshotStore {
+    /// The packing widget's kind, so app-side writes can reload just it.
+    nonisolated static let widgetKind = "WorldwardPacking"
+
+    private nonisolated static let fileName = "packing-snapshot.json"
+
+    private nonisolated static var fileURL: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)?
+            .appendingPathComponent(fileName)
+    }
+
+    /// Persist the snapshot, skipping unchanged writes like the main store. The
+    /// toggle intent passes `reloadWidget: false` — WidgetKit reloads the tapped
+    /// widget on its own after an interactive intent, so a second reload would
+    /// only burn refresh budget. Unannotated (not `nonisolated`) on purpose: the
+    /// snapshot's Codable conformance is main-actor-isolated in the app target,
+    /// and every caller in both targets is already on the right actor.
+    static func write(_ snapshot: PackingSnapshot, reloadWidget: Bool = true) {
+        guard snapshot != read() else { return }
+        guard let fileURL, let data = try? JSONEncoder().encode(snapshot) else { return }
+        try? data.write(to: fileURL, options: .atomic)
+        if reloadWidget { WidgetCenter.shared.reloadTimelines(ofKind: widgetKind) }
+    }
+
+    /// The last snapshot written by either side, or `.empty`.
+    static func read() -> PackingSnapshot {
+        guard let fileURL, let data = try? Data(contentsOf: fileURL),
+            let snapshot = try? JSONDecoder().decode(PackingSnapshot.self, from: data)
+        else { return .empty }
+        return snapshot
+    }
+}
+
+/// Toggles made on the widget, awaiting the app. Like `WidgetActionStore`, but
+/// keyed: each entry maps a `PackingItem.dedupID` to its *desired* packed state
+/// — storing the target rather than "flip" keeps a double-tap idempotent no
+/// matter how many queue up before the app next runs. The app consumes the lot
+/// on activation and applies them to the model; ids that no longer exist
+/// (item deleted, list replaced) are silently dropped.
+enum PackingToggleStore {
+    private nonisolated static let key = "pendingPackingToggles"
+
+    private nonisolated static var defaults: UserDefaults? {
+        UserDefaults(suiteName: WidgetSnapshotStore.appGroupID)
+    }
+
+    /// Extension side: remember that `id` should end up `packed`.
+    nonisolated static func record(id: String, packed: Bool) {
+        guard let defaults else { return }
+        var pending = (defaults.dictionary(forKey: key) as? [String: Bool]) ?? [:]
+        pending[id] = packed
+        defaults.set(pending, forKey: key)
+    }
+
+    /// App side: all pending toggles, cleared on read.
+    static func consume() -> [String: Bool] {
+        guard let defaults,
+            let pending = defaults.dictionary(forKey: key) as? [String: Bool],
+            !pending.isEmpty
+        else { return [:] }
+        defaults.removeObject(forKey: key)
+        return pending
+    }
+}
+
+/// Checks an item off (or back on) the packing list, straight from the widget.
+/// Runs in the widget extension, which deliberately has no SwiftData — so it
+/// records the toggle for the app and rewrites the shared snapshot so the row
+/// redraws immediately. Hidden from Shortcuts: a raw item id is meaningless as
+/// a user-facing action, and the widget is its only caller.
+struct TogglePackingItemIntent: AppIntent {
+    static let title: LocalizedStringResource = "Toggle Packing Item"
+    static let description = IntentDescription("Checks an item off a trip's packing list.")
+    static let isDiscoverable = false
+
+    @Parameter(title: "Item")
+    var itemID: String
+
+    @Parameter(title: "Packed")
+    var packed: Bool
+
+    init() {}
+    init(itemID: String, packed: Bool) {
+        self.itemID = itemID
+        self.packed = packed
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        PackingToggleStore.record(id: itemID, packed: packed)
+        var snapshot = PackingSnapshotStore.read()
+        if let index = snapshot.items.firstIndex(where: { $0.id == itemID }) {
+            snapshot.items[index].isPacked = packed
+            PackingSnapshotStore.write(snapshot, reloadWidget: false)
+        }
+        return .result()
+    }
+}
+
 // MARK: - Shared map view
 
 /// The map's yellow-to-orange status scale (mirrors `CountryStatus.color`), keyed

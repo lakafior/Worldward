@@ -233,6 +233,10 @@ final class PackingItem {
     /// Manual ordering within a container, for drag-to-reorder. Not globally
     /// unique; only compared among items in the same container.
     var order: Int = 0
+    /// Stable identity for CloudKit de-duplication (mirroring `Trip.dedupID`) and
+    /// for the packing widget, whose toggle intent must name an item across
+    /// process boundaries where `PersistentIdentifier` doesn't travel.
+    var dedupID: String = UUID().uuidString
     var trip: Trip?
     var container: PackingContainer?
 
