@@ -52,11 +52,14 @@ enum NotificationManager {
 
         // Fire-and-forget: each awaited `add` is a round-trip to the
         // notifications daemon, and ~27 of them in series measurably stalled
-        // launch by seconds on iOS. Failures were already swallowed, so
-        // enqueue without waiting; the daemon preserves ordering after the
+        // launch by seconds on iOS. Failures were already swallowed, so hand
+        // the whole batch to a background task and return immediately; the
+        // single task awaits serially, keeping enqueue order after the
         // removeAll above.
-        for request in requests {
-            center.add(request, withCompletionHandler: nil)
+        Task {
+            for request in requests {
+                try? await center.add(request)
+            }
         }
     }
 
