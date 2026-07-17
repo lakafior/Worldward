@@ -180,41 +180,41 @@ struct OpenTravelStatsIntent: AppIntent {
 
 // MARK: - 3. Show Country on Map
 
-// ── macOS 27+ only ────────────────────────────────────────────────
-// Re‑enable when MACOSX_DEPLOYMENT_TARGET ≥ 27.0:
-//
-// @AppIntent(schema: .system.open)
-// struct OpenCountryMapIntent: OpenIntent {
-//     @Parameter(title: "Country")
-//     var target: CountryEntity
-//
-//     @MainActor
-//     func perform() async throws -> some IntentResult {
-//         IntentRouter.shared.pendingOpenCountryID = target.id
-//         return .result()
-//     }
-// }
-// ──────────────────────────────────────────────────────────────────
+/// Opens the app with a country selected on the map. Uses the system `open`
+/// schema, which only exists in SDK 27 — the `@available` gate keeps the intent
+/// compiled in (deployment target is still 26.6) but the system only surfaces
+/// it on macOS 27 / iOS 27 and later.
+@available(macOS 27.0, iOS 27.0, *)
+@AppIntent(schema: .system.open)
+struct OpenCountryMapIntent: OpenIntent {
+    @Parameter(title: "Country")
+    var target: CountryEntity
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        IntentRouter.shared.pendingOpenCountryID = target.id
+        return .result()
+    }
+}
 
 // MARK: - 3b. Search Countries (system.search schema)
 
-// ── macOS 27+ only ────────────────────────────────────────────────
-// Re‑enable when MACOSX_DEPLOYMENT_TARGET ≥ 27.0:
-//
-// @AppIntent(schema: .system.searchInApp)
-// struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
-//     static let searchScopes: [StringSearchScope] = [.general]
-//
-//     @Parameter(title: "Search")
-//     var criteria: StringSearchCriteria
-//
-//     @MainActor
-//     func perform() async throws -> some IntentResult {
-//         IntentRouter.shared.pendingSearchText = criteria.term
-//         return .result()
-//     }
-// }
-// ──────────────────────────────────────────────────────────────────
+/// Hands a search term to the in‑app country list via the system `searchInApp`
+/// schema. Same availability story as `OpenCountryMapIntent` above.
+@available(macOS 27.0, iOS 27.0, *)
+@AppIntent(schema: .system.searchInApp)
+struct SearchCountriesIntent: ShowInAppSearchResultsIntent {
+    static let searchScopes: [StringSearchScope] = [.general]
+
+    @Parameter(title: "Search")
+    var criteria: StringSearchCriteria
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        IntentRouter.shared.pendingSearchText = criteria.term
+        return .result()
+    }
+}
 
 // MARK: - 4. Get Visit Count
 
