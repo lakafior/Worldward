@@ -4,7 +4,26 @@ import MapKit
 import SwiftData
 import SwiftUI
 
-// MARK: - Markdown export
+#if os(macOS)
+    import AppKit
+#else
+    import QuickLook
+#endif
+
+// MARK: - Export
+
+/// A trip title, stripped of characters illegal in filenames, shared by the
+/// Markdown and PDF exporters below. `nonisolated` because `ExportableTrip`'s
+/// `transferRepresentation` (which calls it) is a nonisolated protocol
+/// requirement, unlike ordinary declarations in this file.
+private nonisolated func sanitizedFileName(_ title: String) -> String {
+    let cleaned =
+        title
+        .components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>"))
+        .joined()
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    return cleaned.isEmpty ? "Trip" : cleaned
+}
 
 /// Makes a trip shareable as a real Markdown file. The system writes it out named
 /// after the trip with a `.md` extension (e.g. "Europe 2026.md"), so "Save to
@@ -20,19 +39,10 @@ struct ExportableTrip: Transferable {
 
     static var transferRepresentation: some TransferRepresentation {
         ProxyRepresentation(exporting: \.markdown)
-            .suggestedFileName { "\($0.fileBaseName).md" }
-    }
-
-    /// The trip title, stripped of characters illegal in filenames.
-    var fileBaseName: String {
-        let cleaned =
-            title
-            .components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>"))
-            .joined()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return cleaned.isEmpty ? "Trip" : cleaned
+            .suggestedFileName { "\(sanitizedFileName($0.title)).md" }
     }
 }
+
 
 // MARK: - Going tab
 
@@ -317,6 +327,10 @@ struct TripDetailView: View {
     @State private var showCountryPicker = false
     @State private var newPackingTitle = ""
     @State private var calendarAlert: String?
+    @State private var pdfExportError: String?
+    /// The freshly rendered PDF, previewed in-place via Quick Look on iOS. Unused
+    /// on macOS, which opens the file in Preview.app directly instead.
+    @State private var pdfPreviewURL: URL?
     @State private var planner = TripPlanner()
     @State private var confirmClearPacking = false
     @State private var isAddingContainer = false
@@ -345,98 +359,115 @@ struct TripDetailView: View {
     var body: some View {
         // Uses a `List` (rather than `Form`) for consistent drag-to-reorder
         // behaviour across sections. `.insetGrouped` keeps the familiar
-        // grouped-form appearance.
-        List {
-            Section {
-                TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
-                DatePicker("Start", selection: $trip.startDate, displayedComponents: .date)
-                DatePicker(
-                    "End", selection: $trip.endDate, in: trip.startDate...,
-                    displayedComponents: .date)
-                if !trip.flags.isEmpty {
-                    Text(trip.flags).font(.title3)
+        // grouped-form appearance. The chain below is split across two `let`s
+        // (and wrapped in `Group` so Quick Look can attach outside it) because,
+        // taken as one expression, it's long enough to push Swift's modifier
+        // type-checking past a reasonable time budget.
+        Group {
+            let list = List {
+                Section {
+                    TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
+                    DatePicker("Start", selection: $trip.startDate, displayedComponents: .date)
+                    DatePicker(
+                        "End", selection: $trip.endDate, in: trip.startDate...,
+                        displayedComponents: .date)
+                    if !trip.flags.isEmpty {
+                        Text(trip.flags).font(.title3)
+                    }
+                    Button {
+                        addToCalendar()
+                    } label: {
+                        Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
+                    }
+                    exportButtons
+                    Button {
+                        // Hands the trip to ContentView through the router (the map
+                        // lives several presentation layers away), which switches to
+                        // the Map tab and frames the route.
+                        IntentRouter.shared.pendingMapTrip = trip
+                        dismiss()
+                    } label: {
+                        Label("View Route on Map", systemImage: "map")
+                    }
+                    .disabled(trip.itinerary.isEmpty)
                 }
-                Button {
-                    addToCalendar()
-                } label: {
-                    Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
+
+                itinerarySection
+                packingSections
+                notesSection
+            }
+            // Drag-to-reorder packing items within and across container groups; the
+            // closure rewrites each moved item's container + `order`. The itinerary's
+            // own `.onMove` is also handled below.
+            //
+            // Both use the legacy `.onMove` API (available since macOS 14 / iOS 17)
+            // instead of the newer `reorderContainer` + `reorderable` scheme that was
+            // introduced in macOS 27 / iOS 27. Switch to that API when the deployment
+            // target reaches 27.0.
+            #if os(iOS)
+                .listStyle(.insetGrouped)
+                .toolbar { EditButton() }
+            #endif
+            .task { seedContainersIfNeeded() }
+            .sheet(isPresented: $showCountryPicker) {
+                CountryPickerSheet(allCountries: allCountries) { country in
+                    addStop(country: country)
                 }
-                ShareLink(
-                    item: ExportableTrip(trip: trip),
-                    preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
-                ) {
-                    Label("Share / Export (Markdown)", systemImage: "square.and.arrow.up")
-                }
-                Button {
-                    // Hands the trip to ContentView through the router (the map
-                    // lives several presentation layers away), which switches to
-                    // the Map tab and frames the route.
-                    IntentRouter.shared.pendingMapTrip = trip
-                    dismiss()
-                } label: {
-                    Label("View Route on Map", systemImage: "map")
-                }
-                .disabled(trip.itinerary.isEmpty)
+            }
+            .alert("New container", isPresented: $isAddingContainer) {
+                TextField("Name", text: $newContainerName)
+                Button("Add", action: createContainer)
+                Button("Cancel", role: .cancel, action: resetContainerDraft)
+            } message: {
+                Text("Bags and cases are shared across all your trips.")
+            }
+            .sheet(isPresented: $showManageContainers) {
+                ManageContainersView()
+            }
+            .alert("Save as template", isPresented: $showSaveTemplate) {
+                TextField("Template name", text: $newTemplateName)
+                Button("Save", action: saveTemplate)
+                Button("Cancel", role: .cancel, action: resetTemplateDraft)
+            } message: {
+                Text("Reuse this packing list on future trips.")
             }
 
-            itinerarySection
-            packingSections
-            notesSection
+            list
+                .alert(
+                    "Apple Calendar",
+                    isPresented: Binding(
+                        get: { calendarAlert != nil }, set: { if !$0 { calendarAlert = nil } })
+                ) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(calendarAlert ?? "")
+                }
+                .alert(
+                    "Export PDF",
+                    isPresented: Binding(
+                        get: { pdfExportError != nil }, set: { if !$0 { pdfExportError = nil } })
+                ) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(pdfExportError ?? "")
+                }
+                .alert(
+                    "Couldn't generate",
+                    isPresented: Binding(
+                        get: { planner.errorMessage != nil },
+                        set: { if !$0 { planner.clearError() } })
+                ) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(planner.errorMessage ?? "")
+                }
+                // Hosts the translation session that `translator.translate(_:)`
+                // awaits in `fillPacking` / `fillNotes`.
+                .appTranslation(translator)
         }
-        // Drag-to-reorder packing items within and across container groups; the
-        // closure rewrites each moved item's container + `order`. The itinerary's
-        // own `.onMove` is also handled below.
-        //
-        // Both use the legacy `.onMove` API (available since macOS 14 / iOS 17)
-        // instead of the newer `reorderContainer` + `reorderable` scheme that was
-        // introduced in macOS 27 / iOS 27. Switch to that API when the deployment
-        // target reaches 27.0.
-        #if os(iOS)
-            .listStyle(.insetGrouped)
-            .toolbar { EditButton() }
+        #if !os(macOS)
+            .quickLookPreview($pdfPreviewURL)
         #endif
-        .task { seedContainersIfNeeded() }
-        .sheet(isPresented: $showCountryPicker) {
-            CountryPickerSheet(allCountries: allCountries) { country in addStop(country: country) }
-        }
-        .alert("New container", isPresented: $isAddingContainer) {
-            TextField("Name", text: $newContainerName)
-            Button("Add", action: createContainer)
-            Button("Cancel", role: .cancel, action: resetContainerDraft)
-        } message: {
-            Text("Bags and cases are shared across all your trips.")
-        }
-        .sheet(isPresented: $showManageContainers) {
-            ManageContainersView()
-        }
-        .alert("Save as template", isPresented: $showSaveTemplate) {
-            TextField("Template name", text: $newTemplateName)
-            Button("Save", action: saveTemplate)
-            Button("Cancel", role: .cancel, action: resetTemplateDraft)
-        } message: {
-            Text("Reuse this packing list on future trips.")
-        }
-        .alert(
-            "Apple Calendar",
-            isPresented: Binding(
-                get: { calendarAlert != nil }, set: { if !$0 { calendarAlert = nil } })
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(calendarAlert ?? "")
-        }
-        .alert(
-            "Couldn't generate",
-            isPresented: Binding(
-                get: { planner.errorMessage != nil }, set: { if !$0 { planner.clearError() } })
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(planner.errorMessage ?? "")
-        }
-        // Hosts the translation session that `translator.translate(_:)` awaits in
-        // `fillPacking` / `fillNotes`.
-        .appTranslation(translator)
     }
 
     private func addToCalendar() {
@@ -450,6 +481,54 @@ struct TripDetailView: View {
             case .failed(let message):
                 calendarAlert = "Couldn't add to calendar: \(message)"
             }
+        }
+    }
+
+    /// Renders the trip's PDF to a fresh temp file and opens it directly — in
+    /// Preview.app on macOS, in an in-place Quick Look preview on iOS — rather
+    /// than through the share picker, which only offers a couple of generic
+    /// services for raw PDF data. Each export gets its own UUID'd subdirectory so
+    /// the viewer always loads new content instead of a stale, already-open
+    /// document at a reused path.
+    private func exportPDFAndOpen() {
+        let data = TripPDFRenderer.render(trip: trip)
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let url =
+            directory
+            .appendingPathComponent(sanitizedFileName(trip.title))
+            .appendingPathExtension("pdf")
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try data.write(to: url, options: .atomic)
+            #if os(macOS)
+                NSWorkspace.shared.open(url)
+            #else
+                pdfPreviewURL = url
+            #endif
+        } catch {
+            pdfExportError = error.localizedDescription
+        }
+    }
+
+    /// Markdown + PDF export, split out of the trip-info `Section` — folding
+    /// them in there pushed that `@ViewBuilder` closure's type-checking past a
+    /// reasonable time budget on iOS.
+    @ViewBuilder private var exportButtons: some View {
+        ShareLink(
+            item: ExportableTrip(trip: trip),
+            preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
+        ) {
+            Label("Share / Export (Markdown)", systemImage: "square.and.arrow.up")
+        }
+        // The share picker only lists a couple of generic services (Shortcuts,
+        // AirDrop) for arbitrary PDF data, so this opens the rendered file
+        // straight in the platform's own viewer instead: Preview.app on macOS,
+        // an in-place Quick Look preview on iOS.
+        Button {
+            exportPDFAndOpen()
+        } label: {
+            Label("Export PDF", systemImage: "doc.richtext")
         }
     }
 
