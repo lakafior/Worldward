@@ -222,13 +222,18 @@ struct CountryListView: View {
                     }
                 }
             #endif
-            ToolbarItem {
-                Button {
-                    showAddCountry = true
-                } label: {
-                    Label(Str.List.addButton, systemImage: "plus")
+            // macOS folds this into the map toolbar's "Add" menu instead (see
+            // `ContentView`), so the unified window toolbar doesn't show two
+            // unrelated "+" buttons side by side.
+            #if !os(macOS)
+                ToolbarItem {
+                    Button {
+                        showAddCountry = true
+                    } label: {
+                        Label(Str.List.addButton, systemImage: "plus")
+                    }
                 }
-            }
+            #endif
             sortAndFilterMenu
         }
         .sheet(isPresented: $showAddCountry) {

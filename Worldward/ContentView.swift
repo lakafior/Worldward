@@ -162,6 +162,9 @@ struct ContentView: View {
         @State private var macPath: [MacDestination] = []
         /// Which list the macOS sidebar shows (Been or Going).
         @State private var sidebarMode: BrowseMode = .been
+        /// Presents the map toolbar's "Add ▸ From List…" country picker, which
+        /// stands in for `CountryListView`'s own "+" on macOS (see that file).
+        @State private var showAddCountryPicker = false
     #endif
     /// The trip shown in the macOS detail column. Mutually exclusive with
     /// `selectedCountry` so the trailing pane always has one unambiguous
@@ -479,6 +482,30 @@ struct ContentView: View {
                     } label: {
                         Label("From Description", systemImage: "text.bubble")
                     }
+
+                    // macOS has no separate "+" in the sidebar list (see
+                    // `CountryListView`), so the quick pick-by-name flow folds
+                    // in here instead of sitting in its own toolbar button.
+                    #if os(macOS)
+                        Divider()
+
+                        Button {
+                            showAddCountryPicker = true
+                        } label: {
+                            Label("From List…", systemImage: "list.bullet")
+                        }
+
+                        // Same reasoning as "From List…": the Trips tab's own
+                        // "+" (see `TripsListView`) would otherwise sit right
+                        // next to this one in the unified window toolbar.
+                        Divider()
+
+                        Button {
+                            addTrip()
+                        } label: {
+                            Label("New Trip", systemImage: "suitcase")
+                        }
+                    #endif
                 } label: {
                     if isLocating {
                         ProgressView()
@@ -712,6 +739,28 @@ struct ContentView: View {
         private func push(_ destination: MacDestination) {
             if macPath.last != destination { macPath.append(destination) }
         }
+
+        /// Quick-add a country picked from "Add ▸ From List…": mirrors
+        /// `CountryListView.addCountry`, using whichever list the sidebar is
+        /// currently showing to decide visited vs. wishlist.
+        private func addCountryFromList(_ country: Country) {
+            switch sidebarMode {
+            case .been:
+                country.status = .visited
+            case .going:
+                if country.planStatus == .none { country.planStatus = .wishlist }
+            }
+            try? modelContext.save()
+        }
+
+        /// Starts a new trip from "Add ▸ New Trip": mirrors
+        /// `TripsListView.addTrip`, opening it straight in the inspector the
+        /// way selecting a trip row would.
+        private func addTrip() {
+            let trip = Trip(title: "New Trip")
+            modelContext.insert(trip)
+            selectedTrip = trip
+        }
     #endif
 
     private func countryList(_ mode: BrowseMode) -> some View {
@@ -780,6 +829,13 @@ struct ContentView: View {
             .sheet(isPresented: $showLogVisits) {
                 LogVisitsView(initialText: logVisitsText)
             }
+            #if os(macOS)
+                .sheet(isPresented: $showAddCountryPicker) {
+                    CountryPickerSheet(allCountries: allCountries) { country in
+                        addCountryFromList(country)
+                    }
+                }
+            #endif
             // iOS opens the country detail as a sheet; macOS shows it in the split
             // view's trailing detail column (see `countryDetailColumn`).
             #if os(iOS)

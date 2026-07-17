@@ -134,13 +134,24 @@ private struct TripsListView: View {
         return trips.filter { $0.endDate < now }.sorted { $0.startDate > $1.startDate }
     }
 
+    /// Points at wherever "New Trip" actually lives: this view's own toolbar
+    /// "+" on iOS, or the map toolbar's Add menu on macOS (see
+    /// `ContentView.addTrip`).
+    private var tripsEmptyStateHint: String {
+        #if os(macOS)
+            String(localized: "Plan your next adventure — choose Add ▸ New Trip on the map.")
+        #else
+            String(localized: "Plan your next adventure — tap ＋ to start a trip.")
+        #endif
+    }
+
     var body: some View {
         Group {
             if trips.isEmpty {
                 ContentUnavailableView(
                     "No trips yet",
                     systemImage: "suitcase",
-                    description: Text("Plan your next adventure — tap ＋ to start a trip."))
+                    description: Text(tripsEmptyStateHint))
             } else {
                 #if os(macOS)
                     // Selection drives the split view's detail column (like
@@ -164,15 +175,20 @@ private struct TripsListView: View {
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif
-        .toolbar {
-            ToolbarItem {
-                Button {
-                    addTrip()
-                } label: {
-                    Label("New Trip", systemImage: "plus")
+        // macOS starts a trip from the map toolbar's Add menu instead (see
+        // `ContentView.addTrip`), so the unified window toolbar doesn't show
+        // this "+" right next to that one.
+        #if !os(macOS)
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        addTrip()
+                    } label: {
+                        Label("New Trip", systemImage: "plus")
+                    }
                 }
             }
-        }
+        #endif
         .sheet(item: $editingTrip) { trip in
             TripDetailSheet(trip: trip, allCountries: allCountries)
         }
@@ -224,11 +240,7 @@ private struct TripsListView: View {
     private func addTrip() {
         let trip = Trip(title: "New Trip")
         modelContext.insert(trip)
-        #if os(macOS)
-            selectedTrip = trip
-        #else
-            editingTrip = trip
-        #endif
+        editingTrip = trip
     }
 
     /// Delete a single trip (macOS context menu / ⌫), clearing the detail
