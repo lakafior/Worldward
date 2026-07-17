@@ -53,6 +53,12 @@ struct SettingsView: View {
     @State private var showCSVImporter = false
     /// The CSV text awaiting preview, set after the picked file is read.
     @State private var csvPayload: CSVPayload?
+    private var versionString: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
+        return "\(version) (\(build))"
+    }
+
     @State private var transferAlert: TransferAlert?
     @State private var showManageContainers = false
     @State private var showManageTemplates = false
@@ -395,6 +401,11 @@ struct SettingsView: View {
                 Text("Smigi")
             } label: {
                 Label("Author", systemImage: "person")
+            }
+            LabeledContent {
+                Text(versionString)
+            } label: {
+                Label("Version", systemImage: "number")
             }
             Link(destination: URL(string: "https://worldward.smigi.net")!) {
                 Label("Website", systemImage: "globe")
