@@ -128,23 +128,29 @@ struct SettingsView: View {
 
     @ViewBuilder private var appearanceSection: some View {
         Section("Appearance") {
-            Picker("Theme", selection: $appTheme) {
+            Picker(selection: $appTheme) {
                 ForEach(AppTheme.allCases) { theme in
                     Text(theme.label).tag(theme)
                 }
+            } label: {
+                Label("Theme", systemImage: "paintbrush")
             }
 
-            Picker("Map Style", selection: $mapStyle) {
+            Picker(selection: $mapStyle) {
                 ForEach(MapStyleOption.allCases) { style in
                     Label(style.label, systemImage: style.symbolName).tag(style)
                 }
+            } label: {
+                Label("Map Style", systemImage: "map")
             }
 
             #if !os(macOS)
-                Button("Language") {
+                Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
+                } label: {
+                    Label("Language", systemImage: "globe")
                 }
             #endif
         }
@@ -152,9 +158,9 @@ struct SettingsView: View {
 
     @ViewBuilder private var notificationsSection: some View {
         Section {
-            Toggle(
-                "Travel reminders",
-                isOn: Binding(get: { notificationsEnabled }, set: setNotifications))
+            Toggle(isOn: Binding(get: { notificationsEnabled }, set: setNotifications)) {
+                Label("Travel reminders", systemImage: "bell")
+            }
         } header: {
             Text("Notifications")
         } footer: {
@@ -194,19 +200,19 @@ struct SettingsView: View {
 
     @ViewBuilder private var packingSection: some View {
         Section {
-            Picker("Pack for", selection: $packingProfile) {
+            Picker(selection: $packingProfile) {
                 ForEach(PackingProfile.allCases) { profile in
                     Text(profile.label).tag(profile)
                 }
+            } label: {
+                Label("Pack for", systemImage: "suitcase")
             }
-            TextField(
-                "Preferences", text: $packingPreferences,
-                prompt: Text("e.g. contact lenses, hiking gear, vegetarian"),
-                axis: .vertical)
-            TextField(
-                "Interests", text: $sightseeingInterests,
-                prompt: Text("e.g. hiking, street food, traveling with kids"),
-                axis: .vertical)
+            TextField(text: $packingPreferences, prompt: Text("e.g. contact lenses, hiking gear, vegetarian"), axis: .vertical) {
+                Label("Preferences", systemImage: "wand.and.stars")
+            }
+            TextField(text: $sightseeingInterests, prompt: Text("e.g. hiking, street food, traveling with kids"), axis: .vertical) {
+                Label("Interests", systemImage: "star")
+            }
         } header: {
             Text("Trip planning")
         } footer: {
@@ -289,8 +295,12 @@ struct SettingsView: View {
     /// (import only adds).
     @ViewBuilder private var dataSection: some View {
         Section {
-            Button("Export Travel Data…", action: startExport)
-            Button("Import Travel Data…") { showImporter = true }
+            Button(action: startExport) {
+                Label("Export Travel Data…", systemImage: "square.and.arrow.up")
+            }
+            Button { showImporter = true } label: {
+                Label("Import Travel Data…", systemImage: "square.and.arrow.down")
+            }
         } header: {
             Text("Backup")
         } footer: {
@@ -300,8 +310,12 @@ struct SettingsView: View {
         }
 
         Section {
-            Button("Export CSV…", action: startCSVExport)
-            Button("Import from CSV…") { showCSVImporter = true }
+            Button(action: startCSVExport) {
+                Label("Export CSV…", systemImage: "doc.text")
+            }
+            Button { showCSVImporter = true } label: {
+                Label("Import from CSV…", systemImage: "doc.badge.plus")
+            }
         } header: {
             Text("Spreadsheet (CSV)")
         } footer: {
@@ -367,18 +381,30 @@ struct SettingsView: View {
 
     @ViewBuilder private var aboutSection: some View {
         Section {
-            LabeledContent("App Name", value: "Worldward")
-            LabeledContent("License", value: "MPL 2.0")
-            LabeledContent("Author", value: "Smigi")
-            Link(
-                "Website",
-                destination: URL(string: "https://worldward.smigi.net")!)
-            Link(
-                "Privacy Policy",
-                destination: URL(string: "https://worldward.smigi.net/privacy")!)
-            Link(
-                "GitHub Repository",
-                destination: URL(string: "https://github.com/lakafior/Worldward")!)
+            LabeledContent {
+                Text("Worldward")
+            } label: {
+                Label("App Name", systemImage: "app.badge")
+            }
+            LabeledContent {
+                Text("MPL 2.0")
+            } label: {
+                Label("License", systemImage: "doc.plaintext")
+            }
+            LabeledContent {
+                Text("Smigi")
+            } label: {
+                Label("Author", systemImage: "person")
+            }
+            Link(destination: URL(string: "https://worldward.smigi.net")!) {
+                Label("Website", systemImage: "globe")
+            }
+            Link(destination: URL(string: "https://worldward.smigi.net/privacy")!) {
+                Label("Privacy Policy", systemImage: "hand.raised")
+            }
+            Link(destination: URL(string: "https://github.com/lakafior/Worldward")!) {
+                Label("GitHub Repository", systemImage: "chevron.left.forwardslash.chevron.right")
+            }
         } header: {
             Text("About")
         }
