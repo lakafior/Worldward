@@ -130,11 +130,13 @@ private struct AchievementBadge: View {
                         .foregroundStyle(
                             achievement.isUnlocked ? achievement.tint : Color.gray)
 
-                    if !achievement.isUnlocked {
-                        ProgressView(value: achievement.progress)
-                            .tint(achievement.tint)
-                            .padding(.horizontal, 8)
-                    }
+                    // Always reserved (not just for locked achievements) so every
+                    // tile's icon box is the same height — otherwise the extra
+                    // row made locked tiles taller than unlocked ones.
+                    ProgressView(value: achievement.isUnlocked ? 1 : achievement.progress)
+                        .tint(achievement.tint)
+                        .padding(.horizontal, 8)
+                        .opacity(achievement.isUnlocked ? 0 : 1)
                 }
             }
 
@@ -144,11 +146,11 @@ private struct AchievementBadge: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(achievement.isUnlocked ? .primary : .secondary)
 
-            if !achievement.isUnlocked {
-                Text(achievement.progressLabel)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
+            // Always reserved so unlocked and in-progress badges stay the same
+            // height — otherwise the extra caption made in-progress ones taller.
+            Text(achievement.isUnlocked ? " " : achievement.progressLabel)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
