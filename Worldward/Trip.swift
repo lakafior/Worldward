@@ -19,6 +19,18 @@ final class Trip {
     /// Per-row token for CloudKit de-duplication, mirroring `Country.dedupID`.
     var dedupID: String = UUID().uuidString
 
+    /// Identifier of the Apple Reminders list mirroring this trip's packing
+    /// list, or empty when none exists (sync off, list not yet created, or the
+    /// list was retired after the trip ended).
+    var reminderListID: String = ""
+
+    /// Comma-joined identifiers of every reminder the sync engine has paired
+    /// with a packing item. This is what disambiguates an unpaired reminder
+    /// during reconciliation: known → its local item was deleted, so the
+    /// reminder goes too; unknown → the user added it in Reminders, so it's
+    /// imported.
+    var reminderKnownIDs: String = ""
+
     @Relationship(deleteRule: .cascade, inverse: \ItineraryItem.trip)
     var itinerary: [ItineraryItem] = []
 
@@ -237,6 +249,13 @@ final class PackingItem {
     /// for the packing widget, whose toggle intent must name an item across
     /// process boundaries where `PersistentIdentifier` doesn't travel.
     var dedupID: String = UUID().uuidString
+    /// Identifier of this item's mirrored reminder in Apple Reminders, or empty
+    /// when the item isn't (yet) synced.
+    var reminderID: String = ""
+    /// When the sync engine last wrote this item's state to Reminders. Compared
+    /// against the reminder's `lastModifiedDate` to decide which side changed —
+    /// nil (never synced) behaves as the distant past.
+    var reminderSyncedAt: Date?
     var trip: Trip?
     var container: PackingContainer?
 

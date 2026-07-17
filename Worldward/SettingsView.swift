@@ -40,6 +40,9 @@ struct SettingsView: View {
     @AppStorage(TripPlanner.profileKey) private var packingProfile: PackingProfile = .unspecified
     @AppStorage(TripPlanner.preferencesKey) private var packingPreferences = ""
     @AppStorage(TripPlanner.interestsKey) private var sightseeingInterests = ""
+    @AppStorage(ReminderSync.enabledKey) private var remindersSyncEnabled = false
+    @AppStorage(ReminderSync.cleanupDaysKey) private var remindersCleanupDays =
+        ReminderSync.cleanupDaysDefault
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -53,6 +56,7 @@ struct SettingsView: View {
     @State private var transferAlert: TransferAlert?
     @State private var showManageContainers = false
     @State private var showManageTemplates = false
+    @State private var remindersAccessDenied = false
 
     var body: some View {
         Form {
@@ -63,6 +67,7 @@ struct SettingsView: View {
             notificationsSection
             packingSection
             packingManagementSection
+            remindersSection
             dataSection
             aboutSection
         }
@@ -228,6 +233,52 @@ struct SettingsView: View {
         } footer: {
             Text(
                 "Containers are the bags you pack into (shared across all trips). Templates let you save and reuse a packing list."
+            )
+        }
+    }
+
+    @ViewBuilder private var remindersSection: some View {
+        Section {
+            Toggle(isOn: $remindersSyncEnabled) {
+                Label("Sync with Apple Reminders", systemImage: "checklist")
+            }
+            .onChange(of: remindersSyncEnabled) { _, enabled in
+                if enabled {
+                    Task {
+                        if await ReminderSync.requestAccess() {
+                            await ReminderSync.syncAll(context: modelContext)
+                        } else {
+                            remindersSyncEnabled = false
+                            remindersAccessDenied = true
+                        }
+                    }
+                } else {
+                    Task { await ReminderSync.disable(context: modelContext) }
+                }
+            }
+            if remindersSyncEnabled {
+                Picker("Remove after trip ends", selection: $remindersCleanupDays) {
+                    Text("Never (keep with trip)").tag(0)
+                    ForEach([1, 3, 7, 14, 30], id: \.self) { days in
+                        Text("^[\(days) day](inflect: true)").tag(days)
+                    }
+                }
+                .onChange(of: remindersCleanupDays) {
+                    Task { await ReminderSync.syncAll(context: modelContext) }
+                }
+            }
+        } header: {
+            Text("Apple Reminders")
+        } footer: {
+            Text(
+                "Mirrors every upcoming trip's packing list to a Reminders list, two-way: tick items off in Reminders, via Siri, or on Apple Watch and they're marked packed here. Containers appear in each reminder's notes. Turning this off removes the lists from Reminders; your packing lists always stay in Worldward."
+            )
+        }
+        .alert("Reminders Access Needed", isPresented: $remindersAccessDenied) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(
+                "Allow Reminders access for Worldward in Settings → Privacy & Security → Reminders, then turn sync on again."
             )
         }
     }

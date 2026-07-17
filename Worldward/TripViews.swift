@@ -117,12 +117,21 @@ private struct TripsListView: View {
     @Query private var trips: [Trip]
     @State private var editingTrip: Trip?
 
-    /// Upcoming trips first (soonest start), then finished trips (most recent).
-    private var orderedTrips: [Trip] {
+    /// Whether the "Past Trips" disclosure is open. Collapsed by default so
+    /// finished trips don't crowd the list; purely derived from `endDate` — a
+    /// trip "archives" itself the moment its end date passes.
+    @State private var showPastTrips = false
+
+    /// Trips that haven't finished yet, soonest start first.
+    private var upcomingTrips: [Trip] {
         let now = Date()
-        let upcoming = trips.filter { $0.endDate >= now }.sorted { $0.startDate < $1.startDate }
-        let past = trips.filter { $0.endDate < now }.sorted { $0.startDate > $1.startDate }
-        return upcoming + past
+        return trips.filter { $0.endDate >= now }.sorted { $0.startDate < $1.startDate }
+    }
+
+    /// Finished trips, most recent first — rendered inside "Past Trips".
+    private var pastTrips: [Trip] {
+        let now = Date()
+        return trips.filter { $0.endDate < now }.sorted { $0.startDate > $1.startDate }
     }
 
     var body: some View {
@@ -137,29 +146,16 @@ private struct TripsListView: View {
                     // Selection drives the split view's detail column (like
                     // Mail's message list) instead of presenting a sheet.
                     List(selection: $selectedTrip) {
-                        ForEach(orderedTrips) { trip in
-                            TripRow(trip: trip)
-                                .tag(trip)
-                                .contextMenu {
-                                    Button("Delete Trip", role: .destructive) {
-                                        delete(trip)
-                                    }
-                                }
-                        }
+                        tripRows(upcomingTrips)
+                        pastTripsSection
                     }
                     .onDeleteCommand {
                         if let trip = selectedTrip { delete(trip) }
                     }
                 #else
                     List {
-                        ForEach(orderedTrips) { trip in
-                            Button {
-                                editingTrip = trip
-                            } label: {
-                                TripRow(trip: trip)
-                            }
-                        }
-                        .onDelete(perform: deleteTrips)
+                        tripRows(upcomingTrips)
+                        pastTripsSection
                     }
                 #endif
             }
@@ -182,6 +178,49 @@ private struct TripsListView: View {
         }
     }
 
+    /// The rows for one bucket of trips. On macOS rows are selectable tags with
+    /// a delete context menu; on iOS they're buttons opening the edit sheet,
+    /// with swipe-to-delete scoped to the bucket's own indices.
+    @ViewBuilder private func tripRows(_ bucket: [Trip]) -> some View {
+        #if os(macOS)
+            ForEach(bucket) { trip in
+                TripRow(trip: trip)
+                    .tag(trip)
+                    .contextMenu {
+                        Button("Delete Trip", role: .destructive) {
+                            delete(trip)
+                        }
+                    }
+            }
+        #else
+            ForEach(bucket) { trip in
+                Button {
+                    editingTrip = trip
+                } label: {
+                    TripRow(trip: trip)
+                }
+            }
+            .onDelete { offsets in
+                for index in offsets { delete(bucket[index]) }
+            }
+        #endif
+    }
+
+    /// Finished trips, tucked into a collapsed disclosure so the list leads
+    /// with what's ahead. Hidden entirely while there's nothing past.
+    @ViewBuilder private var pastTripsSection: some View {
+        if !pastTrips.isEmpty {
+            Section {
+                DisclosureGroup(isExpanded: $showPastTrips) {
+                    tripRows(pastTrips)
+                } label: {
+                    Text("Past Trips")
+                        .badge(pastTrips.count)
+                }
+            }
+        }
+    }
+
     private func addTrip() {
         let trip = Trip(title: "New Trip")
         modelContext.insert(trip)
@@ -199,10 +238,6 @@ private struct TripsListView: View {
         modelContext.delete(trip)
     }
 
-    private func deleteTrips(at offsets: IndexSet) {
-        let ordered = orderedTrips
-        for index in offsets { delete(ordered[index]) }
-    }
 }
 
 private struct TripRow: View {

@@ -436,6 +436,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "Worldward adds your trips to your calendar when you choose “Add to Apple Calendar.” It never reads your existing events.";
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Worldward mirrors your packing lists to Apple Reminders when you turn on “Sync with Apple Reminders,” so items ticked off in Reminders, with Siri, or on Apple Watch are marked packed here too.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Smigi";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Worldward uses your location to detect which country you're in so it can mark it as visited.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Worldward reads the location and date of your photos to automatically mark the countries you've visited. Your photos never leave your device.";
@@ -510,6 +511,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "Worldward adds your trips to your calendar when you choose “Add to Apple Calendar.” It never reads your existing events.";
+				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Worldward mirrors your packing lists to Apple Reminders when you turn on “Sync with Apple Reminders,” so items ticked off in Reminders, with Siri, or on Apple Watch are marked packed here too.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Smigi";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Worldward uses your location to detect which country you're in so it can mark it as visited.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Worldward reads the location and date of your photos to automatically mark the countries you've visited. Your photos never leave your device.";

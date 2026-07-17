@@ -66,8 +66,11 @@ def load(path):
 
 
 def save(path, data):
+    # Xcode writes " : " (space before the colon) as its key/value separator;
+    # matching it keeps diffs to just the changed entries instead of
+    # reformatting the whole catalog.
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+        json.dump(data, f, indent=2, separators=(",", " : "), ensure_ascii=False)
         f.write("\n")
 
 

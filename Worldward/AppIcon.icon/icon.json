@@ -84,9 +84,97 @@
           "name" : "layer-2-waves-back"
         },
         {
-          "glass" : true,
-          "image-name" : "layer-1-beams.svg",
-          "name" : "layer-1-beams"
+          "fill-specializations" : [
+            {
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "srgb:0.57647,0.73725,0.95686,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0.9327938988095238,
+                    "y" : 0.5
+                  },
+                  "stop" : {
+                    "x" : -0.24042038690476192,
+                    "y" : 0.5
+                  }
+                }
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "extended-gray:0.25000,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 1,
+                    "y" : 0.5
+                  },
+                  "stop" : {
+                    "x" : -0.6860119047619048,
+                    "y" : 0.5
+                  }
+                }
+              }
+            }
+          ],
+          "image-name" : "layer-1-beam-left.svg",
+          "name" : "layer-1-beam-left",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              11.625,
+              3.75
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "srgb:0.57647,0.73725,0.95686,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0,
+                    "y" : 0.5
+                  },
+                  "stop" : {
+                    "x" : 1.1176153273809524,
+                    "y" : 0.5
+                  }
+                }
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "display-p3:0.98202,1.00000,0.68790,1.00000",
+                  "extended-gray:0.25000,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 1,
+                    "y" : 0.5
+                  },
+                  "stop" : {
+                    "x" : -0.6860119047619048,
+                    "y" : 0.5
+                  }
+                }
+              }
+            }
+          ],
+          "image-name" : "layer-1-beam-right.svg",
+          "name" : "layer-1-beam-right"
         }
       ],
       "lighting" : "individual",

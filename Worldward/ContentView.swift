@@ -1,6 +1,7 @@
 /// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import AppIntents
+import EventKit
 import MapKit
 import Photos
 import SwiftData
@@ -172,6 +173,8 @@ struct ContentView: View {
     @State private var visibleCountryCache: [Country] = []
 
     @State private var photoImporter = PhotoImporter()
+    /// In-flight debounce for Reminders sync — see `scheduleReminderSync()`.
+    @State private var reminderSyncDebounce: Task<Void, Never>?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
@@ -848,6 +851,10 @@ struct ContentView: View {
                 case .active:
                     checkControlRequest()
                     consumePendingPackingToggles()
+                    // Catch up with Reminders: pulls ticks made in the
+                    // Reminders app / Siri / Watch while we weren't running,
+                    // and retires lists of trips past their cleanup window.
+                    scheduleReminderSync()
                 case .background:
                     Task { await rescheduleNotifications() }
                 default:
@@ -867,8 +874,21 @@ struct ContentView: View {
             // model live through `@Bindable` bindings — there's no save
             // chokepoint to hook — so, like `catalogKey`, a signature watched
             // from the root view is the one reliable invalidation point.
+            // Reminders sync piggybacks on the same signature: it hashes every
+            // packing item's title/quantity/packed state, so any local packing
+            // edit lands in Reminders after a short debounce.
             .onChange(of: tripsKey) {
                 updateWidgetSnapshot()
+                scheduleReminderSync()
+            }
+            // Edits made in the Reminders app while Worldward is frontmost
+            // (e.g. iPad Split View, macOS). Our own writes fire this too; the
+            // follow-up pass finds nothing changed and writes nothing, so the
+            // loop dies out.
+            .onReceive(
+                NotificationCenter.default.publisher(for: .EKEventStoreChanged)
+            ) { _ in
+                scheduleReminderSync()
             }
             .onAppear {
                 // Cold launch: an intent may have set these before the view existed.
@@ -878,6 +898,20 @@ struct ContentView: View {
                 consumePendingSearch()
                 checkControlRequest()
             }
+    }
+
+    /// Debounced entry to Reminders sync: rapid packing edits and bursts of
+    /// `EKEventStoreChanged` notifications collapse into a single pass two
+    /// seconds after the last trigger. No-ops (without touching EventKit at
+    /// all) while the sync setting is off.
+    private func scheduleReminderSync() {
+        guard ReminderSync.isEnabled else { return }
+        reminderSyncDebounce?.cancel()
+        reminderSyncDebounce = Task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            await ReminderSync.syncAll(context: modelContext)
+        }
     }
 
     /// Rebuild the cached visible-country set so the map view doesn't have to

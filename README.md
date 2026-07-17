@@ -337,11 +337,9 @@ Planned next, in rough priority order — everything stays native-only, lightwei
 Under consideration:
 
 - **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
-- **Interactive packing widget** — check items off from the Home Screen.
 
 Deeper Apple-ecosystem integration:
 
-- **Sync packing list to Reminders** (EventKit, already linked) — a real Reminders list per trip from packing items, genuinely two-way: tick an item off in Reminders (or via Siri, or on Apple Watch while packing) and Worldward reads the completed state back on next launch. Quantity mapping and containers-as-sections degrade gracefully.
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
 - **Deeper Calendar integration** (EventKit, upgrade of the current export) — a dedicated "Worldward" calendar with one event per stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated when the itinerary changes.
 - **Smarter Photos suggestions** (PhotoKit, already used) — after a trip ends, auto-suggest photos from the trip's date range (and location, where metadata allows) to attach to visits.
