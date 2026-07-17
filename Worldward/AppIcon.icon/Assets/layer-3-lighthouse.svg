@@ -1,0 +1,30 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+<!-- finial -->
+    <circle cx="512" cy="142" r="30" fill="#2959D4"/>
+    <rect x="500" y="166" width="24" height="20" fill="#2959D4"/>
+    <!-- dome -->
+    <path d="M 388 292 C 388 192 440 158 512 158 C 584 158 636 192 636 292 Z" fill="#4C8DEA"/>
+    <!-- cornice -->
+    <rect x="372" y="282" width="280" height="30" rx="15" fill="#2959D4"/>
+    <!-- lantern room -->
+    <rect x="408" y="308" width="208" height="142" fill="#F3E3A8"/>
+    <rect x="408" y="308" width="20" height="142" fill="#E7D89A"/>
+    <rect x="596" y="308" width="20" height="142" fill="#E7D89A"/>
+    <path d="M 470 450 L 470 388 A 42 42 0 0 1 554 388 L 554 450 Z" fill="#FFFFFF"/>
+    <!-- railing: 5 posts, sized to stay crisp at small rendered sizes -->
+    <rect x="364" y="446" width="296" height="16" rx="8" fill="#2959D4"/>
+    <rect x="380" y="446" width="12" height="56" fill="#2959D4"/>
+    <rect x="443" y="446" width="12" height="56" fill="#2959D4"/>
+    <rect x="506" y="446" width="12" height="56" fill="#2959D4"/>
+    <rect x="569" y="446" width="12" height="56" fill="#2959D4"/>
+    <rect x="632" y="446" width="12" height="56" fill="#2959D4"/>
+    <!-- gallery deck -->
+    <rect x="352" y="494" width="320" height="38" rx="19" fill="#4C8DEA"/>
+    <rect x="372" y="526" width="280" height="26" rx="13" fill="#85CEFA"/>
+    <!-- tower: single flat fill, Liquid Glass supplies the shading -->
+    <path d="M 428 552 L 596 552 L 673 1040 L 351 1040 Z" fill="#FFFFFF"/>
+    <!-- window -->
+    <path d="M 480 724 L 480 662 A 32 32 0 0 1 544 662 L 544 724 Z" fill="#2959D4"/>
+    <!-- door -->
+    <path d="M 470 1040 L 470 876 A 42 42 0 0 1 554 876 L 554 1040 Z" fill="#2959D4"/>
+</svg>

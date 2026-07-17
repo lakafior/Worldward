@@ -1,44 +1,104 @@
 {
-  "fill" : "automatic",
+  "features" : [
+    "refractivity",
+    "specular-location"
+  ],
+  "fill-specializations" : [
+    {
+      "value" : {
+        "linear-gradient" : [
+          "display-p3:0.52157,0.80784,0.98039,1.00000",
+          "srgb:0.16078,0.34902,0.83137,1.00000"
+        ]
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "linear-gradient" : [
+          "srgb:0.16078,0.34902,0.83137,1.00000",
+          "display-p3:0.00000,0.00000,0.00000,1.00000"
+        ]
+      }
+    }
+  ],
   "groups" : [
+    {
+      "blur-material" : 0.02,
+      "layers" : [
+        {
+          "image-name" : "layer-4-waves-front.svg",
+          "name" : "layer-4-waves-front"
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "top",
+      "opacity" : 0.7,
+      "refractivity" : {
+        "depth" : 0.03,
+        "enabled" : true,
+        "strength" : 0.4
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.4
+      },
+      "specular" : "outside",
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
     {
       "layers" : [
         {
-          "blend-mode" : "normal",
-          "fill" : {
-            "linear-gradient" : [
-              "display-p3:0.52287,0.80649,0.98183,1.00000",
-              "display-p3:0.16138,0.35032,0.83176,1.00000"
-            ],
-            "orientation" : {
-              "start" : {
-                "x" : 0.7963504464285714,
-                "y" : 0.30773460410557185
-              },
-              "stop" : {
-                "x" : 0.5,
-                "y" : 1
-              }
-            }
-          },
-          "glass" : true,
-          "hidden" : false,
-          "image-name" : "icon-glyph.svg",
-          "name" : "icon-glyph",
-          "opacity" : 1,
-          "position" : {
-            "scale" : 1.2,
-            "translation-in-points" : [
-              0,
-              0
-            ]
-          }
+          "image-name" : "layer-3-lighthouse.svg",
+          "name" : "layer-3-lighthouse"
         }
       ],
+      "name" : "middle",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 1.6
+      },
+      "specular" : "outside",
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
+    {
+      "blend-mode-specializations" : [
+        {
+          "value" : "hard-light"
+        },
+        {
+          "appearance" : "dark",
+          "value" : "lighten"
+        }
+      ],
+      "layers" : [
+        {
+          "image-name" : "layer-2-waves-back.svg",
+          "name" : "layer-2-waves-back"
+        },
+        {
+          "image-name" : "layer-1-beams.svg",
+          "name" : "layer-1-beams"
+        }
+      ],
+      "name" : "back",
+      "opacity" : 0.6,
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : false,
+        "strength" : 0.5
+      },
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.6
       },
+      "specular" : false,
       "translucency" : {
         "enabled" : true,
         "value" : 0.2
