@@ -83,7 +83,7 @@
     {
       "blend-mode-specializations" : [
         {
-          "value" : "hard-light"
+          "value" : "darken"
         },
         {
           "appearance" : "dark",
@@ -101,7 +101,7 @@
             {
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:1.00000,0.96078,0.54902,1.00000",
+                  "display-p3:0.98039,0.90980,0.50980,1.00000",
                   "srgb:0.57647,0.73725,0.95686,1.00000"
                 ],
                 "orientation" : {
@@ -120,7 +120,7 @@
               "appearance" : "dark",
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:1.00000,0.96078,0.54902,1.00000",
+                  "display-p3:0.98039,0.98824,0.50980,1.00000",
                   "extended-gray:0.25000,1.00000"
                 ],
                 "orientation" : {
@@ -151,7 +151,7 @@
             {
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:1.00000,0.96078,0.54902,1.00000",
+                  "display-p3:0.98039,0.98824,0.50980,1.00000",
                   "srgb:0.57647,0.73725,0.95686,1.00000"
                 ],
                 "orientation" : {
@@ -170,7 +170,7 @@
               "appearance" : "dark",
               "value" : {
                 "linear-gradient" : [
-                  "display-p3:1.00000,0.96078,0.54902,1.00000",
+                  "display-p3:0.98039,0.98824,0.50980,1.00000",
                   "extended-gray:0.25000,1.00000"
                 ],
                 "orientation" : {
