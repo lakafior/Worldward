@@ -146,6 +146,7 @@ Two flows in **Settings**:
 - Manage **packing containers** (bags/cases) and **packing templates** from Settings.
 - Containers are shared across all trips; templates let you save and reuse packing lists.
 - Customize with SF Symbol icons, drag to reorder, add items with quantities.
+- **Sync with Apple Reminders** (optional, off by default) — mirrors every upcoming trip's packing list to its own Reminders list, genuinely two-way: tick an item off in Reminders, via Siri, or on Apple Watch and it's marked packed in Worldward; edit or delete an item on either side and it mirrors across. Containers ride in each reminder's notes; quantities appear as "×N" in the title. Configurable auto-removal of a trip's list a set number of days after it ends (or never, keeping it until the trip itself is deleted).
 
 ### Country Facts
 
@@ -264,6 +265,7 @@ Worldward/
 ├── Trip.swift                  # SwiftData models: Trip, ItineraryItem, PackingItem
 ├── TripViews.swift             # Going tab, trips list, trip editor, Markdown share
 ├── CalendarExporter.swift      # EventKit "Add to Apple Calendar" (write-only)
+├── ReminderSync.swift          # EventKit two-way packing-list ↔ Apple Reminders sync
 ├── CountryStatus.swift         # "Been there" status enum
 ├── PlanStatus.swift            # "Going" plan enum
 ├── Continents.swift            # ISO → continent lookup table
@@ -273,7 +275,7 @@ Worldward/
 ├── CSVTransfer.swift           # CSV parser, additive import, export
 ├── CSVImportView.swift         # CSV preview-and-confirm sheet
 ├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
-├── SettingsView.swift          # Appearance, reminders toggle, export/import
+├── SettingsView.swift          # Appearance, notifications, Reminders sync, export/import
 ├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)
 ├── StatisticsView.swift        # Dashboard, timeline, charts, AI recaps
 ├── ShareCard.swift             # Rasterised share-card view

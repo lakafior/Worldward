@@ -19,7 +19,7 @@
   ],
   "groups" : [
     {
-      "blur-material" : 0.02,
+      "blur-material" : null,
       "layers" : [
         {
           "image-name" : "layer-4-waves-front.svg",
@@ -28,7 +28,15 @@
       ],
       "lighting" : "individual",
       "name" : "top",
-      "opacity" : 0.7,
+      "opacity-specializations" : [
+        {
+          "value" : 0.8
+        },
+        {
+          "appearance" : "dark",
+          "value" : 0.8
+        }
+      ],
       "refractivity" : {
         "depth" : 0.03,
         "enabled" : true,
