@@ -31,6 +31,16 @@ final class Trip {
     /// imported.
     var reminderKnownIDs: String = ""
 
+    /// Identifier of this trip's all-day "banner" event in the app-owned
+    /// Worldward calendar, or empty when calendar sync is off (or the trip's
+    /// events were retired). See `CalendarSync`.
+    var calendarEventID: String = ""
+
+    /// Comma-joined identifiers of every event calendar sync has created for
+    /// this trip (banner + stops). A known id with no live stop behind it means
+    /// the stop was deleted here, so its event is removed on the next pass.
+    var calendarKnownIDs: String = ""
+
     @Relationship(deleteRule: .cascade, inverse: \ItineraryItem.trip)
     var itinerary: [ItineraryItem] = []
 
@@ -169,6 +179,10 @@ final class ItineraryItem {
     var order: Int = 0
     var country: Country?
     var trip: Trip?
+
+    /// Identifier of this stop's event in the app-owned Worldward calendar, or
+    /// empty when calendar sync is off or the stop has no date. See `CalendarSync`.
+    var calendarEventID: String = ""
 
     @Relationship(deleteRule: .cascade, inverse: \StopPlace.stop)
     var places: [StopPlace] = []

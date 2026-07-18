@@ -179,8 +179,8 @@ struct ContentView: View {
     @State private var visibleCountryCache: [Country] = []
 
     @State private var photoImporter = PhotoImporter()
-    /// In-flight debounce for Reminders sync — see `scheduleReminderSync()`.
-    @State private var reminderSyncDebounce: Task<Void, Never>?
+    /// In-flight debounce for the EventKit syncs — see `scheduleEventKitSync()`.
+    @State private var eventKitSyncDebounce: Task<Void, Never>?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
@@ -918,10 +918,11 @@ struct ContentView: View {
                 case .active:
                     checkControlRequest()
                     consumePendingPackingToggles()
-                    // Catch up with Reminders: pulls ticks made in the
-                    // Reminders app / Siri / Watch while we weren't running,
-                    // and retires lists of trips past their cleanup window.
-                    scheduleReminderSync()
+                    // Catch up with Reminders and Calendar: pulls ticks made
+                    // in the Reminders app / Siri / Watch while we weren't
+                    // running, restores calendar events edited elsewhere, and
+                    // retires lists/events past their cleanup windows.
+                    scheduleEventKitSync()
                 case .background:
                     Task { await rescheduleNotifications() }
                 default:
@@ -941,21 +942,22 @@ struct ContentView: View {
             // model live through `@Bindable` bindings — there's no save
             // chokepoint to hook — so, like `catalogKey`, a signature watched
             // from the root view is the one reliable invalidation point.
-            // Reminders sync piggybacks on the same signature: it hashes every
-            // packing item's title/quantity/packed state, so any local packing
-            // edit lands in Reminders after a short debounce.
+            // The EventKit syncs piggyback on the same signature: it hashes
+            // every packing item's title/quantity/packed state and every
+            // stop's fields, so any local packing or itinerary edit lands in
+            // Reminders / Calendar after a short debounce.
             .onChange(of: tripsKey) {
                 updateWidgetSnapshot()
-                scheduleReminderSync()
+                scheduleEventKitSync()
             }
-            // Edits made in the Reminders app while Worldward is frontmost
-            // (e.g. iPad Split View, macOS). Our own writes fire this too; the
-            // follow-up pass finds nothing changed and writes nothing, so the
-            // loop dies out.
+            // Edits made in the Reminders / Calendar apps while Worldward is
+            // frontmost (e.g. iPad Split View, macOS). Our own writes fire
+            // this too; the follow-up pass finds nothing changed and writes
+            // nothing, so the loop dies out.
             .onReceive(
                 NotificationCenter.default.publisher(for: .EKEventStoreChanged)
             ) { _ in
-                scheduleReminderSync()
+                scheduleEventKitSync()
             }
             .onAppear {
                 // Cold launch: an intent may have set these before the view existed.
@@ -968,17 +970,19 @@ struct ContentView: View {
             }
     }
 
-    /// Debounced entry to Reminders sync: rapid packing edits and bursts of
-    /// `EKEventStoreChanged` notifications collapse into a single pass two
-    /// seconds after the last trigger. No-ops (without touching EventKit at
-    /// all) while the sync setting is off.
-    private func scheduleReminderSync() {
-        guard ReminderSync.isEnabled else { return }
-        reminderSyncDebounce?.cancel()
-        reminderSyncDebounce = Task {
+    /// Debounced entry to the EventKit syncs (Reminders + Calendar): rapid
+    /// edits and bursts of `EKEventStoreChanged` notifications collapse into a
+    /// single pass two seconds after the last trigger. No-ops (without
+    /// touching EventKit at all) while both sync settings are off; each engine
+    /// also self-no-ops when its own toggle is off.
+    private func scheduleEventKitSync() {
+        guard ReminderSync.isEnabled || CalendarSync.isEnabled else { return }
+        eventKitSyncDebounce?.cancel()
+        eventKitSyncDebounce = Task {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
             await ReminderSync.syncAll(context: modelContext)
+            await CalendarSync.syncAll(context: modelContext)
         }
     }
 
@@ -1469,6 +1473,20 @@ struct ContentView: View {
                 hasher.combine(item.isPacked)
                 hasher.combine(item.quantity)
                 hasher.combine(item.order)
+            }
+            // Itinerary edits must change the key too: calendar sync mirrors
+            // stops (title, date, note, places) to events.
+            for stop in trip.itinerary {
+                hasher.combine(stop.title)
+                hasher.combine(stop.note)
+                hasher.combine(stop.date)
+                hasher.combine(stop.order)
+                hasher.combine(stop.country?.id)
+                for place in stop.places {
+                    hasher.combine(place.title)
+                    hasher.combine(place.latitude)
+                    hasher.combine(place.longitude)
+                }
             }
         }
         return hasher.finalize()

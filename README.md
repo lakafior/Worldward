@@ -67,6 +67,7 @@ Every country rendered as a tap-able map polygon from Natural Earth data (~250 c
 - Multi-country trips through ordered **stops**, each optionally tied to a country.
 - **Date range**, reorderable **itinerary**, checkable **packing list**, and free-text **notes**.
 - **Add to Apple Calendar** as an all-day event (write-only EventKit).
+- **Sync with Apple Calendar** (opt-in, Settings) — a dedicated "Worldward" calendar with an event spanning each trip plus one per dated stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated as the itinerary changes.
 - **Share / export** a trip as **Markdown** via the system share sheet.
 
 ### Achievements
@@ -345,11 +346,7 @@ Planned next, in rough priority order — everything stays native-only, lightwei
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, converging de-duplication); flipping it on awaits a paid Apple Developer membership.
 - **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
-
-Deeper Apple-ecosystem integration:
-
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
-- **Deeper Calendar integration** (EventKit, upgrade of the current export) — a dedicated "Worldward" calendar with one event per stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated when the itinerary changes.
 - **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.
 
 ---

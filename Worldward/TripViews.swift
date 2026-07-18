@@ -344,6 +344,9 @@ struct TripDetailView: View {
     @State private var showSaveTemplate = false
     @State private var newTemplateName = ""
     @State private var showPhotoSuggestions = false
+    /// Hides the one-shot "Add to Apple Calendar" button while calendar sync is
+    /// on — the sync already mirrors the trip, so the button would double-book.
+    @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
 
     /// Translates freshly generated (English) assistant output into the user's
     /// language before it's saved. The on-device LLM names items in English;
@@ -375,10 +378,12 @@ struct TripDetailView: View {
                     if !trip.flags.isEmpty {
                         Text(trip.flags).font(.title3)
                     }
-                    Button {
-                        addToCalendar()
-                    } label: {
-                        Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
+                    if !calendarSyncEnabled {
+                        Button {
+                            addToCalendar()
+                        } label: {
+                            Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
+                        }
                     }
                     exportButtons
                     Button {

@@ -43,6 +43,9 @@ struct SettingsView: View {
     @AppStorage(ReminderSync.enabledKey) private var remindersSyncEnabled = false
     @AppStorage(ReminderSync.cleanupDaysKey) private var remindersCleanupDays =
         ReminderSync.cleanupDaysDefault
+    @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
+    @AppStorage(CalendarSync.cleanupDaysKey) private var calendarCleanupDays =
+        CalendarSync.cleanupDaysDefault
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -63,6 +66,7 @@ struct SettingsView: View {
     @State private var showManageContainers = false
     @State private var showManageTemplates = false
     @State private var remindersAccessDenied = false
+    @State private var calendarAccessDenied = false
     #if os(macOS)
         /// Lets the File ▸ Import/Export menu commands (see `DataTransferCommands`
         /// in Worldward.swift) trigger the same pickers as the buttons below,
@@ -79,6 +83,7 @@ struct SettingsView: View {
             notificationsSection
             packingSection
             packingManagementSection
+            calendarSection
             remindersSection
             dataSection
             #if !os(macOS)
@@ -287,6 +292,52 @@ struct SettingsView: View {
         } footer: {
             Text(
                 "Containers are the bags you pack into (shared across all trips). Templates let you save and reuse a packing list."
+            )
+        }
+    }
+
+    @ViewBuilder private var calendarSection: some View {
+        Section {
+            Toggle(isOn: $calendarSyncEnabled) {
+                Label("Sync Trips with Apple Calendar", systemImage: "calendar.badge.checkmark")
+            }
+            .onChange(of: calendarSyncEnabled) { _, enabled in
+                if enabled {
+                    Task {
+                        if await CalendarSync.requestAccess() {
+                            await CalendarSync.syncAll(context: modelContext)
+                        } else {
+                            calendarSyncEnabled = false
+                            calendarAccessDenied = true
+                        }
+                    }
+                } else {
+                    Task { await CalendarSync.disable(context: modelContext) }
+                }
+            }
+            if calendarSyncEnabled {
+                Picker("Remove after trip ends", selection: $calendarCleanupDays) {
+                    Text("Never (keep with trip)").tag(0)
+                    ForEach([1, 3, 7, 14, 30], id: \.self) { days in
+                        Text("^[\(days) day](inflect: true)").tag(days)
+                    }
+                }
+                .onChange(of: calendarCleanupDays) {
+                    Task { await CalendarSync.syncAll(context: modelContext) }
+                }
+            }
+        } header: {
+            Text("Apple Calendar")
+        } footer: {
+            Text(
+                "Mirrors your trips to a dedicated “Worldward” calendar: an event spanning each trip plus one per dated stop — with the map and weather shown where a stop has a place. Kept up to date as you edit the itinerary. Needs full calendar access to update its own events; it never touches your other calendars. Turning this off removes the Worldward calendar; your trips always stay in Worldward."
+            )
+        }
+        .alert("Calendar Access Needed", isPresented: $calendarAccessDenied) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(
+                "Allow full Calendar access for Worldward in Settings → Privacy & Security → Calendars, then turn sync on again."
             )
         }
     }
