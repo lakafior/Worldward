@@ -1397,13 +1397,13 @@ struct ContentView: View {
     /// `.notVisited` and a hand-set status wins over an imported one; notes are
     /// combined when they differ; the legacy `visitDate` fills in if missing.
     private func merge(_ loser: Country, into winner: Country) {
-        for visit in Array(loser.visits) {
+        for visit in Array(loser.visits ?? []) {
             visit.country = winner
         }
 
         // Trip stops pointing at the loser would be nullified by its deletion
         // (losing their flag and map route), so re-point them at the winner.
-        for item in Array(loser.itineraryItems) {
+        for item in Array(loser.itineraryItems ?? []) {
             item.country = winner
         }
 

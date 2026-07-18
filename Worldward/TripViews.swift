@@ -407,7 +407,7 @@ struct TripDetailView: View {
                     } label: {
                         Label("View Route on Map", systemImage: "map")
                     }
-                    .disabled(trip.itinerary.isEmpty)
+                    .disabled((trip.itinerary ?? []).isEmpty)
                 }
 
                 tripPhotosSection
@@ -603,7 +603,7 @@ struct TripDetailView: View {
 
     private var itinerarySection: some View {
         Section("Itinerary") {
-            if trip.itinerary.isEmpty {
+            if (trip.itinerary ?? []).isEmpty {
                 Text("No stops yet").foregroundStyle(.secondary)
             } else {
                 ForEach(trip.sortedStops) { stop in
@@ -623,12 +623,12 @@ struct TripDetailView: View {
     /// An overall progress bar, one Section per container that has items (plus an
     /// "Other" group for ungrouped items), followed by the shared controls section.
     @ViewBuilder private var packingSections: some View {
-        if !trip.packing.isEmpty {
+        if !(trip.packing ?? []).isEmpty {
             Section {
                 VStack(alignment: .leading, spacing: 4) {
                     ProgressView(
-                        value: Double(trip.packedCount), total: Double(trip.packing.count))
-                    Text("\(trip.packedCount) of \(trip.packing.count) packed")
+                        value: Double(trip.packedCount), total: Double((trip.packing ?? []).count))
+                    Text("\(trip.packedCount) of \((trip.packing ?? []).count) packed")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -710,7 +710,7 @@ struct TripDetailView: View {
                 fillButton(field: .packing, action: fillPacking)
             }
 
-            if !trip.packing.isEmpty {
+            if !(trip.packing ?? []).isEmpty {
                 Button {
                     newTemplateName = trip.title
                     showSaveTemplate = true
@@ -724,7 +724,7 @@ struct TripDetailView: View {
                     Label("Clear list", systemImage: "trash")
                 }
                 .confirmationDialog(
-                    "Remove all \(trip.packing.count) packing items?",
+                    "Remove all \((trip.packing ?? []).count) packing items?",
                     isPresented: $confirmClearPacking, titleVisibility: .visible
                 ) {
                     Button("Clear list", role: .destructive, action: clearPacking)
@@ -732,8 +732,8 @@ struct TripDetailView: View {
             }
         } header: {
             Text(
-                trip.packing.isEmpty
-                    ? "Packing" : "Packing · \(trip.packedCount)/\(trip.packing.count)")
+                (trip.packing ?? []).isEmpty
+                    ? "Packing" : "Packing · \(trip.packedCount)/\((trip.packing ?? []).count)")
         }
     }
 
@@ -741,7 +741,7 @@ struct TripDetailView: View {
     /// list. Hidden entirely when there's nothing to start from.
     @ViewBuilder private var packingStartFromMenu: some View {
         let otherTrips = allTrips.filter {
-            $0.persistentModelID != trip.persistentModelID && !$0.packing.isEmpty
+            $0.persistentModelID != trip.persistentModelID && !($0.packing ?? []).isEmpty
         }
         if !templates.isEmpty || !otherTrips.isEmpty {
             Menu {
@@ -840,10 +840,10 @@ struct TripDetailView: View {
     // MARK: Mutations
 
     private func addStop(country: Country) {
-        let nextOrder = (trip.itinerary.map(\.order).max() ?? -1) + 1
+        let nextOrder = ((trip.itinerary ?? []).map(\.order).max() ?? -1) + 1
         let stop = ItineraryItem(order: nextOrder, country: country, trip: trip)
         modelContext.insert(stop)
-        trip.itinerary.append(stop)
+        trip.itinerary?.append(stop)
         // Map tie-in: a planned stop's country joins the blue "going" layer.
         if country.planStatus == .none { country.planStatus = .planning }
     }
@@ -867,15 +867,15 @@ struct TripDetailView: View {
         guard !title.isEmpty else { return }
         let item = PackingItem(title: title, order: nextPackingOrder, trip: trip)
         modelContext.insert(item)
-        trip.packing.append(item)
+        trip.packing?.append(item)
         newPackingTitle = ""
     }
 
     /// The next free ordering slot, so a new item lands at the end of its group.
-    private var nextPackingOrder: Int { (trip.packing.map(\.order).max() ?? -1) + 1 }
+    private var nextPackingOrder: Int { ((trip.packing ?? []).map(\.order).max() ?? -1) + 1 }
 
     private func clearPacking() {
-        for item in trip.packing { modelContext.delete(item) }
+        for item in trip.packing ?? [] { modelContext.delete(item) }
     }
 
     /// Applies a drag-to-reorder *within a single container group*, renumbering
@@ -896,7 +896,7 @@ struct TripDetailView: View {
     /// (case-insensitive) and resolving each item's container by name.
     private func applyTemplate(_ template: PackingTemplate) {
         addPackingItems(
-            template.items.sorted { $0.order < $1.order }
+            (template.items ?? []).sorted { $0.order < $1.order }
                 .map { ($0.title, $0.quantity, $0.containerName) })
     }
 
@@ -904,7 +904,7 @@ struct TripDetailView: View {
     /// containers by name so they file into this trip's catalog.
     private func copyPacking(from other: Trip) {
         addPackingItems(
-            other.packing.sorted { $0.order < $1.order }
+            (other.packing ?? []).sorted { $0.order < $1.order }
                 .map { ($0.title, $0.quantity, $0.container?.name ?? "") })
     }
 
@@ -912,7 +912,7 @@ struct TripDetailView: View {
     /// quantity, containerName)` not already present, in increasing `order`.
     private func addPackingItems(_ sources: [(title: String, quantity: Int, containerName: String)])
     {
-        var existing = Set(trip.packing.map { $0.title.lowercased() })
+        var existing = Set((trip.packing ?? []).map { $0.title.lowercased() })
         var cache: [String: PackingContainer] = [:]
         var order = nextPackingOrder
         for source in sources {
@@ -923,7 +923,7 @@ struct TripDetailView: View {
                 title: source.title, quantity: source.quantity, order: order, trip: trip)
             item.container = resolveContainer(named: source.containerName, cache: &cache)
             modelContext.insert(item)
-            trip.packing.append(item)
+            trip.packing?.append(item)
             order += 1
         }
     }
@@ -932,15 +932,15 @@ struct TripDetailView: View {
     /// container by name for portability.
     private func saveTemplate() {
         let name = newTemplateName.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty, !trip.packing.isEmpty else { return resetTemplateDraft() }
+        guard !name.isEmpty, !(trip.packing ?? []).isEmpty else { return resetTemplateDraft() }
         let template = PackingTemplate(name: name)
         modelContext.insert(template)
-        for (index, source) in trip.packing.sorted(by: { $0.order < $1.order }).enumerated() {
+        for (index, source) in (trip.packing ?? []).sorted(by: { $0.order < $1.order }).enumerated() {
             let templateItem = PackingTemplateItem(
                 title: source.title, quantity: source.quantity, order: index,
                 containerName: source.container?.name ?? "", template: template)
             modelContext.insert(templateItem)
-            template.items.append(templateItem)
+            template.items?.append(templateItem)
         }
         resetTemplateDraft()
     }
@@ -1047,7 +1047,7 @@ struct TripDetailView: View {
     /// Appends packing suggestions, filing each into its container and skipping any
     /// item already present (case-insensitive) so the user's own entries are kept.
     private func insertPacking(_ suggestions: [PackingSuggestion]) {
-        var existing = Set(trip.packing.map { $0.title.lowercased() })
+        var existing = Set((trip.packing ?? []).map { $0.title.lowercased() })
         var createdContainers: [String: PackingContainer] = [:]
         var order = nextPackingOrder
         for suggestion in suggestions {
@@ -1059,7 +1059,7 @@ struct TripDetailView: View {
             item.container = resolveContainer(
                 named: suggestion.containerName, cache: &createdContainers)
             modelContext.insert(item)
-            trip.packing.append(item)
+            trip.packing?.append(item)
             order += 1
         }
     }
@@ -1076,7 +1076,7 @@ struct TripDetailView: View {
         case .failure(let error):
             attachmentAlert = error.localizedDescription
         case .success(let urls):
-            var order = (trip.attachments.map(\.order).max() ?? -1) + 1
+            var order = ((trip.attachments ?? []).map(\.order).max() ?? -1) + 1
             for url in urls {
                 let needsAccess = url.startAccessingSecurityScopedResource()
                 defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
@@ -1092,7 +1092,7 @@ struct TripDetailView: View {
                     let attachment = TripAttachment(
                         filename: url.lastPathComponent, data: data, order: order, trip: trip)
                     modelContext.insert(attachment)
-                    trip.attachments.append(attachment)
+                    trip.attachments?.append(attachment)
                     order += 1
                 } catch {
                     attachmentAlert = error.localizedDescription
@@ -1352,7 +1352,7 @@ private struct StopRow: View {
 
     /// Saves a picked search result as a place under this stop.
     private func add(_ item: MKMapItem) {
-        let nextOrder = (stop.places.map(\.order).max() ?? -1) + 1
+        let nextOrder = ((stop.places ?? []).map(\.order).max() ?? -1) + 1
         let coordinate = item.location.coordinate
         let place = StopPlace(
             title: item.name ?? String(localized: "Place"),
@@ -1360,7 +1360,8 @@ private struct StopRow: View {
             latitude: coordinate.latitude, longitude: coordinate.longitude,
             order: nextOrder, stop: stop)
         modelContext.insert(place)
-        stop.places.append(place)
+        if stop.places == nil { stop.places = [] }
+        stop.places?.append(place)
     }
 
     private func delete(_ place: StopPlace) {

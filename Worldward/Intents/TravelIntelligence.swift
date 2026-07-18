@@ -144,7 +144,7 @@ private func fetchCountries() throws -> [Country] {
 /// Formats a country's recorded visit dates as a short, human-readable phrase,
 /// e.g. "Mar 2023, Aug 2024", or an empty string when no dates are recorded.
 private func visitDatesPhrase(for country: Country) -> String {
-    var dates = country.visits.map(\.date)
+    var dates = (country.visits ?? []).map(\.date)
     if let legacy = country.visitDate { dates.append(legacy) }
     guard !dates.isEmpty else { return "" }
 

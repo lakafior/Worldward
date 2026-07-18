@@ -132,7 +132,7 @@ enum ReminderSync {
     /// Whether the trip should have a live Reminders list: it has items to
     /// mirror and hasn't aged past the cleanup window (0 = no window).
     private static func isEligible(_ trip: Trip, now: Date) -> Bool {
-        guard !trip.packing.isEmpty else { return false }
+        guard !(trip.packing ?? []).isEmpty else { return false }
         let days = cleanupDays
         guard days > 0 else { return true }
         return trip.endDate.addingTimeInterval(Double(days) * 86_400) >= now
@@ -152,7 +152,7 @@ enum ReminderSync {
             // rebuild below pushes every item fresh instead of mistaking them
             // all for Reminders-side deletions.
             trip.reminderKnownIDs = ""
-            for item in trip.packing {
+            for item in trip.packing ?? [] {
                 item.reminderID = ""
                 item.reminderSyncedAt = nil
             }
@@ -176,7 +176,7 @@ enum ReminderSync {
         var deletedItems: [PackingItem] = []
         var dirtyStore = false
 
-        for item in trip.packing {
+        for item in trip.packing ?? [] {
             if !item.reminderID.isEmpty, let reminder = remindersByID[item.reminderID] {
                 pairedIDs.insert(item.reminderID)
                 knownIDs.insert(item.reminderID)
@@ -218,14 +218,15 @@ enum ReminderSync {
                 let container = containers.first {
                     $0.name.compare(containerName, options: .caseInsensitive) == .orderedSame
                 }
-                let order = (trip.packing.map(\.order).max() ?? -1) + 1
+                let order = ((trip.packing ?? []).map(\.order).max() ?? -1) + 1
                 let item = PackingItem(
                     title: title, isPacked: reminder.isCompleted, quantity: quantity,
                     order: order, trip: trip, container: containerName.isEmpty ? nil : container)
                 item.reminderID = id
                 item.reminderSyncedAt = Date()
                 context.insert(item)
-                trip.packing.append(item)
+                if trip.packing == nil { trip.packing = [] }
+                trip.packing?.append(item)
                 knownIDs.insert(id)
             }
         }
@@ -314,7 +315,7 @@ enum ReminderSync {
         setCreatedListIDs(registry)
         trip.reminderListID = ""
         trip.reminderKnownIDs = ""
-        for item in trip.packing {
+        for item in trip.packing ?? [] {
             item.reminderID = ""
             item.reminderSyncedAt = nil
         }

@@ -55,7 +55,7 @@ struct CountryListSummary {
             }
 
             // Collect visit years from all visits
-            for visit in country.visits {
+            for visit in (country.visits ?? []) {
                 visitYears.insert(calendar.component(.year, from: visit.date))
             }
             // Also check legacy visitDate for backward compatibility
@@ -85,7 +85,7 @@ struct CountryListSummary {
 
             if browseMode == .been, let selectedYear {
                 // Check if any visit matches the selected year
-                let hasMatchingVisit = country.visits.contains { visit in
+                let hasMatchingVisit = (country.visits ?? []).contains { visit in
                     calendar.component(.year, from: visit.date) == selectedYear
                 }
                 // Also check legacy visitDate for backward compatibility
@@ -158,7 +158,7 @@ struct CountryListView: View {
 
     /// The most recent visit date for a country, including the legacy `visitDate`.
     private func lastVisit(_ country: Country) -> Date? {
-        var dates = country.visits.map(\.date)
+        var dates = (country.visits ?? []).map(\.date)
         if let legacy = country.visitDate { dates.append(legacy) }
         return dates.max()
     }
@@ -175,7 +175,7 @@ struct CountryListView: View {
             hasher.combine(country.id)
             hasher.combine(country.statusRaw)
             hasher.combine(country.planStatusRaw)
-            for visit in country.visits {
+            for visit in (country.visits ?? []) {
                 hasher.combine(visit.date)
             }
         }

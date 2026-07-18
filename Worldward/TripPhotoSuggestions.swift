@@ -215,7 +215,7 @@ struct TripPhotoSuggestionsSheet: View {
         for country in countries {
             paths[country.id] = countryPaths[country.id] ?? []
         }
-        let excluded = Set(countries.flatMap { $0.visits.flatMap(\.photoIdentifiers) })
+        let excluded = Set(countries.flatMap { ($0.visits ?? []).flatMap(\.photoIdentifiers) })
         let calendar = Calendar.current
         let start = calendar.startOfDay(for: trip.startDate)
         let end =
@@ -339,7 +339,7 @@ struct TripPhotoSuggestionsSheet: View {
             photos.sort { $0.date < $1.date }
 
             let visit =
-                country.visits
+                (country.visits ?? [])
                 .filter { $0.date >= rangeStart && $0.date < rangeEnd }
                 .min { $0.date < $1.date }
                 ?? {
@@ -347,7 +347,7 @@ struct TripPhotoSuggestionsSheet: View {
                         date: calendar.startOfDay(for: photos[0].date), notes: "",
                         country: country)
                     modelContext.insert(new)
-                    country.visits.append(new)
+                    country.visits = (country.visits ?? []) + [new]
                     return new
                 }()
 

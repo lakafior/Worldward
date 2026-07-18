@@ -88,7 +88,7 @@ nonisolated enum TripPDFRenderer {
             }
         }
 
-        if !trip.packing.isEmpty {
+        if !(trip.packing ?? []).isEmpty {
             result.append(line(Str.Trip.packing, .sectionHeader, rule: .separator))
             let groups = trip.packingGroups
             let useHeadings = groups.contains { $0.container != nil }

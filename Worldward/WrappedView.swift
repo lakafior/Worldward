@@ -52,7 +52,7 @@ struct WrappedFacts {
                 }
             }
 
-            var dates = country.visits.map(\.date)
+            var dates = (country.visits ?? []).map(\.date)
             if let legacy = country.visitDate { dates.append(legacy) }
             for date in dates where calendar.component(.year, from: date) == year {
                 visitCount += 1

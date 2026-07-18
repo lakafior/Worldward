@@ -36,14 +36,16 @@ final class Country {
     var visitDate: Date?
     var notes: String = ""
 
+    /// CloudKit requires all relationships to be optional types. The arrays are
+    /// unwrapped on access via `?? []` throughout the codebase.
     @Relationship(deleteRule: .cascade, inverse: \Visit.country)
-    var visits: [Visit] = []
+    var visits: [Visit]?
 
     /// Inverse of `ItineraryItem.country` — the trip stops that take place in this
     /// country. `.nullify` so deleting a country (only happens during dedup) just
     /// clears the stop's country rather than deleting the stop.
     @Relationship(deleteRule: .nullify, inverse: \ItineraryItem.country)
-    var itineraryItems: [ItineraryItem] = []
+    var itineraryItems: [ItineraryItem]?
 
     /// A per-row token assigned once when the country is inserted. CloudKit can't
     /// enforce a unique `id`, so two devices that both seed offline produce two

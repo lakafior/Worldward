@@ -41,14 +41,15 @@ final class Trip {
     /// the stop was deleted here, so its event is removed on the next pass.
     var calendarKnownIDs: String = ""
 
+    /// CloudKit requires all relationships to be optional types.
     @Relationship(deleteRule: .cascade, inverse: \ItineraryItem.trip)
-    var itinerary: [ItineraryItem] = []
+    var itinerary: [ItineraryItem]?
 
     @Relationship(deleteRule: .cascade, inverse: \PackingItem.trip)
-    var packing: [PackingItem] = []
+    var packing: [PackingItem]?
 
     @Relationship(deleteRule: .cascade, inverse: \TripAttachment.trip)
-    var attachments: [TripAttachment] = []
+    var attachments: [TripAttachment]?
 
     init(
         title: String = "", startDate: Date = Date(), endDate: Date = Date(), notes: String = ""
@@ -61,12 +62,12 @@ final class Trip {
 
     /// Stops in their user-defined order.
     var sortedStops: [ItineraryItem] {
-        itinerary.sorted { $0.order < $1.order }
+        (itinerary ?? []).sorted { $0.order < $1.order }
     }
 
     /// Attachments in the order they were added.
     var sortedAttachments: [TripAttachment] {
-        attachments.sorted { $0.order < $1.order }
+        (attachments ?? []).sorted { $0.order < $1.order }
     }
 
     /// The distinct countries this trip touches, in first-appearance (stop) order.
@@ -88,7 +89,7 @@ final class Trip {
     func isUpcoming(asOf now: Date) -> Bool { endDate >= now }
 
     /// Items already ticked off the packing list.
-    var packedCount: Int { packing.filter(\.isPacked).count }
+    var packedCount: Int { (packing ?? []).filter(\.isPacked).count }
 
     /// The packing list grouped by container — containers in their `sortOrder`,
     /// then the ungrouped items last. Containers with no items are omitted (they
@@ -96,7 +97,7 @@ final class Trip {
     var packingGroups: [PackingGroup] {
         var containers: [PackingContainer] = []
         var seen = Set<PersistentIdentifier>()
-        for item in packing {
+        for item in packing ?? [] {
             guard let container = item.container, !seen.contains(container.persistentModelID)
             else { continue }
             seen.insert(container.persistentModelID)
@@ -107,11 +108,11 @@ final class Trip {
         var groups = containers.map { container in
             PackingGroup(
                 container: container,
-                items: packing.filter {
+                items: (packing ?? []).filter {
                     $0.container?.persistentModelID == container.persistentModelID
                 }.sorted { $0.order < $1.order })
         }
-        let ungrouped = packing.filter { $0.container == nil }.sorted { $0.order < $1.order }
+        let ungrouped = (packing ?? []).filter { $0.container == nil }.sorted { $0.order < $1.order }
         if !ungrouped.isEmpty { groups.append(PackingGroup(container: nil, items: ungrouped)) }
         return groups
     }
@@ -148,7 +149,7 @@ final class Trip {
             }
         }
 
-        if !packing.isEmpty {
+        if !(packing ?? []).isEmpty {
             lines.append("")
             lines.append("## \(Str.Trip.packing)")
             let groups = packingGroups
@@ -192,8 +193,9 @@ final class ItineraryItem {
     /// empty when calendar sync is off or the stop has no date. See `CalendarSync`.
     var calendarEventID: String = ""
 
+    /// CloudKit requires all relationships to be optional types.
     @Relationship(deleteRule: .cascade, inverse: \StopPlace.stop)
-    var places: [StopPlace] = []
+    var places: [StopPlace]?
 
     init(
         title: String = "", note: String = "", date: Date? = nil, order: Int = 0,
@@ -216,7 +218,7 @@ final class ItineraryItem {
 
     /// The stop's places-to-see in the order they were added.
     var sortedPlaces: [StopPlace] {
-        places.sorted { $0.order < $1.order }
+        (places ?? []).sorted { $0.order < $1.order }
     }
 }
 
@@ -310,8 +312,9 @@ final class PackingContainer {
     /// Per-row token for CloudKit de-duplication, mirroring `Country.dedupID`.
     var dedupID: String = UUID().uuidString
 
+    /// CloudKit requires all relationships to be optional types.
     @Relationship(deleteRule: .nullify, inverse: \PackingItem.container)
-    var items: [PackingItem] = []
+    var items: [PackingItem]?
 
     init(name: String = "", symbolName: String = "bag.fill", sortOrder: Int = 0) {
         self.name = name
@@ -331,8 +334,9 @@ final class PackingTemplate {
     /// Per-row token for CloudKit de-duplication, mirroring `Country.dedupID`.
     var dedupID: String = UUID().uuidString
 
+    /// CloudKit requires all relationships to be optional types.
     @Relationship(deleteRule: .cascade, inverse: \PackingTemplateItem.template)
-    var items: [PackingTemplateItem] = []
+    var items: [PackingTemplateItem]?
 
     init(name: String = "") {
         self.name = name

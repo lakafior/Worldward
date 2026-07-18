@@ -52,7 +52,7 @@ struct CountryRecord: Codable {
         let hasData =
             country.status != .notVisited
             || country.planStatus != .none
-            || !country.visits.isEmpty
+            || !(country.visits ?? []).isEmpty
             || !country.notes.isEmpty
             || country.visitDate != nil
         guard hasData else { return nil }
@@ -62,7 +62,7 @@ struct CountryRecord: Codable {
         self.statusIsImported = country.statusIsImported
         self.notes = country.notes
         self.visitDate = country.visitDate
-        self.visits = country.visits.map(VisitRecord.init)
+        self.visits = (country.visits ?? []).map(VisitRecord.init)
         self.planStatus = country.planStatus
     }
 
@@ -76,7 +76,7 @@ struct CountryRecord: Codable {
         country.visitDate = visitDate
         country.planStatus = planStatus ?? .none
 
-        for visit in country.visits {
+        for visit in country.visits ?? [] {
             context.delete(visit)
         }
         for record in visits {
@@ -130,7 +130,7 @@ nonisolated struct TripRecord: Codable {
         self.endDate = trip.endDate
         self.notes = trip.notes
         self.itinerary = trip.sortedStops.map(ItineraryItemRecord.init)
-        self.packing = trip.packing.map(PackingItemRecord.init)
+        self.packing = (trip.packing ?? []).map(PackingItemRecord.init)
         self.attachments = trip.sortedAttachments.map(AttachmentRecord.init)
         self.dedupID = trip.dedupID
     }
@@ -312,9 +312,9 @@ enum TravelDataTransfer {
         trip.endDate = record.endDate
         trip.notes = record.notes
 
-        for stop in trip.itinerary { context.delete(stop) }
-        for item in trip.packing { context.delete(item) }
-        for attachment in trip.attachments { context.delete(attachment) }
+        for stop in trip.itinerary ?? [] { context.delete(stop) }
+        for item in trip.packing ?? [] { context.delete(item) }
+        for attachment in trip.attachments ?? [] { context.delete(attachment) }
         trip.itinerary = []
         trip.packing = []
         trip.attachments = []
@@ -324,14 +324,15 @@ enum TravelDataTransfer {
                 title: stop.title, note: stop.note, date: stop.date, order: stop.order,
                 country: stop.countryID.flatMap { countriesByID[$0] }, trip: trip)
             context.insert(item)
-            trip.itinerary.append(item)
+            if trip.itinerary == nil { trip.itinerary = [] }
+            trip.itinerary?.append(item)
             for record in (stop.places ?? []).sorted(by: { $0.order < $1.order }) {
                 let place = StopPlace(
                     title: record.title, detail: record.detail,
                     latitude: record.latitude, longitude: record.longitude,
                     order: record.order, stop: item)
                 context.insert(place)
-                item.places.append(place)
+                item.places?.append(place)
             }
         }
         for (index, pack) in record.packing.enumerated() {
@@ -342,13 +343,15 @@ enum TravelDataTransfer {
                 trip: trip,
                 container: container(pack.containerName))
             context.insert(item)
-            trip.packing.append(item)
+            if trip.packing == nil { trip.packing = [] }
+            trip.packing?.append(item)
         }
         for record in (record.attachments ?? []).sorted(by: { $0.order < $1.order }) {
             let attachment = TripAttachment(
                 filename: record.filename, data: record.data, order: record.order, trip: trip)
             context.insert(attachment)
-            trip.attachments.append(attachment)
+            if trip.attachments == nil { trip.attachments = [] }
+            trip.attachments?.append(attachment)
         }
     }
 }

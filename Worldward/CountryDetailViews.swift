@@ -19,7 +19,7 @@ struct CountryDetailView: View {
         self.country = country
         // Default to one day after the most recent visit, so adding
         // consecutive visits requires less date-picking.
-        let lastDate = country.visits.max { $0.date < $1.date }?.date
+        let lastDate = (country.visits ?? []).max { $0.date < $1.date }?.date
         _newVisitDate = State(
             initialValue: lastDate.map {
                 Calendar.current.date(byAdding: .day, value: 1, to: $0) ?? Date()
@@ -94,14 +94,14 @@ struct CountryDetailView: View {
 
             if country.status.isVisited {
                 Section("Visits") {
-                    if country.visits.isEmpty {
+                    if (country.visits ?? []).isEmpty {
                         ContentUnavailableView(
                             "No visits yet",
                             systemImage: "calendar",
                             description: Text("Add your first visit to this country")
                         )
                     } else {
-                        ForEach(country.visits.sorted { $0.date > $1.date }) { visit in
+                        ForEach((country.visits ?? []).sorted { $0.date > $1.date }) { visit in
                             VisitRow(visit: visit) { delete(visit) }
                         }
                         .onDelete(perform: deleteVisits)
@@ -152,7 +152,8 @@ struct CountryDetailView: View {
 
     private func addVisit() {
         let visit = Visit(date: newVisitDate, notes: newVisitNotes, country: country)
-        country.visits.append(visit)
+        if country.visits == nil { country.visits = [] }
+        country.visits?.append(visit)
 
         showingAddVisit = false
         newVisitDate = Date()
@@ -166,7 +167,7 @@ struct CountryDetailView: View {
 
     /// Delete via swipe, matching the same date-sorted order shown in the list.
     private func deleteVisits(at offsets: IndexSet) {
-        let sorted = country.visits.sorted { $0.date > $1.date }
+        let sorted = (country.visits ?? []).sorted { $0.date > $1.date }
         for index in offsets {
             modelContext.delete(sorted[index])
         }

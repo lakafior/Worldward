@@ -116,7 +116,7 @@ struct TravelStats {
             buckets[country.continent] = bucket
 
             // Gather every dated visit, including the legacy single `visitDate`.
-            var dates = country.visits.map(\.date)
+            var dates = (country.visits ?? []).map(\.date)
             if let legacy = country.visitDate { dates.append(legacy) }
 
             for date in dates {
@@ -128,7 +128,7 @@ struct TravelStats {
                 if lastDate == nil || date > lastDate! { lastDate = date }
             }
 
-            let count = max(country.visits.count, country.visitDate != nil ? 1 : 0)
+            let count = max((country.visits ?? []).count, country.visitDate != nil ? 1 : 0)
             if status.isVisited, count > 0, count > (best?.count ?? 0) {
                 best = (country.name, country.flagEmoji, count)
             }

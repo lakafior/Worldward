@@ -416,6 +416,11 @@ struct SettingsView: View {
                             ? "iCloud sync is active on this device."
                             : "Sync is not active yet. Relaunch Worldward to apply — if it stays off, check that you're signed in to iCloud on this device."
                     )
+                    if let errorDesc = Worldward.cloudKitErrorDescription {
+                        Text(errorDesc)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 } icon: {
                     Image(systemName: iCloudSyncActive ? "checkmark.icloud" : "exclamationmark.icloud")
                         .foregroundStyle(iCloudSyncActive ? Color.green : Color.orange)

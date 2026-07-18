@@ -157,7 +157,8 @@ struct SuggestionsView: View {
         for (index, country) in countries.enumerated() {
             let stop = ItineraryItem(order: index, country: country, trip: trip)
             modelContext.insert(stop)
-            trip.itinerary.append(stop)
+            if trip.itinerary == nil { trip.itinerary = [] }
+            trip.itinerary?.append(stop)
             if country.planStatus == .none { country.planStatus = .planning }
         }
         editingTrip = trip

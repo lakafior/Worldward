@@ -344,7 +344,7 @@ enum CalendarSync {
     private static func clearIDs(of trip: Trip) {
         trip.calendarEventID = ""
         trip.calendarKnownIDs = ""
-        for stop in trip.itinerary { stop.calendarEventID = "" }
+        for stop in trip.itinerary ?? [] { stop.calendarEventID = "" }
     }
 
     private static func knownIDs(of trip: Trip) -> Set<String> {

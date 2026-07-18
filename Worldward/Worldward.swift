@@ -21,6 +21,10 @@ struct Worldward: App {
     /// effect on the next launch.
     static let syncEnabledKey = "iCloudSyncEnabled"
 
+    /// Set when CloudKit fails to initialize; surfaced in Settings so the user
+    /// can see the actual reason instead of a generic message.
+    static var cloudKitErrorDescription: String?
+
     static let sharedModelContainer: ModelContainer = {
         LaunchClock.mark("model container: creating")
         let schema = Schema([
@@ -48,6 +52,7 @@ struct Worldward: App {
                 // or the store/account isn't ready. Fall through to the local
                 // configuration so launch always succeeds with data intact.
                 // `SettingsView.syncSection` surfaces the inactive state.
+                cloudKitErrorDescription = String(describing: error)
                 print("CloudKit unavailable, using local store: \(error)")
             }
         }

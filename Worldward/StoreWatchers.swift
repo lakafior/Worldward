@@ -66,7 +66,7 @@ struct StoreWatchers: View {
             hasher.combine(trip.startDate)
             hasher.combine(trip.endDate)
             hasher.combine(trip.flags)
-            for item in trip.packing {
+            for item in trip.packing ?? [] {
                 hasher.combine(item.dedupID)
                 hasher.combine(item.title)
                 hasher.combine(item.isPacked)
@@ -75,13 +75,13 @@ struct StoreWatchers: View {
             }
             // Itinerary edits must change the key too: calendar sync mirrors
             // stops (title, date, note, places) to events.
-            for stop in trip.itinerary {
+            for stop in trip.itinerary ?? [] {
                 hasher.combine(stop.title)
                 hasher.combine(stop.note)
                 hasher.combine(stop.date)
                 hasher.combine(stop.order)
                 hasher.combine(stop.country?.id)
-                for place in stop.places {
+                for place in stop.places ?? [] {
                     hasher.combine(place.title)
                     hasher.combine(place.latitude)
                     hasher.combine(place.longitude)

@@ -60,7 +60,7 @@ private struct TemplateRow: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(template.name.isEmpty ? "Untitled" : template.name)
                 .font(.headline)
-            Text("^[\(template.items.count) item](inflect: true)")
+            Text("^[\(template.items?.count ?? 0) item](inflect: true)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -76,7 +76,7 @@ private struct TemplateDetailView: View {
     @State private var newItemTitle = ""
 
     private var orderedItems: [PackingTemplateItem] {
-        template.items.sorted { $0.order < $1.order }
+        template.items?.sorted { $0.order < $1.order } ?? []
     }
 
     var body: some View {
@@ -86,7 +86,7 @@ private struct TemplateDetailView: View {
             }
 
             Section("Items") {
-                if template.items.isEmpty {
+                if (template.items ?? []).isEmpty {
                     Text("No items").foregroundStyle(.secondary)
                 } else {
                     ForEach(orderedItems) { item in
@@ -112,10 +112,11 @@ private struct TemplateDetailView: View {
     private func addItem() {
         let title = newItemTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
-        let order = (template.items.map(\.order).max() ?? -1) + 1
+        let order = ((template.items ?? []).map(\.order).max() ?? -1) + 1
         let item = PackingTemplateItem(title: title, order: order, template: template)
         modelContext.insert(item)
-        template.items.append(item)
+        if template.items == nil { template.items = [] }
+        template.items?.append(item)
         newItemTitle = ""
     }
 

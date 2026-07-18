@@ -548,7 +548,7 @@ class PhotoImporter {
     /// The most recent imported visit date across all countries, for "Add new only".
     private func newestImportedDate() -> Date? {
         allCountries
-            .flatMap { $0.visits }
+            .flatMap { $0.visits ?? [] }
             .filter { $0.isImported }
             .map { $0.date }
             .max()
@@ -609,8 +609,8 @@ class PhotoImporter {
             for country in allCountries {
                 // Key off the imported visits too (not just the flag) so statuses
                 // imported by older builds, before the flag existed, also reset.
-                let hadImportedVisits = country.visits.contains { $0.isImported }
-                for visit in country.visits where visit.isImported {
+                let hadImportedVisits = (country.visits ?? []).contains { $0.isImported }
+                for visit in (country.visits ?? []) where visit.isImported {
                     modelContext.delete(visit)
                 }
                 if country.statusIsImported || hadImportedVisits {
@@ -658,7 +658,7 @@ class PhotoImporter {
             let note = noteText(for: trip)
 
             // Fill-blanks / add-new skip a trip whose start day already exists.
-            let existing = country.visits.first {
+            let existing = (country.visits ?? []).first {
                 calendar.isDate($0.date, inSameDayAs: trip.startDate)
             }
 
@@ -674,7 +674,8 @@ class PhotoImporter {
                 date: trip.startDate, notes: note, country: country, isImported: true)
             visit.photoIdentifiers = trip.photoIdentifiers
             modelContext.insert(visit)
-            country.visits.append(visit)
+            if country.visits == nil { country.visits = [] }
+            country.visits?.append(visit)
         }
 
         // Only ever raise the status, so a manual `living`/`lived` is preserved.

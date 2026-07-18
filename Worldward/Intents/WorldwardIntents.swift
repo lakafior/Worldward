@@ -101,7 +101,7 @@ func refreshWidgetSnapshot(countries: [Country], trips: [Trip]) {
     // just a set-insert per item.
     var seenItemIDs = Set<String>()
     for trip in trips {
-        for item in trip.packing where !seenItemIDs.insert(item.dedupID).inserted {
+        for item in trip.packing ?? [] where !seenItemIDs.insert(item.dedupID).inserted {
             item.dedupID = UUID().uuidString
         }
     }
@@ -110,7 +110,7 @@ func refreshWidgetSnapshot(countries: [Country], trips: [Trip]) {
     // soonest upcoming one, that actually has a packing list. Sorting by start
     // date gives that for free — a trip already underway started earliest.
     let packingTrip = trips
-        .filter { $0.isUpcoming(asOf: now) && !$0.packing.isEmpty }
+        .filter { $0.isUpcoming(asOf: now) && !($0.packing ?? []).isEmpty }
         .sorted { $0.startDate < $1.startDate }
         .first
     let packingItems = (packingTrip?.packingGroups ?? []).flatMap(\.items).map {

@@ -346,7 +346,7 @@ private struct TimelineSection: View {
     /// All visits across every country, sorted newest-first.
     private var allVisits: [Visit] {
         countries
-            .flatMap(\.visits)
+            .flatMap { $0.visits ?? [] }
             .sorted { $0.date > $1.date }
     }
 
