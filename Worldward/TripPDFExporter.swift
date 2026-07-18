@@ -160,7 +160,10 @@ nonisolated enum TripPDFRenderer {
         return result
     }
 
-    private static func headingText(_ line: String) -> String? {
+    /// Internal (not private): `TripNotesPreview` in `TripViews.swift` reuses
+    /// these two classifiers so the in-app notes rendering and the PDF agree on
+    /// what counts as a heading or bullet.
+    static func headingText(_ line: String) -> String? {
         if line.hasPrefix("### ") { return String(line.dropFirst(4)) }
         if line.hasPrefix("## ") { return String(line.dropFirst(3)) }
         if line.hasPrefix("# ") { return String(line.dropFirst(2)) }
@@ -172,7 +175,7 @@ nonisolated enum TripPDFRenderer {
         return nil
     }
 
-    private static func bulletText(_ line: String) -> String? {
+    static func bulletText(_ line: String) -> String? {
         if line.hasPrefix("- ") { return String(line.dropFirst(2)) }
         if line.hasPrefix("* ") { return String(line.dropFirst(2)) }
         return nil

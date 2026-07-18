@@ -346,6 +346,11 @@ struct TripDetailView: View {
     @State private var showSaveTemplate = false
     @State private var newTemplateName = ""
     @State private var showPhotoSuggestions = false
+    /// Swaps the Notes row between the read-only Markdown preview and the raw
+    /// `TextField`. Tapping the preview flips it on; the field losing focus
+    /// flips it back off (see `notesSection`).
+    @State private var isEditingNotes = false
+    @FocusState private var notesFieldFocused: Bool
     /// Hides the one-shot "Add to Apple Calendar" button while calendar sync is
     /// on — the sync already mirrors the trip, so the button would double-book.
     @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
@@ -735,10 +740,27 @@ struct TripDetailView: View {
         }
     }
 
+    /// Notes often carry Markdown (the assistant's `suggestNotes` writes bold
+    /// country headings and bullet lists), which a bare `TextField` shows as raw
+    /// asterisks and dashes. Since a text field can't render styled text, the
+    /// row swaps between two modes: a read-only rendered preview normally, and
+    /// the raw editor after a tap — ended again by the field losing focus.
     private var notesSection: some View {
         Section("Notes") {
-            TextField("Links, confirmations, ideas…", text: $trip.notes, axis: .vertical)
-                .lineLimit(3...8)
+            if trip.notes.isEmpty || isEditingNotes {
+                TextField("Links, confirmations, ideas…", text: $trip.notes, axis: .vertical)
+                    .lineLimit(3...8)
+                    .focused($notesFieldFocused)
+                    // Only grabs focus when arriving via a tap on the preview —
+                    // not when the section first shows the empty-notes field,
+                    // where a keyboard popping up unasked would be hostile.
+                    .onAppear { if isEditingNotes { notesFieldFocused = true } }
+                    .onChange(of: notesFieldFocused) { isEditingNotes = notesFieldFocused }
+            } else {
+                TripNotesPreview(markdown: trip.notes)
+                    .contentShape(.rect)
+                    .onTapGesture { isEditingNotes = true }
+            }
 
             if canUseAssistant {
                 fillButton(field: .notes, action: fillNotes)
@@ -1003,6 +1025,63 @@ struct TripDetailView: View {
         } else {
             trip.notes += "\n\n" + text
         }
+    }
+}
+
+/// Read-only rendering of the minimal Markdown subset trip notes use — the same
+/// subset `TripPDFRenderer.notesContent` draws in the PDF export: `#`–`###`
+/// headings, a line that's entirely `**bold**` (how `suggestNotes` marks its
+/// country headings), `-`/`*` bullets, and inline `**bold**`/`*italic*` spans.
+/// Line classification is shared with the PDF renderer so the two never
+/// disagree; anything unrecognised stays plain text.
+private struct TripNotesPreview: View {
+    let markdown: String
+
+    private enum Line {
+        case heading(String)
+        case bullet(String)
+        case body(String)
+    }
+
+    private var lines: [Line] {
+        markdown.components(separatedBy: .newlines).compactMap { raw in
+            let trimmed = raw.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return nil }
+            if let heading = TripPDFRenderer.headingText(trimmed) { return .heading(heading) }
+            if let bullet = TripPDFRenderer.bulletText(trimmed) { return .bullet(bullet) }
+            return .body(trimmed)
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
+                switch line {
+                case .heading(let text):
+                    Text(inline(text))
+                        .font(.headline)
+                        .padding(.top, index == 0 ? 0 : 6)
+                case .bullet(let text):
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(verbatim: "•")
+                        Text(inline(text))
+                    }
+                case .body(let text):
+                    Text(inline(text))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
+    }
+
+    /// Styles inline spans (`**bold**`, `*italic*`, `` `code` ``) within one
+    /// line; on a parse error the raw text shows as-is.
+    private func inline(_ text: String) -> AttributedString {
+        (try? AttributedString(
+            markdown: text,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+            ?? AttributedString(text)
     }
 }
 
