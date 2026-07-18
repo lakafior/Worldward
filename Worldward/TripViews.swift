@@ -523,24 +523,29 @@ struct TripDetailView: View {
         }
     }
 
-    /// Markdown + PDF export, split out of the trip-info `Section` — folding
-    /// them in there pushed that `@ViewBuilder` closure's type-checking past a
-    /// reasonable time budget on iOS.
+    /// Markdown + PDF export, folded into a single Share row so the trip-info
+    /// section doesn't spend two rows on export. Split out of that `Section` —
+    /// folding it in there pushed the `@ViewBuilder` closure's type-checking
+    /// past a reasonable time budget on iOS.
     @ViewBuilder private var exportButtons: some View {
-        ShareLink(
-            item: ExportableTrip(trip: trip),
-            preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
-        ) {
-            Label("Share / Export (Markdown)", systemImage: "square.and.arrow.up")
-        }
-        // The share picker only lists a couple of generic services (Shortcuts,
-        // AirDrop) for arbitrary PDF data, so this opens the rendered file
-        // straight in the platform's own viewer instead: Preview.app on macOS,
-        // an in-place Quick Look preview on iOS.
-        Button {
-            exportPDFAndOpen()
+        Menu {
+            ShareLink(
+                item: ExportableTrip(trip: trip),
+                preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
+            ) {
+                Label("Share / Export (Markdown)", systemImage: "doc.plaintext")
+            }
+            // The share picker only lists a couple of generic services (Shortcuts,
+            // AirDrop) for arbitrary PDF data, so this opens the rendered file
+            // straight in the platform's own viewer instead: Preview.app on macOS,
+            // an in-place Quick Look preview on iOS.
+            Button {
+                exportPDFAndOpen()
+            } label: {
+                Label("Export PDF", systemImage: "doc.richtext")
+            }
         } label: {
-            Label("Export PDF", systemImage: "doc.richtext")
+            Label("Share", systemImage: "square.and.arrow.up")
         }
     }
 
@@ -634,7 +639,9 @@ struct TripDetailView: View {
         } label: {
             HStack {
                 Label {
-                    Text("\(group.container?.name ?? "Other") · \(packed)/\(group.items.count)")
+                    Text(
+                        "\(group.container?.name ?? Str.Trip.packingOther) · \(packed)/\(group.items.count)"
+                    )
                 } icon: {
                     Image(systemName: group.container?.symbolName ?? "tray")
                 }

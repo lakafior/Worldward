@@ -36,7 +36,7 @@ nonisolated enum TripPDFRenderer {
     private static let brandColor = CGColor(srgbRed: 0.161, green: 0.350, blue: 0.832, alpha: 1)
 
     static func render(trip: Trip) -> Data {
-        let name = trip.title.isEmpty ? "Untitled Trip" : trip.title
+        let name = trip.title.isEmpty ? Str.Trip.untitled : trip.title
         return paginate(content(for: trip), footerTitle: name)
     }
 
@@ -60,7 +60,7 @@ nonisolated enum TripPDFRenderer {
     private static func content(for trip: Trip) -> NSAttributedString {
         let result = NSMutableAttributedString()
 
-        let name = trip.title.isEmpty ? "Untitled Trip" : trip.title
+        let name = trip.title.isEmpty ? Str.Trip.untitled : trip.title
         result.append(line(name, .title))
 
         let start = trip.startDate.formatted(date: .abbreviated, time: .omitted)
@@ -73,7 +73,7 @@ nonisolated enum TripPDFRenderer {
 
         let stops = trip.sortedStops
         if !stops.isEmpty {
-            result.append(line("Itinerary", .sectionHeader, rule: .separator))
+            result.append(line(Str.Trip.itineraryLabel, .sectionHeader, rule: .separator))
             for (index, stop) in stops.enumerated() {
                 let flag = stop.country?.flagEmoji ?? "📍"
                 var stopLine = "\(index + 1). \(flag)  \(stop.displayTitle)"
@@ -89,12 +89,12 @@ nonisolated enum TripPDFRenderer {
         }
 
         if !trip.packing.isEmpty {
-            result.append(line("Packing", .sectionHeader, rule: .separator))
+            result.append(line(Str.Trip.packing, .sectionHeader, rule: .separator))
             let groups = trip.packingGroups
             let useHeadings = groups.contains { $0.container != nil }
             for group in groups {
                 if useHeadings {
-                    result.append(line(group.container?.name ?? "Other", .subHeader))
+                    result.append(line(group.container?.name ?? Str.Trip.packingOther, .subHeader))
                 }
                 for item in group.items {
                     result.append(checklistLine(item))
@@ -103,7 +103,7 @@ nonisolated enum TripPDFRenderer {
         }
 
         if !trip.notes.isEmpty {
-            result.append(line("Notes", .sectionHeader, rule: .separator))
+            result.append(line(Str.Trip.notesLabel, .sectionHeader, rule: .separator))
             result.append(notesContent(trip.notes))
         }
 

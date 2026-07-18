@@ -20,7 +20,10 @@ import Foundation
 // Translators: this file lists every string with its context. Use it
 // as a reference when filling in the `Localizable.xcstrings` catalog.
 
-enum Str {
+/// `nonisolated` so the exporters (`Trip.markdownSummary`, `TripPDFRenderer`),
+/// which run outside the main actor, can reuse these strings. Safe: every
+/// member is an immutable `String`.
+nonisolated enum Str {
     // MARK: - Tab bar
     enum Tab {
         static let map = String(localized: "Map", comment: "Tab bar: world map")
@@ -103,6 +106,12 @@ enum Str {
         static let itineraryLabel = String(
             localized: "Itinerary", comment: "Section header for trip itinerary")
         static let notesLabel = String(localized: "Notes", comment: "Section header for trip notes")
+        static let untitled = String(
+            localized: "Untitled Trip",
+            comment: "Fallback trip title in Markdown/PDF exports when the trip has no name")
+        static let packingOther = String(
+            localized: "Other",
+            comment: "Packing group heading for items not filed into any bag/container")
         static let empty = String(
             localized: "No trips yet", comment: "Empty state when no trips exist")
     }

@@ -111,7 +111,7 @@ final class Trip {
     /// A shareable Markdown summary of the trip — for the system share sheet
     /// (Apple Notes, Messages, Mail) or pasting into any Markdown editor.
     var markdownSummary: String {
-        let name = title.isEmpty ? "Untitled Trip" : title
+        let name = title.isEmpty ? Str.Trip.untitled : title
         let start = startDate.formatted(date: .abbreviated, time: .omitted)
         let end = endDate.formatted(date: .abbreviated, time: .omitted)
         let dateLine = start == end ? start : "\(start) – \(end)"
@@ -125,7 +125,7 @@ final class Trip {
         let stops = sortedStops
         if !stops.isEmpty {
             lines.append("")
-            lines.append("## Itinerary")
+            lines.append("## \(Str.Trip.itineraryLabel)")
             for (index, stop) in stops.enumerated() {
                 let flag = stop.country?.flagEmoji ?? "📍"
                 var line = "\(index + 1). \(flag) \(stop.displayTitle)"
@@ -142,7 +142,7 @@ final class Trip {
 
         if !packing.isEmpty {
             lines.append("")
-            lines.append("## Packing")
+            lines.append("## \(Str.Trip.packing)")
             let groups = packingGroups
             // Only break the list into sub-headings once items are actually
             // filed into containers; a single ungrouped list stays flat.
@@ -150,7 +150,7 @@ final class Trip {
             for group in groups {
                 if useHeadings {
                     lines.append("")
-                    lines.append("### \(group.container?.name ?? "Other")")
+                    lines.append("### \(group.container?.name ?? Str.Trip.packingOther)")
                 }
                 for item in group.items {
                     let count = item.quantity > 1 ? " ×\(item.quantity)" : ""
@@ -161,7 +161,7 @@ final class Trip {
 
         if !notes.isEmpty {
             lines.append("")
-            lines.append("## Notes")
+            lines.append("## \(Str.Trip.notesLabel)")
             lines.append(notes)
         }
 
