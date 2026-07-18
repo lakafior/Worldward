@@ -3784,6 +3784,174 @@
             "state" : "new",
             "value" : "%1$lld photo%2$@ from this period were taken outside the trip's countries and skipped."
           }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld снимка%2$@ от този период е направена извън страните от пътуването и е пропусната."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fotografie%2$@ z tohoto období byla pořízena mimo země cesty a přeskočena."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ fra denne periode blev taget uden for rejsens lande og sprunget over."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld Foto%2$@ aus diesem Zeitraum wurde außerhalb der Länder der Reise aufgenommen und übersprungen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld φωτογραφία%2$@ από αυτήν την περίοδο λήφθηκε εκτός των χωρών του ταξιδιού και παραλείφθηκε."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ el tiu ĉi periodo estis prenita ekster la landoj de la vojaĝo kaj preterlasita."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ de este período fue tomada fuera de los países del viaje y se omitió."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ sellest perioodist tehti reisi riikidest väljas ja jäeti vahele."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld valokuva%2$@ tältä ajanjaksolta otettiin matkan maiden ulkopuolella ja ohitettiin."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld photo%2$@ de cette période a été prise en dehors des pays du voyage et ignorée."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld grianghraf%2$@ ón tréimhse seo a tógadh taobh amuigh de thíortha an turais agus scipeáladh é."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fotografija%2$@ iz ovog razdoblja snimljena je izvan zemalja putovanja i preskočena."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fénykép%2$@ ebből az időszakból az utazás országain kívül készült, és kihagyásra került."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ di questo periodo è stata scattata fuori dai paesi del viaggio e saltata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld枚の写真%2$@がこの期間に旅行先の国以外で撮られ、スキップされました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld장의 사진%2$@이(가) 기간 동안 여행 국가 밖에서 촬영되어 스킵되었습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld nuotrauka%2$@ iš šio laikotarpio buvo padaryta už kelionės šalių ribų ir praleista."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ no šī perioda tika uzņemts ārpus ceļojuma valstīm un izlaists."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld ritratt%2$@ minn dan il-perjodu ħa tteħu barra mill-pajjiżi tal-vjaġġ u tqabeż."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ uit deze periode is buiten de landen van de reis genomen en overgeslagen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld zdjęcie%2$@ z tego okresu zostało zrobione poza krajami podróży i pominięte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ deste período foi tirada fora dos países da viagem e ignorada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ deste período foi tirada fora dos países da viagem e ignorada."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fotografie%2$@ din această perioadă a fost făcută în afara țărilor călătoriei și a fost omisă."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fotografia%2$@ z tohto obdobia bola nasnímaná mimo krajín cesty a preskočená."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld fotografija%2$@ iz tega obdobja je bila posneta zunaj držav potovanja in preskočena."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld foto%2$@ från denna period togs utanför resans länder och hoppades över."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld 张照片%2$@在此期间拍摄于旅行国家之外，已跳过。"
+          }
         }
       }
     },
@@ -11328,11 +11496,363 @@
     },
     "Allow full Calendar access for Worldward in Settings → Privacy & Security → Calendars, then turn sync on again." : {
       "comment" : "A message that appears when the user denies access to",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Allow full Calendar access for Worldward in Settings → Privacy & Security → Calendars, then turn sync on again."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешете пълен достъп до Календар за Worldward в Настройки → Поверителност и сигурност → Календари, след което включете отново синхронизирането."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Povolte Worldward úplný přístup ke Kalendáři v Nastavení → Soukromí a zabezpečení → Kalendáře a poté znovu zapněte synchronizaci."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillad fuld Kalenderadgang for Worldward i Indstillinger → Privatliv og sikkerhed → Kalendere og slå derefter synkronisering til igen."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gewähren Sie Worldward vollen Kalenderzugriff in Einstellungen → Datenschutz & Sicherheit → Kalender und schalten Sie die Synchronisierung dann wieder ein."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επιτρέψτε πλήρη πρόσβαση στο Ημερολόγιο για το Worldward στις Ρυθμίσεις → Απόρρητο και ασφάλεια → Ημερολόγια και, στη συνέχεια, ενεργοποιήστε ξανά τον συγχρονισμό."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesu plenan Kalendaran aliron por Worldward en Agordoj → Privateco kaj Sekureco → Kalendaroj, poste reŝaltu la sinkronigon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso completo al Calendario para Worldward en Ajustes → Privacidad y Seguridad → Calendarios, luego vuelve a activar la sincronización."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luba Worldwardile täielik kalendri juurdepääs seadetes Seaded → Privaatsus ja turvalisus → Kalendrid ja lülita seejärel sünkroonimine uuesti sisse."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salli Worldwardille täysi kalenteripääsy Asetukset → Yksityisyys ja suojaus → Kalenterit ja ota sitten synkronointi uudelleen käyttöön."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez l’accès complet au calendrier pour Worldward dans Réglages → Confidentialité et sécurité → Calendriers, puis réactivez la synchronisation."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceadaigh rochtain iomlán ar Fhéilire do Worldward i Socruithe → Príobháideachas & Slándáil → Féilirí, ansin cas ar shioncronú arís."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omogućite Worldwardu potpuni pristup Kalendaru u Postavke → Privatnost i sigurnost → Kalendari, zatim ponovno uključite sinkronizaciju."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Engedélyezze a teljes Naptár hozzáférést a Worldward számára a Beállítások → Adatvédelem és biztonság → Naptárak menüben, majd kapcsolja be újra a szinkronizálást."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti l’accesso completo al Calendario per Worldward in Impostazioni → Privacy e Sicurezza → Calendari, quindi riattiva la sincronizzazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定 → プライバシーとセキュリティ → カレンダーでWorldwardのカレンダーへの完全アクセスを許可し、その後同期を再びオンにしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정 → 개인정보 보호 및 보안 → 캘린더서 Worldward에 대한 완전한 캘린더 액세스를 허용한 다음, 동기화를 다시 켜세요."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leiskite pilną Kalendoriaus prieigą Worldward programoje Nustatymai → Privatumas ir saugumas → Kalendoriai, tada vėl įjunkite sinchronizavimą."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atļojiet pilnu Kalendāra piekļuvi Worldward programmā Iestatījumi → Privātums un drošība → Kalendāri un pēc tam atkal ieslēdziet sinhronizāciju."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ħalli aċċess sħiħ għall-Kalendarju għal Worldward f'Settings → Privatezza u Sigurtà → Kalendarji, imbagħad erġa’ ixgħel is-sinkronizzazzjoni."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sta volledige Agenda-toegang toe voor Worldward in Instellingen → Privacy & Beveiliging → Agenda’s en schakel synchronisatie dan weer in."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwól Worldward na pełny dostęp do Kalendarza w Ustawieniach → Prywatność i bezpieczeństwo → Kalendarze, a następnie włącz ponownie synchronizację."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita o acesso total ao Calendário para o Worldward em Ajustes → Privacidade e Segurança → Calendários e reative a sincronização."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita o acesso total ao Calendário para o Worldward em Definições → Privacidade e Segurança → Calendários e reative a sincronização."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permiteți accesul complet la Calendar pentru Worldward în Setări → Confidențialitate și securitate → Calendare, apoi reactivați sincronizarea."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Povoľte Worldward úplný prístup ku Kalendáru v Nastavenia → Súkromie a zabezpečenie → Kalendáre a potom znova zapnite synchronizáciu."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward omogočite poln dostop do Koledarja v Nastavitve → Zasebnost in varnost → Koledarji in nato znova vklopite sinhronizacijo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillåt full Kalenderåtkomst för Worldward i Inställningar → Integritet och säkerhet → Kalendrar och slå sedan på synkronisering igen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在「设置」→「隐私与安全」→「日历」中允许 Worldward 完全日历访问权，然后重新打开同步。"
+          }
+        }
+      }
     },
     "Allow photo access in Settings to see photos from this trip." : {
       "comment" : "A description of the error shown when the user",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Allow photo access in Settings to see photos from this trip."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешете достъп до снимки в Настройки, за да видите снимки от това пътуване."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Povolte přístup k fotografiím v Nastavení, abyste viděli fotografie z této cesty."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillad fotoadgang i Indstillinger for at se fotos fra denne rejse."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlauben Sie Foto-Zugriff in den Einstellungen, um Fotos dieser Reise zu sehen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επιτρέψτε πρόσβαση στις φωτογραφίες στις Ρυθμίσεις για να δείτε φωτογραφίες από αυτό το ταξίδι."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesu fotaliron en Agordoj por vidi fotojn de tiu ĉi vojaĝo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso a fotos en Ajustes para ver fotos de este viaje."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luba fotode juurdepääs seadetes, et näha selle reisi fotosid."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salli valokuvapääsy Asetuksista nähdäksesi tämän matkan valokuvat."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez l’accès aux photos dans Réglages pour voir les photos de ce voyage."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceadaigh rochtain ar ghrianghraif i Socruithe chun grianghraif ón turas seo a fheiceáil."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omogućite pristup fotografijama u Postavkama za pregled fotografija s ovog putovanja."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Engedélyezze a fénykép hozzáférést a Beállításokban, hogy láthassa az utazás fényképeit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti l’accesso alle foto in Impostazioni per vedere le foto di questo viaggio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定で写真アクセスを許可すると、この旅行の写真を見られます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정에서 사진 액세스를 허용하면 이 여행의 사진을 볼 수 있습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leiskite prieigą prie nuotraukų Nustatymuose, kad pamatytumėte šios kelionės nuotraukas."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atļojiet fotoattēlu piekļuvi Iestatījumos, lai redzētu šī ceļojuma fotoattēlus."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ħalli aċċess għar-ritratti f'Settings biex tara ritratti minn dan il-vjaġġ."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sta fototoegang toe in Instellingen om foto’s van deze reis te zien."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwól na dostęp do zdjęć w Ustawieniach, aby zobaczyć zdjęcia z tej podróży."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita o acesso às fotos nos Ajustes para ver fotos desta viagem."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita o acesso às fotos nas Definições para ver fotos desta viagem."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permiteți accesul la fotografii în Setări pentru a vedea fotografiile din această călătorie."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Povoľte prístup k fotografiám v Nastavenia, aby ste videli fotografie z tejto cesty."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omogočite dostop do fotografij v Nastavitvah, da si ogledate fotografije s tega potovanja."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillåt fotoåtkomst i Inställningar för att se foton från denna resa."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许在「设置」中访问照片，以查看此次旅行的照片。"
+          }
+        }
+      }
     },
     "Allow Reminders access for Worldward in Settings → Privacy & Security → Reminders, then turn sync on again." : {
       "comment" : "Alert message when Reminders permission is denied while enabling sync",
@@ -14208,11 +14728,362 @@
       }
     },
     "Attach to" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Attach to"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прикачи към"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Připojit k"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vedhæft til"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhängen an"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επισύναψη σε"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alkroĉi al"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjuntar a"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manusta"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liitä kohteeseen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attacher à"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceangail le"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priloži"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Csatolás ehhez:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allega a"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添付先"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "첨부할 대상"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pridėti prie"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pievienot"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waħħal ma'"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koppelen aan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dołącz do"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anexar a"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anexar a"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atașați la"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pripojiť k"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pripni k"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bifoga till"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附加到"
+          }
+        }
+      }
     },
     "Attach Trip Photos" : {
       "comment" : "Button title that opens a system-provided photo picker.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Attach Trip Photos"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прикачи снимки от пътуване"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Připojit fotografie cesty"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vedhæft rejsefotos"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisefotos anhängen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επισύναψη φωτογραφιών ταξιδιού"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alkroĉi vojaĝajn fotojn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjuntar fotos del viaje"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manusta reisifotod"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liitä matkakuvat"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attacher les photos du voyage"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceangail Grianghraif an Turais"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priloži fotografije putovanja"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utazási fényképek csatolása"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allega foto del viaggio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旅行の写真を添付"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여행 사진 첨부"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pridėti kelionės nuotraukas"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pievienot ceļojuma fotoattēlus"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waħħal Ritratti tal-Vjaġġ"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisfoto’s koppelen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dołącz zdjęcia podróży"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anexar fotos da viagem"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anexar fotos da viagem"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atașați fotografii de călătorie"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pripojiť fotografie cesty"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pripni fotografije potovanja"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bifoga resefoton"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附加旅行照片"
+          }
+        }
+      }
     },
     "Australia and Oceania" : {
       "comment" : "The name of the \"Australia and Oceania\" continent.",
@@ -16725,7 +17596,183 @@
     },
     "Calendar Access Needed" : {
       "comment" : "A title for an alert that appears when the user denies access to their calendar.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Calendar Access Needed"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Необходим е достъп до календар"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je vyžadován přístup ke kalendáři"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalenderadgang påkrævet"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalenderzugriff erforderlich"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Απαιτείται πρόσβαση στο ημερολόγιο"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalendara aliro necesa"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso al calendario necesario"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalendri juurdepääs vajalik"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalenteripääsy vaaditaan"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès au calendrier requis"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rochtain ar Fhéilire ag Teastáil"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potreban pristup kalendaru"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naptár hozzáférés szükséges"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesso al calendario necessario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カレンダーアクセスが必要"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캘린더 액세스 필요"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Būtina prieiga prie kalendoriaus"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nepieciešama kalendāra piekļuve"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bżonn Aċċess għall-Kalendarju"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agendatoegang vereist"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymagany dostęp do kalendarza"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acesso ao calendário necessário"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acesso ao calendário necessário"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acces la calendar necesar"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vyžaduje sa prístup ku kalendáru"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potreben dostop do koledarja"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalenderåtkomst krävs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要日历访问权"
+          }
+        }
+      }
     },
     "Campground" : {
       "comment" : "Label for a camping-related point of interest.",
@@ -28393,7 +29440,182 @@
       }
     },
     "Deselect All" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Deselect All"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмени избора на всички"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odznačit vše"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fravælg alle"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle abwählen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποεπιλογή όλων"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malmarki ĉiujn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deseleccionar todo"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tühista kõik valikud"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poista kaikkien valinta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout désélectionner"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Díroghnaigh Gach"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odznači sve"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Összes kijelölésének megszüntetése"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deseleziona tutto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて選択解除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모두 선택 해제"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panaikinti visų pasirinkimą"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noņemt atlasi visiem"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neħħar Kollha"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles deselecteren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odznacz wszystko"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desmarcar tudo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desmarcar tudo"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deselectați tot"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odznačiť všetko"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odznači vse"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avmarkera alla"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消全选"
+          }
+        }
+      }
     },
     "Detects your current country and marks it with the chosen travel status." : {
       "comment" : "Description of the intent that marks the user's current location as visited.",
@@ -31274,7 +32496,183 @@
     },
     "Export PDF" : {
       "comment" : "A button that exports a trip as a PDF.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Export PDF"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Експортиране PDF"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportovat PDF"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporter PDF"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF exportieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εξαγωγή PDF"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksporti PDF"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar PDF"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekspordi PDF"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vie PDF"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter en PDF"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easpórtáil PDF"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izvezi PDF"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF exportálása"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta PDF"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDFをエクスポート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF 내보내기"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuoti PDF"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportēt PDF"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta PDF"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporteren als PDF"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eksportuj PDF"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar PDF"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar PDF"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportați PDF"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportovať PDF"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izvozi PDF"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportera PDF"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出 PDF"
+          }
+        }
+      }
     },
     "Export Travel Data…" : {
       "comment" : "Button to export JSON backup",
@@ -32354,7 +33752,183 @@
     },
     "Find photos taken during this trip and attach them to your country visits." : {
       "comment" : "Footer text under the \"Attach Trip Photos\" button in the trip details view.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Find photos taken during this trip and attach them to your country visits."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Намерете снимки, направени по време на това пътуване, и ги прикачете към посещенията на държави."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najděte fotografie pořízené během této cesty a připojte je k vašim návštěvám zemí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find fotos taget under denne rejse og vedhæft dem til dine landebesøg."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finden Sie während dieser Reise aufgenommene Fotos und hängen Sie sie an Ihre Länderbesuche an."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Βρείτε φωτογραφίες που τραβήχηκαν κατά τη διάρκεια αυτού του ταξιδιού και επισυνάψτε τις στις επισκέψεις σας σε χώρες."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trovu fotojn prenitajn dum tiu ĉi vojaĝo kaj alkroĉu ilin al viaj landvizitoj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encuentra fotos tomadas durante este viaje y adjúntalas a tus visitas a países."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leia selle reisi ajal tehtud fotod ja manusta need oma riigikülastuste juurde."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etsi tämän matkan aikana otetut valokuvat ja liitä ne maavierailuihisi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trouvez les photos prises pendant ce voyage et attachez-les à vos visites de pays."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faigh grianghraif a tógadh le linn an turais seo agus ceangail iad le do chuairteanna ar thíortha."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronađite fotografije snimljene tijekom ovog putovanja i priložite ih svojim posjetima zemljama."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keresse meg az utazás során készült fényképeket, és csatolja őket az országlátogatásaihoz."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trova le foto scattate durante questo viaggio e allegale alle tue visite ai paesi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この旅行中に撮られた写真を見つけて、カントリー訪問に添付します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 여행 중에 촬영된 사진을 찾아 국가 방문에 첨부하세요."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raskite šios kelionės metu padarytas nuotraukas ir pridėkite jas prie savo apsilankymų šalyse."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atrodiet šī ceļojuma laikā uzņemtos fotoattēlus un pievienojiet tos savām valstu apmeklējuma reizēm."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sib ritratti meħudin matul dan il-vjaġġ u waħħalhom maż-żjarediet tiegħek tal-pajjiżi."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vind foto’s die tijdens deze reis zijn gemaakt en koppel ze aan je landenbezoeken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Znajdź zdjęcia zrobione podczas tej podróży i dołącz je do wizyt w krajach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontre fotos tiradas durante esta viagem e anexe-as às suas visitas a países."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontre fotos tiradas durante esta viagem e anexe-as às suas visitas a países."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Găsiți fotografiile făcute în timpul acestei călătorii și atașați-le la vizitele voastre în țări."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nájdite fotografie nasnímané počas tejto cesty a pripojte ich k vašim návštevám krajín."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poiščite fotografije, posnete med tem potovanjem, in jih pripnite k svojim obiskom držav."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitta foton tagna under denna resa och bifoga dem till dina landbesök."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查找在此次旅行中拍摄的照片，并将它们附加到您的国家访问记录中。"
+          }
+        }
+      }
     },
     "Find places to see" : {
       "comment" : "A title for a view that shows a list of places to see.",
@@ -45094,7 +46668,182 @@
       }
     },
     "Looking for trip photos…" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Looking for trip photos…"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Търсене на снимки от пътуване…"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hledání fotografií cesty…"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Søger efter rejsefotos…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche nach Reisefotos…"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αναζήτηση φωτογραφιών ταξιδιού…"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serĉante vojaĝajn fotojn…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando fotos del viaje…"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otsin reisifotosid…"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etsitään matkakuvia…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche des photos de voyage…"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ag cuardach grianghraf an turais…"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traženje fotografija putovanja…"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utazási fényképek keresése…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricerca foto del viaggio…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旅行の写真を探しています…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여행 사진 검색 중…"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ieškoma kelionės nuotraukų…"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meklē ceļojuma fotoattēlus…"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qed infittex ritratti tal-vjaġġ…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisfoto’s zoeken…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szukanie zdjęć podróży…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurando fotos da viagem…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A procurar fotos da viagem…"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se caută fotografii de călătorie…"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hľadajú sa fotografie cesty…"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iščem fotografije potovanja…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Söker efter resefoton…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在寻找旅行照片…"
+          }
+        }
+      }
     },
     "Loyal Visitor" : {
       "localizations" : {
@@ -49942,7 +51691,183 @@
     },
     "Mirrors your trips to a dedicated “Worldward” calendar: an event spanning each trip plus one per dated stop — with the map and weather shown where a stop has a place. Kept up to date as you edit the itinerary. Needs full calendar access to update its own events; it never touches your other calendars. Turning this off removes the Worldward calendar; your trips always stay in Worldward." : {
       "comment" : "The body of a warning alert that appears when the user",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mirrors your trips to a dedicated “Worldward” calendar: an event spanning each trip plus one per dated stop — with the map and weather shown where a stop has a place. Kept up to date as you edit the itinerary. Needs full calendar access to update its own events; it never touches your other calendars. Turning this off removes the Worldward calendar; your trips always stay in Worldward."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отразява пътуванията ви в специален календар „Worldward“: събитие за всяко пътуване плюс едно за датирана спирка — с карта и време, показани там, където спирката има място. Поддържа се актуален, докато редактирате маршрута. Изисква пълен достъп до календара, за да актуализира собствените си събития; никога не засяга другите ви календари. Изключването премахва календара Worldward; пътуванията ви винаги остават в Worldward."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrcadlí vaše cesty do vyhrazeného kalendáře „Worldward“: událost zahrnující každou cestu plus jednu na datovanou zastávku — s mapou a počasím zobrazeným tam, kde má zastávka místo. Udržuje se aktuální při úpravě itineráře. Vyžaduje úplný přístup ke kalendáři pro aktualizaci vlastních událostí; nikdy nezasahuje do vašich ostatních kalendářů. Vypnutím odeberete kalendář Worldward; vaše cesty zůstanou vždy ve Worldward."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spejler dine rejser til en dedikeret »Worldward«-kalender: en begivenhed for hver rejse plus en per dateret stop — med kort og vejr vist, hvor et stop har et sted. Holdes opdateret, når du redigerer rejseplanen. Kræver fuld kalenderadgang for at opdatere sine egne begivenheder; den rører aldrig dine andre kalendere. Slår du dette fra, fjernes Worldward-kalenderen; dine rejser forbliver altid i Worldward."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spiegelt Ihre Reisen in einen dedizierten „Worldward“-Kalender: ein Ereignis pro Reise plus eines pro datiertem Stopp — mit Karte und Wetter, wo ein Stopp einen Ort hat. Wird bei Bearbeitung des Reiseplans aktualisiert. Benötigt vollen Kalenderzugriff, um eigene Ereignisse zu aktualisieren; andere Kalender werden nicht berührt. Deaktivieren entfernt den Worldward-Kalender; Ihre Reisen bleiben stets in Worldward."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντανακλά τα ταξίδια σας σε ένα αποκλειστικό ημερολόγιο «Worldward»: ένα συμβάν που καλύπτει κάθε ταξίδι συν ένα ανά χρονολογημένη στάση — με τον χάρτη και τον καιρό να εμφανίζονται όπου μια στάση έχει μια τοποθεσία. Παραμένει ενημερωμένο καθώς επεξεργάζεστε το δρομολόγιο. Απαιτεί πλήρη πρόσβαση στο ημερολόγιο για να ενημερώνει τα δικά του συμβάντα. Η απενεργοποίηση αυτού καταργεί το ημερολόγιο Worldward· τα ταξίδια σας παραμένουν πάντα στο Worldward."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spegulas viajn vojaĝojn en dediĉitan kalendaron “Worldward”: evento ampleksanta ĉiun vojaĝon plus unu po datigita halto — kun la mapo kaj vetero montritaj kie halto havas lokon. Konservita aktuala dum vi redaktas la itineron. Bezonas plenan kalendaran aliron por đsdatigi siajn proprajn eventojn; ĝi neniam tuŝas viajn aliajn kalendarojn. Malŝalto de tio forigas la Worldward-kalendaron; viaj vojaĝoj ĉiam restas en Worldward."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refleja tus viajes en un calendario «Worldward» dedicado: un evento que abarca cada viaje más uno por parada con fecha — con el mapa y el clima mostrados donde una parada tiene un lugar. Se mantiene actualizado al editar el itinerario. Necesita acceso completo al calendario para actualizar sus propios eventos; nunca toca tus otros calendarios. Desactivar esto elimina el calendario Worldward; tus viajes siempre permanecen en Worldward."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peegeldab teie reise spetsiaalsesse „Worldward“-kalendrisse: sündmus iga reisi kohta pluss üks iga kuupäevastatud peatuse kohta — kaardi ja ilmaga näidatud seal, kus peatusel on asukoht. Hoitakse ajakohasena reisimarsruudi muutmisel. Vajab oma sündmuste uuendamiseks täielikku kalendri juurdepääsu; see ei puutu kunagi teistesse kalendritesse. Selle väljalülitamine eemaldab Worldward-kalendri; teie reisid jäävad alati Worldwardi."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peilaa matkasi omaan ”Worldward“-kalenteriin: tapahtuma jokaiselle matkalle plus yksi per päivätty pysähdys — kartan ja sään näyttäminen siellä, missä pysähdyksellä on paikka. Pidetään ajan tasalla reittisuunnitelmaa muokatessasi. Vaatii täyden kalenteripääsyn päivittääkseen omia tapahtumiaan; se ei koske muihin kalentereihisi. Tämän poistaminen käytöstä poistaa Worldward-kalenterin; matkasi säilyvät aina Worldwardissa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproduit vos voyages dans un calendrier « Worldward » dédié : un événement couvrant chaque voyage plus un par arrêt daté — avec la carte et la météo affichées quand un arrêt a un lieu. Tenue à jour lors de vos modifications d’itinéraire. Nécessite un accès complet au calendrier pour mettre à jour ses propres événements ; il ne touche jamais vos autres calendriers. Désactiver cette option supprime le calendrier Worldward ; vos voyages restent toujours dans Worldward."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scáthánaíonn do thurais go féilire tiomnaithe “Worldward”: ócáid a chuimsíonn gach turas móide ceann in aghaidh an stad daráta — leis an mapa agus an aimsir ar taispeáint áit a bhfuil áit ag stad. Coinnítear cothrom le dáta é agus tú ag eagarthóireacht an chláir turais. Teastaíonn rochtain iomlán ar fhéilire chun a ócáidí féin a nuashonrú; ní bhaineann sé riamh le do fhéilirí eile. Má mhúchtar é seo, baintear féilire Worldward; fanann do thurais i Worldward i gcónaí."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrcali vaša putovanja u namjenski kalendar „Worldward“: događaj koji obuhvaća svako putovanje plus jedan po datiranom zaustavljanju — s kartom i vremenom prikazanim tamo gdje zaustavljanje ima mjesto. Održava se ažuriranim dok uređujete plan puta. Zahtijeva potpuni pristup kalendaru za ažuriranje vlastitih događaja; nikad ne dira vaše ostale kalendare. Isključivanje ovoga uklanja Worldward kalendar; vaša putovanja uvijek ostaju u Worldwardu."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tükrözi az utazásait egy dedikált „Worldward” naptárba: egy esemény minden utazáshoz, plusz egy minden dátumozott megállóhoz — a térképpel és időjárással ott, ahol a megállónak helye van. Naprakész marad az útiterv szerkesztésekor. Teljes naptár hozzáférést igényel a saját eseményeinek frissítéséhez; soha nem nyúl a többi naptárához. A kikapcsolás eltávolítja a Worldward naptárat; utazásai mindig a Worldwardban maradnak."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rispecchia i tuoi viaggi in un calendario «Worldward» dedicato: un evento che copre ogni viaggio più uno per tappa datata — con mappa e meteo mostrati dove una tappa ha un luogo. Mantenuto aggiornato mentre modifichi l’itinerario. Necessita dell’accesso completo al calendario per aggiornare i propri eventi; non tocca mai gli altri calendari. Disattivare rimuove il calendario Worldward; i tuoi viaggi restano sempre in Worldward."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "専用の“Worldward”カレンダーに旅行を反映します：各旅行をかきむイベントと、日付のあるストップごとに１つのイベント — ストップに場所がある場合は地図と天気が表示されます。行程を編集すると自動的に更新されます。自分のイベントを更新するには完全なカレンダーアクセスが必要ですが、他のカレンダーに何ら影響しません。これをオフにするとWorldwardカレンダーが削除されますが、旅行はいつまでもWorldwardに残ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여행을 전용 “Worldward” 캘린더에 미러링합니다: 각 여행을 포굴하는 이벤트 플러 날짜가 있는 머무름마다 하나의 이벤트 — 머무름에 장소가 있는 경우 지도와 날씨가 표시됩니다. 일정을 편집하면 자동으로 업데이트됩니다. 자체 이벤트를 업데이트하려면 완전한 캘린더 액세스가 필요하며, 다른 캘린더에는 영향을 미치지 않습니다. 이 기능을 끄면 Worldward 캘린더가 제거되지만, 여행은 언제나 Worldward에 남아 있습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atspindi jūsų keliones skirtame „Worldward“ kalendoriuje: įvykis, apimantis kiekvieną kelionę, plius vienas už datuotą stotelę — su žemėlapiu ir orais rodomais ten, kur stotelė turi vietą. Atnaujinamas redaguojant maršrutą. Reikalauja pilnos kalendoriaus prieigos, kad atnaujintų savo įvykius; jis niekada nenaudoja jūsų kitų kalendorių. Išjungus tai, pašalinamas Worldward kalendorius; jūsų kelionės visada lieka Worldward."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atspoguļo jūsu ceļojumus veltītā „Worldward“ kalendārā: notikums, kas aptver katru ceļojumu, plus viens par datumu apstājvietu — ar karti un laikapstākļiem, kas parādīti, ja apstājvietai ir vieta. Tiek atjaunināts, kad rediģējat maršrutu. Nepieciešama pilna kalendāra piekļuve, lai atjauninātu savus notikumus; tas nekad neaizskar jūsu citus kalendārus. Izslēdzot to, tiek noņemts Worldward kalendārs; jūsu ceļojumi vienmēr paliek Worldward."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jirrifletti l-vjaġġi tiegħek f'kalendarju dedikat “Worldward”: avveniment li jkopri kull vjaġġ plus wieħed kull waqfa datata — bil-mappa u t-temp murija fejn waqfa għandha post. Jinżamm aġġornat hekk kif teditja l-itinerarju. Jeħtieġ aċċess sħiħ għall-kalendarju biex jaġġorna l-avvenimenti tiegħu stess; qatt ma jmiss il-kalendarji l-oħra tiegħek. It-tifi ta' dan ineħħi l-kalendarju Worldward; il-vjaġġi tiegħek dejjem jibqgħu f'Worldward."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spiegelt je reizen naar een speciale „Worldward“-agenda: een evenement voor elke reis plus een per gedateerde stop — met de kaart en het weer waar een stop een locatie heeft. Bijgewerkt wanneer je de reisroute bewerkt. Vereist volledige agendatoegang om eigen evenementen bij te werken; het raakt nooit je andere agenda’s. Uitschakelen verwijdert de Worldward-agenda; je reizen blijven altijd in Worldward."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odzwierciedla Twoje podróże w dedykowanym kalendarzu „Worldward”: wydarzenie obejmujące każdą podróż plus jedno na datowany przystanek — z mapą i pogodą pokazywanymi tam, gdzie przystanek ma miejsce. Aktualizowany podczas edycji planu podróży. Wymaga pełnego dostępu do kalendarza, aby aktualizować własne wydarzenia; nigdy nie dotyka innych kalendarzy. Wyłączenie tego usuwa kalendarz Worldward; Twoje podróże zawsze pozostają w Worldward."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espelha suas viagens em um calendário «Worldward» dedicado: um evento para cada viagem mais um por parada datada — com o mapa e o clima mostrados onde uma parada tem um local. Mantido atualizado conforme você edita o itinerário. Precisa de acesso total ao calendário para atualizar seus próprios eventos; nunca toca em seus outros calendários. Desativar isso remove o calendário Worldward; suas viagens sempre permanecem no Worldward."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espelha as suas viagens num calendário «Worldward» dedicado: um evento para cada viagem mais um por paragem datada — com o mapa e o tempo mostrados onde uma paragem tem um local. Mantido atualizado à medida que edita o itinerário. Precisa de acesso total ao calendário para atualizar os seus próprios eventos; nunca toca nos seus outros calendários. Desativar isto remove o calendário Worldward; as suas viagens ficam sempre no Worldward."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oglindește călătoriile voastre într-un calendar «Worldward» dedicat: un eveniment pentru fiecare călătorie plus unul pe oprire datată — cu harta și vremea afișate acolo unde o oprire are un loc. Menținut actualizat pe măsură ce editați itinerariul. Necesită acces complet la calendar pentru a-și actualiza propriile evenimente; nu atinge niciodată celelalte calendare. Dezactivarea acestei opțiuni elimină calendarul Worldward; călătoriile voastre rămân întotdeauna în Worldward."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrkadlí vaše cesty do vyhradeného kalendára „Worldward“: udalosť pokrývajúca každú cestu plus jedna na datovanú zastávku — s mapou a počasím zobrazeným tam, kde má zastávka miesto. Udržiava sa aktuálna pri úprave itinerára. Vyžaduje úplný prístup ku kalendáru na aktualizáciu vlastných udalostí; nikdy sa nedotýka vašich ostatných kalendárov. Vypnutie odstráni kalendár Worldward; vaše cesty vždy zostanú vo Worldward."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrcali vaša potovanja v namenski koledar „Worldward“: dogodek, ki zajema vsako potovanje, plus enega za datirano postajo — z zemljevidom in vremenom prikazanim tam, kjer ima postaja kraj. Posodablja se, ko urejate potnik. Zahteva poln dostop do koledarja za posodabljanje lastnih dogodkov; nikoli se ne dotika vaših drugih koledarjev. Izklop tega odstrani koledar Worldward; vaša potovanja vedno ostanejo v Worldward."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speglar dina resor till en dedikerad ”Worldward“-kalender: en händelse för varje resa plus en per daterat stopp — med kartan och vädret visade där ett stopp har en plats. Hålls uppdaterad när du redigerar resplanen. Kräver full kalenderåtkomst för att uppdatera sina egna händelser; den rör aldrig dina andra kalendrar. Om du stänger av detta tas Worldward-kalendern bort; dina resor finns alltid kvar i Worldward."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将您的旅行映射到专用的“Worldward”日历：每次旅行对应一个事件，加上每个有日期的停靠站也对应一个事件 — 在停靠站有地点时显示地图和天气。当您编辑行程时会保持更新。需要完全日历访问权以更新其自己的事件；它从不触及您的其他日历。关闭此功能将删除 Worldward 日历；您的旅行始终保留在 Worldward 中。"
+          }
+        }
+      }
     },
     "Mode" : {
       "comment" : "The label for the mode picker in the smart suggestions section.",
@@ -53711,10 +55636,361 @@
     },
     "No Photo Access" : {
       "comment" : "A title for a view that displays a message that the user has denied access to the photo library.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No Photo Access"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Няма достъп до снимки"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žádný přístup k fotkám"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen fotoadgang"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Foto-Zugriff"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Καμία πρόσβαση σε φωτογραφίες"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenia fotaliro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin acceso a fotos"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pole fotode juurdepääsu"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ei valokuvapääsyä"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun accès aux photos"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gan Rochtain ar Ghrianghraif"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nema pristupa fotografijama"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nincs fénykép hozzáférés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun accesso alle foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真アクセスがありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 액세스 없음"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nėra prieigos prie nuotraukų"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nav piekļuves fotoattēliem"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ebda Aċċess għar-Ritratti"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen fototoegang"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak dostępu do zdjęć"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem acesso às fotos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem acesso às fotos"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fără acces la fotografii"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žiadny prístup k fotkám"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ni dostopa do fotografij"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen fotoåtkomst"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无照片访问权"
+          }
+        }
+      }
     },
     "No Photos Found" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No Photos Found"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Няма намерени снимки"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nebyly nalezeny žádné fotografie"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen fotos fundet"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Fotos gefunden"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν βρέθηκαν φωτογραφίες"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neniaj fotoj trovitaj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron fotos"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotosid ei leitud"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valokuvia ei löytynyt"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune photo trouvée"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gan Ghrianghraif ar Fáil"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nema pronađenih fotografija"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nincsenek fényképek"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna foto trovata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真が見つかりませんでした"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "찾은 사진 없음"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuotraukų nerasta"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nav atrasts neviens fotoattēls"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ebda Ritratti Misjuba"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen foto’s gevonden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie znaleziono zdjęć"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma foto encontrada"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma foto encontrada"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu s-au găsit fotografii"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenašli sa žiadne fotografie"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ni najdenih fotografij"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga foton hittades"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到照片"
+          }
+        }
+      }
     },
     "No photos with location data matched a country, or everything is already imported." : {
       "localizations" : {
@@ -70222,7 +72498,183 @@
     },
     "Select All" : {
       "comment" : "A button that selects all photos in a group.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Select All"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Избери всички"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat vše"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg alle"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle auswählen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επιλογή όλων"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elekti ĉiujn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar todo"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vali kõik"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valitse kaikki"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout sélectionner"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Roghnaigh Gach"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odaberi sve"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Összes kijelölése"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona tutto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모두 선택"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasirinkti visus"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atlasīt visus"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agħżel Kollha"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles selecteren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaznacz wszystko"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar tudo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar tudo"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selectați tot"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrať všetko"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izberi vse"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Välj alla"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全选"
+          }
+        }
+      }
     },
     "Set a date" : {
       "comment" : "A toggle that lets the user set a date for a trip stop.",
@@ -77045,7 +79497,183 @@
     },
     "Sync Trips with Apple Calendar" : {
       "comment" : "A toggle to sync trips with the user's Apple Calendar.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sync Trips with Apple Calendar"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синхронизиране на пътувания с Apple Календар"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizovat cesty s Apple Kalendářem"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkroniser rejser med Apple Kalender"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisen mit Apple Kalender synchronisieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συγχρονισμός ταξιδιών με το Apple Ημερολόγιο"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronigi vojaĝojn kun Apple Kalendaro"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar viajes con Apple Calendario"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sünkrooni reisid Apple Kalendriga"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronoi matkat Apple-kalenterin kanssa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchroniser les voyages avec Apple Calendrier"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sioncronaigh Turais le Féilire Apple"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkroniziraj putovanja s Apple Kalendarom"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utazások szinkronizálása az Apple Naptárral"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizza viaggi con Apple Calendario"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旅行をAppleカレンダーと同期"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여행을 Apple 캘린더와 동기화"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinchronizuoti keliones su Apple Kalendorius"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhronizēt ceļojumus ar Apple Kalendāru"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronizza l-Vjaġġi mal-Kalendarju Apple"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reizen synchroniseren met Apple Agenda"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizuj podróże z Apple Kalendarz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar viagens com o Apple Calendário"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar viagens com o Apple Calendário"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizați călătoriile cu Apple Calendar"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizovať cesty s Apple Kalendár"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhroniziraj potovanja z Apple Koledar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronisera resor med Apple Kalender"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与 Apple 日历同步旅行"
+          }
+        }
+      }
     },
     "Sync with Apple Reminders" : {
       "comment" : "Settings: toggle enabling two-way packing-list sync with Apple Reminders",
@@ -79916,7 +82544,183 @@
     },
     "These photos carry no location metadata — check they're really from the trip before adding." : {
       "comment" : "A footer for the section of the trip photo suggestions",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "These photos carry no location metadata — check they're really from the trip before adding."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тези снимки нямат метаданни за местоположение — проверете, че наистина са от пътуването, преди да ги добавите."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tyto fotografie nemají žádná metadata o poloze — před přidáním zkontrolujte, že skutečně pocházejí z cesty."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disse fotos har ingen lokaliseringsmetadata — kontrollér, at de virkelig er fra rejsen, før du tilføjer dem."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Fotos haben keine Ortsmetadaten — prüfen Sie, ob sie wirklich von der Reise stammen, bevor Sie sie hinzufügen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτές οι φωτογραφίες δεν φέρουν μεταδεδομένα τοποθεσίας — ελέγξτε ότι προέρχονται πραγματικά από το ταξίδι πριν τις προσθέσετε."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiuj ĉi fotoj ne havas lokajn metadatumojn — kontrolu ke ili vere estas de la vojaĝo antaŭ ol aldoni."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas fotos no tienen metadatos de ubicación — verifica que realmente sean del viaje antes de añadirlas."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nendel fotodel puuduvad asukohametaandmed — enne lisamist kontrollige, kas need on tõesti reisilt."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Näissä valokuvissa ei ole paikkatietoja — tarkista, että ne ovat todella matkalta ennen lisäämistä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ces photos ne comportent pas de métadonnées de localisation — vérifiez qu’elles proviennent bien du voyage avant de les ajouter."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níl aon mheiteashonraí suímh ag na grianghraif seo — seiceáil gur ón turas iad i ndáiríre sula gcuireann tú leo."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ove fotografije nemaju metapodatke o lokaciji — prije dodavanja provjerite jesu li stvarno s putovanja."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ezek a fényképek nem tartalmaznak helyadatokat — ellenőrizze, hogy tényleg az utazásról származnak-e, mielőtt hozzáadja őket."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Queste foto non hanno metadati di posizione — verifica che siano davvero del viaggio prima di aggiungerle."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらの写真には位置情報がありません — 添付する前に旅行からのものか確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 사진에는 위치 메타데이터가 없습니다 — 추가하기 전에 정말 여행 사진인지 확인하세요."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šios nuotraukos neturi vietos metaduomenų — prieš pridėdami patikrinkite, ar jos tikrai iš kelionės."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šiem fotoattēliem nav atrašanās vietas metadatu — pirms pievienošanas pārbaudiet, vai tie patiešām ir no ceļojuma."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dawn ir-ritratti m'għandhomx metadejta tal-post — iċċekkja li huma verament mill-vjaġġ qabel iżżdulhom."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze foto’s hebben geen locatiemetagegevens — controleer of ze echt van de reis zijn voordat je ze toevoegt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te zdjęcia nie mają metadanych lokalizacji — przed dodaniem sprawdź, czy naprawdę pochodzą z podróży."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas fotos não têm metadados de localização — verifique se são mesmo da viagem antes de adicioná-las."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estas fotos não têm metadados de localização — verifique se são mesmo da viagem antes de as adicionar."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceste fotografii nu au metadate de locație — verificați că sunt într-adevăr din călătorie înainte de a le adăuga."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieto fotografie nenesú žiadne metadáta o polohe — pred pridaním skontrolujte, či sú naozaj z cesty."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Te fotografije nimajo metapodatkov o lokaciji — preden jih dodate, preverite, da so res s potovanja."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessa foton har ingen platsmetadata — kontrollera att de verkligen är från resan innan du lägger till dem."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些照片没有位置元数据 — 在添加前确认它们确实是从这次旅行中拍摄的。"
+          }
+        }
+      }
     },
     "These photos didn't fall inside any country — often a small island. Assign each to a country, or leave it to skip those photos." : {
       "comment" : "A description of the footer for the list of locations that haven't been assigned to a country.",
@@ -83326,7 +86130,183 @@
     },
     "Trip Photos" : {
       "comment" : "The title of the sheet that lets the user choose photos from their library to attach to a trip.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Trip Photos"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снимки от пътуване"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotografie cesty"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejsefotos"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisefotos"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Φωτογραφίες ταξιδιού"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vojaĝaj fotoj"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos del viaje"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisifotod"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matkakuvat"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos de voyage"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grianghraif an Turais"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotografije putovanja"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utazási fényképek"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto di viaggio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旅行の写真"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여행 사진"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kelionės nuotraukos"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceļojuma fotoattēli"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritratti tal-Vjaġġ"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisfoto’s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdjęcia podróży"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos da viagem"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos da viagem"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotografii de călătorie"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotografie cesty"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotografije potovanja"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resefoton"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旅行照片"
+          }
+        }
+      }
     },
     "Trip planning" : {
       "comment" : "A heading for the trip planning settings in the settings.",
@@ -94247,7 +97227,182 @@
       }
     },
     "Your library has no new photos taken during this trip." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your library has no new photos taken during this trip."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Библиотеката ви няма нови снимки, направени по време на това пътуване."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaše knihovna neobsahuje žádné nové fotografie pořízené během této cesty."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit bibliotek har ingen nye fotos taget under denne rejse."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihre Bibliothek enthält keine neuen Fotos, die während dieser Reise aufgenommen wurden."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η βιβλιοθήκη σας δεν έχει νέες φωτογραφίες που τραβήχηκαν κατά τη διάρκεια αυτού του ταξιδιού."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Via biblioteko havas neniujn novajn fotojn prenitajn dum tiu ĉi vojaĝo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu biblioteca no tiene fotos nuevas tomadas durante este viaje."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teie teegis pole selle reisi ajal tehtud uusi fotosid."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kirjastossasi ei ole uusia tämän matkan aikana otettuja valokuvia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre bibliothèque ne contient aucune nouvelle photo prise pendant ce voyage."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níl aon ghrianghraif nua ag do leabharlann a tógadh le linn an turais seo."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša knjižnica nema novih fotografija snimljenih tijekom ovog putovanja."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A könyvtárában nincsenek új fényképek, amelyek ezen utazás során készültek."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La tua libreria non ha nuove foto scattate durante questo viaggio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライブラリにこの旅行中に撮られた新しい写真はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라이브러리에 이 여행 중에 촬영된 새 사진이 없습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jūsų bibliotekoje nėra naujų nuotraukų, padarytų šios kelionės metu."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jūsu bibliotēkā nav jaunu fotoattēlu, kas uzņemti šī ceļojuma laikā."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il-librerija tiegħek m'għandha l-ebda ritratt ġdid meħud matul dan il-vjaġġ."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je bibliotheek heeft geen nieuwe foto’s die tijdens deze reis zijn gemaakt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja biblioteka nie zawiera nowych zdjęć zrobionych podczas tej podróży."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua biblioteca não tem novas fotos tiradas durante esta viagem."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sua biblioteca não tem novas fotos tiradas durante esta viagem."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biblioteca voastră nu are fotografii noi făcute în timpul acestei călătorii."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša knižnica nemá žiadne nové fotografie nasnímané počas tejto cesty."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaša knjižnica nima novih fotografij, posnetih med tem potovanjem."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ditt bibliotek har inga nya foton tagna under denna resa."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的图库中没有在此次旅行中拍摄的新照片。"
+          }
+        }
+      }
     },
     "Your Travels" : {
       "comment" : "Statistics sheet navigation title",
