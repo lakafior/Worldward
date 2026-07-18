@@ -47,6 +47,9 @@ final class Trip {
     @Relationship(deleteRule: .cascade, inverse: \PackingItem.trip)
     var packing: [PackingItem] = []
 
+    @Relationship(deleteRule: .cascade, inverse: \TripAttachment.trip)
+    var attachments: [TripAttachment] = []
+
     init(
         title: String = "", startDate: Date = Date(), endDate: Date = Date(), notes: String = ""
     ) {
@@ -59,6 +62,11 @@ final class Trip {
     /// Stops in their user-defined order.
     var sortedStops: [ItineraryItem] {
         itinerary.sorted { $0.order < $1.order }
+    }
+
+    /// Attachments in the order they were added.
+    var sortedAttachments: [TripAttachment] {
+        attachments.sorted { $0.order < $1.order }
     }
 
     /// The distinct countries this trip touches, in first-appearance (stop) order.
@@ -351,6 +359,34 @@ final class PackingTemplateItem {
         self.order = order
         self.containerName = containerName
         self.template = template
+    }
+}
+
+/// A file attached to a trip — a ticket PDF, a booking confirmation, a
+/// boarding-pass image. `.externalStorage` keeps the bytes as a file beside the
+/// store rather than inside SQLite rows, and maps to a `CKAsset` once CloudKit
+/// sync is enabled — which is also how the blob dodges CloudKit's ~1 MB
+/// per-record limit. `byteCount` mirrors `data.count` so list rows can show a
+/// size without faulting the whole blob in. CloudKit-safe: defaults on every
+/// property, to-one relationship, dedup token.
+@Model
+final class TripAttachment {
+    var filename: String = ""
+    @Attribute(.externalStorage) var data: Data = Data()
+    var byteCount: Int = 0
+    var order: Int = 0
+
+    /// Per-row token for CloudKit de-duplication, mirroring `Trip.dedupID`.
+    var dedupID: String = UUID().uuidString
+
+    var trip: Trip?
+
+    init(filename: String = "", data: Data = Data(), order: Int = 0, trip: Trip? = nil) {
+        self.filename = filename
+        self.data = data
+        self.byteCount = data.count
+        self.order = order
+        self.trip = trip
     }
 }
 

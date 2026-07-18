@@ -3,6 +3,7 @@
 import MapKit
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 #if os(macOS)
     import AppKit
@@ -330,9 +331,12 @@ struct TripDetailView: View {
     @State private var newPackingTitle = ""
     @State private var calendarAlert: String?
     @State private var pdfExportError: String?
-    /// The freshly rendered PDF, previewed in-place via Quick Look on iOS. Unused
-    /// on macOS, which opens the file in Preview.app directly instead.
-    @State private var pdfPreviewURL: URL?
+    /// A freshly written temp file — the exported PDF or an attachment —
+    /// previewed in-place via Quick Look on iOS. Unused on macOS, which opens
+    /// files in their default app directly instead.
+    @State private var filePreviewURL: URL?
+    @State private var showAttachmentImporter = false
+    @State private var attachmentAlert: String?
     @State private var planner = TripPlanner()
     @State private var confirmClearPacking = false
     @State private var isAddingContainer = false
@@ -409,6 +413,7 @@ struct TripDetailView: View {
                 itinerarySection
                 packingSections
                 notesSection
+                attachmentsSection
             }
             // Drag-to-reorder packing items within and across container groups; the
             // closure rewrites each moved item's container + `order`. The itinerary's
@@ -478,12 +483,26 @@ struct TripDetailView: View {
                 } message: {
                     Text(planner.errorMessage ?? "")
                 }
+                .fileImporter(
+                    isPresented: $showAttachmentImporter,
+                    allowedContentTypes: [.data],
+                    allowsMultipleSelection: true,
+                    onCompletion: attachFiles)
+                .alert(
+                    "Attachments",
+                    isPresented: Binding(
+                        get: { attachmentAlert != nil }, set: { if !$0 { attachmentAlert = nil } })
+                ) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(attachmentAlert ?? "")
+                }
                 // Hosts the translation session that `translator.translate(_:)`
                 // awaits in `fillPacking` / `fillNotes`.
                 .appTranslation(translator)
         }
         #if !os(macOS)
-            .quickLookPreview($pdfPreviewURL)
+            .quickLookPreview($filePreviewURL)
         #endif
     }
 
@@ -521,7 +540,7 @@ struct TripDetailView: View {
             #if os(macOS)
                 NSWorkspace.shared.open(url)
             #else
-                pdfPreviewURL = url
+                filePreviewURL = url
             #endif
         } catch {
             pdfExportError = error.localizedDescription
@@ -764,6 +783,23 @@ struct TripDetailView: View {
 
             if canUseAssistant {
                 fillButton(field: .notes, action: fillNotes)
+            }
+        }
+    }
+
+    /// Tickets, confirmations, boarding passes — any file, stored inside the
+    /// trip itself (`.externalStorage`), so it's always on-device when you're
+    /// standing at a gate with no connectivity.
+    private var attachmentsSection: some View {
+        Section("Attachments") {
+            ForEach(trip.sortedAttachments) { attachment in
+                AttachmentRow(attachment: attachment) { openAttachment(attachment) }
+            }
+            .onDelete(perform: deleteAttachments)
+            Button {
+                showAttachmentImporter = true
+            } label: {
+                Label("Add File", systemImage: "paperclip")
             }
         }
     }
@@ -1018,12 +1054,108 @@ struct TripDetailView: View {
         }
     }
 
+    /// Per-file attachment cap. Tickets and confirmations are typically well
+    /// under a megabyte; the cap only exists to keep an accidental video pick
+    /// from ballooning the store.
+    private static let maxAttachmentBytes = 25 * 1024 * 1024
+
+    /// Copies the picked files into the trip as attachments. Oversized or
+    /// unreadable files are skipped with an alert; the rest still attach.
+    private func attachFiles(_ result: Result<[URL], Error>) {
+        switch result {
+        case .failure(let error):
+            attachmentAlert = error.localizedDescription
+        case .success(let urls):
+            var order = (trip.attachments.map(\.order).max() ?? -1) + 1
+            for url in urls {
+                let needsAccess = url.startAccessingSecurityScopedResource()
+                defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
+                do {
+                    let data = try Data(contentsOf: url)
+                    guard data.count <= Self.maxAttachmentBytes else {
+                        attachmentAlert = String(
+                            localized:
+                                "Files over \(Self.maxAttachmentBytes / 1_048_576) MB can't be attached.",
+                            comment: "Alert when a picked attachment exceeds the size limit")
+                        continue
+                    }
+                    let attachment = TripAttachment(
+                        filename: url.lastPathComponent, data: data, order: order, trip: trip)
+                    modelContext.insert(attachment)
+                    trip.attachments.append(attachment)
+                    order += 1
+                } catch {
+                    attachmentAlert = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    /// Writes the attachment to a fresh temp file (named after the original,
+    /// in its own UUID'd subdirectory, same scheme as `exportPDFAndOpen`) and
+    /// opens it — default app on macOS, in-place Quick Look preview on iOS.
+    private func openAttachment(_ attachment: TripAttachment) {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let url = directory.appendingPathComponent(sanitizedFileName(attachment.filename))
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try attachment.data.write(to: url, options: .atomic)
+            #if os(macOS)
+                NSWorkspace.shared.open(url)
+            #else
+                filePreviewURL = url
+            #endif
+        } catch {
+            attachmentAlert = error.localizedDescription
+        }
+    }
+
+    private func deleteAttachments(at offsets: IndexSet) {
+        let ordered = trip.sortedAttachments
+        for index in offsets { modelContext.delete(ordered[index]) }
+    }
+
     /// Appends generated notes, preserving anything the user has already written.
     private func insertNotes(_ text: String) {
         if trip.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             trip.notes = text
         } else {
             trip.notes += "\n\n" + text
+        }
+    }
+}
+
+/// One attachment row: a type icon, the original filename, and the stored size.
+/// The whole row opens the file — Quick Look on iOS, the default app on macOS.
+private struct AttachmentRow: View {
+    let attachment: TripAttachment
+    let open: () -> Void
+
+    var body: some View {
+        Button(action: open) {
+            HStack(spacing: 12) {
+                Image(systemName: symbolName)
+                    .foregroundStyle(Color.brand)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(attachment.filename)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Text(Int64(attachment.byteCount), format: .byteCount(style: .file))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private var symbolName: String {
+        switch (attachment.filename as NSString).pathExtension.lowercased() {
+        case "pdf": "doc.richtext"
+        case "png", "jpg", "jpeg", "heic", "heif", "gif", "webp", "tiff": "photo"
+        case "pkpass": "wallet.pass"
+        default: "doc"
         }
     }
 }

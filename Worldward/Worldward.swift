@@ -23,7 +23,7 @@ struct Worldward: App {
         let schema = Schema([
             Country.self, Visit.self, Trip.self, ItineraryItem.self, StopPlace.self,
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
-            PackingTemplateItem.self,
+            PackingTemplateItem.self, TripAttachment.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

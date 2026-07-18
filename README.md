@@ -65,10 +65,11 @@ Every country rendered as a tap-able map polygon from Natural Earth data (~250 c
 ### Trips (multi-country itineraries)
 
 - Multi-country trips through ordered **stops**, each optionally tied to a country.
-- **Date range**, reorderable **itinerary**, checkable **packing list**, and free-text **notes**.
+- **Date range**, reorderable **itinerary**, checkable **packing list**, and **notes** with lightweight Markdown rendering (tap to edit raw text).
+- **File attachments** — tickets, confirmations, boarding passes stored inside the trip (SwiftData `.externalStorage`), always available offline; previewed with Quick Look on iOS or the default app on macOS, and included in JSON backups.
 - **Add to Apple Calendar** as an all-day event (write-only EventKit).
 - **Sync with Apple Calendar** (opt-in, Settings) — a dedicated "Worldward" calendar with an event spanning each trip plus one per dated stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated as the itinerary changes.
-- **Share / export** a trip as **Markdown** via the system share sheet.
+- **Share / export** a trip as **Markdown** via the system share sheet, or as a formatted **PDF** — both with localized section headers.
 
 ### Achievements
 
@@ -348,7 +349,7 @@ WorldwardWidgets/               # Widget extension target
 
 Planned next, in rough priority order — everything stays native-only, lightweight, and local-first:
 
-- **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, converging de-duplication); flipping it on awaits a paid Apple Developer membership.
+- **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, converging de-duplication); flipping it on awaits a paid Apple Developer membership. Trip attachments (stored with `.externalStorage`) will ride along automatically as `CKAsset`s.
 - **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
 - **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.

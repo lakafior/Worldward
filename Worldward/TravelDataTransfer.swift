@@ -111,6 +111,10 @@ struct TripRecord: Codable {
     var notes: String
     var itinerary: [ItineraryItemRecord]
     var packing: [PackingItemRecord]
+    /// Optional so pre-v4 backups still decode. The bytes ride along as base64 —
+    /// backups grow accordingly, but a backup that silently dropped your tickets
+    /// wouldn't be a backup.
+    var attachments: [AttachmentRecord]?
 
     @MainActor
     init(from trip: Trip) {
@@ -120,6 +124,20 @@ struct TripRecord: Codable {
         self.notes = trip.notes
         self.itinerary = trip.sortedStops.map(ItineraryItemRecord.init)
         self.packing = trip.packing.map(PackingItemRecord.init)
+        self.attachments = trip.sortedAttachments.map(AttachmentRecord.init)
+    }
+}
+
+struct AttachmentRecord: Codable {
+    var filename: String
+    var data: Data
+    var order: Int
+
+    @MainActor
+    init(from attachment: TripAttachment) {
+        self.filename = attachment.filename
+        self.data = attachment.data
+        self.order = attachment.order
     }
 }
 
@@ -182,9 +200,10 @@ struct PackingItemRecord: Codable {
 
 /// Encodes and decodes the travel-data backup, and applies an import to the store.
 enum TravelDataTransfer {
-    /// v3 added quantity/order/containerName to packing items. Older files still
-    /// decode (the fields are optional), and older builds ignore the extra keys.
-    static let currentVersion = 3
+    /// v3 added quantity/order/containerName to packing items; v4 added trip
+    /// attachments. Older files still decode (the fields are optional), and
+    /// older builds ignore the extra keys.
+    static let currentVersion = 4
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -283,6 +302,12 @@ enum TravelDataTransfer {
                     container: container(named: pack.containerName))
                 context.insert(item)
                 trip.packing.append(item)
+            }
+            for record in (record.attachments ?? []).sorted(by: { $0.order < $1.order }) {
+                let attachment = TripAttachment(
+                    filename: record.filename, data: record.data, order: record.order, trip: trip)
+                context.insert(attachment)
+                trip.attachments.append(attachment)
             }
         }
 
