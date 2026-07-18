@@ -267,9 +267,11 @@ Worldward/
 ├── Trip.swift                  # SwiftData models: Trip, ItineraryItem, PackingItem
 ├── TripPlanner.swift           # Traveler profile, packing prompt builder, AI suggestions
 ├── TripViews.swift             # Going tab, trips list, trip editor, Markdown share
+├── TripPDFExporter.swift       # PDF trip report with timeline & photos
 ├── ManageContainersView.swift  # Packing container list editor
 ├── ManageTemplatesView.swift   # Packing template save/load/delete
 ├── CalendarExporter.swift      # EventKit "Add to Apple Calendar" (write-only)
+├── CalendarSync.swift          # EventKit calendar event sync & update
 ├── ReminderSync.swift          # EventKit two-way packing-list ↔ Apple Reminders sync
 ├── CountryStatus.swift         # "Been there" status enum
 ├── PlanStatus.swift            # "Going" plan enum
@@ -291,6 +293,7 @@ Worldward/
 ├── WidgetSharedSnapshot.swift  # Shared snapshot/geometry + control intent
 ├── PhotoImporter.swift         # Photo Library scan → proposed trips
 ├── ImportPreviewView.swift     # Scan configuration & results UI
+├── TripPhotoSuggestions.swift  # AI-suggested photos for trip journal entries
 ├── VisitPhotosView.swift       # Photo thumbnail strip + full-size viewer
 ├── Translator.swift            # On-device LLM translation pipeline
 ├── Localization.swift          # String catalog helpers & language picker
@@ -313,7 +316,8 @@ Worldward/
 
 WorldwardWidgets/               # Widget extension target
 ├── WorldwardWidgetsBundle.swift # @main WidgetBundle
-└── WorldwardWidgets.swift      # Snapshot/Flags/Map/Trip widgets, accessories, control
+├── WorldwardWidgets.swift      # Snapshot/Flags/Map/Trip widgets, accessories, control
+└── PackingWidget.swift         # Packing checklist widget
 ```
 
 > The app and widget extension share data through an **App Group** (`group.net.smigi.worldward`): the app writes a `WidgetSnapshot` and a copy of the map geometry; widgets read them. `WidgetSharedSnapshot.swift` is a member of both targets.
