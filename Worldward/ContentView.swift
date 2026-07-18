@@ -95,51 +95,14 @@ enum MapStyleOption: String, CaseIterable, Identifiable {
     var isDark: Bool { self != .standard }
 }
 
-/// A grid-based spatial index for map hit-testing. Matches the same grid
-/// convention used by `SpatialIndex` in PhotoImporter, so a tap only tests
-/// the 5-15 countries whose bounding rect overlaps the tapped cell.
-struct WorldHitTestIndex: Sendable {
-    private let cols: Int
-    private let rows: Int
-    private let world = MKMapRect.world
-    private var cells: [Int: [String]] = [:]
-
-    init(rects: [String: MKMapRect], cols: Int = 36, rows: Int = 18) {
-        self.cols = cols
-        self.rows = rows
-        for (id, rect) in rects {
-            let minCol = max(0, Int((rect.minX / world.width) * Double(cols)))
-            let maxCol = min(cols - 1, Int((rect.maxX / world.width) * Double(cols)))
-            let minRow = max(0, Int((rect.minY / world.height) * Double(rows)))
-            let maxRow = min(rows - 1, Int((rect.maxY / world.height) * Double(rows)))
-            for col in minCol...maxCol {
-                for row in minRow...maxRow {
-                    cells[row * cols + col, default: []].append(id)
-                }
-            }
-        }
-    }
-
-    /// Country ids whose bounding rect spans the grid cell containing `point`.
-    func candidates(for point: MKMapPoint) -> [String] {
-        let col = min(cols - 1, max(0, Int((point.x / world.width) * Double(cols))))
-        let row = min(rows - 1, max(0, Int((point.y / world.height) * Double(rows))))
-        return cells[row * cols + col] ?? []
-    }
-}
-
 struct ContentView: View {
     @Query(sort: [SortDescriptor(\Country.continent), SortDescriptor(\Country.name)]) private
         var allCountries: [Country]
 
-    /// Feeds the upcoming-trip widget; watched via `tripsKey` the same way
-    /// `allCountries` is watched via `catalogKey`.
-    @Query private var allTrips: [Trip]
-
-    /// Feeds the achievement-unlock diff via `achievementsKey`: several badges
-    /// (visit milestones, active years, repeat visits) derive from visits, which
-    /// the status/plan hash in `catalogKey` can't see.
-    @Query(sort: \Visit.date) private var allVisits: [Visit]
+    // Trips and visits are deliberately *not* queried here: `StoreWatchers`
+    // owns those queries (and the change signatures over them), so a packing
+    // tick or visit edit invalidates that tiny hidden view instead of this
+    // whole scene.
 
     @State private var searchText = ""
     @State private var selectedCountry: Country?
@@ -208,15 +171,8 @@ struct ContentView: View {
     // Geographic data
     @State private var countryPolygons: [String: [MKPolygon]] = [:]
     /// Minor islands per country (below 0.5% of the mainland's size), drawn only
-    /// when the camera is zoomed in — see `mapPolygons(for:)`.
+    /// when the camera is zoomed in — see `WorldMapView.mapPolygons(for:)`.
     @State private var countryDetailPolygons: [String: [MKPolygon]] = [:]
-    /// The viewport when the camera is zoomed in enough for minor islands to be
-    /// visible; `nil` at world zoom. Updated by `onMapCameraChange`.
-    @State private var detailMapRect: MKMapRect? = nil
-    /// Whether the map has delivered its first camera callback — timestamps
-    /// MapKit readiness in the DEBUG launch log and starts the launch-preview
-    /// crossfade.
-    @State private var mapBecameLive = false
     /// `true` once the live map has been revealed from behind `MapLaunchPreview`.
     @State private var mapRevealed = false
     /// Status/plan ranks for `MapLaunchPreview`, built once during the data load.
@@ -230,10 +186,8 @@ struct ContentView: View {
     /// archipelago) are still selectable.
     @State private var countryHitRects: [String: MKMapRect] = [:]
     @State private var countryCentroids: [String: CLLocationCoordinate2D] = [:]
-    /// Spatial index for map hit-testing: divides the world into a grid so a tap
-    /// only tests countries whose bounding rect overlaps the tapped cell (typically
-    /// 5-15 candidates instead of all ~250). Built once alongside the geometry.
-    @State private var hitTestIndex: WorldHitTestIndex? = nil
+    /// Spatial index for map hit-testing, built once alongside the geometry.
+    @State private var hitTestIndex: GeoGridIndex? = nil
     @State private var isLoadingMapData = true
     @State private var mapLoadingMessage = "Loading map…"
 
@@ -251,18 +205,6 @@ struct ContentView: View {
         }
     }
 
-    /// Polygons to draw for one country: the major rings always, plus the minor
-    /// islands only when the camera is zoomed in and they intersect the viewport.
-    /// Minor islands are sub-pixel at world zoom, and drawing all ~1,000 of them
-    /// unconditionally made MapKit's initial overlay build take seconds. Tap
-    /// accuracy is unaffected — `countryPaths` always contains every ring.
-    private func mapPolygons(for id: String) -> [MKPolygon] {
-        let majors = countryPolygons[id] ?? []
-        guard let detailMapRect, let minors = countryDetailPolygons[id] else { return majors }
-        let visible = minors.filter { $0.boundingMapRect.intersects(detailMapRect) }
-        return visible.isEmpty ? majors : majors + visible
-    }
-
     /// Countries matching the map search text, used for search suggestions.
     private var mapSearchResults: [Country] {
         let term = mapSearchText.trimmingCharacters(in: .whitespaces)
@@ -271,112 +213,39 @@ struct ContentView: View {
             .sorted { $0.name < $1.name }
     }
 
-    /// The interactive world map. Extracted so the body can withhold it (and the
-    /// cost of bringing up MapKit) until the country geometry has loaded.
+    /// The interactive world map. Extracted into `WorldMapView` (and diffed via
+    /// its `Equatable` conformance) so high-frequency state in this view —
+    /// search keystrokes, sheet flags, the achievement toast — no longer
+    /// re-evaluates the Map content builder.
     private var mapView: some View {
-        MapReader { proxy in
-            Map(position: $cameraPosition) {
-                ForEach(visibleCountries) { country in
-                    CountryMapPolygons(
-                        country: country,
-                        status: country.status,
-                        planStatus: country.planStatus,
-                        polygons: mapPolygons(for: country.id))
-                }
+        WorldMapView(
+            allCountries: allCountries,
+            visibleCountries: visibleCountries,
+            polygons: countryPolygons,
+            detailPolygons: countryDetailPolygons,
+            paths: countryPaths,
+            boundingRects: countryBoundingRects,
+            hitRects: countryHitRects,
+            centroids: countryCentroids,
+            hitTestIndex: hitTestIndex,
+            mapStyle: mapStyle,
+            mapTrip: mapTrip,
+            selectedCountry: $selectedCountry,
+            cameraPosition: $cameraPosition,
+            onFirstLive: handleMapBecameLive
+        )
+        .equatable()
+    }
 
-                if let sel = selectedCountry {
-                    if let centroid = countryCentroids[sel.id] {
-                        Annotation(sel.name, coordinate: centroid, anchor: .bottom) {
-                            Text(sel.flagEmoji)
-                                .font(.title)
-                                .padding(4)
-                                .background(
-                                    .ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
-                        }
-                    }
-                }
-
-                // The active trip's itinerary route. The modelContext check guards
-                // against drawing a trip deleted while its route was showing.
-                if let trip = mapTrip, trip.modelContext != nil {
-                    TripRouteContent(trip: trip, centroids: countryCentroids)
-                }
-            }
-            .mapStyle(mapStyle.mapStyle)
-            // Track when the camera is zoomed in past a quarter of the world's
-            // width (~90° of longitude — a continent-ish view). Only then are
-            // minor islands drawn; the rect is padded so islands just off-screen
-            // are already filled when a pan ends on them. `.onEnd` keeps the
-            // overlay set stable during the gesture itself.
-            .onMapCameraChange(frequency: .onEnd) { context in
-                if !mapBecameLive {
-                    mapBecameLive = true
-                    LaunchClock.mark("map: first camera callback (live)")
-                    // Give the first tiles a beat to render behind the launch
-                    // preview, then crossfade it away.
-                    Task {
-                        try? await Task.sleep(for: .milliseconds(400))
-                        LaunchClock.mark("map: revealing")
-                        withAnimation(.easeInOut(duration: 0.8)) { mapRevealed = true }
-                    }
-                }
-                if context.rect.width < MKMapSize.world.width / 4 {
-                    detailMapRect = context.rect.insetBy(
-                        dx: -context.rect.width * 0.25, dy: -context.rect.height * 0.25)
-                } else if detailMapRect != nil {
-                    detailMapRect = nil
-                }
-            }
-            .mapControls {
-                // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
-                #if os(macOS)
-                    MapZoomStepper()
-                #endif
-                MapCompass()
-                MapScaleView()
-            }
-            // Use `simultaneousGesture` rather than `.onTapGesture`: attaching a
-            // plain tap recognizer directly to `Map` competes with MapKit's own
-            // pan/pinch recognizers, which intermittently swallows taps and turns
-            // drags into zooms. A simultaneous SpatialTapGesture runs alongside the
-            // map's gestures instead of fighting them for each touch.
-            .simultaneousGesture(
-                SpatialTapGesture().onEnded { event in
-                    if let coordinate = proxy.convert(event.location, from: .local) {
-                        let mapPoint = MKMapPoint(coordinate)
-                        let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
-
-                        // Optimized lookup: use the spatial grid index to only test
-                        // countries whose bounding rect overlaps the tapped cell
-                        // (typically 5-15 candidates instead of all ~250),
-                        // then hit-test individual paths.
-                        let candidates =
-                            hitTestIndex?.candidates(for: mapPoint) ?? allCountries.map(\.id)
-                        for id in candidates {
-                            guard let countryRect = countryHitRects[id],
-                                countryRect.contains(mapPoint)
-                            else { continue }
-
-                            for path in countryPaths[id] ?? [] {
-                                if path.contains(cgPoint) {
-                                    if let country = allCountries.first(where: { $0.id == id }) {
-                                        selectedCountry = country
-                                        // Animate the map to center on the tapped country.
-                                        if let rect = countryBoundingRects[id] {
-                                            withAnimation(.easeInOut(duration: 0.4)) {
-                                                cameraPosition = .region(MKCoordinateRegion(rect))
-                                            }
-                                        }
-                                    }
-                                    return
-                                }
-                            }
-                        }
-                    }
-                }
-            )
-            // Prevent CAMetalLayer zero-size warnings during sheet transitions.
-            .frame(minWidth: 1, minHeight: 1)
+    /// The map has delivered its first camera callback: timestamp MapKit
+    /// readiness in the DEBUG launch log, give the first tiles a beat to render
+    /// behind the launch preview, then crossfade it away.
+    private func handleMapBecameLive() {
+        LaunchClock.mark("map: first camera callback (live)")
+        Task {
+            try? await Task.sleep(for: .milliseconds(400))
+            LaunchClock.mark("map: revealing")
+            withAnimation(.easeInOut(duration: 0.8)) { mapRevealed = true }
         }
     }
 
@@ -799,12 +668,24 @@ struct ContentView: View {
                 }
             }
             .sensoryFeedback(.success, trigger: celebration) { _, new in new != nil }
-            // Diff the badge set whenever anything achievements derive from
-            // changes; `initial` also catches changes applied outside this view's
-            // lifetime (intents, a future iCloud sync) on the next launch.
-            .onChange(of: achievementsKey, initial: true) {
-                celebrateNewAchievements()
-            }
+            // The store-wide change signatures (catalog, trips, achievements)
+            // live in this invisible child so their O(store) hashes — and the
+            // trip/visit queries feeding them — don't run on every render of
+            // (or invalidate) this whole scene.
+            .background(
+                StoreWatchers(
+                    allCountries: allCountries,
+                    onCatalogChanged: {
+                        updateWidgetSnapshot()
+                        rebuildVisibleCache()
+                    },
+                    onTripsChanged: {
+                        updateWidgetSnapshot()
+                        scheduleEventKitSync()
+                    },
+                    onAchievementsChanged: celebrateNewAchievements
+                )
+            )
             .onChange(of: selectedCountry) {
                 // The selected country is part of the visible set even when
                 // unvisited/unplanned, so selection changes rebuild the cache too.
@@ -928,27 +809,6 @@ struct ContentView: View {
                 default:
                     break
                 }
-            }
-            // Keep the Home/Lock Screen widgets and the map's visible-country
-            // cache in sync. `catalogKey` changes whenever a country is added,
-            // removed, or its status/plan edited (by hand, by an intent, or by the
-            // photo importer); `initial` also writes once on launch so a fresh
-            // install populates the widget.
-            .onChange(of: catalogKey, initial: true) {
-                updateWidgetSnapshot()
-                rebuildVisibleCache()
-            }
-            // Trips reach the widget snapshot too. Trip editing mutates the
-            // model live through `@Bindable` bindings — there's no save
-            // chokepoint to hook — so, like `catalogKey`, a signature watched
-            // from the root view is the one reliable invalidation point.
-            // The EventKit syncs piggyback on the same signature: it hashes
-            // every packing item's title/quantity/packed state and every
-            // stop's fields, so any local packing or itinerary edit lands in
-            // Reminders / Calendar after a short debounce.
-            .onChange(of: tripsKey) {
-                updateWidgetSnapshot()
-                scheduleEventKitSync()
             }
             // Edits made in the Reminders / Calendar apps while Worldward is
             // frontmost (e.g. iPad Split View, macOS). Our own writes fire
@@ -1292,7 +1152,7 @@ struct ContentView: View {
         self.countryPaths = extractedPaths
         self.countryBoundingRects = extractedRects
         self.countryHitRects = extractedHitRects
-        self.hitTestIndex = WorldHitTestIndex(rects: extractedHitRects)
+        self.hitTestIndex = GeoGridIndex(rects: extractedHitRects)
         // Derive a centroid per country from its bounding rect so the statistics
         // page can rank the nearest unvisited countries by real proximity.
         self.countryCentroids = extractedRects.mapValues { rect in
@@ -1438,12 +1298,143 @@ struct ContentView: View {
         if changed { try? modelContext.save() }
     }
 
-    /// A cheap signature of every country's id, status, and plan. Recomputed each
-    /// render (≈250 hashes, negligible) and watched by `onChange` as the single
-    /// invalidation point for everything derived from the catalog: the widget
-    /// snapshot and the map's visible-country cache. Statuses and plans change
-    /// without the row count changing (detail edits, intents, photo imports), so
-    /// watching `allCountries.count` alone would leave those caches stale.
+    /// Diffs the current badge set against the persisted one and toasts anything
+    /// newly earned. Skipped while the catalog is empty (cold launch before the
+    /// store loads) so the persisted set can't be wiped and every badge then
+    /// "re-earned" in one giant toast when the rows arrive.
+    private func celebrateNewAchievements() {
+        guard !allCountries.isEmpty else { return }
+        let achievements = Achievement.all(for: TravelStats(countries: allCountries))
+        let newlyUnlocked = AchievementUnlocks.consumeNewlyUnlocked(from: achievements)
+        guard let toast = AchievementCelebration(newlyUnlocked: newlyUnlocked) else { return }
+        withAnimation(.spring(duration: 0.5)) { celebration = toast }
+    }
+
+    /// Opens the achievements grid: the sheet on iOS, or the in-window Your
+    /// Travels dashboard on macOS (which hosts the achievements page).
+    private func openAchievements() {
+        #if os(macOS)
+            push(.travels)
+        #else
+            showAchievements = true
+        #endif
+    }
+
+    /// Recompute the travel summary and hand it to the shared App Group store,
+    /// which redraws the widgets. Delegates to the same helper the mutating
+    /// intents use (see WorldwardIntents.swift) so both paths build the snapshot
+    /// identically.
+    private func updateWidgetSnapshot() {
+        // Fold in any toggles made on the packing widget first, so the snapshot
+        // about to be written can't clobber them with stale model state (a cold
+        // launch writes the snapshot before the scenePhase handler runs).
+        consumePendingPackingToggles()
+        // Fetched on demand (rather than via `@Query`) so trip edits don't
+        // invalidate this whole scene; `StoreWatchers` decides when to call.
+        let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
+        refreshWidgetSnapshot(countries: allCountries, trips: trips)
+    }
+
+    /// Applies packing-list toggles made on the widget to the model. Ids that no
+    /// longer resolve (item deleted, possibly on another device) are dropped. A
+    /// real change saves, which bumps `tripsKey` and rewrites the snapshot from
+    /// the model as the new truth. Safe to call on every activation.
+    private func consumePendingPackingToggles() {
+        let toggles = PackingToggleStore.consume()
+        guard !toggles.isEmpty else { return }
+        // Packing lists are tiny (tens of rows), so fetch-all beats building a
+        // per-id predicate.
+        let items = (try? modelContext.fetch(FetchDescriptor<PackingItem>())) ?? []
+        var changed = false
+        for item in items {
+            if let packed = toggles[item.dedupID], item.isPacked != packed {
+                item.isPacked = packed
+                changed = true
+            }
+        }
+        if changed { try? modelContext.save() }
+    }
+
+    /// Fold a duplicate country's user data into the row that will survive
+    /// de-duplication. Visits are re-parented; a real status wins over
+    /// `.notVisited` and a hand-set status wins over an imported one; notes are
+    /// combined when they differ; the legacy `visitDate` fills in if missing.
+    private func merge(_ loser: Country, into winner: Country) {
+        for visit in Array(loser.visits) {
+            visit.country = winner
+        }
+
+        // Trip stops pointing at the loser would be nullified by its deletion
+        // (losing their flag and map route), so re-point them at the winner.
+        for item in Array(loser.itineraryItems) {
+            item.country = winner
+        }
+
+        if winner.status == .notVisited && loser.status != .notVisited {
+            winner.status = loser.status
+            winner.statusIsImported = loser.statusIsImported
+        } else if winner.status != .notVisited && loser.status != .notVisited
+            && winner.statusIsImported && !loser.statusIsImported
+        {
+            // Prefer the hand-set status over an imported one.
+            winner.status = loser.status
+            winner.statusIsImported = false
+        }
+
+        if winner.notes.isEmpty {
+            winner.notes = loser.notes
+        } else if !loser.notes.isEmpty && !winner.notes.contains(loser.notes) {
+            winner.notes += "\n" + loser.notes
+        }
+
+        if winner.visitDate == nil { winner.visitDate = loser.visitDate }
+
+        // A wishlist/planning mark set on the other device lives on the loser;
+        // without this it would vanish with the row.
+        if winner.planStatus == .none { winner.planStatus = loser.planStatus }
+    }
+}
+
+// MARK: - Store watchers
+
+/// An invisible view owning the store-wide change signatures — and the trip /
+/// visit `@Query`s that feed them. Reading every trip's packing list (or every
+/// visit's date) in a body registers Observation on all of it, so keeping these
+/// keys here means a packing tick or visit edit invalidates this tiny view, not
+/// the whole `ContentView` scene; the O(store) hashes also stop running on
+/// every parent render.
+private struct StoreWatchers: View {
+    let allCountries: [Country]
+    /// Catalog changed (a country added/removed, or a status/plan edited — by
+    /// hand, by an intent, or by the photo importer). Fired once initially so a
+    /// fresh install populates the widget.
+    let onCatalogChanged: () -> Void
+    /// A trip changed: anything the widgets show, or anything the EventKit
+    /// syncs mirror (packing items, stops, places).
+    let onTripsChanged: () -> Void
+    /// Anything achievements derive from changed. Fired once initially so
+    /// changes applied outside this scene's lifetime (intents, a future iCloud
+    /// sync) are caught on the next launch.
+    let onAchievementsChanged: () -> Void
+
+    @Query private var allTrips: [Trip]
+    @Query(sort: \Visit.date) private var allVisits: [Visit]
+
+    var body: some View {
+        Color.clear
+            .onChange(of: catalogKey, initial: true) { onCatalogChanged() }
+            // Trip editing mutates the model live through `@Bindable` bindings —
+            // there's no save chokepoint to hook — so a signature watched from a
+            // long-lived view is the one reliable invalidation point. The
+            // EventKit syncs piggyback on it: any local packing or itinerary
+            // edit lands in Reminders / Calendar after a short debounce.
+            .onChange(of: tripsKey) { onTripsChanged() }
+            .onChange(of: achievementsKey, initial: true) { onAchievementsChanged() }
+    }
+
+    /// A cheap signature of every country's id, status, and plan. Statuses and
+    /// plans change without the row count changing (detail edits, intents,
+    /// photo imports), so watching a count alone would leave caches stale.
     private var catalogKey: Int {
         var hasher = Hasher()
         for country in allCountries {
@@ -1504,97 +1495,164 @@ struct ContentView: View {
         }
         return hasher.finalize()
     }
+}
 
-    /// Diffs the current badge set against the persisted one and toasts anything
-    /// newly earned. Skipped while the catalog is empty (cold launch before the
-    /// store loads) so the persisted set can't be wiped and every badge then
-    /// "re-earned" in one giant toast when the rows arrive.
-    private func celebrateNewAchievements() {
-        guard !allCountries.isEmpty else { return }
-        let achievements = Achievement.all(for: TravelStats(countries: allCountries))
-        let newlyUnlocked = AchievementUnlocks.consumeNewlyUnlocked(from: achievements)
-        guard let toast = AchievementCelebration(newlyUnlocked: newlyUnlocked) else { return }
-        withAnimation(.spring(duration: 0.5)) { celebration = toast }
+// MARK: - World map
+
+/// The interactive world map, extracted from `ContentView` so unrelated parent
+/// state can't re-evaluate the Map content builder.
+///
+/// Diffing is explicit (`Equatable` + `.equatable()` at the use site) and cheap:
+/// the country arrays are pointer-compared (their membership only changes on
+/// insert/delete), the load-once geometry dictionaries by count, and the rest by
+/// value. A country's *status* changing doesn't need to fail `==` — the body
+/// reads `country.status`, so Observation invalidates this view directly.
+private struct WorldMapView: View, Equatable {
+    /// The full catalog, for resolving tap hit-tests to a country.
+    let allCountries: [Country]
+    let visibleCountries: [Country]
+    let polygons: [String: [MKPolygon]]
+    let detailPolygons: [String: [MKPolygon]]
+    let paths: [String: [CGPath]]
+    let boundingRects: [String: MKMapRect]
+    let hitRects: [String: MKMapRect]
+    let centroids: [String: CLLocationCoordinate2D]
+    let hitTestIndex: GeoGridIndex?
+    let mapStyle: MapStyleOption
+    /// The trip whose itinerary route is drawn, if any.
+    let mapTrip: Trip?
+    @Binding var selectedCountry: Country?
+    @Binding var cameraPosition: MapCameraPosition
+    /// Called once, when the map delivers its first camera callback.
+    let onFirstLive: () -> Void
+
+    /// The viewport when the camera is zoomed in enough for minor islands to be
+    /// visible; `nil` at world zoom. Updated by `onMapCameraChange`. Owned here
+    /// so a pan at deep zoom re-evaluates only this view.
+    @State private var detailMapRect: MKMapRect? = nil
+    /// Whether the map has delivered its first camera callback.
+    @State private var becameLive = false
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.visibleCountries.elementsEqual(rhs.visibleCountries, by: ===)
+            && lhs.allCountries.elementsEqual(rhs.allCountries, by: ===)
+            && lhs.polygons.count == rhs.polygons.count
+            && lhs.detailPolygons.count == rhs.detailPolygons.count
+            && lhs.mapStyle == rhs.mapStyle
+            && lhs.mapTrip === rhs.mapTrip
+            && lhs.selectedCountry === rhs.selectedCountry
+            && lhs.cameraPosition == rhs.cameraPosition
     }
 
-    /// Opens the achievements grid: the sheet on iOS, or the in-window Your
-    /// Travels dashboard on macOS (which hosts the achievements page).
-    private func openAchievements() {
-        #if os(macOS)
-            push(.travels)
-        #else
-            showAchievements = true
-        #endif
+    /// Polygons to draw for one country: the major rings always, plus the minor
+    /// islands only when the camera is zoomed in and they intersect the viewport.
+    /// Minor islands are sub-pixel at world zoom, and drawing all ~1,000 of them
+    /// unconditionally made MapKit's initial overlay build take seconds. Tap
+    /// accuracy is unaffected — `paths` always contains every ring.
+    private func mapPolygons(for id: String) -> [MKPolygon] {
+        let majors = polygons[id] ?? []
+        guard let detailMapRect, let minors = detailPolygons[id] else { return majors }
+        let visible = minors.filter { $0.boundingMapRect.intersects(detailMapRect) }
+        return visible.isEmpty ? majors : majors + visible
     }
 
-    /// Recompute the travel summary and hand it to the shared App Group store,
-    /// which redraws the widgets. Delegates to the same helper the mutating
-    /// intents use (see WorldwardIntents.swift) so both paths build the snapshot
-    /// identically.
-    private func updateWidgetSnapshot() {
-        // Fold in any toggles made on the packing widget first, so the snapshot
-        // about to be written can't clobber them with stale model state (a cold
-        // launch writes the snapshot before the scenePhase handler runs).
-        consumePendingPackingToggles()
-        refreshWidgetSnapshot(countries: allCountries, trips: allTrips)
+    var body: some View {
+        MapReader { proxy in
+            Map(position: $cameraPosition) {
+                ForEach(visibleCountries) { country in
+                    CountryMapPolygons(
+                        country: country,
+                        status: country.status,
+                        planStatus: country.planStatus,
+                        polygons: mapPolygons(for: country.id))
+                }
+
+                if let sel = selectedCountry {
+                    if let centroid = centroids[sel.id] {
+                        Annotation(sel.name, coordinate: centroid, anchor: .bottom) {
+                            Text(sel.flagEmoji)
+                                .font(.title)
+                                .padding(4)
+                                .background(
+                                    .ultraThinMaterial, in: RoundedRectangle(cornerRadius: 6))
+                        }
+                    }
+                }
+
+                // The active trip's itinerary route. The modelContext check guards
+                // against drawing a trip deleted while its route was showing.
+                if let trip = mapTrip, trip.modelContext != nil {
+                    TripRouteContent(trip: trip, centroids: centroids)
+                }
+            }
+            .mapStyle(mapStyle.mapStyle)
+            // Track when the camera is zoomed in past a quarter of the world's
+            // width (~90° of longitude — a continent-ish view). Only then are
+            // minor islands drawn; the rect is padded so islands just off-screen
+            // are already filled when a pan ends on them. `.onEnd` keeps the
+            // overlay set stable during the gesture itself.
+            .onMapCameraChange(frequency: .onEnd) { context in
+                if !becameLive {
+                    becameLive = true
+                    onFirstLive()
+                }
+                if context.rect.width < MKMapSize.world.width / 4 {
+                    detailMapRect = context.rect.insetBy(
+                        dx: -context.rect.width * 0.25, dy: -context.rect.height * 0.25)
+                } else if detailMapRect != nil {
+                    detailMapRect = nil
+                }
+            }
+            .mapControls {
+                // MapZoomStepper is macOS-only; iOS zooms via pinch gesture.
+                #if os(macOS)
+                    MapZoomStepper()
+                #endif
+                MapCompass()
+                MapScaleView()
+            }
+            // Use `simultaneousGesture` rather than `.onTapGesture`: attaching a
+            // plain tap recognizer directly to `Map` competes with MapKit's own
+            // pan/pinch recognizers, which intermittently swallows taps and turns
+            // drags into zooms. A simultaneous SpatialTapGesture runs alongside the
+            // map's gestures instead of fighting them for each touch.
+            .simultaneousGesture(
+                SpatialTapGesture().onEnded { event in
+                    if let coordinate = proxy.convert(event.location, from: .local) {
+                        handleTap(at: coordinate)
+                    }
+                }
+            )
+            // Prevent CAMetalLayer zero-size warnings during sheet transitions.
+            .frame(minWidth: 1, minHeight: 1)
+        }
     }
 
-    /// Applies packing-list toggles made on the widget to the model. Ids that no
-    /// longer resolve (item deleted, possibly on another device) are dropped. A
-    /// real change saves, which bumps `tripsKey` and rewrites the snapshot from
-    /// the model as the new truth. Safe to call on every activation.
-    private func consumePendingPackingToggles() {
-        let toggles = PackingToggleStore.consume()
-        guard !toggles.isEmpty else { return }
-        // Packing lists are tiny (tens of rows), so fetch-all beats building a
-        // per-id predicate.
-        let items = (try? modelContext.fetch(FetchDescriptor<PackingItem>())) ?? []
-        var changed = false
-        for item in items {
-            if let packed = toggles[item.dedupID], item.isPacked != packed {
-                item.isPacked = packed
-                changed = true
+    /// Resolves a tap to a country — spatial grid index first (typically 5-15
+    /// candidates instead of all ~250), then per-ring path hit-testing — and
+    /// selects it, centering the camera on its mainland.
+    private func handleTap(at coordinate: CLLocationCoordinate2D) {
+        let mapPoint = MKMapPoint(coordinate)
+        let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
+
+        let candidates = hitTestIndex?.candidates(for: mapPoint) ?? allCountries.map(\.id)
+        for id in candidates {
+            guard let countryRect = hitRects[id], countryRect.contains(mapPoint) else { continue }
+
+            for path in paths[id] ?? [] {
+                if path.contains(cgPoint) {
+                    if let country = allCountries.first(where: { $0.id == id }) {
+                        selectedCountry = country
+                        // Animate the map to center on the tapped country.
+                        if let rect = boundingRects[id] {
+                            withAnimation(.easeInOut(duration: 0.4)) {
+                                cameraPosition = .region(MKCoordinateRegion(rect))
+                            }
+                        }
+                    }
+                    return
+                }
             }
         }
-        if changed { try? modelContext.save() }
-    }
-
-    /// Fold a duplicate country's user data into the row that will survive
-    /// de-duplication. Visits are re-parented; a real status wins over
-    /// `.notVisited` and a hand-set status wins over an imported one; notes are
-    /// combined when they differ; the legacy `visitDate` fills in if missing.
-    private func merge(_ loser: Country, into winner: Country) {
-        for visit in Array(loser.visits) {
-            visit.country = winner
-        }
-
-        // Trip stops pointing at the loser would be nullified by its deletion
-        // (losing their flag and map route), so re-point them at the winner.
-        for item in Array(loser.itineraryItems) {
-            item.country = winner
-        }
-
-        if winner.status == .notVisited && loser.status != .notVisited {
-            winner.status = loser.status
-            winner.statusIsImported = loser.statusIsImported
-        } else if winner.status != .notVisited && loser.status != .notVisited
-            && winner.statusIsImported && !loser.statusIsImported
-        {
-            // Prefer the hand-set status over an imported one.
-            winner.status = loser.status
-            winner.statusIsImported = false
-        }
-
-        if winner.notes.isEmpty {
-            winner.notes = loser.notes
-        } else if !loser.notes.isEmpty && !winner.notes.contains(loser.notes) {
-            winner.notes += "\n" + loser.notes
-        }
-
-        if winner.visitDate == nil { winner.visitDate = loser.visitDate }
-
-        // A wishlist/planning mark set on the other device lives on the loser;
-        // without this it would vanish with the row.
-        if winner.planStatus == .none { winner.planStatus = loser.planStatus }
     }
 }

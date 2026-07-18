@@ -116,45 +116,6 @@ enum ImportPhase {
     case results
 }
 
-/// A simple grid-based spatial index that maps a geographic point to a small
-/// set of candidate country ids. The world is divided into cells (~10° × 10°);
-/// during scanning the photo scanner only tests countries whose bounding rect
-/// overlaps the cell the photo falls into, instead of iterating all ~250 countries
-/// for every photo.
-private struct SpatialIndex: @unchecked Sendable {
-    private let cols: Int
-    private let rows: Int
-    private let world = MKMapRect.world
-    /// Flat cell index → country ids whose bounding rect intersects that cell.
-    private var cells: [Int: [String]] = [:]
-
-    /// Build the grid from the given country bounding rects.
-    nonisolated
-        init(rects: [String: MKMapRect], cols: Int = 36, rows: Int = 18)
-    {
-        self.cols = cols
-        self.rows = rows
-        for (id, rect) in rects {
-            let minCol = max(0, Int((rect.minX / world.width) * Double(cols)))
-            let maxCol = min(cols - 1, Int((rect.maxX / world.width) * Double(cols)))
-            let minRow = max(0, Int((rect.minY / world.height) * Double(rows)))
-            let maxRow = min(rows - 1, Int((rect.maxY / world.height) * Double(rows)))
-            for col in minCol...maxCol {
-                for row in minRow...maxRow {
-                    cells[row * cols + col, default: []].append(id)
-                }
-            }
-        }
-    }
-
-    /// The country ids whose bounding rect covers (or is near) the given point.
-    nonisolated func candidates(for point: MKMapPoint) -> [String] {
-        let col = min(cols - 1, max(0, Int((point.x / world.width) * Double(cols))))
-        let row = min(rows - 1, max(0, Int((point.y / world.height) * Double(rows))))
-        return cells[row * cols + col] ?? []
-    }
-}
-
 /// Handles importing visit data from Apple Photos based on location metadata.
 /// Uses the existing country polygon data to map photo coordinates to countries.
 ///
@@ -307,7 +268,7 @@ class PhotoImporter {
         // Build the spatial index from country bounding rects so each photo only
         // tests countries whose bounding box overlaps its grid cell (~5-15 candidates
         // instead of iterating all ~250 country ids per photo).
-        let spatialIndex = SpatialIndex(rects: rects)
+        let spatialIndex = GeoGridIndex(rects: rects)
 
         // Collect every photo (date + identifier) that falls inside each country.
         var photosByCountry: [String: [(date: Date, id: String)]] = [:]

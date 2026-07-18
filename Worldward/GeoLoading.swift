@@ -168,3 +168,39 @@ extension MKMapRect {
     /// Area in squared map points; a cheap proxy for comparing landmass sizes.
     nonisolated var area: Double { width * height }
 }
+
+/// A grid-based spatial index mapping a map point to a small set of candidate
+/// country ids. The world is divided into ~10° × 10° cells; a lookup only
+/// returns the countries whose bounding rect overlaps the queried cell
+/// (typically 5-15 candidates instead of all ~250). Shared by the map's tap
+/// hit-testing and the photo importer's coordinate matching — `nonisolated`
+/// so the importer's off-main scan can build and query it.
+nonisolated struct GeoGridIndex: Sendable {
+    private let cols: Int
+    private let rows: Int
+    private let world = MKMapRect.world
+    private var cells: [Int: [String]] = [:]
+
+    init(rects: [String: MKMapRect], cols: Int = 36, rows: Int = 18) {
+        self.cols = cols
+        self.rows = rows
+        for (id, rect) in rects {
+            let minCol = max(0, Int((rect.minX / world.width) * Double(cols)))
+            let maxCol = min(cols - 1, Int((rect.maxX / world.width) * Double(cols)))
+            let minRow = max(0, Int((rect.minY / world.height) * Double(rows)))
+            let maxRow = min(rows - 1, Int((rect.maxY / world.height) * Double(rows)))
+            for col in minCol...maxCol {
+                for row in minRow...maxRow {
+                    cells[row * cols + col, default: []].append(id)
+                }
+            }
+        }
+    }
+
+    /// Country ids whose bounding rect spans the grid cell containing `point`.
+    func candidates(for point: MKMapPoint) -> [String] {
+        let col = min(cols - 1, max(0, Int((point.x / world.width) * Double(cols))))
+        let row = min(rows - 1, max(0, Int((point.y / world.height) * Double(rows))))
+        return cells[row * cols + col] ?? []
+    }
+}
