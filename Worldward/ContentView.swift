@@ -776,6 +776,11 @@ struct ContentView: View {
 
     var body: some View {
         rootView
+            // Publishes the country polygon geometry (empty until the GeoJSON
+            // loads) so the trip photo suggestions can match photo locations
+            // to the trip's countries without parameter-threading it through
+            // the Going tab and the macOS inspector.
+            .environment(\.countryPaths, countryPaths)
             // The achievement-unlock toast floats over whichever tab is
             // frontmost. `.task(id:)` restarts the auto-dismiss timer whenever
             // a newer unlock replaces the toast mid-display.

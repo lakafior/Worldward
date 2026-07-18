@@ -46,6 +46,7 @@ Every country rendered as a tap-able map polygon from Natural Earth data (~250 c
 
 - Record visits with dates and notes for every country.
 - **Attach photos** from the system photo picker — thumbnails are fetched live from your library (only stable identifiers stored).
+- **Post-trip photo suggestions** — once a trip ends, its detail view offers the photos taken during the trip, grouped per country by location metadata, ready to attach to visits in one tap.
 - Multiple visits per country, each with its own date and photo set.
 - **Smart default date** — new visits default to one day after your most recent visit.
 
@@ -343,16 +344,12 @@ WorldwardWidgets/               # Widget extension target
 Planned next, in rough priority order — everything stays native-only, lightweight, and local-first:
 
 - **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, converging de-duplication); flipping it on awaits a paid Apple Developer membership.
-
-Under consideration:
-
 - **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
 
 Deeper Apple-ecosystem integration:
 
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
 - **Deeper Calendar integration** (EventKit, upgrade of the current export) — a dedicated "Worldward" calendar with one event per stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated when the itinerary changes.
-- **Smarter Photos suggestions** (PhotoKit, already used) — after a trip ends, auto-suggest photos from the trip's date range (and location, where metadata allows) to attach to visits.
 - **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.
 
 ---

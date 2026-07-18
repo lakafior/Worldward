@@ -343,6 +343,7 @@ struct TripDetailView: View {
     @State private var collapsedGroupIDs: Set<String> = []
     @State private var showSaveTemplate = false
     @State private var newTemplateName = ""
+    @State private var showPhotoSuggestions = false
 
     /// Translates freshly generated (English) assistant output into the user's
     /// language before it's saved. The on-device LLM names items in English;
@@ -392,6 +393,7 @@ struct TripDetailView: View {
                     .disabled(trip.itinerary.isEmpty)
                 }
 
+                tripPhotosSection
                 itinerarySection
                 packingSections
                 notesSection
@@ -413,6 +415,9 @@ struct TripDetailView: View {
                 CountryPickerSheet(allCountries: allCountries) { country in
                     addStop(country: country)
                 }
+            }
+            .sheet(isPresented: $showPhotoSuggestions) {
+                TripPhotoSuggestionsSheet(trip: trip)
             }
             .alert("New container", isPresented: $isAddingContainer) {
                 TextField("Name", text: $newContainerName)
@@ -529,6 +534,24 @@ struct TripDetailView: View {
             exportPDFAndOpen()
         } label: {
             Label("Export PDF", systemImage: "doc.richtext")
+        }
+    }
+
+    /// Once the trip's end date has passed, offers to find the library photos
+    /// taken during the trip and attach them to visits. Purely derived from
+    /// `endDate` — no stored "suggested" flag, no background work, and no photo
+    /// permission prompt until the button is tapped.
+    @ViewBuilder private var tripPhotosSection: some View {
+        if trip.endDate < Date(), !trip.countries.isEmpty {
+            Section {
+                Button {
+                    showPhotoSuggestions = true
+                } label: {
+                    Label("Attach Trip Photos", systemImage: "photo.on.rectangle.angled")
+                }
+            } footer: {
+                Text("Find photos taken during this trip and attach them to your country visits.")
+            }
         }
     }
 
