@@ -73,9 +73,13 @@ struct StatisticsView: View {
     }
 
     private var scrollContent: some View {
+        // Lazy so below-the-fold sections — especially the timeline, which can
+        // hold hundreds of visit rows with photo strips — build only when
+        // scrolled into view. The headline figures lead; the browsable history
+        // closes the page.
         ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
-                TimelineSection(countries: countries)
+            LazyVStack(alignment: .leading, spacing: 28) {
+                HeroSection(stats: stats)
 
                 StatCardsSection(stats: stats)
 
@@ -102,6 +106,8 @@ struct StatisticsView: View {
                         onShare: { shareCardYear = yearStat },
                         onPlayWrapped: { wrappedYear = yearStat })
                 }
+
+                TimelineSection(countries: countries)
             }
             .padding()
         }
@@ -125,6 +131,47 @@ struct StatisticsView: View {
             Label("Share Image Card", systemImage: "square.and.arrow.up")
         }
         .disabled(!stats.hasTravel)
+    }
+}
+
+// MARK: - Hero
+
+/// The headline figures the whole app builds toward: countries and continents
+/// visited, with a strip of the flags collected. Leads the dashboard so the
+/// answer to "how far have I come?" is visible before any scrolling.
+private struct HeroSection: View {
+    let stats: TravelStats
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if stats.hasTravel {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("\(stats.visitedCountries)")
+                        .font(.system(size: 56, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.brandGradient)
+                    VStack(alignment: .leading) {
+                        Text("of \(stats.totalCountries) countries")
+                            .font(.headline)
+                        Text("\(stats.visitedContinents) of \(stats.totalContinents) continents")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                if !stats.visitedFlags.isEmpty {
+                    Text(stats.visitedFlags.prefix(60).joined(separator: " "))
+                        .font(.title3)
+                        .lineLimit(3)
+                }
+            } else {
+                ContentUnavailableView(
+                    "No travels yet",
+                    systemImage: "globe",
+                    description: Text(
+                        "Mark countries as visited or import from Photos to start earning achievements."
+                    ))
+            }
+        }
     }
 }
 
@@ -281,11 +328,18 @@ private struct ContinentSection: View {
 
 // MARK: - Timeline
 
-/// A chronological list of every recorded visit across all countries, grouped
-/// by year. Each entry shows the flag, country name, date, notes, and photo
+/// A chronological list of recorded visits across all countries, grouped by
+/// year. Each entry shows the flag, country name, date, notes, and photo
 /// thumbnails — a browsable travel history embedded in the statistics view.
+/// Collapsed to the most recent visits by default; the full history (which for
+/// photo-import users can run to hundreds of rows) expands on demand.
 private struct TimelineSection: View {
     let countries: [Country]
+
+    /// How many visits the collapsed timeline shows.
+    private static let collapsedLimit = 20
+
+    @State private var showAll = false
 
     /// All visits across every country, sorted newest-first.
     private var allVisits: [Visit] {
@@ -294,53 +348,73 @@ private struct TimelineSection: View {
             .sorted { $0.date > $1.date }
     }
 
-    /// Visits grouped by year, descending.
-    private var groupedByYear: [(year: Int, visits: [Visit])] {
-        let grouped = Dictionary(grouping: allVisits) { visit in
-            Calendar.current.component(.year, from: visit.date)
+    /// The given visits grouped by year, descending. Input order (newest-first)
+    /// is preserved within each group.
+    private func groupedByYear(_ visits: [Visit]) -> [(year: Int, visits: [Visit])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: visits) { visit in
+            calendar.component(.year, from: visit.date)
         }
         return grouped.keys
             .sorted(by: >)
-            .map { year in
-                (year: year, visits: grouped[year]!.sorted { $0.date > $1.date })
-            }
+            .map { year in (year: year, visits: grouped[year]!) }
     }
 
     @ViewBuilder var body: some View {
+        let allVisits = allVisits
         if allVisits.isEmpty {
             EmptyView()
         } else {
+            let shown = showAll ? allVisits : Array(allVisits.prefix(Self.collapsedLimit))
+            let grouped = groupedByYear(shown)
             VStack(alignment: .leading, spacing: 12) {
                 TimelineHeader()
 
-                // Keyed on stable identity (year / model id) rather than array
-                // indices, so deleting a visit elsewhere can't mis-animate rows.
-                ForEach(groupedByYear, id: \.year) { group in
-                    VStack(alignment: .leading, spacing: 0) {
-                        // Year header with count
-                        HStack(spacing: 6) {
-                            Text(String(group.year))
-                                .font(.title3.weight(.bold))
-                            Text("^[\(group.visits.count) visit](inflect: true)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical, 8)
+                // Lazy so an expanded multi-hundred-row history only builds the
+                // year groups actually scrolled into view. Keyed on stable
+                // identity (year / model id) rather than array indices, so
+                // deleting a visit elsewhere can't mis-animate rows.
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(grouped, id: \.year) { group in
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Year header with count
+                            HStack(spacing: 6) {
+                                Text(String(group.year))
+                                    .font(.title3.weight(.bold))
+                                Text("^[\(group.visits.count) visit](inflect: true)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 8)
 
-                        // Timeline line + entries
-                        ForEach(group.visits, id: \.persistentModelID) { visit in
-                            TimelineEntryRow(
-                                visit: visit,
-                                isLast: visit.persistentModelID
-                                    == group.visits.last?.persistentModelID
-                            )
-                        }
+                            // Timeline line + entries
+                            ForEach(group.visits, id: \.persistentModelID) { visit in
+                                TimelineEntryRow(
+                                    visit: visit,
+                                    isLast: visit.persistentModelID
+                                        == group.visits.last?.persistentModelID
+                                )
+                            }
 
-                        if group.year != groupedByYear.last?.year {
-                            Divider()
-                                .padding(.vertical, 4)
+                            if group.year != grouped.last?.year {
+                                Divider()
+                                    .padding(.vertical, 4)
+                            }
                         }
                     }
+                }
+
+                if allVisits.count > Self.collapsedLimit {
+                    Button {
+                        withAnimation { showAll.toggle() }
+                    } label: {
+                        (showAll
+                            ? Text("Show recent only")
+                            : Text("Show all ^[\(allVisits.count) visit](inflect: true)"))
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.borderless)
+                    .tint(.brand)
                 }
             }
             .padding(.vertical, 4)

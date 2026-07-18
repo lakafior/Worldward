@@ -31,6 +31,10 @@ extension PHAsset: @retroactive Identifiable {
 /// A horizontal strip of photo thumbnails for a visit, loaded from the photo
 /// library by their stable identifiers. Tapping a thumbnail opens a full-size
 /// viewer in a sheet. Photos that no longer exist are simply skipped.
+///
+/// The identifiers are resolved to assets in a single library fetch per strip
+/// (not one per thumbnail), and the shared thumbnail cache is warmed for the
+/// whole strip so scrolling back and forth reuses decoded images.
 struct VisitPhotosView: View {
     let identifiers: [String]
     /// When provided, each thumbnail gains a context-menu action to detach the
@@ -39,43 +43,85 @@ struct VisitPhotosView: View {
     /// the timeline and import preview use it.
     var onRemove: ((String) -> Void)? = nil
 
+    @State private var assets: [PHAsset] = []
     @State private var viewerAsset: PHAsset?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                ForEach(identifiers, id: \.self) { identifier in
-                    PhotoThumbnail(identifier: identifier) { asset in
-                        viewerAsset = asset
-                    }
-                    .contextMenu {
-                        if let onRemove {
-                            Button(role: .destructive) {
-                                onRemove(identifier)
-                            } label: {
-                                Label("Remove from Visit", systemImage: "trash")
+            // Lazy so a long strip only requests the thumbnails actually on
+            // screen; the cache warmed below makes the rest instant anyway.
+            LazyHStack(spacing: 6) {
+                ForEach(assets) { asset in
+                    PhotoThumbnail(asset: asset) { viewerAsset = $0 }
+                        .contextMenu {
+                            if let onRemove {
+                                Button(role: .destructive) {
+                                    onRemove(asset.localIdentifier)
+                                } label: {
+                                    Label("Remove from Visit", systemImage: "trash")
+                                }
                             }
                         }
-                    }
                 }
             }
             .padding(.vertical, 2)
         }
+        .task(id: identifiers) { resolveAssets() }
+        .onDisappear { PhotoThumbnail.stopCaching(assets) }
         .sheet(item: $viewerAsset) { asset in
             PhotoViewer(asset: asset)
         }
     }
+
+    /// Resolves the stored identifiers to assets in one fetch, preserving their
+    /// order and skipping photos deleted from the library, then warms the
+    /// shared thumbnail cache for the strip.
+    private func resolveAssets() {
+        let fetched = PHAsset.fetchAssets(withLocalIdentifiers: identifiers, options: nil)
+        var byID: [String: PHAsset] = [:]
+        fetched.enumerateObjects { asset, _, _ in byID[asset.localIdentifier] = asset }
+        assets = identifiers.compactMap { byID[$0] }
+        PhotoThumbnail.startCaching(assets)
+    }
 }
 
-/// A single square thumbnail that resolves its asset and image lazily.
+/// A single square thumbnail served by the shared caching manager. In-flight
+/// requests are cancelled when the thumbnail scrolls away before they land.
 private struct PhotoThumbnail: View {
-    let identifier: String
+    let asset: PHAsset
     let onTap: (PHAsset) -> Void
 
     @State private var image: Image?
-    @State private var asset: PHAsset?
+    @State private var requestID: PHImageRequestID?
 
-    private let side: CGFloat = 56
+    private static let side: CGFloat = 56
+    /// 2x the display size for crisp thumbnails on retina displays.
+    private static let targetSize = CGSize(width: side * 2, height: side * 2)
+
+    /// One caching manager + options shared by every strip in the app, so the
+    /// timeline, country details, and import preview all draw from (and warm)
+    /// the same decoded-thumbnail pool.
+    private static let manager = PHCachingImageManager()
+    private static let options: PHImageRequestOptions = {
+        let options = PHImageRequestOptions()
+        options.isNetworkAccessAllowed = true
+        options.deliveryMode = .opportunistic
+        options.resizeMode = .fast
+        return options
+    }()
+
+    /// Pre-decodes thumbnails for a strip's assets (parameters must mirror the
+    /// per-thumbnail request for the cache to be hit).
+    static func startCaching(_ assets: [PHAsset]) {
+        manager.startCachingImages(
+            for: assets, targetSize: targetSize, contentMode: .aspectFill, options: options)
+    }
+
+    /// Releases a strip's cached thumbnails once it leaves the screen.
+    static func stopCaching(_ assets: [PHAsset]) {
+        manager.stopCachingImages(
+            for: assets, targetSize: targetSize, contentMode: .aspectFill, options: options)
+    }
 
     var body: some View {
         ZStack {
@@ -92,35 +138,28 @@ private struct PhotoThumbnail: View {
                     }
             }
         }
-        .frame(width: side, height: side)
+        .frame(width: Self.side, height: Self.side)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .contentShape(RoundedRectangle(cornerRadius: 6))
-        .onTapGesture {
-            if let asset { onTap(asset) }
-        }
-        .task(id: identifier) {
-            await load()
-        }
+        .onTapGesture { onTap(asset) }
+        .onAppear { load() }
+        .onDisappear { cancelRequest() }
     }
 
-    private func load() async {
-        let fetched = PHAsset.fetchAssets(withLocalIdentifiers: [identifier], options: nil)
-        guard let asset = fetched.firstObject else { return }
-        self.asset = asset
-
-        let options = PHImageRequestOptions()
-        options.isNetworkAccessAllowed = true
-        options.deliveryMode = .opportunistic
-        options.resizeMode = .fast
-
-        // 2x the display size for crisp thumbnails on retina displays.
-        let target = CGSize(width: side * 2, height: side * 2)
-        PHImageManager.default().requestImage(
-            for: asset, targetSize: target, contentMode: .aspectFill, options: options
+    private func load() {
+        guard image == nil, requestID == nil else { return }
+        requestID = Self.manager.requestImage(
+            for: asset, targetSize: Self.targetSize, contentMode: .aspectFill,
+            options: Self.options
         ) { result, _ in
             guard let result else { return }
             Task { @MainActor in self.image = Image(platformImage: result) }
         }
+    }
+
+    private func cancelRequest() {
+        if let requestID { Self.manager.cancelImageRequest(requestID) }
+        requestID = nil
     }
 }
 
