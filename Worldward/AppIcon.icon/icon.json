@@ -60,6 +60,12 @@
     {
       "layers" : [
         {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "automatic"
+            }
+          ],
           "image-name" : "layer-3-lighthouse.svg",
           "name" : "layer-3-lighthouse"
         }
@@ -71,7 +77,7 @@
         "strength" : 0.5
       },
       "shadow" : {
-        "kind" : "neutral",
+        "kind" : "layer-color",
         "opacity" : 1.6
       },
       "specular" : "outside",
