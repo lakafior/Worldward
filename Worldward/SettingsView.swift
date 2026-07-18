@@ -46,6 +46,7 @@ struct SettingsView: View {
     @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
     @AppStorage(CalendarSync.cleanupDaysKey) private var calendarCleanupDays =
         CalendarSync.cleanupDaysDefault
+    @AppStorage(Worldward.syncEnabledKey) private var iCloudSyncEnabled = false
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -85,6 +86,7 @@ struct SettingsView: View {
             packingManagementSection
             calendarSection
             remindersSection
+            syncSection
             dataSection
             #if !os(macOS)
                 aboutSection
@@ -384,6 +386,47 @@ struct SettingsView: View {
         } message: {
             Text(
                 "Allow Reminders access for Worldward in Settings → Privacy & Security → Reminders, then turn sync on again."
+            )
+        }
+    }
+
+    /// `true` when this launch's model container actually attached CloudKit —
+    /// distinct from the toggle, which only takes effect on the next launch or
+    /// can fail (build without the iCloud capability, no iCloud account).
+    private var iCloudSyncActive: Bool {
+        Worldward.sharedModelContainer.configurations.contains {
+            $0.cloudKitContainerIdentifier != nil
+        }
+    }
+
+    /// The iCloud-sync opt-in. The flag is read once at launch, when
+    /// `Worldward.sharedModelContainer` is built, so a change applies on the
+    /// next launch. The status row keeps the fallback honest: if CloudKit
+    /// couldn't attach, the user sees "not active" rather than assuming the
+    /// toggle alone means their data is syncing.
+    @ViewBuilder private var syncSection: some View {
+        Section {
+            Toggle(isOn: $iCloudSyncEnabled) {
+                Label("Sync with iCloud", systemImage: "icloud")
+            }
+            if iCloudSyncEnabled {
+                Label {
+                    Text(
+                        iCloudSyncActive
+                            ? "iCloud sync is active on this device."
+                            : "Sync is not active yet. Relaunch Worldward to apply — if it stays off, check that you're signed in to iCloud on this device."
+                    )
+                } icon: {
+                    Image(systemName: iCloudSyncActive ? "checkmark.icloud" : "exclamationmark.icloud")
+                        .foregroundStyle(iCloudSyncActive ? Color.green : Color.orange)
+                }
+                .font(.callout)
+            }
+        } header: {
+            Text("iCloud")
+        } footer: {
+            Text(
+                "Keeps your travel data — statuses, visits, trips, packing lists, and attachments — up to date across your devices through your personal iCloud. Takes effect the next time Worldward starts."
             )
         }
     }

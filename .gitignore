@@ -68,3 +68,6 @@ fastlane/test_output/
 # AI
 gemini.md
 .claude
+
+# Docs
+docs

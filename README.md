@@ -350,7 +350,7 @@ WorldwardWidgets/               # Widget extension target
 
 Planned next, in rough priority order — everything stays native-only, lightweight, and local-first:
 
-- **iCloud sync** — the schema is already CloudKit-safe (per-row dedup tokens, converging de-duplication); flipping it on awaits a paid Apple Developer membership. Trip attachments (stored with `.externalStorage`) will ride along automatically as `CKAsset`s.
+- **iCloud sync** — the schema is CloudKit-safe (per-row dedup tokens, converging de-duplication) and the app-side plumbing is in place: an opt-in Settings toggle switches the store to CloudKit, falling back to local when the build lacks the entitlement. Going live awaits paid Apple Developer membership activation (see `docs/paid-membership-checklist.md`). Trip attachments (stored with `.externalStorage`) will ride along automatically as `CKAsset`s.
 - **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
 - **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.

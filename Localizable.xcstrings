@@ -38768,6 +38768,185 @@
         }
       }
     },
+    "Keeps your travel data — statuses, visits, trips, packing lists, and attachments — up to date across your devices through your personal iCloud. Takes effect the next time Worldward starts." : {
+      "comment" : "Settings footer explaining the iCloud sync toggle.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keeps your travel data — statuses, visits, trips, packing lists, and attachments — up to date across your devices through your personal iCloud. Takes effect the next time Worldward starts."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддържа данните за пътуванията ви — статуси, посещения, пътувания, списъци за багаж и прикачени файлове — актуални на всичките ви устройства чрез личния ви iCloud. Влиза в сила при следващото стартиране на Worldward."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udržuje vaše cestovní data — stavy, návštěvy, cesty, balicí seznamy a přílohy — aktuální na všech vašich zařízeních prostřednictvím vašeho osobního iCloudu. Projeví se při příštím spuštění Worldwardu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Holder dine rejsedata — statusser, besøg, rejser, pakkelister og bilag — opdateret på tværs af dine enheder via din personlige iCloud. Træder i kraft, næste gang Worldward starter."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hält deine Reisedaten — Status, Besuche, Reisen, Packlisten und Anhänge — über deine persönliche iCloud auf allen deinen Geräten aktuell. Wird beim nächsten Start von Worldward wirksam."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Διατηρεί τα ταξιδιωτικά σας δεδομένα — καταστάσεις, επισκέψεις, ταξίδια, λίστες αποσκευών και συνημμένα — ενημερωμένα σε όλες τις συσκευές σας μέσω του προσωπικού σας iCloud. Ισχύει από την επόμενη εκκίνηση του Worldward."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tenas viajn vojaĝajn datumojn — statusojn, vizitojn, vojaĝojn, pakolistojn kaj kunsendaĵojn — ĝisdataj tra viaj aparatoj per via persona iCloud. Ekvalidas ĉe la sekva lanĉo de Worldward."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene tus datos de viaje — estados, visitas, viajes, listas de equipaje y adjuntos — actualizados en todos tus dispositivos a través de tu iCloud personal. Se aplica la próxima vez que se inicie Worldward."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoiab sinu reisiandmed — olekud, külastused, reisid, pakkimisnimekirjad ja manused — kõigis sinu seadmetes ajakohasena sinu isikliku iCloudi kaudu. Jõustub Worldwardi järgmisel käivitamisel."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pitää matkatietosi — tilat, vierailut, matkat, pakkauslistat ja liitteet — ajan tasalla kaikilla laitteillasi henkilökohtaisen iCloudisi kautta. Tulee voimaan, kun Worldward käynnistetään seuraavan kerran."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garde vos données de voyage — statuts, visites, voyages, listes de bagages et pièces jointes — à jour sur tous vos appareils via votre iCloud personnel. Prend effet au prochain démarrage de Worldward."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coinníonn sé do shonraí taistil — stádais, cuairteanna, turais, liostaí pacála agus ceangaltáin — cothrom le dáta ar do ghléasanna go léir trí do iCloud pearsanta. Tiocfaidh sé i bhfeidhm an chéad uair eile a thosóidh Worldward."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Održava vaše podatke o putovanjima — statuse, posjete, putovanja, popise za pakiranje i privitke — ažurnima na svim vašim uređajima putem vašeg osobnog iClouda. Primjenjuje se pri sljedećem pokretanju Worldwarda."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naprakészen tartja utazási adataidat — állapotokat, látogatásokat, utazásokat, csomagolólistákat és mellékleteket — az összes eszközödön a személyes iCloudodon keresztül. A Worldward következő indításakor lép életbe."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene i tuoi dati di viaggio — stati, visite, viaggi, liste bagagli e allegati — aggiornati su tutti i tuoi dispositivi tramite il tuo iCloud personale. Ha effetto al prossimo avvio di Worldward."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旅行データ（ステータス、訪問、旅行、パッキングリスト、添付ファイル）を、個人のiCloudを通じてすべてのデバイスで最新の状態に保ちます。次回Worldwardを起動したときに有効になります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여행 데이터(상태, 방문, 여행, 짐 목록, 첨부 파일)를 개인 iCloud를 통해 모든 기기에서 최신 상태로 유지합니다. 다음에 Worldward를 실행할 때 적용됩니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jūsų kelionių duomenys — būsenos, apsilankymai, kelionės, daiktų sąrašai ir priedai — nuolat atnaujinami visuose jūsų įrenginiuose per jūsų asmeninį iCloud. Įsigalioja kitą kartą paleidus Worldward."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uztur jūsu ceļojumu datus — statusus, apmeklējumus, ceļojumus, mantu sarakstus un pielikumus — aktuālus visās jūsu ierīcēs, izmantojot jūsu personīgo iCloud. Stājas spēkā nākamajā Worldward palaišanas reizē."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iżomm id-data tal-ivvjaġġar tiegħek — statuses, żjarat, vjaġġi, listi tal-ippakkjar u annessi — aġġornata fuq l-apparati kollha tiegħek permezz tal-iCloud personali tiegħek. Jidħol fis-seħħ id-darba li jmiss li jinfetaħ Worldward."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Houdt je reisgegevens — statussen, bezoeken, reizen, paklijsten en bijlagen — up-to-date op al je apparaten via je persoonlijke iCloud. Wordt van kracht bij de volgende start van Worldward."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utrzymuje Twoje dane podróży — statusy, wizyty, podróże, listy do spakowania i załączniki — aktualne na wszystkich Twoich urządzeniach za pośrednictwem Twojego osobistego iCloud. Zacznie obowiązywać przy następnym uruchomieniu Worldward."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantém seus dados de viagem — status, visitas, viagens, listas de bagagem e anexos — atualizados em todos os seus dispositivos por meio do seu iCloud pessoal. Entra em vigor na próxima vez que o Worldward for iniciado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantém os seus dados de viagem — estados, visitas, viagens, listas de bagagem e anexos — atualizados em todos os seus dispositivos através do seu iCloud pessoal. Entra em vigor na próxima vez que o Worldward for iniciado."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Îți menține datele de călătorie — stări, vizite, călătorii, liste de bagaje și atașamente — actualizate pe toate dispozitivele tale prin iCloud-ul tău personal. Se aplică la următoarea pornire a aplicației Worldward."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udržiava vaše cestovné údaje — stavy, návštevy, cesty, baliace zoznamy a prílohy — aktuálne na všetkých vašich zariadeniach prostredníctvom vášho osobného iCloudu. Prejaví sa pri ďalšom spustení Worldwardu."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohranja vaše potovalne podatke — statuse, obiske, potovanja, sezname za pakiranje in priloge — posodobljene v vseh vaših napravah prek vašega osebnega iClouda. Velja ob naslednjem zagonu aplikacije Worldward."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Håller dina resedata — statusar, besök, resor, packlistor och bilagor — uppdaterade på alla dina enheter via din personliga iCloud. Träder i kraft nästa gång Worldward startas."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过你的个人 iCloud，让你的旅行数据（状态、到访、旅程、行李清单和附件）在所有设备上保持同步。将在下次启动 Worldward 时生效。"
+          }
+        }
+      }
+    },
     "Landmark" : {
       "comment" : "Label for a map pin that represents a landmark.",
       "isCommentAutoGenerated" : true,
@@ -75180,6 +75359,185 @@
         }
       }
     },
+    "Sync is not active yet. Relaunch Worldward to apply — if it stays off, check that you're signed in to iCloud on this device." : {
+      "comment" : "Status row shown when the sync toggle is on but CloudKit could not attach.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync is not active yet. Relaunch Worldward to apply — if it stays off, check that you're signed in to iCloud on this device."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синхронизирането още не е активно. Рестартирайте Worldward, за да се приложи — ако остане изключено, проверете дали сте влезли в iCloud на това устройство."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizace zatím není aktivní. Spusťte Worldward znovu — pokud zůstane vypnutá, zkontrolujte, zda jste na tomto zařízení přihlášeni k iCloudu."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronisering er ikke aktiv endnu. Genstart Worldward for at anvende — hvis den forbliver slået fra, så tjek, at du er logget ind på iCloud på denne enhed."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Synchronisierung ist noch nicht aktiv. Starte Worldward neu — bleibt sie aus, prüfe, ob du auf diesem Gerät bei iCloud angemeldet bist."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ο συγχρονισμός δεν είναι ακόμη ενεργός. Επανεκκινήστε το Worldward για εφαρμογή — αν παραμένει ανενεργός, ελέγξτε ότι έχετε συνδεθεί στο iCloud σε αυτήν τη συσκευή."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronigo ankoraŭ ne estas aktiva. Relanĉu Worldward por apliki — se ĝi restas malŝaltita, kontrolu ĉu vi estas ensalutinta al iCloud en ĉi tiu aparato."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización aún no está activa. Reinicia Worldward para aplicarla — si sigue desactivada, comprueba que hayas iniciado sesión en iCloud en este dispositivo."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sünkroonimine pole veel aktiivne. Rakendamiseks käivita Worldward uuesti — kui see jääb välja lülitatuks, kontrolli, kas oled selles seadmes iCloudi sisse logitud."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronointi ei ole vielä käytössä. Käynnistä Worldward uudelleen — jos se pysyy poissa käytöstä, tarkista, että olet kirjautunut iCloudiin tällä laitteella."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La synchronisation n'est pas encore active. Relancez Worldward pour l'appliquer — si elle reste inactive, vérifiez que vous êtes connecté à iCloud sur cet appareil."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níl an sioncronú gníomhach go fóill. Atosaigh Worldward chun é a chur i bhfeidhm — má fhanann sé múchta, seiceáil go bhfuil tú sínithe isteach in iCloud ar an ngléas seo."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronizacija još nije aktivna. Ponovno pokrenite Worldward — ako ostane isključena, provjerite jeste li na ovom uređaju prijavljeni u iCloud."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A szinkronizálás még nem aktív. Indítsd újra a Worldwardot — ha kikapcsolva marad, ellenőrizd, hogy be vagy-e jelentkezve az iCloudba ezen az eszközön."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronizzazione non è ancora attiva. Riavvia Worldward per applicarla — se resta disattivata, verifica di aver eseguito l'accesso a iCloud su questo dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同期はまだ有効になっていません。Worldwardを再起動して適用してください。それでも有効にならない場合は、このデバイスでiCloudにサインインしているか確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동기화가 아직 활성화되지 않았습니다. Worldward를 다시 실행하여 적용하세요. 계속 꺼져 있으면 이 기기에서 iCloud에 로그인되어 있는지 확인하세요."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinchronizavimas dar neaktyvus. Paleiskite Worldward iš naujo — jei jis lieka išjungtas, patikrinkite, ar šiame įrenginyje esate prisijungę prie iCloud."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhronizācija vēl nav aktīva. Restartējiet Worldward, lai to lietotu — ja tā paliek izslēgta, pārbaudiet, vai šajā ierīcē esat pierakstījies iCloud."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Is-sinkronizzazzjoni għadha mhix attiva. Erġa' ftaħ Worldward biex tapplika — jekk tibqa' mitfija, iċċekkja li int imdaħħal f'iCloud fuq dan l-apparat."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisatie is nog niet actief. Start Worldward opnieuw — blijft die uit, controleer dan of je op dit apparaat bent ingelogd bij iCloud."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizacja nie jest jeszcze aktywna. Uruchom Worldward ponownie — jeśli pozostanie wyłączona, sprawdź, czy na tym urządzeniu zalogowano się do iCloud."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sincronização ainda não está ativa. Reinicie o Worldward para aplicar — se continuar desativada, verifique se você está conectado ao iCloud neste dispositivo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sincronização ainda não está ativa. Reinicie o Worldward para aplicar — se continuar desativada, verifique se tem sessão iniciada no iCloud neste dispositivo."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizarea nu este încă activă. Repornește Worldward pentru a o aplica — dacă rămâne dezactivată, verifică dacă ești conectat la iCloud pe acest dispozitiv."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizácia zatiaľ nie je aktívna. Spustite Worldward znova — ak zostane vypnutá, skontrolujte, či ste na tomto zariadení prihlásení do iCloudu."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhronizacija še ni aktivna. Znova zaženite Worldward — če ostane izklopljena, preverite, ali ste v tej napravi prijavljeni v iCloud."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkroniseringen är inte aktiv ännu. Starta om Worldward — om den förblir avstängd, kontrollera att du är inloggad på iCloud på den här enheten."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步尚未生效。请重新启动 Worldward 以应用；如果仍未启用，请检查此设备是否已登录 iCloud。"
+          }
+        }
+      }
+    },
     "Sync with Apple Reminders" : {
       "comment" : "Settings: toggle enabling two-way packing-list sync with Apple Reminders",
       "localizations" : {
@@ -75355,6 +75713,185 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "与 Apple 提醒事项同步"
+          }
+        }
+      }
+    },
+    "Sync with iCloud" : {
+      "comment" : "A toggle to sync travel data across devices via iCloud.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync with iCloud"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синхронизиране с iCloud"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizovat s iCloudem"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkroniser med iCloud"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit iCloud synchronisieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συγχρονισμός με το iCloud"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronigi kun iCloud"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar con iCloud"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sünkrooni iCloudiga"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronoi iCloudin kanssa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchroniser avec iCloud"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sioncronaigh le iCloud"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkroniziraj s iCloudom"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szinkronizálás az iClouddal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizza con iCloud"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloudと同期"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud와 동기화"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinchronizuoti su iCloud"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhronizēt ar iCloud"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issinkronizza ma' iCloud"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchroniseer met iCloud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizuj z iCloud"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar com o iCloud"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizar com o iCloud"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizare cu iCloud"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizovať s iCloudom"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhroniziraj z iCloudom"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synkronisera med iCloud"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与 iCloud 同步"
           }
         }
       }
@@ -98470,6 +99007,364 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这里"
+          }
+        }
+      }
+    },
+    "iCloud" : {
+      "comment" : "Settings section header for the iCloud sync toggle.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        }
+      }
+    },
+    "iCloud sync is active on this device." : {
+      "comment" : "Status row shown when CloudKit sync is running.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud sync is active on this device."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Синхронизирането с iCloud е активно на това устройство."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizace iCloud je na tomto zařízení aktivní."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-synkronisering er aktiv på denne enhed."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-Synchronisierung ist auf diesem Gerät aktiv."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ο συγχρονισμός iCloud είναι ενεργός σε αυτήν τη συσκευή."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-sinkronigo estas aktiva en ĉi tiu aparato."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronización con iCloud está activa en este dispositivo."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloudi sünkroonimine on selles seadmes aktiivne."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-synkronointi on käytössä tällä laitteella."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La synchronisation iCloud est active sur cet appareil."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tá sioncronú iCloud gníomhach ar an ngléas seo."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinkronizacija s iCloudom aktivna je na ovom uređaju."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Az iCloud-szinkronizálás aktív ezen az eszközön."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sincronizzazione iCloud è attiva su questo dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このデバイスでiCloud同期が有効です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 기기에서 iCloud 동기화가 활성화되어 있습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud sinchronizavimas šiame įrenginyje aktyvus."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud sinhronizācija šajā ierīcē ir aktīva."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Is-sinkronizzazzjoni ta' iCloud hija attiva fuq dan l-apparat."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-synchronisatie is actief op dit apparaat."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizacja iCloud jest aktywna na tym urządzeniu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sincronização com o iCloud está ativa neste dispositivo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sincronização com o iCloud está ativa neste dispositivo."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronizarea iCloud este activă pe acest dispozitiv."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizácia iCloud je na tomto zariadení aktívna."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sinhronizacija iCloud je v tej napravi aktivna."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-synkronisering är aktiv på den här enheten."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此设备上的 iCloud 同步已启用。"
           }
         }
       }

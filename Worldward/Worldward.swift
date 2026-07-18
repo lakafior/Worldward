@@ -9,14 +9,17 @@ struct Worldward: App {
     /// The user's appearance choice, shared with `SettingsView` via the same key.
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
-    /// Identifier for the CloudKit container that would back iCloud sync. Sync is
-    /// not enabled yet: it needs a paid Apple Developer Program membership (the
-    /// current free Personal team can't provision iCloud/Push). The schema is
-    /// already CloudKit-compatible — to turn sync on later, add the iCloud + Push
-    /// capabilities and pass `cloudKitDatabase: .private(cloudKitContainerID)` to
-    /// the `ModelConfiguration` below. Local JSON export/import is the backup path
-    /// in the meantime.
+    /// Identifier for the CloudKit container backing iCloud sync. The schema is
+    /// CloudKit-compatible; sync additionally needs a build provisioned with the
+    /// iCloud + Push capabilities (paid Apple Developer Program — see
+    /// docs/paid-membership-checklist.md) and the user's opt-in below. Local JSON
+    /// export/import remains the manual backup path either way.
     static let cloudKitContainerID = "iCloud.net.smigi.worldward"
+
+    /// UserDefaults key for the user's iCloud-sync opt-in (Settings toggle).
+    /// Read once at launch when the container is built, so flipping it takes
+    /// effect on the next launch.
+    static let syncEnabledKey = "iCloudSyncEnabled"
 
     static let sharedModelContainer: ModelContainer = {
         LaunchClock.mark("model container: creating")
@@ -25,7 +28,29 @@ struct Worldward: App {
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
             PackingTemplateItem.self, TripAttachment.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        // `.none` explicitly: the default is `.automatic`, which would silently
+        // start syncing the moment the iCloud entitlement appears in a build,
+        // regardless of the user's toggle. Sync must stay opt-in.
+        let modelConfiguration = ModelConfiguration(
+            schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
+
+        if UserDefaults.standard.bool(forKey: syncEnabledKey) {
+            let cloudConfiguration = ModelConfiguration(
+                schema: schema, isStoredInMemoryOnly: false,
+                cloudKitDatabase: .private(cloudKitContainerID))
+            do {
+                let container = try ModelContainer(
+                    for: schema, configurations: [cloudConfiguration])
+                LaunchClock.mark("model container: ready (CloudKit)")
+                return container
+            } catch {
+                // Couldn't attach CloudKit — build lacks the iCloud capability,
+                // or the store/account isn't ready. Fall through to the local
+                // configuration so launch always succeeds with data intact.
+                // `SettingsView.syncSection` surfaces the inactive state.
+                print("CloudKit unavailable, using local store: \(error)")
+            }
+        }
 
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])

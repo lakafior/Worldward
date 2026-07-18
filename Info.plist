@@ -9,6 +9,10 @@
 	</dict>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
