@@ -70,6 +70,7 @@ Every country rendered as a tap-able map polygon from Natural Earth data (~250 c
 - **Add to Apple Calendar** as an all-day event (write-only EventKit).
 - **Sync with Apple Calendar** (opt-in, Settings) — a dedicated "Worldward" calendar with an event spanning each trip plus one per dated stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated as the itinerary changes.
 - **Share / export** a trip as **Markdown** via the system share sheet, or as a formatted **PDF** — both with localized section headers.
+- **Send a trip to another Worldward user** — share it as a `.wwtrip` file (AirDrop, Messages, Files); opening it on their device imports the whole plan: itinerary, packing list, attachments. Re-sharing the same trip **updates** their copy instead of duplicating it, so a plan can bounce between two phones and improve on each pass.
 
 ### Achievements
 

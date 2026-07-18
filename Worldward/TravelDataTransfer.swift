@@ -104,7 +104,10 @@ struct VisitRecord: Codable {
     }
 }
 
-struct TripRecord: Codable {
+/// `nonisolated` (like the other trip records below) so the `.wwtrip` share
+/// flow can encode a record off the main actor — see `TripFileTransfer.swift` —
+/// which also makes it `Sendable`; it's all value types.
+nonisolated struct TripRecord: Codable {
     var title: String
     var startDate: Date
     var endDate: Date
@@ -115,6 +118,10 @@ struct TripRecord: Codable {
     /// backups grow accordingly, but a backup that silently dropped your tickets
     /// wouldn't be a backup.
     var attachments: [AttachmentRecord]?
+    /// The trip's CloudKit dedup token, carried so a re-shared `.wwtrip` file
+    /// *updates* the receiver's copy instead of duplicating it. Optional so
+    /// pre-v4 backups still decode; a missing value imports as a fresh ID.
+    var dedupID: String?
 
     @MainActor
     init(from trip: Trip) {
@@ -125,10 +132,11 @@ struct TripRecord: Codable {
         self.itinerary = trip.sortedStops.map(ItineraryItemRecord.init)
         self.packing = trip.packing.map(PackingItemRecord.init)
         self.attachments = trip.sortedAttachments.map(AttachmentRecord.init)
+        self.dedupID = trip.dedupID
     }
 }
 
-struct AttachmentRecord: Codable {
+nonisolated struct AttachmentRecord: Codable {
     var filename: String
     var data: Data
     var order: Int
@@ -141,7 +149,7 @@ struct AttachmentRecord: Codable {
     }
 }
 
-struct ItineraryItemRecord: Codable {
+nonisolated struct ItineraryItemRecord: Codable {
     var title: String
     var note: String
     var date: Date?
@@ -160,7 +168,7 @@ struct ItineraryItemRecord: Codable {
     }
 }
 
-struct StopPlaceRecord: Codable {
+nonisolated struct StopPlaceRecord: Codable {
     var title: String
     var detail: String
     var latitude: Double?
@@ -177,7 +185,7 @@ struct StopPlaceRecord: Codable {
     }
 }
 
-struct PackingItemRecord: Codable {
+nonisolated struct PackingItemRecord: Codable {
     var title: String
     var isPacked: Bool
     /// Optional so v2 backups — written before these fields existed — still
@@ -255,13 +263,29 @@ enum TravelDataTransfer {
             context.delete(trip)
         }
 
-        // Resolve packing containers by name against the shared catalog, creating
-        // missing ones once and reusing them across every trip in the backup.
+        let container = try containerResolver(in: context)
+        for record in file.trips {
+            let trip = Trip()
+            if let dedupID = record.dedupID { trip.dedupID = dedupID }
+            context.insert(trip)
+            fill(trip, from: record, in: context, countriesByID: byID, container: container)
+        }
+
+        try context.save()
+        return applied
+    }
+
+    /// A resolver mapping container names to the shared catalog, creating
+    /// missing ones once and reusing them across every trip it resolves.
+    @MainActor
+    static func containerResolver(
+        in context: ModelContext
+    ) throws -> (String?) -> PackingContainer? {
         let existingContainers = try context.fetch(FetchDescriptor<PackingContainer>())
         var containersByName = Dictionary(
             existingContainers.map { ($0.name.lowercased(), $0) },
             uniquingKeysWith: { first, _ in first })
-        func container(named raw: String?) -> PackingContainer? {
+        return { raw in
             guard let name = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty
             else { return nil }
             let key = name.lowercased()
@@ -272,47 +296,60 @@ enum TravelDataTransfer {
             containersByName[key] = created
             return created
         }
+    }
 
-        for record in file.trips {
-            let trip = Trip(
-                title: record.title, startDate: record.startDate,
-                endDate: record.endDate, notes: record.notes)
-            context.insert(trip)
-            for stop in record.itinerary.sorted(by: { $0.order < $1.order }) {
-                let item = ItineraryItem(
-                    title: stop.title, note: stop.note, date: stop.date, order: stop.order,
-                    country: stop.countryID.flatMap { byID[$0] }, trip: trip)
-                context.insert(item)
-                trip.itinerary.append(item)
-                for record in (stop.places ?? []).sorted(by: { $0.order < $1.order }) {
-                    let place = StopPlace(
-                        title: record.title, detail: record.detail,
-                        latitude: record.latitude, longitude: record.longitude,
-                        order: record.order, stop: item)
-                    context.insert(place)
-                    item.places.append(place)
-                }
-            }
-            for (index, pack) in record.packing.enumerated() {
-                let item = PackingItem(
-                    title: pack.title, isPacked: pack.isPacked,
-                    quantity: pack.quantity ?? 1,
-                    order: pack.order ?? index,
-                    trip: trip,
-                    container: container(named: pack.containerName))
-                context.insert(item)
-                trip.packing.append(item)
-            }
-            for record in (record.attachments ?? []).sorted(by: { $0.order < $1.order }) {
-                let attachment = TripAttachment(
-                    filename: record.filename, data: record.data, order: record.order, trip: trip)
-                context.insert(attachment)
-                trip.attachments.append(attachment)
+    /// Fills `trip` from `record`, replacing its children wholesale. Shared by
+    /// the backup import (fresh trips) and the `.wwtrip` receive flow — which
+    /// updates a matching trip *in place*, preserving its calendar/reminder
+    /// sync linkage rather than deleting and re-creating the row.
+    @MainActor
+    static func fill(
+        _ trip: Trip, from record: TripRecord, in context: ModelContext,
+        countriesByID: [String: Country], container: (String?) -> PackingContainer?
+    ) {
+        trip.title = record.title
+        trip.startDate = record.startDate
+        trip.endDate = record.endDate
+        trip.notes = record.notes
+
+        for stop in trip.itinerary { context.delete(stop) }
+        for item in trip.packing { context.delete(item) }
+        for attachment in trip.attachments { context.delete(attachment) }
+        trip.itinerary = []
+        trip.packing = []
+        trip.attachments = []
+
+        for stop in record.itinerary.sorted(by: { $0.order < $1.order }) {
+            let item = ItineraryItem(
+                title: stop.title, note: stop.note, date: stop.date, order: stop.order,
+                country: stop.countryID.flatMap { countriesByID[$0] }, trip: trip)
+            context.insert(item)
+            trip.itinerary.append(item)
+            for record in (stop.places ?? []).sorted(by: { $0.order < $1.order }) {
+                let place = StopPlace(
+                    title: record.title, detail: record.detail,
+                    latitude: record.latitude, longitude: record.longitude,
+                    order: record.order, stop: item)
+                context.insert(place)
+                item.places.append(place)
             }
         }
-
-        try context.save()
-        return applied
+        for (index, pack) in record.packing.enumerated() {
+            let item = PackingItem(
+                title: pack.title, isPacked: pack.isPacked,
+                quantity: pack.quantity ?? 1,
+                order: pack.order ?? index,
+                trip: trip,
+                container: container(pack.containerName))
+            context.insert(item)
+            trip.packing.append(item)
+        }
+        for record in (record.attachments ?? []).sorted(by: { $0.order < $1.order }) {
+            let attachment = TripAttachment(
+                filename: record.filename, data: record.data, order: record.order, trip: trip)
+            context.insert(attachment)
+            trip.attachments.append(attachment)
+        }
     }
 }
 

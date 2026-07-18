@@ -143,6 +143,10 @@ struct ContentView: View {
     @State private var visibleCountryCache: [Country]? = nil
 
     @State private var photoImporter = PhotoImporter()
+    /// A `.wwtrip` file opened from outside (AirDrop, Files, Mail), held for
+    /// the add-or-update confirm sheet. See `TripFileTransfer.swift`.
+    @State private var receivedTripFile: ReceivedTripFile?
+    @State private var tripFileError: String?
     /// In-flight debounce for the EventKit syncs — see `scheduleEventKitSync()`.
     @State private var eventKitSyncDebounce: Task<Void, Never>?
     @Environment(\.modelContext) private var modelContext
@@ -763,6 +767,19 @@ struct ContentView: View {
             } message: {
                 Text(locationError ?? "")
             }
+            .onOpenURL(perform: handleOpenedFile)
+            .sheet(item: $receivedTripFile) { received in
+                TripFileImportSheet(record: received.trip)
+            }
+            .alert(
+                "Received Trip",
+                isPresented: Binding(
+                    get: { tripFileError != nil }, set: { if !$0 { tripFileError = nil } })
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(tripFileError ?? "")
+            }
             .onChange(of: intentRouter.pendingLogVisitsText) { consumePendingLogVisits() }
             .onChange(of: intentRouter.pendingOpenStats) { consumePendingOpenStats() }
             .onChange(of: intentRouter.pendingOpenPhotoImporter) { consumePendingOpenPhotoImporter() }
@@ -934,6 +951,24 @@ struct ContentView: View {
         guard let trip = intentRouter.pendingMapTrip else { return }
         intentRouter.pendingMapTrip = nil
         showTripOnMap(trip)
+    }
+
+    /// Handles a `.wwtrip` file opened from outside the app (AirDrop's "Open
+    /// with Worldward", Files, a Mail attachment): decodes it and raises the
+    /// add-or-update confirm sheet. Nothing touches the store until the user
+    /// confirms there.
+    private func handleOpenedFile(_ url: URL) {
+        guard url.pathExtension.lowercased() == "wwtrip" else { return }
+        let needsAccess = url.startAccessingSecurityScopedResource()
+        defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
+        do {
+            let file = try TravelDataTransfer.decodeTripFile(Data(contentsOf: url))
+            receivedTripFile = ReceivedTripFile(trip: file.trip)
+        } catch {
+            tripFileError = String(
+                localized: "Couldn't read the trip file.",
+                comment: "Alert when an opened .wwtrip file fails to parse")
+        }
     }
 
     /// Brings the map to the front: pops any pushed destination on macOS, or

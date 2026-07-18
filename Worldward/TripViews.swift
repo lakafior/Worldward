@@ -14,10 +14,11 @@ import UniformTypeIdentifiers
 // MARK: - Export
 
 /// A trip title, stripped of characters illegal in filenames, shared by the
-/// Markdown and PDF exporters below. `nonisolated` because `ExportableTrip`'s
+/// Markdown and PDF exporters below and the `.wwtrip` exporter in
+/// `TripFileTransfer.swift`. `nonisolated` because `ExportableTrip`'s
 /// `transferRepresentation` (which calls it) is a nonisolated protocol
 /// requirement, unlike ordinary declarations in this file.
-private nonisolated func sanitizedFileName(_ title: String) -> String {
+nonisolated func sanitizedFileName(_ title: String) -> String {
     let cleaned =
         title
         .components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>"))
@@ -567,6 +568,15 @@ struct TripDetailView: View {
                 exportPDFAndOpen()
             } label: {
                 Label("Export PDF", systemImage: "doc.richtext")
+            }
+            // App-to-app: a `.wwtrip` file (AirDrop, Messages, Files) that
+            // another Worldward install opens as an add-or-update import —
+            // see `TripFileTransfer.swift`.
+            ShareLink(
+                item: ExportableTripFile(trip: trip),
+                preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
+            ) {
+                Label("Share Trip File", systemImage: "arrow.up.doc")
             }
         } label: {
             Label("Share", systemImage: "square.and.arrow.up")
