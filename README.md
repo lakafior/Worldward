@@ -353,7 +353,6 @@ Deeper Apple-ecosystem integration:
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
 - **Deeper Calendar integration** (EventKit, upgrade of the current export) — a dedicated "Worldward" calendar with one event per stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated when the itinerary changes.
 - **Smarter Photos suggestions** (PhotoKit, already used) — after a trip ends, auto-suggest photos from the trip's date range (and location, where metadata allows) to attach to visits.
-- **PDF trip itineraries** (PDFKit) — export a trip's itinerary as a formatted PDF, alongside the existing Markdown export.
 - **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.
 
 ---

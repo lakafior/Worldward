@@ -30,11 +30,32 @@ nonisolated enum TripPDFRenderer {
     }
     private static let margin: CGFloat = 54
 
+    /// The brand royal blue (`Color.brandRoyal`) as a plain sRGB `CGColor`, used
+    /// for section headers and rules so the PDF reads as the same identity as
+    /// the app.
+    private static let brandColor = CGColor(srgbRed: 0.161, green: 0.350, blue: 0.832, alpha: 1)
+
     static func render(trip: Trip) -> Data {
-        paginate(content(for: trip))
+        let name = trip.title.isEmpty ? "Untitled Trip" : trip.title
+        return paginate(content(for: trip), footerTitle: name)
     }
 
     // MARK: Content
+
+    private static let fontKey = NSAttributedString.Key(kCTFontAttributeName as String)
+    private static let colorKey = NSAttributedString.Key(kCTForegroundColorAttributeName as String)
+
+    /// Custom attribute marking a line that gets a horizontal rule drawn under it
+    /// at draw time (Core Text carries unknown attributes through to the runs).
+    /// Value is one of `Rule`'s raw values.
+    private static let ruleKey = NSAttributedString.Key("WorldwardRule")
+
+    private nonisolated enum Rule: String {
+        /// The heavier brand-blue rule closing the title block.
+        case brand
+        /// The hairline separator under a section header.
+        case separator
+    }
 
     private static func content(for trip: Trip) -> NSAttributedString {
         let result = NSMutableAttributedString()
@@ -48,11 +69,11 @@ nonisolated enum TripPDFRenderer {
         let header = [trip.flags.isEmpty ? nil : trip.flags, dateLine]
             .compactMap { $0 }
             .joined(separator: "   ·   ")
-        if !header.isEmpty { result.append(line(header, .subtitle)) }
+        if !header.isEmpty { result.append(line(header, .subtitle, rule: .brand)) }
 
         let stops = trip.sortedStops
         if !stops.isEmpty {
-            result.append(line("Itinerary", .sectionHeader))
+            result.append(line("Itinerary", .sectionHeader, rule: .separator))
             for (index, stop) in stops.enumerated() {
                 let flag = stop.country?.flagEmoji ?? "📍"
                 var stopLine = "\(index + 1). \(flag)  \(stop.displayTitle)"
@@ -68,7 +89,7 @@ nonisolated enum TripPDFRenderer {
         }
 
         if !trip.packing.isEmpty {
-            result.append(line("Packing", .sectionHeader))
+            result.append(line("Packing", .sectionHeader, rule: .separator))
             let groups = trip.packingGroups
             let useHeadings = groups.contains { $0.container != nil }
             for group in groups {
@@ -76,23 +97,46 @@ nonisolated enum TripPDFRenderer {
                     result.append(line(group.container?.name ?? "Other", .subHeader))
                 }
                 for item in group.items {
-                    let count = item.quantity > 1 ? "   ×\(item.quantity)" : ""
-                    let box = item.isPacked ? "☑" : "☐"
-                    result.append(line("\(box)  \(item.title)\(count)", .checklistItem))
+                    result.append(checklistLine(item))
                 }
             }
         }
 
         if !trip.notes.isEmpty {
-            result.append(line("Notes", .sectionHeader))
+            result.append(line("Notes", .sectionHeader, rule: .separator))
             result.append(notesContent(trip.notes))
         }
 
         return result
     }
 
-    private static func line(_ text: String, _ style: TextStyle) -> NSAttributedString {
-        NSAttributedString(string: text + "\n", attributes: style.attributes)
+    private static func line(
+        _ text: String, _ style: TextStyle, rule: Rule? = nil
+    ) -> NSAttributedString {
+        var attributes = style.attributes
+        if let rule { attributes[ruleKey] = rule.rawValue }
+        return NSAttributedString(string: text + "\n", attributes: attributes)
+    }
+
+    /// One packing item: a ballot-box glyph, then the title (with a ×quantity
+    /// suffix past 1). The box glyphs come from a symbol fallback font and sit
+    /// a touch small next to 11 pt Helvetica, so they're drawn slightly larger;
+    /// a packed item shows a brand-blue check and grayed-out text, so what's
+    /// left to pack stands out at a glance.
+    private static func checklistLine(_ item: PackingItem) -> NSAttributedString {
+        let style = TextStyle.checklistItem
+        var boxAttributes = style.attributes
+        boxAttributes[fontKey] = CTFontCreateWithName("Helvetica" as CFString, 12.5, nil)
+        if item.isPacked { boxAttributes[colorKey] = brandColor }
+        var textAttributes = style.attributes
+        if item.isPacked { textAttributes[colorKey] = CGColor(gray: 0.45, alpha: 1) }
+
+        let count = item.quantity > 1 ? "   ×\(item.quantity)" : ""
+        let result = NSMutableAttributedString(
+            string: (item.isPacked ? "☑" : "☐") + "  ", attributes: boxAttributes)
+        result.append(
+            NSAttributedString(string: "\(item.title)\(count)\n", attributes: textAttributes))
+        return result
     }
 
     /// Trip notes often come from `TripPlanner.suggestNotes`, which returns
@@ -153,7 +197,7 @@ nonisolated enum TripPDFRenderer {
     /// one PDF page per frame. A raw `CGContext(consumer:)` — rather than
     /// `UIGraphicsPDFRenderer` — already uses the bottom-left-origin, y-up
     /// coordinate space `CTFrameDraw` expects, so no manual flip is needed.
-    private static func paginate(_ text: NSAttributedString) -> Data {
+    private static func paginate(_ text: NSAttributedString, footerTitle: String) -> Data {
         let data = CFDataCreateMutable(nil, 0) as CFMutableData
         guard let consumer = CGDataConsumer(data: data) else { return Data() }
         var mediaBox = CGRect(origin: .zero, size: pageSize)
@@ -165,11 +209,15 @@ nonisolated enum TripPDFRenderer {
         let path = CGPath(rect: mediaBox.insetBy(dx: margin, dy: margin), transform: nil)
 
         var index = 0
+        var page = 0
         let length = text.length
         while index < length {
+            page += 1
             context.beginPDFPage(nil)
             let frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(index, 0), path, nil)
             CTFrameDraw(frame, context)
+            drawRules(in: frame, textRect: path.boundingBox, context: context)
+            drawFooter(in: context, page: page, title: footerTitle)
             context.endPDFPage()
 
             let visible = CTFrameGetVisibleStringRange(frame)
@@ -180,6 +228,66 @@ nonisolated enum TripPDFRenderer {
         context.closePDF()
 
         return data as Data
+    }
+
+    /// The `Rule` marker of a laid-out line, read from its first glyph run
+    /// (every run in a marked line carries the attribute).
+    private static func rule(of line: CTLine) -> Rule? {
+        guard let run = (CTLineGetGlyphRuns(line) as? [CTRun])?.first else { return nil }
+        let attributes = CTRunGetAttributes(run) as NSDictionary
+        guard let raw = attributes[ruleKey] as? String else { return nil }
+        return Rule(rawValue: raw)
+    }
+
+    /// Strokes the horizontal rules under lines marked with `ruleKey`: a heavier
+    /// brand-blue rule closing the title block, hairline separators under section
+    /// headers. When a marked line wraps, only its last fragment gets the rule
+    /// (each fragment carries the same attribute). Line origins come back
+    /// relative to the frame path's origin, hence the `textRect` offsets.
+    private static func drawRules(in frame: CTFrame, textRect: CGRect, context: CGContext) {
+        guard let lines = CTFrameGetLines(frame) as? [CTLine] else { return }
+        var origins = [CGPoint](repeating: .zero, count: lines.count)
+        CTFrameGetLineOrigins(frame, CFRangeMake(0, 0), &origins)
+
+        for (index, (line, origin)) in zip(lines, origins).enumerated() {
+            guard let kind = rule(of: line) else { continue }
+            if index + 1 < lines.count, rule(of: lines[index + 1]) == kind { continue }
+
+            var descent: CGFloat = 0
+            CTLineGetTypographicBounds(line, nil, &descent, nil)
+            let y = textRect.minY + origin.y - descent - (kind == .brand ? 7 : 3)
+            context.setStrokeColor(
+                kind == .brand ? brandColor : CGColor(gray: 0.82, alpha: 1))
+            context.setLineWidth(kind == .brand ? 1.5 : 0.6)
+            context.move(to: CGPoint(x: textRect.minX, y: y))
+            context.addLine(to: CGPoint(x: textRect.maxX, y: y))
+            context.strokePath()
+        }
+    }
+
+    /// A small gray footer on every page: the trip title on the left (truncated
+    /// to leave room), the page number on the right.
+    private static func drawFooter(in context: CGContext, page: Int, title: String) {
+        let attributes: [NSAttributedString.Key: Any] = [
+            fontKey: CTFontCreateWithName("Helvetica" as CFString, 8.5, nil),
+            colorKey: CGColor(gray: 0.55, alpha: 1),
+        ]
+        let baseline: CGFloat = 30
+
+        let pageLine = CTLineCreateWithAttributedString(
+            NSAttributedString(string: "\(page)", attributes: attributes))
+        let pageWidth = CTLineGetTypographicBounds(pageLine, nil, nil, nil)
+        context.textPosition = CGPoint(
+            x: pageSize.width - margin - CGFloat(pageWidth), y: baseline)
+        CTLineDraw(pageLine, context)
+
+        let titleLine = CTLineCreateWithAttributedString(
+            NSAttributedString(string: title, attributes: attributes))
+        let available = Double(pageSize.width - 2 * margin - CGFloat(pageWidth) - 12)
+        let truncated =
+            CTLineCreateTruncatedLine(titleLine, available, .end, nil) ?? titleLine
+        context.textPosition = CGPoint(x: margin, y: baseline)
+        CTLineDraw(truncated, context)
     }
 
     // MARK: Styles
@@ -225,6 +333,7 @@ nonisolated enum TripPDFRenderer {
         private var color: CGColor {
             switch self {
             case .subtitle, .note, .subItem: CGColor(gray: 0.42, alpha: 1)
+            case .sectionHeader: TripPDFRenderer.brandColor
             default: CGColor(gray: 0.08, alpha: 1)
             }
         }
@@ -232,8 +341,8 @@ nonisolated enum TripPDFRenderer {
         private var paragraphStyle: CTParagraphStyle {
             switch self {
             case .title: TextStyle.paragraphStyle(spacingAfter: 4)
-            case .subtitle: TextStyle.paragraphStyle(spacingAfter: 16)
-            case .sectionHeader: TextStyle.paragraphStyle(spacingBefore: 14, spacingAfter: 8)
+            case .subtitle: TextStyle.paragraphStyle(spacingAfter: 20)
+            case .sectionHeader: TextStyle.paragraphStyle(spacingBefore: 16, spacingAfter: 10)
             case .subHeader: TextStyle.paragraphStyle(spacingBefore: 10, spacingAfter: 4)
             case .body: TextStyle.paragraphStyle(spacingAfter: 3)
             case .checklistItem, .bullet: TextStyle.paragraphStyle(headIndent: 14, spacingAfter: 3)
