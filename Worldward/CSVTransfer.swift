@@ -257,6 +257,26 @@ enum CSVTransfer {
         return VisitLogParser.resolve(query, in: countries)
     }
 
+    /// The lenient parsing formatters, built once — `DateFormatter` construction
+    /// is millisecond-scale, and `parseDate` runs for every cell during both
+    /// column detection and the import itself. All CSV work happens on the main
+    /// actor, so sharing (and mutating `dateFormat` on) these is safe.
+    private static let styledFormatters: [DateFormatter] = [
+        DateFormatter.Style.short, .medium, .long
+    ].map { style in
+        let formatter = DateFormatter()
+        formatter.dateStyle = style
+        formatter.timeStyle = .none
+        return formatter
+    }
+    private static let explicitFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        return formatter
+    }()
+    private static let isoFormatter = ISO8601DateFormatter()
+
     /// Parses a date cell leniently: the user's own short/medium formats first,
     /// then common explicit formats (day-first before month-first, since ambiguous
     /// numeric dates are far more often European in this context), then a bare
@@ -271,24 +291,18 @@ enum CSVTransfer {
             return Calendar.current.date(from: DateComponents(year: year, month: 1, day: 1))
         }
 
-        for style in [DateFormatter.Style.short, .medium, .long] {
-            let formatter = DateFormatter()
-            formatter.dateStyle = style
-            formatter.timeStyle = .none
+        for formatter in styledFormatters {
             if let date = formatter.date(from: value) { return date }
         }
 
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = .current
         for format in [
             "yyyy-MM-dd", "yyyy/MM/dd", "dd.MM.yyyy", "d.M.yyyy", "dd-MM-yyyy",
             "dd/MM/yyyy", "d/M/yyyy", "MM/dd/yyyy", "MMM d, yyyy", "d MMM yyyy", "yyyy-MM",
         ] {
-            formatter.dateFormat = format
-            if let date = formatter.date(from: value) { return date }
+            explicitFormatter.dateFormat = format
+            if let date = explicitFormatter.date(from: value) { return date }
         }
-        return ISO8601DateFormatter().date(from: value)
+        return isoFormatter.date(from: value)
     }
 
     /// Parses a status cell against the app's own status names (raw values and

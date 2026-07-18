@@ -167,13 +167,17 @@ struct CountryListView: View {
     /// plans, and visits all change without the row count changing (map/detail
     /// edits beside this list on macOS and iPad, intents, photo imports), so
     /// watching `allCountries.count` alone would leave the list membership stale.
+    /// Visit *dates* feed the hash too — editing a date in place changes the
+    /// year filter and "Recent" order without changing any count.
     private var catalogKey: Int {
         var hasher = Hasher()
         for country in allCountries {
             hasher.combine(country.id)
             hasher.combine(country.statusRaw)
             hasher.combine(country.planStatusRaw)
-            hasher.combine(country.visits.count)
+            for visit in country.visits {
+                hasher.combine(visit.date)
+            }
         }
         return hasher.finalize()
     }

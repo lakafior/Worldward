@@ -69,7 +69,6 @@ struct StatisticsView: View {
                         }
                     }
             }
-            .frame(minWidth: 380, minHeight: 520)
         #endif
     }
 
@@ -126,44 +125,6 @@ struct StatisticsView: View {
             Label("Share Image Card", systemImage: "square.and.arrow.up")
         }
         .disabled(!stats.hasTravel)
-    }
-}
-
-// MARK: - Hero
-
-private struct HeroSection: View {
-    let stats: TravelStats
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if stats.hasTravel {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("\(stats.visitedCountries)")
-                        .font(.system(size: 56, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.brandGradient)
-                    VStack(alignment: .leading) {
-                        Text("of \(stats.totalCountries) countries")
-                            .font(.headline)
-                        Text("\(stats.visitedContinents) of \(stats.totalContinents) continents")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                if !stats.visitedFlags.isEmpty {
-                    Text(stats.visitedFlags.prefix(60).joined(separator: " "))
-                        .font(.title3)
-                        .lineLimit(3)
-                }
-            } else {
-                ContentUnavailableView(
-                    "No travels yet",
-                    systemImage: "globe",
-                    description: Text(
-                        "Mark countries as visited or import from Photos to start earning achievements."
-                    ))
-            }
-        }
     }
 }
 
@@ -360,11 +321,9 @@ private struct TimelineSection: View {
                         HStack(spacing: 6) {
                             Text(String(group.year))
                                 .font(.title3.weight(.bold))
-                            Text(
-                                "\(group.visits.count) \(group.visits.count == 1 ? String(localized: "visit") : String(localized: "visits"))"
-                            )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            Text("^[\(group.visits.count) visit](inflect: true)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 8)
 
@@ -480,15 +439,11 @@ private struct YearInReviewSection: View {
                     Text("In \(String(yearStat.year)) you visited")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Text(
-                        "\(yearStat.countries) \(yearStat.countries == 1 ? String(localized: "country") : String(localized: "countries"))"
-                    )
-                    .font(.title2.bold())
-                    Text(
-                        "\(yearStat.visits) recorded \(yearStat.visits == 1 ? String(localized: "visit") : String(localized: "visits"))"
-                    )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    Text("^[\(yearStat.countries) country](inflect: true)")
+                        .font(.title2.bold())
+                    Text("^[\(yearStat.visits) recorded visit](inflect: true)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
             }

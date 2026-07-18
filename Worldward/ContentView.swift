@@ -173,10 +173,11 @@ struct ContentView: View {
     /// The trip whose itinerary route is drawn on the map, set via the trip
     /// editor's "View Route on Map" button. Cleared from the on-map chip.
     @State private var mapTrip: Trip?
-    /// Cached subset of `allCountries` that should appear on the map.
-    /// Rebuilt via `onChange(of: allCountries.count)` so we don't filter all 250+
+    /// Cached subset of `allCountries` that should appear on the map, or `nil`
+    /// before the first rebuild. Optional (rather than "empty means unbuilt") so
+    /// a user with a legitimately empty visible set doesn't re-filter all 250+
     /// rows on every SwiftUI body evaluation.
-    @State private var visibleCountryCache: [Country] = []
+    @State private var visibleCountryCache: [Country]? = nil
 
     @State private var photoImporter = PhotoImporter()
     /// In-flight debounce for the EventKit syncs — see `scheduleEventKitSync()`.
@@ -241,9 +242,8 @@ struct ContentView: View {
     /// all 250+ rows on every body evaluation.
     private var visibleCountries: [Country] {
         let base =
-            visibleCountryCache.isEmpty
-            ? allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
-            : visibleCountryCache
+            visibleCountryCache
+            ?? allCountries.filter { $0.isVisited || $0.isPlanned || $0 == selectedCountry }
         switch mapFilter {
         case .all: return base
         case .visited: return base.filter { $0.isVisited }

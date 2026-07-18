@@ -61,7 +61,7 @@ final class Country {
     }
 
     /// Convenience used by statistics and filtering.
-    var isVisited: Bool { statusRaw != "notVisited" }
+    var isVisited: Bool { statusRaw != CountryStatus.notVisited.rawValue }
 
     /// The country's plan state. Writing it updates `planStatusRaw`, which SwiftData
     /// persists and publishes — driving live map, list, and stats updates.
@@ -71,7 +71,7 @@ final class Country {
     }
 
     /// Convenience used by the map's "Going" layer and the country list.
-    var isPlanned: Bool { planStatusRaw != "none" }
+    var isPlanned: Bool { planStatusRaw != PlanStatus.none.rawValue }
 
     /// Unicode flag derived from the ISO 3166-1 alpha-2 id, so it never needs storing.
     var flagEmoji: String {
