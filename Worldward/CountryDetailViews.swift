@@ -233,15 +233,18 @@ struct VisitRow: View {
                     }
                     .buttonStyle(.plain)
                     .help("Attach photos from your library")
+                    .accessibilityLabel(Text("Attach photos"))
                     Button(action: { isEditing = true }) {
                         Image(systemName: "pencil")
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Edit visit"))
                     Button(role: .destructive, action: onDelete) {
                         Image(systemName: "trash")
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.red)
+                    .accessibilityLabel(Text("Delete visit"))
                 }
 
                 if !visit.photoIdentifiers.isEmpty {

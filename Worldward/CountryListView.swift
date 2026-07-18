@@ -192,6 +192,10 @@ struct CountryListView: View {
                 list
             }
         }
+        // Active filters as dismissible chips, so the state the funnel icon only
+        // hints at is visible — and clearable — in one tap. Attached outside the
+        // list so the chips survive a filter that empties it.
+        .safeAreaInset(edge: .top, spacing: 0) { activeFilterChips }
         // macOS anchors the search field inside the sidebar itself: the map's
         // toolbar search already owns the window toolbar's search slot, and
         // AppKit crashes on a second toolbar search item in the same window.
@@ -318,6 +322,41 @@ struct CountryListView: View {
         } label: {
             CountryRow(country: country)
         }
+    }
+
+    /// One dismissible chip per active filter (continent, visit year).
+    @ViewBuilder private var activeFilterChips: some View {
+        if summary.hasActiveFilters {
+            HStack(spacing: 8) {
+                if let selectedContinent {
+                    filterChip(selectedContinent) { self.selectedContinent = nil }
+                }
+                if let selectedYear {
+                    filterChip(String(selectedYear)) { self.selectedYear = nil }
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .background(.bar)
+        }
+    }
+
+    private func filterChip(_ label: String, clear: @escaping () -> Void) -> some View {
+        Button(action: clear) {
+            HStack(spacing: 4) {
+                Text(label)
+                Image(systemName: "xmark.circle.fill")
+                    .imageScale(.small)
+            }
+            .font(.caption.weight(.medium))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Color.brand.opacity(0.12), in: Capsule())
+            .foregroundStyle(Color.brand)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Clear filter: \(label)"))
     }
 
     @ViewBuilder private var emptyState: some View {

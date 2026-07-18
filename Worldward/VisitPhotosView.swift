@@ -142,6 +142,8 @@ private struct PhotoThumbnail: View {
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .contentShape(RoundedRectangle(cornerRadius: 6))
         .onTapGesture { onTap(asset) }
+        .accessibilityLabel(Text("Photo"))
+        .accessibilityAddTraits(.isButton)
         .onAppear { load() }
         .onDisappear { cancelRequest() }
     }
@@ -183,6 +185,7 @@ private struct PhotoViewer: View {
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.cancelAction)
+                .accessibilityLabel(Text("Close"))
             }
             .padding()
 

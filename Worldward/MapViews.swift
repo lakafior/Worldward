@@ -244,10 +244,12 @@ struct CountryRow: View {
             if country.isPlanned {
                 Image(systemName: country.planStatus.symbolName)
                     .foregroundStyle(country.planStatus.tint)
+                    .accessibilityLabel(country.planStatus.label)
             }
             if country.status.isVisited {
                 Image(systemName: country.status.symbolName)
                     .foregroundStyle(country.status.color)
+                    .accessibilityLabel(country.status.label)
             }
         }
         // Make the whole row tappable, not just the drawn content (the Spacer gap

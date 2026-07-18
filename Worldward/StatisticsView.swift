@@ -260,6 +260,7 @@ private struct YearChartSection: View {
                 .cornerRadius(4)
             }
             .frame(height: 200)
+            .accessibilityLabel(Text("Bar chart of countries visited per year"))
         }
     }
 }
@@ -300,6 +301,7 @@ private struct CumulativeChartSection: View {
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
             }
             .frame(height: 200)
+            .accessibilityLabel(Text("Line chart of total countries visited over time"))
         }
     }
 }
@@ -439,7 +441,7 @@ private struct TimelineEntryRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            // Timeline dot + line
+            // Timeline dot + line — purely decorative, so hidden from VoiceOver.
             VStack(spacing: 0) {
                 Circle()
                     .fill(Color.accentColor)
@@ -452,6 +454,7 @@ private struct TimelineEntryRow: View {
                 }
             }
             .frame(width: 10)
+            .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
