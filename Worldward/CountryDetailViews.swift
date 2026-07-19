@@ -311,6 +311,8 @@ struct LocationStatusSheet: View {
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
+    @Environment(\.colorSchemeContrast) private var contrast
+
     var body: some View {
         NavigationStack {
             Form {
@@ -335,7 +337,9 @@ struct LocationStatusSheet: View {
                                 Image(
                                     systemName: option.domainStatus.symbolName
                                 )
-                                .foregroundStyle(option.domainStatus.tint)
+                                .foregroundStyle(
+                                    option.domainStatus.tint(
+                                        increasedContrast: contrast == .increased))
                                 Text(option.domainStatus.label)
                             }
                             .tag(option)

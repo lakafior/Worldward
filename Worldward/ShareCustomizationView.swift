@@ -132,6 +132,10 @@ struct ShareCustomizationView: View {
                 .shadow(radius: 10, y: 5)
                 .frame(maxWidth: 360)
                 .padding(.vertical, 8)
+                .accessibilityLabel(
+                    Text(
+                        "Share card preview",
+                        comment: "Accessibility: the rendered share image shown in the customizer"))
         } else {
             ProgressView()
                 .frame(height: 200)

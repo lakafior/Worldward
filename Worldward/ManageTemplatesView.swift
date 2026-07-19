@@ -157,6 +157,7 @@ private struct TemplateItemRow: View {
                     .foregroundStyle(.secondary)
             }
             .buttonStyle(.borderless)
+            .accessibilityLabel(Text("Move to container"))
         }
     }
 }

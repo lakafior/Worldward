@@ -683,10 +683,15 @@ struct TripDetailView: View {
                 Image(systemName: collapsed ? "chevron.right" : "chevron.down")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityValue(
+            collapsed
+                ? Text("Collapsed", comment: "Accessibility value: packing group is folded shut")
+                : Text("Expanded", comment: "Accessibility value: packing group is open"))
     }
 
     private var packingControlsSection: some View {
@@ -789,6 +794,10 @@ struct TripDetailView: View {
                 TripNotesPreview(markdown: trip.notes)
                     .contentShape(.rect)
                     .onTapGesture { isEditingNotes = true }
+                    // The tap-to-edit affordance is invisible to assistive tech.
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityHint(
+                        Text("Edits the notes", comment: "Accessibility hint on the notes preview"))
             }
 
             if canUseAssistant {
@@ -1257,6 +1266,14 @@ private struct PackingItemRow: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            // Reads as a switch: "Sunscreen, on/off" — clearer than a button
+            // whose label happens to contain a checkmark image.
+            .accessibilityLabel(item.title)
+            .accessibilityValue(
+                item.isPacked
+                    ? Text("Packed", comment: "Accessibility value: packing item is checked off")
+                    : Text("Not packed", comment: "Accessibility value: packing item still open"))
+            .accessibilityAddTraits(.isToggle)
 
             Spacer()
 

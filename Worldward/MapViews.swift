@@ -125,14 +125,25 @@ struct TripRouteContent: MapContent {
 struct MapLegend: View {
     let isDark: Bool
 
+    /// With Differentiate Without Color on, each swatch also shows the status's
+    /// SF Symbol — the same one used in the country lists — so the legend maps
+    /// colors to a shape the rest of the app repeats.
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.colorSchemeContrast) private var contrast
+    @ScaledMetric(relativeTo: .caption2) private var swatchSize = 12.0
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             ForEach(CountryStatus.visitedCases) { status in
-                swatch(color: status.color, label: status.label)
+                swatch(
+                    color: status.tint(increasedContrast: contrast == .increased),
+                    symbol: status.symbolName, label: status.label)
             }
             Divider().frame(maxWidth: 90)
             ForEach(PlanStatus.plannedCases) { plan in
-                swatch(color: plan.color, label: plan.label)
+                swatch(
+                    color: plan.tint(increasedContrast: contrast == .increased),
+                    symbol: plan.symbolName, label: plan.label)
             }
         }
         .padding(8)
@@ -143,14 +154,19 @@ struct MapLegend: View {
         .foregroundStyle(isDark ? .white : .primary)
     }
 
-    private func swatch(color: Color, label: String) -> some View {
+    private func swatch(color: Color, symbol: String, label: String) -> some View {
         HStack(spacing: 6) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(color)
-                .frame(width: 12, height: 12)
+                .frame(width: swatchSize, height: swatchSize)
+            if differentiateWithoutColor {
+                Image(systemName: symbol)
+                    .font(.caption2.weight(.semibold))
+            }
             Text(label)
                 .font(.caption2)
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -193,6 +209,8 @@ struct MapLaunchPreview: View {
 struct MapLoadingView: View {
     let message: String
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         ZStack {
             // Matches the app icon's blue gradient (Display P3) to keep launch and
@@ -210,7 +228,8 @@ struct MapLoadingView: View {
                 Image(systemName: "globe.europe.africa.fill")
                     .font(.system(size: 76))
                     .foregroundStyle(.white)
-                    .symbolEffect(.pulse)
+                    .symbolEffect(.pulse, isActive: !reduceMotion)
+                    .accessibilityHidden(true)
 
                 Text("Worldward")
                     .font(.largeTitle.weight(.heavy))
@@ -236,6 +255,8 @@ struct MapLoadingView: View {
 struct CountryRow: View {
     let country: Country
 
+    @Environment(\.colorSchemeContrast) private var contrast
+
     var body: some View {
         HStack(spacing: 6) {
             Text(country.flagEmoji)
@@ -243,17 +264,20 @@ struct CountryRow: View {
             Spacer()
             if country.isPlanned {
                 Image(systemName: country.planStatus.symbolName)
-                    .foregroundStyle(country.planStatus.tint)
+                    .foregroundStyle(country.planStatus.tint(increasedContrast: contrast == .increased))
                     .accessibilityLabel(country.planStatus.label)
             }
             if country.status.isVisited {
                 Image(systemName: country.status.symbolName)
-                    .foregroundStyle(country.status.color)
+                    .foregroundStyle(country.status.tint(increasedContrast: contrast == .increased))
                     .accessibilityLabel(country.status.label)
             }
         }
         // Make the whole row tappable, not just the drawn content (the Spacer gap
         // wouldn't register taps under a plain button otherwise).
         .contentShape(Rectangle())
+        // One VoiceOver element per row: "🇯🇵 Japan, Wishlist, Visited" instead
+        // of four separate stops.
+        .accessibilityElement(children: .combine)
     }
 }

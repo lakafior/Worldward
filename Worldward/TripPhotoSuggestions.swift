@@ -406,6 +406,8 @@ private struct SuggestionThumbnail: View {
             }
             .contentShape(RoundedRectangle(cornerRadius: 6))
             .onTapGesture(perform: toggle)
+            .accessibilityLabel(Text("Photo"))
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
             .task(id: identifier) { await load() }
     }
 

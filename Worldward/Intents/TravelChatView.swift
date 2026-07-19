@@ -162,11 +162,12 @@ struct TravelChatView: View {
                 submit(question)
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 30))
+                    .font(.title)
                     .foregroundStyle(canSend ? Color.brand : Color.secondary)
             }
             .buttonStyle(.plain)
             .disabled(!canSend)
+            .accessibilityLabel(Text("Send", comment: "Accessibility: submit the travel question"))
         }
         .padding()
         .background(.bar)

@@ -101,6 +101,10 @@ struct WrappedView: View {
     @State private var pageIndex = 0
     @State private var showShare = false
 
+    /// Pages slide in from the trailing edge; with Reduce Motion on they
+    /// crossfade in place (the per-element reveals already honor it).
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// The AI recap, generated eagerly on appear so it's usually ready by the
     /// time the reader taps through to its page.
     @State private var insights = TravelInsights()
@@ -146,9 +150,11 @@ struct WrappedView: View {
                     .padding(24)
                     .id(pageIndex)
                     .transition(
-                        .asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)))
+                        reduceMotion
+                            ? .opacity
+                            : .asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)))
             }
             .contentShape(Rectangle())
             // Stories navigation: tap the left quarter to go back, anywhere
@@ -164,6 +170,14 @@ struct WrappedView: View {
                 DragGesture(minimumDistance: 30).onEnded { value in
                     value.translation.width < 0 ? advance() : retreat()
                 })
+            // The tap zones and swipes are invisible to VoiceOver, Voice
+            // Control, and Switch Control; expose paging as named actions.
+            .accessibilityAction(named: Text("Next page", comment: "Accessibility action: advance the Wrapped recap")) {
+                advance()
+            }
+            .accessibilityAction(named: Text("Previous page", comment: "Accessibility action: go back one Wrapped page")) {
+                retreat()
+            }
         }
         .overlay(alignment: .top) { header }
         .foregroundStyle(.white)
@@ -189,6 +203,12 @@ struct WrappedView: View {
                         .frame(height: 3)
                 }
             }
+            // The capsules are a visual progress strip; read it as one element.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(
+                Text(
+                    "Page \(pageIndex + 1) of \(pages.count)",
+                    comment: "Accessibility: position within the Wrapped recap"))
             Button {
                 dismiss()
             } label: {

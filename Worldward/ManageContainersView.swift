@@ -138,6 +138,11 @@ private struct ContainerIconPicker: View {
                                             lineWidth: 2))
                         }
                         .buttonStyle(.plain)
+                        // The SF Symbol's own localized description names each
+                        // icon; the trait marks the current choice, otherwise
+                        // shown by ring color alone.
+                        .accessibilityAddTraits(
+                            container.symbolName == symbol ? .isSelected : [])
                     }
                 }
                 .padding()

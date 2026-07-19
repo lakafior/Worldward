@@ -61,11 +61,14 @@ private struct HeroSection: View {
     let unlocked: Int
     let total: Int
 
+    @ScaledMetric(relativeTo: .largeTitle) private var trophySize = 40.0
+
     var body: some View {
         VStack(spacing: 6) {
             Image(systemName: "trophy.fill")
-                .font(.system(size: 40))
+                .font(.system(size: trophySize))
                 .foregroundStyle(Color.brand)
+                .accessibilityHidden(true)
             Text("\(unlocked)/\(total)")
                 .font(.title.weight(.bold))
             Text("achievements unlocked")
@@ -75,6 +78,7 @@ private struct HeroSection: View {
         .frame(maxWidth: .infinity)
         .padding()
         .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 16))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -155,6 +159,16 @@ private struct AchievementBadge: View {
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { showingDetail = true }
+        // The tile is a tap target built from a gesture; present it to assistive
+        // tech as one button carrying the badge's name and progress.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(achievement.title)
+        .accessibilityValue(
+            achievement.isUnlocked
+                ? Text("Unlocked", comment: "Accessibility value: badge is earned")
+                : Text(achievement.progressLabel))
+        .accessibilityHint(achievement.detail)
+        .accessibilityAddTraits(.isButton)
         // macOS: description on hover, and the detail as an anchored popover
         // (click-away or ✕-free Esc dismiss) instead of a modal sheet, which
         // on Mac had no visible way to close. iOS keeps the compact sheet.
@@ -178,11 +192,14 @@ private struct AchievementBadge: View {
 private struct AchievementDetailPopover: View {
     let achievement: Achievement
 
+    @ScaledMetric(relativeTo: .largeTitle) private var symbolSize = 36.0
+
     var body: some View {
         VStack(alignment: .center, spacing: 12) {
             Image(systemName: achievement.symbol)
-                .font(.system(size: 36))
+                .font(.system(size: symbolSize))
                 .foregroundStyle(achievement.tint)
+                .accessibilityHidden(true)
 
             Text(achievement.title)
                 .font(.headline)

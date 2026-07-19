@@ -151,6 +151,12 @@ struct ContentView: View {
     @State private var eventKitSyncDebounce: Task<Void, Never>?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    /// Camera fly-tos and the toast's slide-in are real motion; with Reduce
+    /// Motion on they become instant jumps / plain fades.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The map filter bar marks its selection by fill color alone; with
+    /// Differentiate Without Color on it gains a checkmark.
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
     // Map search & filters
@@ -669,7 +675,10 @@ struct ContentView: View {
                         guard !Task.isCancelled else { return }
                         withAnimation(.easeOut(duration: 0.3)) { self.celebration = nil }
                     }
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(
+                        reduceMotion
+                            ? .opacity
+                            : .move(edge: .top).combined(with: .opacity))
                 }
             }
             .sensoryFeedback(.success, trigger: celebration) { _, new in new != nil }
@@ -702,7 +711,7 @@ struct ContentView: View {
 
                     // Center the map on the selected country
                     if let rect = mapRect(for: country) {
-                        withAnimation {
+                        withAnimation(reduceMotion ? nil : .default) {
                             cameraPosition = .rect(rect)
                         }
                     }
@@ -878,21 +887,29 @@ struct ContentView: View {
     @ViewBuilder private var mapFilterBar: some View {
         HStack(spacing: 4) {
             ForEach(MapFilter.allCases) { filter in
+                let isSelected = mapFilter == filter
                 Button {
                     mapFilter = filter
                 } label: {
-                    Text(filter.label)
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            mapFilter == filter
-                                ? Color.accentColor : Color.gray.opacity(0.15),
-                            in: Capsule()
-                        )
-                        .foregroundStyle(mapFilter == filter ? .white : .primary)
+                    HStack(spacing: 4) {
+                        // The selection is otherwise fill-color only.
+                        if differentiateWithoutColor && isSelected {
+                            Image(systemName: "checkmark")
+                                .font(.caption2.weight(.bold))
+                        }
+                        Text(filter.label)
+                            .font(.caption.weight(.medium))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        isSelected ? Color.accentColor : Color.gray.opacity(0.15),
+                        in: Capsule()
+                    )
+                    .foregroundStyle(isSelected ? .white : .primary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
                 .transition(.opacity)
             }
         }
@@ -940,7 +957,7 @@ struct ContentView: View {
         let padded = rect.insetBy(
             dx: -max(rect.width * 0.25, 2_000_000),
             dy: -max(rect.height * 0.25, 2_000_000))
-        withAnimation(.easeInOut(duration: 0.5)) {
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.5)) {
             cameraPosition = .rect(padded)
         }
     }
@@ -986,7 +1003,7 @@ struct ContentView: View {
         mapSearchText = ""
         showMap()
         if let rect = mapRect(for: country) {
-            withAnimation(.easeInOut(duration: 0.5)) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.5)) {
                 cameraPosition = .rect(rect)
             }
         }

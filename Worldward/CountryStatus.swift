@@ -56,6 +56,18 @@ enum CountryStatus: String, CaseIterable, Identifiable, Codable {
     /// to a neutral gray for `notVisited` (whose `color` is intentionally clear).
     var tint: Color { self == .notVisited ? .gray : color }
 
+    /// The chip/badge tint honoring the user's Increase Contrast setting: the two
+    /// pale yellows darken so small icons stay legible on light backgrounds; the
+    /// deeper oranges already pass and are returned unchanged.
+    func tint(increasedContrast: Bool) -> Color {
+        guard increasedContrast else { return tint }
+        switch self {
+        case .crossed:  return Color(red: 0.65, green: 0.48, blue: 0.00)
+        case .visited:  return Color(red: 0.72, green: 0.42, blue: 0.00)
+        default:        return tint
+        }
+    }
+
     /// Fill style for the map polygon (a touch more opaque so it reads on the map).
     var fillColor: Color { color.opacity(self == .notVisited ? 0 : 0.7) }
 

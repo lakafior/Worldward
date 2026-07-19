@@ -142,12 +142,15 @@ struct StatisticsView: View {
 private struct HeroSection: View {
     let stats: TravelStats
 
+    /// The headline figure follows Dynamic Type instead of staying at 56 pt.
+    @ScaledMetric(relativeTo: .largeTitle) private var heroFontSize = 56.0
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if stats.hasTravel {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("\(stats.visitedCountries)")
-                        .font(.system(size: 56, weight: .heavy, design: .rounded))
+                        .font(.system(size: heroFontSize, weight: .heavy, design: .rounded))
                         .foregroundStyle(.brandGradient)
                     VStack(alignment: .leading) {
                         Text("of \(stats.totalCountries) countries")
@@ -157,11 +160,18 @@ private struct HeroSection: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                // "42, of 195 countries, 4 of 7 continents" as one element.
+                .accessibilityElement(children: .combine)
 
                 if !stats.visitedFlags.isEmpty {
                     Text(stats.visitedFlags.prefix(60).joined(separator: " "))
                         .font(.title3)
                         .lineLimit(3)
+                        // Spare VoiceOver from naming up to 60 flags one by one.
+                        .accessibilityLabel(
+                            Text(
+                                "Flags of the countries you've visited",
+                                comment: "Accessibility: the strip of visited-country flags"))
                 }
             } else {
                 ContentUnavailableView(
@@ -228,6 +238,7 @@ private struct StatCard: View {
             Image(systemName: symbol)
                 .font(.title3)
                 .foregroundStyle(tint)
+                .accessibilityHidden(true)
             Text(value)
                 .font(.title3.bold())
                 .lineLimit(1)
@@ -239,6 +250,8 @@ private struct StatCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 12))
+        // One element per card: "12, Recorded visits".
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -597,6 +610,9 @@ struct StatRow: View {
                     .frame(width: 40, alignment: .trailing)
             }
         }
+        // "Europe, 12 / 44, 27%" as one element instead of four stops
+        // (including an anonymous progress bar).
+        .accessibilityElement(children: .combine)
     }
 }
 

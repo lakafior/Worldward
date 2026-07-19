@@ -47,6 +47,14 @@ enum PlanStatus: String, CaseIterable, Identifiable, Codable {
     /// An always-visible tint for badges and chips (neutral gray for `none`).
     var tint: Color { self == .none ? .gray : color }
 
+    /// The chip/badge tint honoring the user's Increase Contrast setting: the
+    /// light wishlist blue darkens so small icons stay legible on light
+    /// backgrounds; the deeper planning blue already passes.
+    func tint(increasedContrast: Bool) -> Color {
+        guard increasedContrast, self == .wishlist else { return tint }
+        return Color(red: 0.08, green: 0.42, blue: 0.72)
+    }
+
     /// Fill style for the map polygon. A touch lighter than the warm "been" fill
     /// (0.7) so a blue plan ring stays legible over a warm fill on a country that
     /// is both visited and planned.

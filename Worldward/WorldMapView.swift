@@ -40,6 +40,9 @@ struct WorldMapView: View, Equatable {
     /// Whether the map has delivered its first camera callback.
     @State private var becameLive = false
 
+    /// With Reduce Motion on, tapping a country jumps the camera instead of flying.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.visibleCountries.elementsEqual(rhs.visibleCountries, by: ===)
             && lhs.allCountries.elementsEqual(rhs.allCountries, by: ===)
@@ -152,7 +155,7 @@ struct WorldMapView: View, Equatable {
                         selectedCountry = country
                         // Animate the map to center on the tapped country.
                         if let rect = boundingRects[id] {
-                            withAnimation(.easeInOut(duration: 0.4)) {
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.4)) {
                                 cameraPosition = .region(MKCoordinateRegion(rect))
                             }
                         }
