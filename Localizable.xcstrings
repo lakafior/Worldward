@@ -4,6 +4,117 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%lld countries" : {
+      "comment" : "Widget/complication: count of countries visited"
+    },
+    "%lld of %lld continents · %@ of the world" : {
+      "comment" : "Travel snapshot widget: continents reached and share-of-world caption"
+    },
+    "%lldd" : {
+      "comment" : "Watch complication: days until the next trip, abbreviated (e.g. 12d)"
+    },
+    "+%lld more" : {
+      "comment" : "Packing widget: overflow count of additional items beyond those shown"
+    },
+    "A countdown to your next journey." : {
+      "comment" : "Watch complication description: next trip"
+    },
+    "A countdown to your next planned trip." : {
+      "comment" : "Widget description: upcoming trip"
+    },
+    "A grid of the flags of every country you've visited." : {
+      "comment" : "Widget description: flags grid"
+    },
+    "A map of the world, tinted by the countries you've visited." : {
+      "comment" : "Widget description: world map"
+    },
+    "Add items to your next trip in Worldward." : {
+      "comment" : "Packing widget: empty state message"
+    },
+    "All packed! ✅" : {
+      "comment" : "Packing widget: everything is packed"
+    },
+    "Check items off your next trip's packing list." : {
+      "comment" : "Packing widget: configuration description"
+    },
+    "Countries visited, continents reached, and your share of the world." : {
+      "comment" : "Widget description: travel snapshot"
+    },
+    "day" : {
+      "comment" : "Trip widget: singular day unit shown under the countdown number"
+    },
+    "days" : {
+      "comment" : "Trip widget: plural day unit shown under the countdown number"
+    },
+    "flags collected" : {
+      "comment" : "Flags widget: caption under the visited-country count"
+    },
+    "Flags Visited" : {
+      "comment" : "Widget name: flags grid"
+    },
+    "How much of your trip's packing list is done." : {
+      "comment" : "Watch complication description: packing progress"
+    },
+    "Mark your current country as visited in Worldward." : {
+      "comment" : "Control Center control description"
+    },
+    "Next trip" : {
+      "comment" : "Trip widget: fallback title for an untitled trip"
+    },
+    "Next Trip" : {
+      "comment" : "Watch complication name: next-trip countdown"
+    },
+    "No packing list" : {
+      "comment" : "Packing widget: empty state title"
+    },
+    "No trips planned" : {
+      "comment" : "Trip widget: empty state title"
+    },
+    "No upcoming trip" : {
+      "comment" : "Watch complication inline: no upcoming trip"
+    },
+    "None planned" : {
+      "comment" : "Watch complication: no trip planned"
+    },
+    "Nothing to pack" : {
+      "comment" : "Watch complication: no packing list for the active trip"
+    },
+    "Now" : {
+      "comment" : "Watch complication: the trip is underway right now"
+    },
+    "Packing List" : {
+      "comment" : "Packing widget: configuration display name"
+    },
+    "Packing Progress" : {
+      "comment" : "Watch complication name: packing progress"
+    },
+    "Plan your next adventure in Worldward." : {
+      "comment" : "Trip widget: empty state message"
+    },
+    "Start marking the places you've been ✈️" : {
+      "comment" : "Flags widget: empty state"
+    },
+    "Travel Progress" : {
+      "comment" : "Lock Screen accessory widget name"
+    },
+    "Travel Snapshot" : {
+      "comment" : "Widget name: travel summary"
+    },
+    "Traveling now ✈️" : {
+      "comment" : "Trip widget: the trip is currently underway"
+    },
+    "Upcoming Trip" : {
+      "comment" : "Widget name: upcoming trip countdown"
+    },
+    "World Map" : {
+      "comment" : "Widget name: tinted world map"
+    },
+    "Your country count and share of the world, on the Lock Screen." : {
+      "comment" : "Lock Screen accessory widget description"
+    },
+    "Your country count and share of the world." : {
+      "comment" : "Watch complication description: countries visited"
+    },
     "…and %lld more" : {
       "comment" : "Wrapped: overflow line under the new-countries list",
       "localizations" : {

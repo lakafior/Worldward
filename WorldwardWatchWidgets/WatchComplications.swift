@@ -144,17 +144,23 @@ private struct NextTripView: View {
         return start <= now && now <= end
     }
 
-    /// Short countdown token for the tight circular / inline families.
-    private var countdownText: Text {
+    /// Short countdown token for the tight circular / inline families. A plain
+    /// `String` (not `Text`) so it can be interpolated into other strings —
+    /// `Text + Text` concatenation is deprecated on watchOS 26.
+    private var countdown: String {
         guard snapshot.nextTripStart != nil else {
-            return Text("None", comment: "Watch complication: no upcoming trip")
+            return String(localized: "None", comment: "Watch complication: no upcoming trip")
         }
-        if isUnderway { return Text("Now", comment: "Watch complication: trip is underway") }
+        if isUnderway {
+            return String(localized: "Now", comment: "Watch complication: trip is underway")
+        }
         guard let days = snapshot.daysUntilNextTrip else {
-            return Text("None", comment: "Watch complication: no upcoming trip")
+            return String(localized: "None", comment: "Watch complication: no upcoming trip")
         }
-        if days == 0 { return Text("Today", comment: "Watch complication: trip starts today") }
-        return Text("\(days)d", comment: "Watch complication: days until trip, e.g. 12d")
+        if days == 0 {
+            return String(localized: "Today", comment: "Watch complication: trip starts today")
+        }
+        return String(localized: "\(days)d", comment: "Watch complication: days until trip, e.g. 12d")
     }
 
     var body: some View {
@@ -168,7 +174,7 @@ private struct NextTripView: View {
                 }
             } else {
                 Label {
-                    Text("\(snapshot.nextTripTitle) · ") + countdownText
+                    Text("\(snapshot.nextTripTitle) · \(countdown)")
                 } icon: {
                     Image(systemName: "airplane")
                 }
@@ -178,7 +184,7 @@ private struct NextTripView: View {
             VStack(spacing: 0) {
                 Image(systemName: "airplane.departure")
                     .font(.caption)
-                countdownText
+                Text(countdown)
                     .font(.headline)
                     .minimumScaleFactor(0.6)
             }
@@ -198,12 +204,12 @@ private struct NextTripView: View {
                         .font(.headline)
                 } else {
                     Text(snapshot.nextTripTitle).font(.headline).lineLimit(1)
-                    countdownText.font(.caption).foregroundStyle(.secondary)
+                    Text(countdown).font(.caption).foregroundStyle(.secondary)
                 }
             }
 
         default:
-            countdownText
+            Text(countdown)
         }
     }
 }
@@ -238,9 +244,8 @@ private struct PackingView: View {
         case .accessoryInline:
             if hasList {
                 Label {
-                    Text(
-                        "\(snapshot.packedItems)/\(snapshot.totalPackingItems) packed",
-                        comment: "Watch complication inline: packed count")
+                    // Reuses the app's already-translated "%lld of %lld packed".
+                    Text("\(snapshot.packedItems) of \(snapshot.totalPackingItems) packed")
                 } icon: {
                     Image(systemName: "bag")
                 }
