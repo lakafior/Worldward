@@ -39,6 +39,12 @@ struct WorldwardWatch: App {
 
     init() {
         PackingDeltaSync.activate(container: Self.sharedModelContainer)
+        // A packing toggle arriving from the iPhone should update the watch-face
+        // complications too, not just the on-screen list.
+        let container = Self.sharedModelContainer
+        PackingDeltaSync.onDidApply = { @MainActor in
+            WatchComplicationRefresh.run(context: container.mainContext)
+        }
     }
 
     var body: some Scene {

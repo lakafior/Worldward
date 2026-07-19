@@ -140,6 +140,17 @@ Two flows in **Settings**:
 - **Control Center / Action button**: "Mark where I am" control.
 - Widgets read a snapshot from a shared **App Group** — no SwiftData runs in the extension.
 
+### Apple Watch
+
+A lightweight companion app for the two moments a phone is inconvenient — packing, and checking today's plan on the move.
+
+- **Upcoming trips** on your wrist, soonest first, each with a packing-progress bar.
+- **Packing check-off** — tap any item to mark it packed; grouped by container with per-group counts.
+- **Today's itinerary** — the trip's stops with today's highlighted, plus its places to see.
+- **Watch face complications** — countries-visited count and share of the world, a next-trip countdown, and packing progress, in the circular, inline, rectangular, and corner families.
+- Data arrives over the same **iCloud (CloudKit)** sync the iPhone uses — no separate setup. A tiny `WatchConnectivity` channel makes each check-off appear on the other device instantly, rather than waiting on a CloudKit push.
+- Requires iCloud sync turned on (Settings) on your iPhone; otherwise the watch shows a gentle prompt to enable it.
+
 ### Reminders
 
 - Optional on-device notifications: "on this day" memories, **trip start reminder** (24 hours before), December year-in-review nudge, gentle prompt if you haven't logged a trip lately.
@@ -209,11 +220,12 @@ Two flows in **Settings**:
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
 | Intents | `AppIntents` framework (Shortcuts, Siri, Control Center) |
 | Widgets | `WidgetKit` over an App Group |
+| Watch | watchOS companion app — SwiftData + CloudKit, `WatchConnectivity` deltas, `WidgetKit` complications |
 | Notifications | `UserNotifications` (local, opt-in) |
 | Calendar | `EventKit` (write-only) |
 | Share | `ImageRenderer` → `ShareLink`, `CIFilter` (QR codes) |
 | Localization | `String(localized:)` backed by Xcode String Catalogs |
-| Platforms | macOS 26+, iOS 26+ |
+| Platforms | macOS 26+, iOS 26+, watchOS 26+ (companion) |
 
 ---
 
@@ -350,8 +362,6 @@ WorldwardWidgets/               # Widget extension target
 
 Planned next, in rough priority order — everything stays native-only, lightweight, and local-first:
 
-- **iCloud sync** — the schema is CloudKit-safe (per-row dedup tokens, converging de-duplication) and the app-side plumbing is in place: an opt-in Settings toggle switches the store to CloudKit, falling back to local when the build lacks the entitlement. Going live awaits paid Apple Developer membership activation (see `docs/paid-membership-checklist.md`). Trip attachments (stored with `.externalStorage`) will ride along automatically as `CKAsset`s.
-- **Apple Watch app** — glanceable counts and "mark where I am" from the wrist; waiting on iCloud sync first.
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
 - **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.
 

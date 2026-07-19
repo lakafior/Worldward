@@ -25,6 +25,11 @@
         /// The store incoming deltas are applied to, set once by each app at launch.
         @MainActor private static var container: ModelContainer?
 
+        /// Called after an incoming delta is applied and saved. The watch app sets
+        /// this to refresh its face complications; the iPhone leaves it nil (its
+        /// widgets refresh through `refreshWidgetSnapshot` on the same activation).
+        @MainActor static var onDidApply: (@MainActor () -> Void)?
+
         private static let payloadKey = "packingToggles"
 
         /// Wires the session up. Call once at launch, after the container exists.
@@ -89,7 +94,10 @@
                         changed = true
                     }
                 }
-                if changed { try? context.save() }
+                if changed {
+                    try? context.save()
+                    Self.onDidApply?()
+                }
             }
         }
     }

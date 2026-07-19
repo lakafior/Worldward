@@ -69,6 +69,8 @@ fastlane/test_output/
 gemini.md
 .claude
 .xcodebuildmcp
+.agents
+skills-lock.json
 
 # Docs
 docs

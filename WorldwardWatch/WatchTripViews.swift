@@ -6,6 +6,7 @@ import SwiftUI
 /// Root screen: upcoming trips soonest first, or — when nothing has synced — a
 /// hint that trips are planned on the iPhone with iCloud sync on.
 struct WatchRootView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \Trip.startDate) private var trips: [Trip]
 
     /// Trips that haven't finished yet, soonest first (query order).
@@ -30,6 +31,12 @@ struct WatchRootView: View {
             .navigationTitle(Str.Trip.tabTrips)
         }
         .tint(.brand)
+        // Keep the watch-face complications in step with the store: once on
+        // appear (covers a cold launch after CloudKit has hydrated) and again
+        // when trips are added or removed. Packing check-offs refresh from the
+        // row itself. `write` skips no-ops, so this is cheap.
+        .task { WatchComplicationRefresh.run(context: modelContext) }
+        .onChange(of: trips.count) { WatchComplicationRefresh.run(context: modelContext) }
     }
 }
 
@@ -128,12 +135,15 @@ private struct WatchStopRow: View {
 /// A packing row: the whole row toggles the item, and each toggle also ships a
 /// delta to the iPhone so both screens stay live (see `PackingDeltaSync`).
 private struct WatchPackingRow: View {
+    @Environment(\.modelContext) private var modelContext
     @Bindable var item: PackingItem
 
     var body: some View {
         Button {
             item.isPacked.toggle()
             PackingDeltaSync.send(dedupID: item.dedupID, isPacked: item.isPacked)
+            // Reflect the new packing progress on the watch face right away.
+            WatchComplicationRefresh.run(context: modelContext)
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
