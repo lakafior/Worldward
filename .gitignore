@@ -68,6 +68,7 @@ fastlane/test_output/
 # AI
 gemini.md
 .claude
+.xcodebuildmcp
 
 # Docs
 docs

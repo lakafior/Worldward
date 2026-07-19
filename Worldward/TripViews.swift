@@ -1250,6 +1250,9 @@ private struct PackingItemRow: View {
         HStack {
             Button {
                 item.isPacked.toggle()
+                #if canImport(WatchConnectivity)
+                    PackingDeltaSync.send(dedupID: item.dedupID, isPacked: item.isPacked)
+                #endif
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")

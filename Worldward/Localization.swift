@@ -116,6 +116,18 @@ nonisolated enum Str {
             localized: "No trips yet", comment: "Empty state when no trips exist")
     }
 
+    // MARK: - Watch app
+    enum Watch {
+        static let emptyTitle = String(
+            localized: "No Upcoming Trips", comment: "Watch empty state title")
+        static let emptyMessage = String(
+            localized: "Plan a trip in Worldward on your iPhone and turn on iCloud sync — it will appear here.",
+            comment: "Watch empty state message shown when no trips have synced yet")
+        static let today = String(
+            localized: "Today",
+            comment: "Watch: label replacing the date on an itinerary stop happening today")
+    }
+
     // MARK: - Statistics
     enum Stats {
         static let title = String(

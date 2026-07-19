@@ -124,6 +124,14 @@ struct Worldward: App {
 
     @Environment(\.openWindow) private var openWindow
 
+    init() {
+        // Instant packing-list deltas to/from the Apple Watch app (iOS only —
+        // macOS has no WatchConnectivity and compiles the call away).
+        #if canImport(WatchConnectivity)
+            PackingDeltaSync.activate(container: Self.sharedModelContainer)
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
