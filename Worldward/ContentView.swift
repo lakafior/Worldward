@@ -438,7 +438,7 @@ struct ContentView: View {
                                 flyTo(country: country)
                             } label: {
                                 Label(
-                                    "\(country.flagEmoji) \(country.name)", systemImage: "mappin")
+                                    "\(country.flagEmoji) \(country.localizedName)", systemImage: "mappin")
                             }
                         }
                     }
@@ -487,7 +487,7 @@ struct ContentView: View {
                                     flyTo(country: country)
                                 } label: {
                                     Label(
-                                        "\(country.flagEmoji) \(country.name)",
+                                        "\(country.flagEmoji) \(country.localizedName)",
                                         systemImage: "mappin")
                                 }
                             }
@@ -574,7 +574,9 @@ struct ContentView: View {
                     TripDetailView(trip: trip, allCountries: allCountries)
                 }
             } else if let country = selectedCountry {
-                inspectorPane(title: country.name, subtitle: country.continent) {
+                inspectorPane(
+                    title: country.localizedName,
+                    subtitle: Continents.localizedName(for: country.continent)) {
                     CountryDetailView(country: country)
                 }
             }

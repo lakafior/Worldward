@@ -118,7 +118,7 @@ struct TripPhotoSuggestionsSheet: View {
                     photoGrid(group.photos)
                 } header: {
                     sectionHeader(
-                        "\(group.country.flagEmoji) \(group.country.name)",
+                        "\(group.country.flagEmoji) \(group.country.localizedName)",
                         photos: group.photos)
                 }
             }
@@ -128,7 +128,7 @@ struct TripPhotoSuggestionsSheet: View {
                     if trip.countries.count > 1 {
                         Picker("Attach to", selection: $noLocationCountryID) {
                             ForEach(trip.countries) { country in
-                                Text("\(country.flagEmoji) \(country.name)")
+                                Text("\(country.flagEmoji) \(country.localizedName)")
                                     .tag(country.id)
                             }
                         }

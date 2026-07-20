@@ -234,7 +234,7 @@ struct ImportPreviewView: View {
                                 Button {
                                     locationBinding.wrappedValue.assignedCountryID = country.id
                                 } label: {
-                                    Text("\(country.flagEmoji)  \(country.name)")
+                                    Text("\(country.flagEmoji)  \(country.localizedName)")
                                 }
                             }
                         }
@@ -245,7 +245,7 @@ struct ImportPreviewView: View {
                             Button {
                                 locationBinding.wrappedValue.assignedCountryID = country.id
                             } label: {
-                                Text("\(country.flagEmoji)  \(country.name)")
+                                Text("\(country.flagEmoji)  \(country.localizedName)")
                             }
                         }
                     }

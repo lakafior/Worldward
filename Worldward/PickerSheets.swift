@@ -66,7 +66,7 @@ struct PlaceSearchSheet: View {
     private var emptyDescription: String {
         if let country {
             return String(
-                localized: "Search for sights and spots to visit in \(country.name).")
+                localized: "Search for sights and spots to visit in \(country.localizedName).")
         }
         return String(localized: "Search for sights and spots to visit at this stop.")
     }
@@ -217,7 +217,11 @@ struct CountryPickerSheet: View {
     private var filtered: [Country] {
         let term = search.trimmingCharacters(in: .whitespaces)
         guard !term.isEmpty else { return allCountries }
-        return allCountries.filter { $0.name.localizedStandardContains(term) }
+        return allCountries.filter {
+            $0.name.localizedStandardContains(term)
+                || $0.localizedName.localizedStandardContains(term)
+        }
+        .sorted { $0.localizedName.localizedStandardCompare($1.localizedName) == .orderedAscending }
     }
 
     var body: some View {

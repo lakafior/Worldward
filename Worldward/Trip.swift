@@ -212,7 +212,7 @@ final class ItineraryItem {
     /// A friendly label: the stop's title, else its country's name, else "Stop".
     var displayTitle: String {
         if !title.isEmpty { return title }
-        if let country { return country.name }
+        if let country { return country.localizedName }
         return "Stop"
     }
 

@@ -179,7 +179,7 @@ struct SuggestionsView: View {
                 ForEach(Array(suggestions.enumerated()), id: \.element.country.id) { index, item in
                     HStack {
                         Text(item.country.flagEmoji)
-                        Text(item.country.name)
+                        Text(item.country.localizedName)
                         Spacer()
                         Text("\(Int(item.distanceKM.rounded())) km away")
                             .font(.caption)
@@ -225,7 +225,7 @@ private struct SmartSuggestionsSection: View {
         let reason: String
         var id: String { country.id }
         var flag: String { country.flagEmoji }
-        var name: String { country.name }
+        var name: String { country.localizedName }
     }
 
     /// The candidate countries for the selected mode, with a distance for context.

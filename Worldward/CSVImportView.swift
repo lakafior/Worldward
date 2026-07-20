@@ -138,7 +138,7 @@ struct CSVImportView: View {
                 HStack(spacing: 8) {
                     Text(entry.country.flagEmoji)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(entry.country.name)
+                        Text(entry.country.localizedName)
                             .font(.subheadline.weight(.medium))
                         Text(detailLine(for: entry))
                             .font(.caption)

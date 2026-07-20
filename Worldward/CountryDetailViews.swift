@@ -30,7 +30,7 @@ struct CountryDetailView: View {
         Form {
             Section {
                 VStack(alignment: .leading) {
-                    Text("\(country.flagEmoji) \(country.name)")
+                    Text("\(country.flagEmoji) \(country.localizedName)")
                         .font(.largeTitle)
                         .bold()
                     Text(Continents.localizedName(for: country.continent))
@@ -288,7 +288,7 @@ struct CountryDetailSheet: View {
     var body: some View {
         NavigationStack {
             CountryDetailView(country: country)
-                .navigationTitle(country.name)
+                .navigationTitle(country.localizedName)
                 #if !os(macOS)
                     .navigationBarTitleDisplayMode(.inline)
                 #endif

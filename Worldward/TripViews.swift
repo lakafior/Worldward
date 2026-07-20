@@ -1364,7 +1364,7 @@ private struct StopRow: View {
                 Text(stop.country?.flagEmoji ?? "📍")
                 TextField(
                     "Stop", text: $stop.title,
-                    prompt: Text(stop.country?.name ?? "Stop"))
+                    prompt: Text(stop.country?.localizedName ?? "Stop"))
             }
 
             Toggle("Set a date", isOn: $hasDate)

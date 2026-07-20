@@ -73,7 +73,7 @@ struct ProposedCountry: Identifiable {
     var isHome: Bool
 
     var flagEmoji: String { country.flagEmoji }
-    var countryName: String { country.name }
+    var countryName: String { country.localizedName }
     var totalDistinctDays: Int { trips.reduce(0) { $0 + $1.distinctDays } }
     var totalPhotos: Int { trips.reduce(0) { $0 + $1.photoCount } }
 }

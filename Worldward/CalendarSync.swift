@@ -217,7 +217,7 @@ enum CalendarSync {
                 title: [flag, stop.displayTitle].filter { !$0.isEmpty }.joined(separator: " "),
                 start: date, end: date,
                 notes: [stop.note, placeLines].filter { !$0.isEmpty }.joined(separator: "\n\n"),
-                locationText: located == nil ? stop.country?.name : nil,
+                locationText: located == nil ? stop.country?.localizedName : nil,
                 place: located.flatMap { place in
                     place.coordinate.map { (place.title, $0.latitude, $0.longitude) }
                 })
