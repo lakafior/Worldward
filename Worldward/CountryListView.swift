@@ -19,7 +19,34 @@ enum CountrySort: CaseIterable, Identifiable {
 /// Pre-computed snapshot of the country list's filter/sort state, derived once
 /// in its `init` so the list body can read it without recomputing on every render.
 struct CountryListSummary {
+    /// One continent's group in the by-name order, with its header already
+    /// localized and its rows already sorted.
+    struct ContinentSection: Identifiable {
+        /// The stored (English) continent value — stable across languages, so
+        /// `ForEach` identity survives a locale change.
+        let id: String
+        /// The localized header text.
+        let title: String
+        let countries: [Country]
+    }
+
+    /// A country paired with the keys the list sorts on. Both are costly to
+    /// derive — `localizedName` is an ICU region lookup and `lastVisit` walks
+    /// (and allocates for) the visits relationship — so they're computed once
+    /// per country here rather than on every comparison inside a comparator.
+    private struct SortableCountry {
+        let country: Country
+        let localizedName: String
+        let lastVisit: Date?
+    }
+
     let filteredCountries: [Country]
+    /// The by-name order: continent sections, sorted by localized continent
+    /// name, each holding its countries sorted by localized country name.
+    let nameSections: [ContinentSection]
+    /// The "Recent" order: flat, most recently visited first, countries with no
+    /// recorded visit last and alphabetical among themselves.
+    let recentlySorted: [Country]
     let continents: [String]
     let visitYears: [Int]
     let visitedCount: Int
@@ -30,6 +57,8 @@ struct CountryListSummary {
     /// before reading it, so the empty state is never shown.
     init() {
         filteredCountries = []
+        nameSections = []
+        recentlySorted = []
         continents = []
         visitYears = []
         visitedCount = 0
@@ -42,7 +71,7 @@ struct CountryListSummary {
     ) {
         let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         let calendar = Calendar.current
-        var filteredCountries: [Country] = []
+        var kept: [SortableCountry] = []
         var continents = Set<String>()
         var visitYears = Set<Int>()
         var visitedCount = 0
@@ -54,21 +83,35 @@ struct CountryListSummary {
                 visitedCount += 1
             }
 
-            // Collect visit years from all visits
+            // One pass over the visits relationship feeds three consumers: the
+            // year filter's menu options, that filter's own match, and the
+            // "Recent" sort key. They used to walk it separately.
+            var latestVisit: Date?
+            var matchesSelectedYear = false
             for visit in (country.visits ?? []) {
-                visitYears.insert(calendar.component(.year, from: visit.date))
+                let year = calendar.component(.year, from: visit.date)
+                visitYears.insert(year)
+                if year == selectedYear { matchesSelectedYear = true }
+                latestVisit = latestVisit.map { Swift.max($0, visit.date) } ?? visit.date
             }
-            // Also check legacy visitDate for backward compatibility
+            // The legacy single `visitDate` counts everywhere the relationship does.
             if let visitDate = country.visitDate {
-                visitYears.insert(calendar.component(.year, from: visitDate))
+                let year = calendar.component(.year, from: visitDate)
+                visitYears.insert(year)
+                if year == selectedYear { matchesSelectedYear = true }
+                latestVisit = latestVisit.map { Swift.max($0, visitDate) } ?? visitDate
             }
+
+            // Resolved once and reused for both the search match below and the
+            // sort keys at the end — it's an ICU lookup, not a stored property.
+            let localizedName = country.localizedName
 
             // Match the English name *and* the user's localized one: the list now
             // displays localized names, so typing "Allemagne" must find Germany.
             guard
                 trimmedSearch.isEmpty
                     || country.name.localizedStandardContains(trimmedSearch)
-                    || country.localizedName.localizedStandardContains(trimmedSearch)
+                    || localizedName.localizedStandardContains(trimmedSearch)
             else { continue }
 
             // With no search term, restrict the list to the active workflow: Been
@@ -86,28 +129,64 @@ struct CountryListSummary {
                 continue
             }
 
-            if browseMode == .been, let selectedYear {
-                // Check if any visit matches the selected year
-                let hasMatchingVisit = (country.visits ?? []).contains { visit in
-                    calendar.component(.year, from: visit.date) == selectedYear
-                }
-                // Also check legacy visitDate for backward compatibility
-                let legacyYearMatch =
-                    country.visitDate.map {
-                        calendar.component(.year, from: $0) == selectedYear
-                    } ?? false
-
-                guard hasMatchingVisit || legacyYearMatch else { continue }
+            if browseMode == .been, selectedYear != nil {
+                guard matchesSelectedYear else { continue }
             }
 
-            filteredCountries.append(country)
+            kept.append(
+                SortableCountry(
+                    country: country, localizedName: localizedName, lastVisit: latestVisit))
         }
 
-        self.filteredCountries = filteredCountries
+        self.filteredCountries = kept.map(\.country)
         self.continents = continents.sorted()
         self.visitYears = visitYears.sorted(by: >)
         self.visitedCount = visitedCount
         self.hasActiveFilters = selectedContinent != nil || selectedYear != nil
+
+        // Both orders are built here, not in the view body: sorting on the
+        // decorated keys keeps the ICU lookups and relationship walks at O(n)
+        // instead of the O(n log n) a comparator would incur, and the result
+        // survives every re-render until a filter dependency actually changes.
+        // Building both (rather than only the active one) keeps `sortOrder` out
+        // of the rebuild's dependencies, so flipping the sort stays instant.
+        var byContinent: [String: [SortableCountry]] = [:]
+        for item in kept {
+            byContinent[item.country.continent, default: []].append(item)
+        }
+        self.nameSections =
+            byContinent
+            .map { continent, items in
+                ContinentSection(
+                    id: continent,
+                    title: Continents.localizedName(for: continent),
+                    countries: items
+                        .sorted {
+                            $0.localizedName.localizedStandardCompare($1.localizedName)
+                                == .orderedAscending
+                        }
+                        .map(\.country)
+                )
+            }
+            .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+
+        self.recentlySorted =
+            kept
+            .sorted { lhs, rhs in
+                switch (lhs.lastVisit, rhs.lastVisit) {
+                case (let l?, let r?):
+                    return l == r
+                        ? lhs.localizedName.localizedStandardCompare(rhs.localizedName)
+                            == .orderedAscending
+                        : l > r
+                case (.some, nil): return true
+                case (nil, .some): return false
+                case (nil, nil):
+                    return lhs.localizedName.localizedStandardCompare(rhs.localizedName)
+                        == .orderedAscending
+                }
+            }
+            .map(\.country)
     }
 }
 
@@ -140,35 +219,10 @@ struct CountryListView: View {
     /// when the view first appears before `rebuildSummary` fires via `onAppear`.
     @State private var summaryReady = false
 
-    private var countriesGroupedByContinent: [String: [Country]] {
-        Dictionary(grouping: summary.filteredCountries, by: { $0.continent })
-    }
-
-    /// Filtered countries ordered by most recent visit (newest first); countries
-    /// with no recorded visit fall to the bottom, then alphabetically.
-    private var recentlySorted: [Country] {
-        summary.filteredCountries.sorted { lhs, rhs in
-            switch (lastVisit(lhs), lastVisit(rhs)) {
-            case (let l?, let r?):
-                return l == r
-                    ? lhs.localizedName.localizedStandardCompare(rhs.localizedName) == .orderedAscending
-                    : l > r
-            case (.some, nil): return true
-            case (nil, .some): return false
-            case (nil, nil):
-                return lhs.localizedName.localizedStandardCompare(rhs.localizedName) == .orderedAscending
-            }
-        }
-    }
+    // Grouping and both sort orders live on `summary` (rebuilt only when a
+    // filter dependency changes), so nothing here re-derives them per render.
 
     private var count: Int { summary.filteredCountries.count }
-
-    /// The most recent visit date for a country, including the legacy `visitDate`.
-    private func lastVisit(_ country: Country) -> Date? {
-        var dates = (country.visits ?? []).map(\.date)
-        if let legacy = country.visitDate { dates.append(legacy) }
-        return dates.max()
-    }
 
     /// A cheap signature of everything the cached summary derives from. Statuses,
     /// plans, and visits all change without the row count changing (map/detail
@@ -319,25 +373,16 @@ struct CountryListView: View {
             // Name keeps the familiar by-continent grouping; recency is a flat,
             // global order where continent sections wouldn't make sense.
             if sortOrder == .name {
-                ForEach(
-                    countriesGroupedByContinent.keys.sorted {
-                        Continents.localizedName(for: $0)
-                            .localizedStandardCompare(Continents.localizedName(for: $1)) == .orderedAscending
-                    }, id: \.self
-                ) { continent in
-                    Section(Continents.localizedName(for: continent)) {
-                        ForEach(
-                            (countriesGroupedByContinent[continent] ?? []).sorted {
-                                $0.localizedName.localizedStandardCompare($1.localizedName) == .orderedAscending
-                            }
-                        ) { country in
+                ForEach(summary.nameSections) { section in
+                    Section(section.title) {
+                        ForEach(section.countries) { country in
                             row(country)
                         }
                     }
                 }
             } else {
                 Section {
-                    ForEach(recentlySorted) { country in
+                    ForEach(summary.recentlySorted) { country in
                         row(country)
                     }
                 }

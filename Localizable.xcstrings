@@ -27481,7 +27481,7 @@
       }
     },
     "countries" : {
-      "comment" : "Watch corner complication gauge label\nWrapped: plural countries word",
+      "comment" : "Wrapped: plural countries word",
       "localizations" : {
         "bg" : {
           "stringUnit" : {
@@ -72328,7 +72328,7 @@
       }
     },
     "Packing" : {
-      "comment" : "Section header for packing list\nWatch complication rectangular header",
+      "comment" : "Section header for packing list",
       "localizations" : {
         "bg" : {
           "stringUnit" : {
@@ -97079,7 +97079,7 @@
       }
     },
     "Today" : {
-      "comment" : "Watch complication: trip starts today\nWatch: label replacing the date on an itinerary stop happening today",
+      "comment" : "Watch: label replacing the date on an itinerary stop happening today",
       "localizations" : {
         "bg" : {
           "stringUnit" : {

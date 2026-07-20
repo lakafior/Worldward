@@ -74,3 +74,8 @@ skills-lock.json
 
 # Docs
 docs
+
+# asccli
+.asc
+Tools/upload_screenshots.sh
+Tools/apply_metadata.sh
