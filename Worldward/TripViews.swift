@@ -204,6 +204,15 @@ private struct TripsListView: View {
         .sheet(item: $editingTrip) { trip in
             TripDetailSheet(trip: trip, allCountries: allCountries)
         }
+        .task {
+            #if DEBUG
+                // Screenshot capture: open the demo trip's editor (the packing run
+                // then scrolls itself down to the packing list).
+                if ScreenshotSupport.isCapturing(.trip) || ScreenshotSupport.isCapturing(.packing) {
+                    editingTrip = upcomingTrips.first ?? trips.first
+                }
+            #endif
+        }
     }
 
     /// The rows for one bucket of trips. On macOS rows are selectable tags with
@@ -455,8 +464,15 @@ struct TripDetailView: View {
                 Text("Reuse this packing list on future trips.")
             }
 
-            list
-                .alert(
+            ScrollViewReader { proxy in
+                list
+                    .task {
+                        #if DEBUG
+                            await scrollToPackingIfCapturing(proxy)
+                        #endif
+                    }
+            }
+            .alert(
                     "Apple Calendar",
                     isPresented: Binding(
                         get: { calendarAlert != nil }, set: { if !$0 { calendarAlert = nil } })
@@ -622,6 +638,19 @@ struct TripDetailView: View {
 
     /// An overall progress bar, one Section per container that has items (plus an
     /// "Other" group for ungrouped items), followed by the shared controls section.
+    #if DEBUG
+        /// Scroll anchor so screenshot capture can jump straight to the packing list.
+        fileprivate static let packingAnchorID = "ww-packing-anchor"
+
+        /// Screenshot capture: bring the packing list into view inside the editor.
+        /// The short wait lets the sheet finish presenting before we scroll.
+        private func scrollToPackingIfCapturing(_ proxy: ScrollViewProxy) async {
+            guard ScreenshotSupport.isCapturing(.packing) else { return }
+            try? await Task.sleep(for: .milliseconds(700))
+            proxy.scrollTo(Self.packingAnchorID, anchor: .top)
+        }
+    #endif
+
     @ViewBuilder private var packingSections: some View {
         if !(trip.packing ?? []).isEmpty {
             Section {
@@ -633,6 +662,9 @@ struct TripDetailView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            #if DEBUG
+                .id(Self.packingAnchorID)
+            #endif
         }
 
         ForEach(trip.packingGroups) { group in

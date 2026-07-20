@@ -140,7 +140,7 @@ class PhotoImporter {
     private var lastSettings = ImportSettings()
 
     /// The full catalog, sorted by name — backs the picker's "any country" list.
-    var pickableCountries: [Country] { allCountries.sorted { $0.name < $1.name } }
+    var pickableCountries: [Country] { allCountries.sorted { $0.localizedName.localizedStandardCompare($1.localizedName) == .orderedAscending } }
 
     /// Set once by `configure`. Snapshotted into each scan Task so the
     /// background scanner never touches the main-actor-bound stored properties.

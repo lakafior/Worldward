@@ -260,7 +260,7 @@ struct CountryRow: View {
     var body: some View {
         HStack(spacing: 6) {
             Text(country.flagEmoji)
-            Text(country.name)
+            Text(country.localizedName)
             Spacer()
             if country.isPlanned {
                 Image(systemName: country.planStatus.symbolName)

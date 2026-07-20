@@ -47,6 +47,14 @@ struct StatisticsView: View {
         .wrappedCover(item: $wrappedYear) { year in
             WrappedView(countries: countries, stats: stats, year: year)
         }
+        .task {
+            #if DEBUG
+                // Screenshot capture: present the deeper screens that live inside
+                // this dashboard, using the year the dashboard already highlights.
+                if ScreenshotSupport.isCapturing(.wrapped) { wrappedYear = selectedYearStat }
+                if ScreenshotSupport.isCapturing(.share) { showShareSheet = true }
+            #endif
+        }
     }
 
     /// macOS shows the dashboard inside the main window's navigation stack (via
@@ -473,7 +481,7 @@ private struct TimelineEntryRow: View {
                 HStack(spacing: 6) {
                     Text(visit.country?.flagEmoji ?? "🏳️")
                         .font(.title3)
-                    Text(visit.country?.name ?? "Unknown")
+                    Text(visit.country?.localizedName ?? "Unknown")
                         .font(.subheadline.weight(.semibold))
                     Spacer()
                     Text(visit.date, style: .date)

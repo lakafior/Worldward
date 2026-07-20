@@ -219,8 +219,11 @@ struct ContentView: View {
     private var mapSearchResults: [Country] {
         let term = mapSearchText.trimmingCharacters(in: .whitespaces)
         guard !term.isEmpty else { return [] }
-        return allCountries.filter { $0.name.localizedStandardContains(term) }
-            .sorted { $0.name < $1.name }
+        return allCountries.filter {
+            $0.name.localizedStandardContains(term)
+                || $0.localizedName.localizedStandardContains(term)
+        }
+        .sorted { $0.localizedName.localizedStandardCompare($1.localizedName) == .orderedAscending }
     }
 
     /// The interactive world map. Extracted into `WorldMapView` (and diffed via
@@ -777,6 +780,11 @@ struct ContentView: View {
                 Text(locationError ?? "")
             }
             .onOpenURL(perform: handleOpenedFile)
+            .task {
+                #if DEBUG
+                    applyScreenshotRouting()
+                #endif
+            }
             .sheet(item: $receivedTripFile) { received in
                 TripFileImportSheet(record: received.trip)
             }
@@ -805,6 +813,9 @@ struct ContentView: View {
                 consumePendingOpenCountry()
                 consumePendingMarkHere()
                 deduplicateCountries()
+                #if DEBUG
+                    applyScreenshotRouting()
+                #endif
             }
             // The reverse of the clearing above: a trip selection claims the
             // macOS detail column from the country. Setting the other side to
@@ -1055,6 +1066,37 @@ struct ContentView: View {
 
     /// Selects a country an intent requested. Waits for the catalog to load
     /// before clearing the request, so a cold-launched intent isn't dropped.
+    #if DEBUG
+        /// Drive the app to the screen named by `-screen` for App Store screenshot
+        /// automation. Idempotent: runs on first appear and again once the catalog
+        /// loads (so `countryDetail` resolves its country). Deeper screens hand off
+        /// to `ScreenshotDirector`, which their owning child views observe.
+        private func applyScreenshotRouting() {
+            guard ScreenshotSupport.isActive, let screen = ScreenshotSupport.screen else { return }
+            switch screen {
+            case .map:
+                selectedTab = .map
+            case .been:
+                selectedTab = .been
+            case .going:
+                selectedTab = .going
+            case .countryDetail:
+                selectedTab = .been
+                detailCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
+            case .achievements:
+                selectedTab = .map
+                showAchievements = true
+            case .stats, .wrapped, .share:
+                // CountryListView opens the Statistics sheet; StatisticsView then
+                // presents Wrapped / Share itself.
+                selectedTab = .been
+            case .trip, .packing:
+                // TripsView opens the trip editor; it scrolls to packing when asked.
+                selectedTab = .going
+            }
+        }
+    #endif
+
     private func consumePendingOpenCountry() {
         guard let id = intentRouter.pendingOpenCountryID, !allCountries.isEmpty else { return }
         intentRouter.pendingOpenCountryID = nil
@@ -1237,6 +1279,13 @@ struct ContentView: View {
         }
         LaunchClock.mark("loadGeoJSON: splash cleared")
 
+        #if DEBUG
+            // Re-apply screenshot routing now the map splash is gone, so sheet-based
+            // screens (achievements, country detail) present over the loaded map
+            // rather than being dropped during the loading overlay.
+            applyScreenshotRouting()
+        #endif
+
         // The map geometry has now been cached into the App Group (inside the
         // detached task above). Rewrite the snapshot so the reload it triggers
         // happens *after* the geometry file exists — the map widget then finds it
@@ -1358,6 +1407,11 @@ struct ContentView: View {
     /// "re-earned" in one giant toast when the rows arrive.
     private func celebrateNewAchievements() {
         guard !allCountries.isEmpty else { return }
+        #if DEBUG
+            // Screenshot runs seed dozens of visits at once; the celebration toast
+            // would cover the UI. Suppress it while capturing.
+            if ScreenshotSupport.isActive { return }
+        #endif
         let achievements = Achievement.all(for: TravelStats(countries: allCountries))
         let newlyUnlocked = AchievementUnlocks.consumeNewlyUnlocked(from: achievements)
         guard let toast = AchievementCelebration(newlyUnlocked: newlyUnlocked) else { return }

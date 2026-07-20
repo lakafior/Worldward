@@ -33,7 +33,7 @@ struct CountryDetailView: View {
                     Text("\(country.flagEmoji) \(country.name)")
                         .font(.largeTitle)
                         .bold()
-                    Text(country.continent)
+                    Text(Continents.localizedName(for: country.continent))
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
@@ -321,9 +321,9 @@ struct LocationStatusSheet: View {
                         Text(country.flagEmoji)
                             .font(.largeTitle)
                         VStack(alignment: .leading) {
-                            Text(country.name)
+                            Text(country.localizedName)
                                 .font(.headline)
-                            Text(country.continent)
+                            Text(Continents.localizedName(for: country.continent))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

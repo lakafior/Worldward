@@ -32,6 +32,14 @@ struct Worldward: App {
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
             PackingTemplateItem.self, TripAttachment.self,
         ])
+        #if DEBUG
+            // App Store screenshot automation: replace the on-disk store with a
+            // throwaway in-memory one seeded with demo data. The real store is
+            // never opened. Gated on the `-UITEST` launch argument.
+            if ScreenshotSupport.isActive {
+                return ScreenshotSupport.makeSeededContainer(schema: schema)
+            }
+        #endif
         // `.none` explicitly: the default is `.automatic`, which would silently
         // start syncing the moment the iCloud entitlement appears in a build,
         // regardless of the user's toggle. Sync must stay opt-in.
@@ -124,6 +132,15 @@ struct Worldward: App {
 
     @Environment(\.openWindow) private var openWindow
 
+    /// The appearance to apply. Normally the user's Settings choice; the DEBUG
+    /// screenshot harness can force light/dark via `-appearance`.
+    private var resolvedColorScheme: ColorScheme? {
+        #if DEBUG
+            if let forced = ScreenshotSupport.forcedColorScheme { return forced }
+        #endif
+        return appTheme.colorScheme
+    }
+
     init() {
         // Instant packing-list deltas to/from the Apple Watch app (iOS only —
         // macOS has no WatchConnectivity and compiles the call away).
@@ -135,7 +152,7 @@ struct Worldward: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(appTheme.colorScheme)
+                .preferredColorScheme(resolvedColorScheme)
                 .onAppear {
                     // UndoManager is intentionally omitted: a SwiftData runtime bug
                     // (FB13659086) crashes with "A snapshot should exist before

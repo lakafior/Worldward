@@ -80,6 +80,20 @@ final class Country {
         Country.flagEmoji(for: id)
     }
 
+    /// The country's name in the user's language, taken from the system's own
+    /// region catalogue — Foundation already ships every country name in every
+    /// language, so none of these need translating (or storing) ourselves.
+    ///
+    /// Falls back to the bundled English `name` for ids Foundation doesn't
+    /// recognise (Kosovo `XK`, Clipperton `CP`, the Indian Ocean Territories…).
+    ///
+    /// Display only: `name` stays the stored, English, sortable value that CSV
+    /// and JSON exports travel with, so a backup made on a Japanese device still
+    /// restores everywhere.
+    var localizedName: String {
+        Locale.current.localizedString(forRegionCode: id) ?? name
+    }
+
     init(
         id: String, iso3: String = "", name: String, continent: String = "Unknown",
         status: CountryStatus = .notVisited, visitDate: Date? = nil, notes: String = ""

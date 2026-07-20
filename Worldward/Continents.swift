@@ -45,6 +45,17 @@ enum Continents {
         byISO[isoAlpha2].flatMap(Continent.init(rawValue:))
     }
 
+    /// The display name for a stored (English) continent string, in the user's
+    /// language. `Country.continent` stores English because it's the grouping and
+    /// sort key and travels in CSV/JSON exports, so localization happens only at
+    /// display time — the same split as `Country.name` / `Country.localizedName`.
+    /// Display-only, so unlike the lookups above it stays main-actor isolated
+    /// (the background seeding task never needs a localized name).
+    static func localizedName(for englishName: String) -> String {
+        Continent(rawValue: englishName)?.localizedName
+            ?? String(localized: "Unknown", comment: "Continent shown for a country with no recognised region")
+    }
+
     nonisolated static let byISO: [String: String] = [
         // Europe (52)
         "AD": "Europe", "AL": "Europe", "AT": "Europe", "AX": "Europe",

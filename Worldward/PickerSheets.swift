@@ -229,7 +229,7 @@ struct CountryPickerSheet: View {
                 } label: {
                     HStack {
                         Text(country.flagEmoji)
-                        Text(country.name)
+                        Text(country.localizedName)
                         Spacer()
                     }
                     .contentShape(Rectangle())

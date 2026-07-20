@@ -48,7 +48,7 @@ struct WrappedFacts {
                 continentNames.insert(
                     Continent(rawValue: country.continent)?.localizedName ?? country.continent)
                 if !earlierIDs.contains(country.id) {
-                    newCountries.append((country.flagEmoji, country.name))
+                    newCountries.append((country.flagEmoji, country.localizedName))
                 }
             }
 
@@ -62,7 +62,7 @@ struct WrappedFacts {
         }
 
         self.visitCount = visitCount
-        self.newCountries = newCountries.sorted { $0.name < $1.name }
+        self.newCountries = newCountries.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         self.continents = continentNames.sorted()
 
         // Ties break toward the earlier month so the answer is stable.
@@ -78,7 +78,7 @@ struct WrappedFacts {
         if let top = visitsByCountry.max(by: { $0.value < $1.value }), top.value >= 2,
             let country = countries.first(where: { $0.id == top.key })
         {
-            self.topCountry = (country.flagEmoji, country.name, top.value)
+            self.topCountry = (country.flagEmoji, country.localizedName, top.value)
         } else {
             self.topCountry = nil
         }
@@ -137,6 +137,19 @@ struct WrappedView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
+                Color.clear
+                    .task {
+                        #if DEBUG
+                            // Screenshot capture: the cover page is nearly empty, so
+                            // open straight onto the countries page instead.
+                            if ScreenshotSupport.isCapturing(.wrapped),
+                                let index = pages.firstIndex(of: .countries)
+                            {
+                                pageIndex = index
+                            }
+                        #endif
+                    }
+
                 LinearGradient(
                     colors: [.brandRoyal, Color(.displayP3, red: 0.05, green: 0.08, blue: 0.25)],
                     startPoint: .top, endPoint: .bottom

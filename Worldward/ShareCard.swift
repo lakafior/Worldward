@@ -52,8 +52,18 @@ struct ShareCard: View {
     }
 
     private var primaryLabel: String {
-        let plural = primaryCount == 1 ? "country" : "countries"
-        return year == nil ? "countries visited" : "\(plural) this year"
+        if year == nil {
+            return String(
+                localized: "countries visited",
+                comment: "Share card label under the all-time country count")
+        }
+        return primaryCount == 1
+            ? String(
+                localized: "country this year",
+                comment: "Share card label under a one-country year count")
+            : String(
+                localized: "countries this year",
+                comment: "Share card label under a single year's country count")
     }
 
     /// The visited countries the card lists: all of them, or just the chosen year.
@@ -95,17 +105,29 @@ struct ShareCard: View {
 
             HStack(spacing: 24) {
                 if config.showContinents {
-                    metric(value: "\(stats.visitedContinents)", label: "continents")
+                    metric(
+                        value: "\(stats.visitedContinents)",
+                        label: String(
+                            localized: "continents",
+                            comment: "Share card metric label"))
                 }
                 if config.showSecondMetric {
                     if let busiest = stats.busiestYear, year == nil {
-                        metric(value: "\(busiest.year)", label: "busiest year")
+                        metric(
+                            value: "\(busiest.year)",
+                            label: String(
+                                localized: "busiest year",
+                                comment: "Share card metric label"))
                     } else if year != nil {
                         metric(value: "\(year?.visits ?? 0)", label: "visits")
                     }
                 }
                 if config.showMostVisited, let most = stats.mostVisited {
-                    metric(value: most.flag, label: "most visited")
+                    metric(
+                        value: most.flag,
+                        label: String(
+                            localized: "most visited",
+                            comment: "Share card metric label"))
                 }
             }
 

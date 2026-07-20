@@ -63,9 +63,12 @@ struct CountryListSummary {
                 visitYears.insert(calendar.component(.year, from: visitDate))
             }
 
+            // Match the English name *and* the user's localized one: the list now
+            // displays localized names, so typing "Allemagne" must find Germany.
             guard
                 trimmedSearch.isEmpty
                     || country.name.localizedStandardContains(trimmedSearch)
+                    || country.localizedName.localizedStandardContains(trimmedSearch)
             else { continue }
 
             // With no search term, restrict the list to the active workflow: Been
@@ -146,10 +149,14 @@ struct CountryListView: View {
     private var recentlySorted: [Country] {
         summary.filteredCountries.sorted { lhs, rhs in
             switch (lastVisit(lhs), lastVisit(rhs)) {
-            case (let l?, let r?): return l == r ? lhs.name < rhs.name : l > r
+            case (let l?, let r?):
+                return l == r
+                    ? lhs.localizedName.localizedStandardCompare(rhs.localizedName) == .orderedAscending
+                    : l > r
             case (.some, nil): return true
             case (nil, .some): return false
-            case (nil, nil): return lhs.name < rhs.name
+            case (nil, nil):
+                return lhs.localizedName.localizedStandardCompare(rhs.localizedName) == .orderedAscending
             }
         }
     }
@@ -256,6 +263,15 @@ struct CountryListView: View {
             TravelChatView()
         }
         .onAppear { rebuildSummary() }
+        .task {
+            #if DEBUG
+                // Screenshot capture: the Statistics sheet is the gateway to the
+                // stats, Wrapped and share-card screens. Been list only.
+                if browseMode == .been, ScreenshotSupport.needsStatistics {
+                    showStatistics = true
+                }
+            #endif
+        }
         .onChange(of: searchText) { rebuildSummary() }
         .onChange(of: selectedContinent) { rebuildSummary() }
         .onChange(of: selectedYear) { rebuildSummary() }
@@ -299,9 +315,18 @@ struct CountryListView: View {
             // Name keeps the familiar by-continent grouping; recency is a flat,
             // global order where continent sections wouldn't make sense.
             if sortOrder == .name {
-                ForEach(countriesGroupedByContinent.keys.sorted(), id: \.self) { continent in
-                    Section(continent) {
-                        ForEach(countriesGroupedByContinent[continent] ?? []) { country in
+                ForEach(
+                    countriesGroupedByContinent.keys.sorted {
+                        Continents.localizedName(for: $0)
+                            .localizedStandardCompare(Continents.localizedName(for: $1)) == .orderedAscending
+                    }, id: \.self
+                ) { continent in
+                    Section(Continents.localizedName(for: continent)) {
+                        ForEach(
+                            (countriesGroupedByContinent[continent] ?? []).sorted {
+                                $0.localizedName.localizedStandardCompare($1.localizedName) == .orderedAscending
+                            }
+                        ) { country in
                             row(country)
                         }
                     }

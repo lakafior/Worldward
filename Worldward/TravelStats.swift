@@ -109,8 +109,8 @@ struct TravelStats {
             if status.isVisited {
                 visited += 1
                 bucket.visited += 1
-                flagged.append((status, country.name, country.flagEmoji))
-                labels[country.id] = (country.flagEmoji, country.name)
+                flagged.append((status, country.localizedName, country.flagEmoji))
+                labels[country.id] = (country.flagEmoji, country.localizedName)
                 statusTints[country.id] = CountryStatus.allCases.firstIndex(of: status) ?? 0
             }
             buckets[country.continent] = bucket
@@ -144,7 +144,7 @@ struct TravelStats {
                     total: $0.value.total
                 )
             }
-            .sorted { $0.name < $1.name }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
 
         let years = Set(Array(visitsByYear.keys) + Array(countryIDsByYear.keys))
             .sorted()
@@ -185,7 +185,7 @@ struct TravelStats {
         self.labelByID = labels
         self.visitedList =
             flagged
-            .sorted { $0.name < $1.name }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             .map { (flag: $0.flag, name: $0.name) }
     }
 
@@ -194,7 +194,7 @@ struct TravelStats {
     func countries(inYear year: Int) -> [(flag: String, name: String)] {
         (countryIDsByYear[year] ?? [])
             .compactMap { labelByID[$0] }
-            .sorted { $0.name < $1.name }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     /// Count of distinct calendar years that have at least one recorded visit.
