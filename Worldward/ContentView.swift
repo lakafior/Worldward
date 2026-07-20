@@ -1075,27 +1075,56 @@ struct ContentView: View {
         /// to `ScreenshotDirector`, which their owning child views observe.
         private func applyScreenshotRouting() {
             guard ScreenshotSupport.isActive, let screen = ScreenshotSupport.screen else { return }
-            switch screen {
-            case .map:
-                selectedTab = .map
-            case .been:
-                selectedTab = .been
-            case .going:
-                selectedTab = .going
-            case .countryDetail:
-                selectedTab = .been
-                detailCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
-            case .achievements:
-                selectedTab = .map
-                showAchievements = true
-            case .stats, .wrapped, .share:
-                // CountryListView opens the Statistics sheet; StatisticsView then
-                // presents Wrapped / Share itself.
-                selectedTab = .been
-            case .trip, .packing:
-                // TripsView opens the trip editor; it scrolls to packing when asked.
-                selectedTab = .going
-            }
+            #if os(macOS)
+                // macOS has its own navigation model (split-view sidebar + a
+                // pushed `macPath` destination + a trailing inspector) — reusing
+                // the iOS tab/sheet state here would show iOS-style UI floating
+                // inside the Mac window instead of the app's real layout.
+                switch screen {
+                case .map:
+                    macPath.removeAll()
+                case .been:
+                    sidebarMode = .been
+                    macPath.removeAll()
+                case .going:
+                    sidebarMode = .going
+                    macPath.removeAll()
+                case .countryDetail:
+                    sidebarMode = .been
+                    selectedCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
+                case .achievements, .stats, .wrapped, .share:
+                    // TravelsDashboardView is the single native destination for
+                    // both stats and achievements; it switches its own segment
+                    // when capturing `.achievements` (see StatisticsView.swift).
+                    macPath = [.travels]
+                case .trip, .packing:
+                    // TripsListView (inside the Going sidebar) sets `selectedTrip`
+                    // itself once its own trips query is populated.
+                    sidebarMode = .going
+                }
+            #else
+                switch screen {
+                case .map:
+                    selectedTab = .map
+                case .been:
+                    selectedTab = .been
+                case .going:
+                    selectedTab = .going
+                case .countryDetail:
+                    selectedTab = .been
+                    detailCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
+                case .achievements:
+                    selectedTab = .map
+                    showAchievements = true
+                case .stats, .wrapped, .share:
+                    // CountryListView opens the Statistics sheet; StatisticsView then
+                    // presents Wrapped / Share itself.
+                    selectedTab = .been
+                case .trip, .packing:
+                    // TripsView opens the trip editor; it scrolls to packing when asked.
+                    selectedTab = .going
+                }
+            #endif
         }
     #endif
 

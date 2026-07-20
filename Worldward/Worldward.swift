@@ -6,6 +6,16 @@ import SwiftUI
 
 @main
 struct Worldward: App {
+    #if DEBUG
+        #if os(macOS)
+            // Forces the main window visible for App Store screenshot capture —
+            // see `ScreenshotSupport.pinMacWindow()` for why this can't live in
+            // the SwiftUI view hierarchy instead.
+            @NSApplicationDelegateAdaptor(ScreenshotAppDelegate.self)
+            private var screenshotAppDelegate
+        #endif
+    #endif
+
     /// The user's appearance choice, shared with `SettingsView` via the same key.
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 

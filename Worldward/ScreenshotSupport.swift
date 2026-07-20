@@ -263,4 +263,114 @@
             try? ctx.save()
         }
     }
+
+    #if os(macOS)
+        import AppKit
+
+        extension ScreenshotSupport {
+            /// Fixed logical size for the pinned capture window: 1512×982 points is
+            /// 3024×1964 px on a 2x display, which matches the MacBook Pro M5 bezel's
+            /// screen cutout (3023×1963, aspect 1.540 — a real 14" MacBook display).
+            ///
+            /// This was previously 1440×900 (2880×1800), on the mistaken assumption that
+            /// the cutout matched the App Store canvas size. It does not: 2880×1800 is
+            /// 16:10, so the framing step's aspect-fill cropped ~27pt off each side —
+            /// enough to clip the sidebar's search field and the trailing toolbar icons.
+            /// The canvas size is a separate concern, handled in `Tools/frame_all.sh`.
+            ///
+            /// Position is irrelevant: the capture script grabs this window *by id*,
+            /// not by screen region.
+            static let macWindowSize = CGSize(width: 1512, height: 982)
+
+            /// Where `Tools/screenshots_macos.sh` reads the window id to capture.
+            /// Writing it to a fixed path (rather than enumerating windows from the
+            /// shell) sidesteps Screen Recording/Accessibility permission entirely —
+            /// only the system `screencapture` binary needs that grant, and it
+            /// already has it.
+            static let macWindowIDPath = "/tmp/worldward_mac_window_id.txt"
+
+            /// Pins the app's main window to a fixed frame and publishes its window
+            /// id for the capture script. No-op unless `-UITEST` is active.
+            ///
+            /// A plain launch of a `WindowGroup` app (not a Dock double-click) can
+            /// leave AppKit with zero *ordered* windows — and SwiftUI defers
+            /// evaluating that window's content (including `ContentView`'s own
+            /// `.task`) until it's key/visible. So calling this from within the
+            /// view hierarchy deadlocks: the code that would show the window never
+            /// runs because the window isn't shown yet. Call it from
+            /// `applicationDidFinishLaunching` instead (see `ScreenshotAppDelegate`
+            /// below), which runs at the AppKit level regardless of SwiftUI's view
+            /// scheduling — the same level a real Dock click operates at. Polls
+            /// briefly since the window may not exist the instant launch finishes.
+            @MainActor
+            static func pinMacWindow() async {
+                guard isActive else { return }
+
+                // The delegate switches to .regular activation and the shell
+                // script activates via `open -a`.  Once the window server
+                // publishes our window, resize, strip chrome, and publish the
+                // real CGWindowID for screencapture.
+                //
+                // Note: NSWindow.windowNumber is permanently 0x1_0000_0000 on
+                // macOS ≥27 when MenuBarExtra co-exists with WindowGroup, so
+                // we query CGWindowList directly to get the real CGWindowID.
+                for _ in 0..<160 {
+                    if let wid = Self.findOwnWindowID() {
+                        if let window = NSApp.windows.first(where: { !($0 is NSPanel) }) {
+                            window.setContentSize(macWindowSize)
+                            window.center()
+                            window.styleMask = .borderless
+                            window.hasShadow = false
+                            window.isOpaque = true
+                            window.level = .normal
+                        }
+                        try? String(wid).write(
+                            toFile: macWindowIDPath, atomically: true, encoding: .utf8)
+                        return
+                    }
+                    try? await Task.sleep(for: .milliseconds(150))
+                }
+            }
+
+            /// Query the window server for our own on-screen window ID.
+            private static func findOwnWindowID() -> Int? {
+                let pid = ProcessInfo.processInfo.processIdentifier
+                guard let list = CGWindowListCopyWindowInfo(
+                    [.optionOnScreenOnly, .excludeDesktopElements],
+                    kCGNullWindowID) as? [[String: Any]]
+                else { return nil }
+                for info in list {
+                    guard let ownerPID = info[kCGWindowOwnerPID as String] as? Int,
+                          ownerPID == pid,
+                          let layer = info[kCGWindowLayer as String] as? Int,
+                          layer == 0,
+                          let wid = info[kCGWindowNumber as String] as? Int,
+                          wid > 0
+                    else { continue }
+                    return wid
+                }
+                return nil
+            }
+        }
+
+        /// Forces the main window visible at launch when `-UITEST` is active.
+        /// `applicationDidFinishLaunching` runs at the AppKit level — see the long
+        /// comment on `pinMacWindow()` for why that placement (rather than
+        /// anywhere in the SwiftUI view hierarchy) is required.
+        final class ScreenshotAppDelegate: NSObject, NSApplicationDelegate {
+            func applicationDidFinishLaunching(_ notification: Notification) {
+                guard ScreenshotSupport.isActive else { return }
+
+                // The app ships a MenuBarExtra alongside WindowGroup — SwiftUI
+                // defaults to .accessory activation, suppressing all windows.
+                // .regular restores normal window behaviour.  The shell script
+                // handles actual activation via `open -a` (Dock-click path).
+                NSApp.setActivationPolicy(.regular)
+
+                Task { @MainActor in
+                    await ScreenshotSupport.pinMacWindow()
+                }
+            }
+        }
+    #endif
 #endif

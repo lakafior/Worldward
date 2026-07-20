@@ -95,6 +95,7 @@ nonisolated enum Str {
     enum Trip {
         static let tabTrips = String(localized: "Trips", comment: "Segmented control tab")
         static let tabWishlist = String(localized: "Wishlist", comment: "Segmented control tab")
+        static let tabSuggestions = String(localized: "Suggestions", comment: "Segmented control tab")
         static let newButton = String(
             localized: "New Trip", comment: "Toolbar button to create a trip")
         static let addStop = String(

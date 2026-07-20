@@ -266,10 +266,14 @@ struct CountryListView: View {
         .task {
             #if DEBUG
                 // Screenshot capture: the Statistics sheet is the gateway to the
-                // stats, Wrapped and share-card screens. Been list only.
-                if browseMode == .been, ScreenshotSupport.needsStatistics {
-                    showStatistics = true
-                }
+                // stats, Wrapped and share-card screens. Been list only. macOS
+                // excluded — there, ContentView pushes the native
+                // TravelsDashboardView via `macPath` instead of this sheet.
+                #if !os(macOS)
+                    if browseMode == .been, ScreenshotSupport.needsStatistics {
+                        showStatistics = true
+                    }
+                #endif
             #endif
         }
         .onChange(of: searchText) { rebuildSummary() }

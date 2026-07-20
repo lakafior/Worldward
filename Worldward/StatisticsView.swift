@@ -646,6 +646,14 @@ struct StatRow: View {
                     AchievementsView(countries: countries)
                 }
             }
+            .task {
+                #if DEBUG
+                    // Screenshot capture: this native macOS destination is also
+                    // where achievements live (there's no separate iOS-style sheet
+                    // for them here) — switch segments to match the requested screen.
+                    if ScreenshotSupport.isCapturing(.achievements) { page = .achievements }
+                #endif
+            }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Picker("Section", selection: $page) {

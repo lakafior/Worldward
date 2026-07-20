@@ -125,7 +125,7 @@ struct SuggestionsView: View {
             }
             .padding()
         }
-        .navigationTitle("Suggestions")
+        .navigationTitle(Str.Trip.tabSuggestions)
         #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
         #endif

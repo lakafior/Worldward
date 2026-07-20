@@ -76,7 +76,7 @@ struct GoingView: View {
             switch self {
             case .trips: Str.Trip.tabTrips
             case .wishlist: Str.Trip.tabWishlist
-            case .suggestions: "Suggestions"
+            case .suggestions: Str.Trip.tabSuggestions
             }
         }
     }
@@ -206,10 +206,16 @@ private struct TripsListView: View {
         }
         .task {
             #if DEBUG
-                // Screenshot capture: open the demo trip's editor (the packing run
-                // then scrolls itself down to the packing list).
+                // Screenshot capture: open the demo trip (the packing run then
+                // scrolls itself down to the packing list — see TripDetailView,
+                // which backs both the iOS sheet and the macOS inspector below).
                 if ScreenshotSupport.isCapturing(.trip) || ScreenshotSupport.isCapturing(.packing) {
-                    editingTrip = upcomingTrips.first ?? trips.first
+                    let trip = upcomingTrips.first ?? trips.first
+                    #if os(macOS)
+                        selectedTrip = trip
+                    #else
+                        editingTrip = trip
+                    #endif
                 }
             #endif
         }
