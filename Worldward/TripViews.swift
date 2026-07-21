@@ -375,6 +375,9 @@ struct TripDetailView: View {
     /// flips it back off (see `notesSection`).
     @State private var isEditingNotes = false
     @FocusState private var notesFieldFocused: Bool
+    /// Held across submits so a run of new packing items can be typed without
+    /// tapping back into the field between each one.
+    @FocusState private var packingFieldFocused: Bool
     /// Hides the one-shot "Add to Apple Calendar" button while calendar sync is
     /// on — the sync already mirrors the trip, so the button would double-book.
     @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
@@ -738,12 +741,36 @@ struct TripDetailView: View {
     @ViewBuilder private var packingSections: some View {
         if !(trip.packing ?? []).isEmpty {
             Section {
-                VStack(alignment: .leading, spacing: 4) {
-                    ProgressView(
-                        value: Double(trip.packedCount), total: Double((trip.packing ?? []).count))
-                    Text("\(trip.packedCount) of \((trip.packing ?? []).count) packed")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                let total = (trip.packing ?? []).count
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        // The count leads now rather than trailing the bar in
+                        // `.caption`: in field mode this is the whole point of the
+                        // screen, and it was styled as an afterthought.
+                        Text("\(trip.packedCount) of \(total) packed")
+                            .font(.subheadline.weight(.medium))
+                            // Rolls the digits instead of cutting to the new value.
+                            .contentTransition(.numericText())
+                        Spacer()
+                        if trip.packedCount == total {
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(.green)
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    ProgressView(value: Double(trip.packedCount), total: Double(total))
+                        // Matches the green of the row checkmarks, so the bar and
+                        // the thing filling it read as one system.
+                        .tint(.green)
+                }
+                // Checking an item off used to snap the bar with no motion at all.
+                .animation(.spring(response: 0.35, dampingFraction: 0.8), value: trip.packedCount)
+                // Finishing the list is the one moment on this screen worth
+                // marking — otherwise a full bar arrives in silence. Only on the
+                // transition *into* completion: a plain `== total` trigger would
+                // also fire when unpacking the last item.
+                .sensoryFeedback(trigger: trip.packedCount) { old, new in
+                    new == total && old != total ? .success : nil
                 }
             }
             #if DEBUG
@@ -781,10 +808,12 @@ struct TripDetailView: View {
         let packed = group.items.filter(\.isPacked).count
         let collapsed = collapsedGroupIDs.contains(group.id)
         return Button {
-            if collapsed {
-                collapsedGroupIDs.remove(group.id)
-            } else {
-                collapsedGroupIDs.insert(group.id)
+            withAnimation(.snappy(duration: 0.25)) {
+                if collapsed {
+                    collapsedGroupIDs.remove(group.id)
+                } else {
+                    collapsedGroupIDs.insert(group.id)
+                }
             }
         } label: {
             HStack {
@@ -792,11 +821,19 @@ struct TripDetailView: View {
                     Text(
                         "\(group.container?.name ?? Str.Trip.packingOther) · \(packed)/\(group.items.count)"
                     )
+                    // Checking an item off updates this group's tally too; roll it
+                    // in step with the overall progress count above.
+                    .contentTransition(.numericText())
+                    .animation(.snappy, value: packed)
                 } icon: {
                     Image(systemName: group.container?.symbolName ?? "tray")
                 }
                 Spacer()
-                Image(systemName: collapsed ? "chevron.right" : "chevron.down")
+                // One chevron rotated, not two symbols swapped: the eye reads it
+                // as the same object turning, which is what says the group is
+                // still there. It's also what `DisclosureGroup` does natively.
+                Image(systemName: "chevron.down")
+                    .rotationEffect(.degrees(collapsed ? -90 : 0))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
@@ -804,6 +841,7 @@ struct TripDetailView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .sensoryFeedback(.selection, trigger: collapsed)
         .accessibilityValue(
             collapsed
                 ? Text("Collapsed", comment: "Accessibility value: packing group is folded shut")
@@ -814,7 +852,16 @@ struct TripDetailView: View {
         Section {
             HStack {
                 TextField("Add item", text: $newPackingTitle)
-                    .onSubmit { addPacking() }
+                    .focused($packingFieldFocused)
+                    // `.onSubmit` alone dropped focus after every item, so building
+                    // a list meant tapping back into the field between each one.
+                    // Keeping focus lets you type the whole list in one go, the way
+                    // Reminders does.
+                    .submitLabel(.next)
+                    .onSubmit {
+                        addPacking()
+                        packingFieldFocused = true
+                    }
                 Button("Add", action: addPacking)
                     .disabled(newPackingTitle.trimmingCharacters(in: .whitespaces).isEmpty)
             }
@@ -991,8 +1038,13 @@ struct TripDetailView: View {
         let title = newPackingTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
         let item = PackingItem(title: title, order: nextPackingOrder, trip: trip)
-        modelContext.insert(item)
-        trip.packing?.append(item)
+        // Animated so the new row slides into its group rather than popping in —
+        // when you're adding a run of items, it's the only confirmation that each
+        // one landed where you expected.
+        withAnimation(.snappy) {
+            modelContext.insert(item)
+            trip.packing?.append(item)
+        }
         newPackingTitle = ""
     }
 
