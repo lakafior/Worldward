@@ -127,6 +127,27 @@ nonisolated enum Str {
         static let today = String(
             localized: "Today",
             comment: "Watch: label replacing the date on an itinerary stop happening today")
+        static let now = String(
+            localized: "Now", comment: "Watch tab: the at-a-glance page")
+        static let upcoming = String(
+            localized: "Upcoming", comment: "Watch: section header for trips that haven't ended")
+        static let past = String(
+            localized: "Past", comment: "Watch: section header for trips that already ended")
+        static let underway = String(
+            localized: "Underway", comment: "Watch: badge on a trip that has already started")
+        static let recent = String(
+            localized: "Recent", comment: "Watch: section header for the latest logged visits")
+        static let countries = String(
+            localized: "Countries", comment: "Watch: label under the visited-country count")
+        static let continents = String(
+            localized: "Continents", comment: "Watch: label under the visited-continent count")
+        static let nothingLoggedTitle = String(
+            localized: "Nothing Logged Yet",
+            comment: "Watch empty state title when no country has been marked visited")
+        static let nothingLoggedMessage = String(
+            localized:
+                "Mark the countries you've been to in Worldward on your iPhone — they'll show up here.",
+            comment: "Watch empty state message when no country has been marked visited")
     }
 
     // MARK: - Statistics

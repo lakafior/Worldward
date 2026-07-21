@@ -3,40 +3,54 @@
 import SwiftData
 import SwiftUI
 
-/// Root screen: upcoming trips soonest first, or — when nothing has synced — a
-/// hint that trips are planned on the iPhone with iCloud sync on.
-struct WatchRootView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Trip.startDate) private var trips: [Trip]
-
-    /// Trips that haven't finished yet, soonest first (query order).
-    private var upcoming: [Trip] { trips.filter { $0.isUpcoming(asOf: Date()) } }
+/// The trips page: upcoming trips soonest first, then the ones already behind
+/// you, most recent first. Past trips used to be filtered away entirely, which
+/// meant a finished journey — packing list, itinerary and all — simply vanished
+/// from the wrist the day it ended.
+///
+/// `trips` is passed in rather than queried here: `WatchRootView` already holds
+/// that query to drive the "Now" page and the complication refresh, and one
+/// query feeding both avoids a second fetch of the same rows.
+struct WatchTripsView: View {
+    let trips: [Trip]
 
     var body: some View {
         NavigationStack {
             Group {
-                if upcoming.isEmpty {
+                if trips.isEmpty {
                     ContentUnavailableView {
                         Label(Str.Watch.emptyTitle, systemImage: "airplane.departure")
                     } description: {
                         Text(Str.Watch.emptyMessage)
                     }
                 } else {
-                    List(upcoming) { trip in
-                        NavigationLink(value: trip) { WatchTripRow(trip: trip) }
+                    let now = Date()
+                    // Query order is ascending by start date: that puts the
+                    // soonest upcoming trip first, and the most recently
+                    // finished one last — hence the reverse for the past.
+                    let upcoming = trips.filter { $0.isUpcoming(asOf: now) }
+                    let past = trips.filter { !$0.isUpcoming(asOf: now) }.reversed()
+                    List {
+                        if !upcoming.isEmpty {
+                            Section(Str.Watch.upcoming) {
+                                ForEach(upcoming) { trip in
+                                    NavigationLink(value: trip) { WatchTripRow(trip: trip) }
+                                }
+                            }
+                        }
+                        if !past.isEmpty {
+                            Section(Str.Watch.past) {
+                                ForEach(past) { trip in
+                                    NavigationLink(value: trip) { WatchTripRow(trip: trip) }
+                                }
+                            }
+                        }
                     }
                     .navigationDestination(for: Trip.self) { WatchTripView(trip: $0) }
                 }
             }
             .navigationTitle(Str.Trip.tabTrips)
         }
-        .tint(.brand)
-        // Keep the watch-face complications in step with the store: once on
-        // appear (covers a cold launch after CloudKit has hydrated) and again
-        // when trips are added or removed. Packing check-offs refresh from the
-        // row itself. `write` skips no-ops, so this is cheap.
-        .task { WatchComplicationRefresh.run(context: modelContext) }
-        .onChange(of: trips.count) { WatchComplicationRefresh.run(context: modelContext) }
     }
 }
 
