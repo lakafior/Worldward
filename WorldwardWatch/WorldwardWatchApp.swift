@@ -1,5 +1,6 @@
 /// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -30,10 +31,35 @@ struct WorldwardWatch: App {
         }
         let local = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
+        if let container = try? ModelContainer(for: schema, configurations: [local]) {
+            return container
+        }
+
+        // Both attempts failed. Because the two configurations share one store
+        // URL, that almost always means the file on disk predates a schema
+        // change — so it would keep failing on every launch, and a `fatalError`
+        // here would leave the watch app permanently unlaunchable with no user
+        // remedy but deleting it. Move the store aside instead (never delete:
+        // the phone is the source of truth) and retry, mirroring the iPhone's
+        // recovery in `Worldward.sharedModelContainer`. The -wal/-shm sidecars
+        // must move too, or the fresh store could replay the old write-ahead log.
+        let url = local.url
+        let stamp = Int(Date().timeIntervalSince1970)
+        for suffix in ["", "-wal", "-shm"] {
+            let source = URL(fileURLWithPath: url.path + suffix)
+            let destination = URL(fileURLWithPath: url.path + ".incompatible-\(stamp)" + suffix)
+            try? FileManager.default.moveItem(at: source, to: destination)
+        }
+
+        // CloudKit first again: an empty store that re-syncs from the phone is a
+        // full recovery, whereas a local one only gets the next delta.
+        if let container = try? ModelContainer(for: schema, configurations: [cloud]) {
+            return container
+        }
         do {
             return try ModelContainer(for: schema, configurations: [local])
         } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            fatalError("Failed to create ModelContainer after resetting the store: \(error)")
         }
     }()
 
