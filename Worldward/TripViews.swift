@@ -297,6 +297,19 @@ private struct TripRow: View {
     }
 }
 
+/// Shared styling for the Notes section header's Edit/Done pair, so the two
+/// read as one control in two states. `.textCase(nil)` opts out of the
+/// uppercasing a grouped list applies to its headers.
+private struct NotesHeaderButton: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.footnote.weight(.semibold))
+            .textCase(nil)
+            .buttonStyle(.borderless)
+            .transition(.opacity)
+    }
+}
+
 extension String {
     /// Capitalizes only the first character, locale-aware. `.localizedCapitalized`
     /// would title-case every word ("In 12 Days"); relative date phrases want
@@ -349,7 +362,7 @@ struct TripDetailView: View {
     @Query private var allTrips: [Trip]
     @State private var showCountryPicker = false
     @State private var newPackingTitle = ""
-    @State private var calendarAlert: String?
+    @State private var calendarAlert: CalendarAlert?
     @State private var pdfExportError: String?
     /// A freshly written temp file — the exported PDF or an attachment —
     /// previewed in-place via Quick Look on iOS. Unused on macOS, which opens
@@ -423,6 +436,10 @@ struct TripDetailView: View {
             #if os(iOS)
                 .listStyle(.insetGrouped)
                 .toolbar { EditButton() }
+                // Scrolling away from the notes field resigns it, which flips the
+                // Markdown back to its rendered preview — the gestural counterpart
+                // to the Notes section's Done button.
+                .scrollDismissesKeyboard(.interactively)
             #endif
             .task { seedContainersIfNeeded() }
             .sheet(isPresented: $showCountryPicker) {
@@ -464,9 +481,15 @@ struct TripDetailView: View {
                     isPresented: Binding(
                         get: { calendarAlert != nil }, set: { if !$0 { calendarAlert = nil } })
                 ) {
+                    // Without this the denial was a dead end: "turn it on in
+                    // Settings" behind an OK button, leaving the user to find the
+                    // pane themselves. Matches the Settings screen's own alerts.
+                    if calendarAlert?.isPermissionDenied == true {
+                        OpenPrivacySettingsButton(macPane: "Privacy_Calendars")
+                    }
                     Button("OK", role: .cancel) {}
                 } message: {
-                    Text(calendarAlert ?? "")
+                    if let calendarAlert { Text(calendarAlert.message) }
                 }
                 .alert(
                     "Export PDF",
@@ -614,14 +637,28 @@ struct TripDetailView: View {
         Task {
             switch await CalendarExporter.add(trip: trip) {
             case .added:
-                calendarAlert = "Added to your calendar."
+                calendarAlert = CalendarAlert(message: "Added to your calendar.")
             case .denied:
-                calendarAlert =
-                    "Worldward doesn't have calendar access. Turn it on in Settings to add trips."
+                calendarAlert = CalendarAlert(
+                    message:
+                        "Worldward doesn't have calendar access. Turn it on in Settings to add trips.",
+                    isPermissionDenied: true)
             case .failed(let message):
-                calendarAlert = "Couldn't add to calendar: \(message)"
+                calendarAlert = CalendarAlert(message: "Couldn't add to calendar: \(message)")
             }
         }
+    }
+
+    /// A calendar result worth surfacing, plus whether it was a permission
+    /// denial. Denials get an "Open Settings" escape hatch; a plain failure has
+    /// nowhere useful to send the user, so it only gets an OK.
+    ///
+    /// The message is a `LocalizedStringResource`, not a `String`: these were
+    /// plain literals passed through `Text(String)` — the *non*-localizing
+    /// overload — so all three read in English in every language.
+    private struct CalendarAlert {
+        let message: LocalizedStringResource
+        var isPermissionDenied = false
     }
 
     /// Renders the trip's PDF to a fresh temp file and opens it directly — in
@@ -943,7 +980,7 @@ struct TripDetailView: View {
     /// row swaps between two modes: a read-only rendered preview normally, and
     /// the raw editor after a tap — ended again by the field losing focus.
     private var notesSection: some View {
-        Section("Notes") {
+        Section {
             if trip.notes.isEmpty || isEditingNotes {
                 TextField("Links, confirmations, ideas…", text: $trip.notes, axis: .vertical)
                     .lineLimit(3...8)
@@ -966,7 +1003,34 @@ struct TripDetailView: View {
             if canUseAssistant {
                 fillButton(field: .notes, action: fillNotes)
             }
+        } header: {
+            notesSectionHeader
         }
+    }
+
+    /// Carries both halves of the notes mode switch. Editing is ended by the
+    /// field losing focus, but nothing inside a `List` takes it away — tapping
+    /// other rows or the space around them leaves a text field first responder,
+    /// so the raw Markdown used to stay on screen with no way back to the
+    /// preview. "Done" is the explicit way out (`.scrollDismissesKeyboard` on the
+    /// list gives the gestural one), and "Edit" is the way *in*: the rendered
+    /// preview is tappable but looks exactly like static text, so the one
+    /// affordance it had was invisible.
+    @ViewBuilder private var notesSectionHeader: some View {
+        HStack {
+            Text("Notes")
+            Spacer()
+            if isEditingNotes {
+                Button("Done") { notesFieldFocused = false }
+                    .modifier(NotesHeaderButton())
+            } else if !trip.notes.isEmpty {
+                // Setting the flag swaps in the field, whose `.onAppear` takes
+                // focus — the same path a tap on the preview follows.
+                Button("Edit") { isEditingNotes = true }
+                    .modifier(NotesHeaderButton())
+            }
+        }
+        .animation(.snappy, value: isEditingNotes)
     }
 
     /// Tickets, confirmations, boarding passes — any file, stored inside the

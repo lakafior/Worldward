@@ -31,6 +31,32 @@ enum AppTheme: String, CaseIterable, Identifiable {
     }
 }
 
+/// The escape hatch on every permission-denied alert, wherever one is raised.
+/// Telling someone to go to Settings without taking them there leaves them to
+/// find the pane themselves; iOS deep-links straight to Worldward's own page,
+/// and macOS opens the matching Privacy & Security pane, the closest equivalent.
+struct OpenPrivacySettingsButton: View {
+    /// The macOS Privacy & Security pane to open — e.g. `Privacy_Calendars`.
+    /// Unused on iOS, which has a single per-app page.
+    let macPane: String
+
+    var body: some View {
+        Button("Open Settings") {
+            #if os(macOS)
+                if let url = URL(
+                    string: "x-apple.systempreferences:com.apple.preference.security?\(macPane)")
+                {
+                    NSWorkspace.shared.open(url)
+                }
+            #else
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            #endif
+        }
+    }
+}
+
 /// The shared settings content. Rendered natively inside the macOS `Settings`
 /// scene (⌘,) and inside a sheet on iOS/iPadOS — the same `Form` for both.
 struct SettingsView: View {
@@ -282,32 +308,12 @@ struct SettingsView: View {
         .animation(.snappy, value: notificationsBusy)
         .sensoryFeedback(.success, trigger: notificationsEnabled) { _, on in on }
         .alert("Notifications Off", isPresented: $notificationsAccessDenied) {
-            openPrivacySettingsButton(macPane: "Privacy_Notifications")
+            OpenPrivacySettingsButton(macPane: "Privacy_Notifications")
             Button("OK", role: .cancel) {}
         } message: {
             Text(
                 "Turn on notifications for Worldward in the Settings app to receive travel reminders."
             )
-        }
-    }
-
-    /// The escape hatch on every permission-denied alert. Telling someone to go
-    /// to Settings without taking them there leaves them to find the pane
-    /// themselves; iOS deep-links straight to Worldward's own page, and macOS
-    /// opens the matching Privacy & Security pane, the closest equivalent.
-    @ViewBuilder private func openPrivacySettingsButton(macPane: String) -> some View {
-        Button("Open Settings") {
-            #if os(macOS)
-                if let url = URL(
-                    string: "x-apple.systempreferences:com.apple.preference.security?\(macPane)")
-                {
-                    NSWorkspace.shared.open(url)
-                }
-            #else
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
-            #endif
         }
     }
 
@@ -429,7 +435,7 @@ struct SettingsView: View {
             was && !now && calendarSyncEnabled
         }
         .alert("Calendar Access Needed", isPresented: $calendarAccessDenied) {
-            openPrivacySettingsButton(macPane: "Privacy_Calendars")
+            OpenPrivacySettingsButton(macPane: "Privacy_Calendars")
             Button("OK", role: .cancel) {}
         } message: {
             Text(
@@ -481,7 +487,7 @@ struct SettingsView: View {
             was && !now && remindersSyncEnabled
         }
         .alert("Reminders Access Needed", isPresented: $remindersAccessDenied) {
-            openPrivacySettingsButton(macPane: "Privacy_Reminders")
+            OpenPrivacySettingsButton(macPane: "Privacy_Reminders")
             Button("OK", role: .cancel) {}
         } message: {
             Text(
