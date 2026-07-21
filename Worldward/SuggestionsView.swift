@@ -17,9 +17,9 @@ private enum SuggestionMode: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .closeToHome: "Close to home"
-        case .fillAGap: "Fill a gap"
-        case .buildATrip: "Build a trip"
+        case .closeToHome: String(localized: "Close to home", comment: "Suggestion mode")
+        case .fillAGap: String(localized: "Fill a gap", comment: "Suggestion mode")
+        case .buildATrip: String(localized: "Build a trip", comment: "Suggestion mode")
         }
     }
 
@@ -38,10 +38,18 @@ private enum SuggestionMode: String, CaseIterable, Identifiable {
     /// Shown when a mode has no candidates to offer yet.
     var emptyMessage: String {
         switch self {
-        case .closeToHome: "Nothing nearby left to suggest right now."
+        case .closeToHome:
+            String(
+                localized: "Nothing nearby left to suggest right now.",
+                comment: "Empty state for the 'Close to home' suggestion mode")
         case .fillAGap:
-            "Visit a few more places first — then we can spot the gaps on your map."
-        case .buildATrip: "No nearby cluster to build a trip from yet."
+            String(
+                localized: "Visit a few more places first — then we can spot the gaps on your map.",
+                comment: "Empty state for the 'Fill a gap' suggestion mode")
+        case .buildATrip:
+            String(
+                localized: "No nearby cluster to build a trip from yet.",
+                comment: "Empty state for the 'Build a trip' suggestion mode")
         }
     }
 }
@@ -173,7 +181,10 @@ struct SuggestionsView: View {
 
     private var closestSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Closest unvisited")
+            SectionHeader(
+                title: String(
+                    localized: "Closest unvisited",
+                    comment: "Section header above the nearest unvisited countries"))
 
             VStack(spacing: 0) {
                 ForEach(Array(suggestions.enumerated()), id: \.element.country.id) { index, item in
@@ -258,7 +269,10 @@ private struct SmartSuggestionsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "Suggested for you")
+            SectionHeader(
+                title: String(
+                    localized: "Suggested for you",
+                    comment: "Section header above the AI destination suggestions"))
 
             Picker("Mode", selection: $mode) {
                 ForEach(SuggestionMode.allCases) { Text($0.label).tag($0) }

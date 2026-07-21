@@ -15,17 +15,26 @@ enum ImportScanMode: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .fillBlanks: "Fill blanks"
-        case .overwrite: "Overwrite"
-        case .addNew: "Add new only"
+        case .fillBlanks: String(localized: "Fill blanks", comment: "Photo import scan mode")
+        case .overwrite: String(localized: "Overwrite", comment: "Photo import scan mode")
+        case .addNew: String(localized: "Add new only", comment: "Photo import scan mode")
         }
     }
 
     var detail: String {
         switch self {
-        case .fillBlanks: "Keep everything and add visits that aren't already recorded."
-        case .overwrite: "Replace previously imported visits; manual entries are kept."
-        case .addNew: "Only scan photos newer than the latest imported visit."
+        case .fillBlanks:
+            String(
+                localized: "Keep everything and add visits that aren't already recorded.",
+                comment: "Explains the 'Fill blanks' photo import scan mode")
+        case .overwrite:
+            String(
+                localized: "Replace previously imported visits; manual entries are kept.",
+                comment: "Explains the 'Overwrite' photo import scan mode")
+        case .addNew:
+            String(
+                localized: "Only scan photos newer than the latest imported visit.",
+                comment: "Explains the 'Add new only' photo import scan mode")
         }
     }
 }
@@ -188,7 +197,9 @@ class PhotoImporter {
 
         isImporting = true
         phase = .scanning
-        importProgress = "Requesting access..."
+        importProgress = String(
+            localized: "Requesting access...",
+            comment: "Photo import progress: asking for Photos permission")
         proposedCountries = []
         unresolvedLocations = []
         homeWarning = nil
@@ -206,11 +217,15 @@ class PhotoImporter {
             guard status == .authorized || status == .limited else {
                 isImporting = false
                 phase = .config
-                importProgress = "Photo access denied"
+                importProgress = String(
+                    localized: "Photo access denied",
+                    comment: "Photo import progress: Photos permission was refused")
                 return
             }
 
-            importProgress = "Fetching photos..."
+            importProgress = String(
+                localized: "Fetching photos...",
+                comment: "Photo import progress: loading the photo library")
             // Runs off the main actor; returns only Sendable value types.
             let result = await scanPhotos(
                 settings: settings, rects: rects, paths: paths,
@@ -263,7 +278,10 @@ class PhotoImporter {
 
         let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
         let total = fetchResult.count
-        Task { @MainActor in onProgress("Scanning \(total) photos...") }
+        Task { @MainActor in onProgress(
+            String(
+                localized: "Scanning \(total) photos...",
+                comment: "Photo import progress; the argument is the total photo count")) }
 
         // Build the spatial index from country bounding rects so each photo only
         // tests countries whose bounding box overlaps its grid cell (~5-15 candidates
@@ -291,7 +309,10 @@ class PhotoImporter {
 
                 if index - lastProgressIndex >= 200 {
                     lastProgressIndex = index
-                    Task { @MainActor in onProgress("Scanning photo \(index + 1)/\(total)...") }
+                    Task { @MainActor in onProgress(
+                            String(
+                                localized: "Scanning photo \(index + 1)/\(total)...",
+                                comment: "Photo import progress; the arguments are the current and total photo counts")) }
                 }
 
                 guard let location = asset.location else { continue }
@@ -527,7 +548,9 @@ class PhotoImporter {
         homeWarning = warning
         isImporting = false
         phase = .results
-        importProgress = "Found \(proposed.count) countries across \(result.photoCount) photos"
+        importProgress = String(
+            localized: "Found \(proposed.count) countries across \(result.photoCount) photos",
+            comment: "Photo import result; the arguments are the country and photo counts")
     }
 
     /// Merge a set of trips into a single span (used for the home country).

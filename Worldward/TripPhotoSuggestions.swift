@@ -135,7 +135,11 @@ struct TripPhotoSuggestionsSheet: View {
                     }
                     photoGrid(noLocationPhotos)
                 } header: {
-                    sectionHeader("No Location Data", photos: noLocationPhotos)
+                    sectionHeader(
+                        String(
+                            localized: "No Location Data",
+                            comment: "Header for photos with no GPS data during a trip import"),
+                        photos: noLocationPhotos)
                 } footer: {
                     Text(
                         "These photos carry no location metadata — check they're really from the trip before adding."

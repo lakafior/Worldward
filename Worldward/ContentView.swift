@@ -68,9 +68,9 @@ enum MapStyleOption: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .standard: "Standard"
-        case .hybrid: "Hybrid"
-        case .imagery: "Satellite"
+        case .standard: String(localized: "Standard", comment: "Map style")
+        case .hybrid: String(localized: "Hybrid", comment: "Map style")
+        case .imagery: String(localized: "Satellite", comment: "Map style")
         }
     }
 
@@ -199,7 +199,8 @@ struct ContentView: View {
     /// Spatial index for map hit-testing, built once alongside the geometry.
     @State private var hitTestIndex: GeoGridIndex? = nil
     @State private var isLoadingMapData = true
-    @State private var mapLoadingMessage = "Loading map…"
+    @State private var mapLoadingMessage = String(
+        localized: "Loading map…", comment: "First-launch splash while country geometry is built")
 
     /// The subset of countries to render on the map. Uses a cached array that is
     /// rebuilt when the catalog or selection changes, avoiding a full filter of

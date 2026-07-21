@@ -744,7 +744,13 @@ struct TripDetailView: View {
     private var itinerarySection: some View {
         Section("Itinerary") {
             if (trip.itinerary ?? []).isEmpty {
-                Text("No stops yet").foregroundStyle(.secondary)
+                // This is the first thing a brand-new trip shows, and it used to
+                // be a bare secondary `Text` — an absence, not a design. The Add
+                // button directly below is the next action, so this only needs to
+                // name the gap and look considered doing it.
+                emptySectionPlaceholder(
+                    symbol: "signpost.right.and.left",
+                    message: Text("No stops yet", comment: "Empty itinerary placeholder"))
             } else {
                 ForEach(trip.sortedStops) { stop in
                     StopRow(stop: stop)
@@ -906,7 +912,8 @@ struct TripDetailView: View {
             Button {
                 showManageContainers = true
             } label: {
-                Label("Manage containers", systemImage: "bag.badge.plus")
+                // `bag.badge.plus` promised "add a bag"; this row opens an editor.
+                Label("Manage containers", systemImage: "bag")
             }
 
             packingStartFromMenu
@@ -920,7 +927,11 @@ struct TripDetailView: View {
                     newTemplateName = trip.title
                     showSaveTemplate = true
                 } label: {
-                    Label("Save as template…", systemImage: "square.and.arrow.down")
+                    // Was `square.and.arrow.down` — the *download* glyph, and the
+                    // mirror image of the Share icon a few rows up, so the two
+                    // opposite actions read as a matched pair. Saving a reusable
+                    // list is a stack-of-lists action.
+                    Label("Save as template…", systemImage: "rectangle.stack.badge.plus")
                 }
 
                 Button(role: .destructive) {
@@ -969,7 +980,12 @@ struct TripDetailView: View {
                     }
                 }
             } label: {
-                Label("Start from…", systemImage: "tray.full")
+                // Three unrelated meanings used to share the tray metaphor: this
+                // menu, the "Other" group's icon, and the move-to-container
+                // button. The tray now belongs to containers alone; starting from
+                // a saved list is a stack-of-lists action, matching "Save as
+                // template…" above.
+                Label("Start from…", systemImage: "rectangle.stack")
             }
         }
     }
@@ -1038,6 +1054,12 @@ struct TripDetailView: View {
     /// standing at a gate with no connectivity.
     private var attachmentsSection: some View {
         Section("Attachments") {
+            if trip.sortedAttachments.isEmpty {
+                emptySectionPlaceholder(
+                    symbol: "paperclip",
+                    message: Text(
+                        "No files yet", comment: "Empty trip attachments placeholder"))
+            }
             ForEach(trip.sortedAttachments) { attachment in
                 AttachmentRow(attachment: attachment) { openAttachment(attachment) }
             }
@@ -1048,6 +1070,25 @@ struct TripDetailView: View {
                 Label("Add File", systemImage: "paperclip")
             }
         }
+    }
+
+    /// A section-scoped empty state: symbol above a line of text, centred in the
+    /// row. Deliberately lighter than `ContentUnavailableView`, which is sized for
+    /// a whole screen and dwarfs the add button sitting right beneath it.
+    private func emptySectionPlaceholder(symbol: String, message: Text) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: symbol)
+                .font(.title2)
+                .foregroundStyle(.tertiary)
+            message
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .listRowBackground(Color.clear)
+        .accessibilityElement(children: .combine)
     }
 
     /// The on-device assistant is only offered when Apple Intelligence is ready

@@ -42,9 +42,9 @@ enum ShareCardTheme: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .ocean: "Ocean"
-        case .midnight: "Midnight"
-        case .sky: "Sky"
+        case .ocean: String(localized: "Ocean", comment: "Share card gradient theme")
+        case .midnight: String(localized: "Midnight", comment: "Share card gradient theme")
+        case .sky: String(localized: "Sky", comment: "Share card gradient theme")
         }
     }
 
