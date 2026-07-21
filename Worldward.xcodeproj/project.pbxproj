@@ -16,6 +16,8 @@
 		48CB000000000000000000BC /* WorldwardWatchWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 48CB000000000000000000B7 /* WorldwardWatchWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		48CB000000000000000000BF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 48C458062FF2B74E00C15DFC /* Localizable.xcstrings */; };
 		48CB000000000000000000C1 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 48C458062FF2B74E00C15DFC /* Localizable.xcstrings */; };
+		48D000000000000000000200 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 48D000000000000000000100 /* InfoPlist.xcstrings */; };
+		48D000000000000000000400 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 48D000000000000000000300 /* AppShortcuts.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +83,8 @@
 		48C458062FF2B74E00C15DFC /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		48CA000000000000000000A1 /* WorldwardWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorldwardWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		48CB000000000000000000B7 /* WorldwardWatchWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorldwardWatchWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		48D000000000000000000100 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		48D000000000000000000300 /* AppShortcuts.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = AppShortcuts.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -197,6 +201,8 @@
 			isa = PBXGroup;
 			children = (
 				48C458062FF2B74E00C15DFC /* Localizable.xcstrings */,
+				48D000000000000000000100 /* InfoPlist.xcstrings */,
+				48D000000000000000000300 /* AppShortcuts.xcstrings */,
 				48BF25132FEF003D00A75A0D /* WorldwardWidgetsExtension.entitlements */,
 				000000000000000000000010 /* Worldward */,
 				48CA000000000000000000AA /* WorldwardWatch */,
@@ -390,6 +396,8 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				48D000000000000000000200 /* InfoPlist.xcstrings in Resources */,
+				48D000000000000000000400 /* AppShortcuts.xcstrings in Resources */,
 				48C458072FF2B74E00C15DFC /* Localizable.xcstrings in Resources */,
 			);
 		};
@@ -599,7 +607,7 @@
 				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = Worldward/Worldward.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -618,7 +626,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = WorldWard;
+				INFOPLIST_KEY_CFBundleDisplayName = Worldward;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Worldward keeps a dedicated “Worldward” calendar in step with your trips when you turn on “Sync Trips with Apple Calendar.” It only manages events it created in that calendar and never touches your other calendars.";
@@ -676,7 +684,7 @@
 				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = Worldward/Worldward.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -695,7 +703,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = WorldWard;
+				INFOPLIST_KEY_CFBundleDisplayName = Worldward;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Worldward keeps a dedicated “Worldward” calendar in step with your trips when you turn on “Sync Trips with Apple Calendar.” It only manages events it created in that calendar and never touches your other calendars.";
@@ -751,7 +759,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = WorldwardWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -797,7 +805,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = WorldwardWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -843,11 +851,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = WorldwardWatch/WorldwardWatch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = WorldWard;
+				INFOPLIST_KEY_CFBundleDisplayName = Worldward;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Smigi";
 				INFOPLIST_KEY_WKApplication = YES;
@@ -882,11 +890,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = WorldwardWatch/WorldwardWatch.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = WorldWard;
+				INFOPLIST_KEY_CFBundleDisplayName = Worldward;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Smigi";
 				INFOPLIST_KEY_WKApplication = YES;
@@ -919,7 +927,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = WorldwardWatchWidgets/WorldwardWatchWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WorldwardWatchWidgets/Info.plist;
@@ -954,7 +962,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = WorldwardWatchWidgets/WorldwardWatchWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5TA8RF548P;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = WorldwardWatchWidgets/Info.plist;

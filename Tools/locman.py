@@ -105,7 +105,46 @@ def ensure_localizations(entry):
     return entry["localizations"]
 
 
+# ── String shapes ──
+#
+# Most entries are a 'stringUnit' holding one value. App Shortcut phrases
+# (AppShortcuts.xcstrings) are a 'stringSet' holding a *list* — one key carries
+# every spoken variant of the same shortcut. Reading or writing the wrong shape
+# either crashes or silently drops phrases, so every accessor goes through the
+# two helpers below rather than reaching for ["stringUnit"] directly.
+
+
+def source_value(locs, lang="en", fallback=None):
+    """
+    The source text of an entry in whichever shape it uses.
+    Returns (value, is_set) — `value` is a list for phrase sets, else a string.
+    """
+    loc = locs.get(lang, {})
+    if "stringSet" in loc:
+        return loc["stringSet"].get("values", fallback), True
+    if "stringUnit" in loc:
+        return loc["stringUnit"].get("value", fallback), False
+    return fallback, False
+
+
+def localization(value, state="translated"):
+    """Wrap a translated value in the shape its kind requires."""
+    if isinstance(value, list):
+        return {"stringSet": {"state": state, "values": value}}
+    return {"stringUnit": {"state": state, "value": value}}
+
+
 # ── Core ──
+
+
+def is_translatable(key, value):
+    """
+    Whether a translator should ever be asked about this key. Excludes the
+    empty key and anything Xcode marked `shouldTranslate: false` — proper nouns
+    like the app name and the copyright line, which must stay identical in
+    every language.
+    """
+    return key != "" and value.get("shouldTranslate") is not False
 
 
 def check_missing(data, langs=None):
@@ -120,7 +159,7 @@ def check_missing(data, langs=None):
     # Keys with zero localizations (app-generated, never touched)
     untranslated = []
     for key, value in strings.items():
-        if key == "":
+        if not is_translatable(key, value):
             continue
         locs = value.get("localizations", {})
         if not locs:
@@ -130,7 +169,7 @@ def check_missing(data, langs=None):
     for lang in langs:
         missing = []
         for key, value in strings.items():
-            if key == "":
+            if not is_translatable(key, value):
                 continue
             locs = value.get("localizations", {})
             if not locs or lang not in locs:
@@ -171,7 +210,7 @@ def fill_missing(data, fill_source="en", verbose=False):
     for lang in get_languages(data):
         count = 0
         for key, value in strings.items():
-            if key == "":
+            if not is_translatable(key, value):
                 continue
             locs = ensure_localizations(value)
 
@@ -180,23 +219,20 @@ def fill_missing(data, fill_source="en", verbose=False):
 
             # Determine source value
             if is_format_only(key):
-                src_val = locs.get("en", {}).get("stringUnit", {}).get("value", key)
+                src_val, _ = source_value(locs, "en", key)
             elif fill_source in locs:
-                src_val = locs[fill_source]["stringUnit"]["value"]
+                src_val, _ = source_value(locs, fill_source, key)
             elif "en" in locs:
-                src_val = locs["en"]["stringUnit"]["value"]
+                src_val, _ = source_value(locs, "en", key)
             else:
                 src_val = key
 
             if lang == fill_source:
                 continue
 
-            locs[lang] = {
-                "stringUnit": {
-                    "state": "translated" if lang != "en" else "new",
-                    "value": src_val,
-                }
-            }
+            locs[lang] = localization(
+                src_val, "translated" if lang != "en" else "new"
+            )
             count += 1
 
         if count:
@@ -225,11 +261,16 @@ def add_language(data, lang_code, translations):
 
         trans = translations.get(key)
         if trans is not None:
-            locs[lang_code] = {"stringUnit": {"state": "translated", "value": trans}}
+            # A phrase set needs a list; the wrong shape would drop phrases.
+            _, wants_set = source_value(locs, "en", key)
+            if wants_set != isinstance(trans, list):
+                unmatched.append(key)
+                continue
+            locs[lang_code] = localization(trans)
             added += 1
         elif is_format_only(key):
-            en_val = locs.get("en", {}).get("stringUnit", {}).get("value", key)
-            locs[lang_code] = {"stringUnit": {"state": "translated", "value": en_val}}
+            en_val, _ = source_value(locs, "en", key)
+            locs[lang_code] = localization(en_val)
             added += 1
         else:
             unmatched.append(key)
@@ -258,16 +299,19 @@ def export_missing(data, output_path, langs=None):
     out_strings = {}
     for key in strings:  # preserve file order
         if key in needed:
+            # A phrase set exports as the whole list, so a translation can't
+            # silently collapse every spoken variant into one phrase.
             locs = strings[key].get("localizations", {})
-            out_strings[key] = (
-                locs.get("en", {}).get("stringUnit", {}).get("value", key)
-            )
+            out_strings[key], _ = source_value(locs, "en", key)
 
     payload = {
         "instructions": (
             "Translate each value in 'strings' from English into every language "
-            "in 'languages'. Keep %@/%lld placeholders and \\n exactly as-is. "
-            "Write the result as JSON { lang: { key: translation } } and run: "
+            "in 'languages'. Keep %@/%lld placeholders, ${tokens} and \\n exactly "
+            "as-is. A value that is a LIST is a set of spoken App Shortcut "
+            "phrases: return a list of the same length, and keep "
+            "${applicationName} in every phrase — Siri rejects phrases without "
+            "it. Write the result as JSON { lang: { key: translation } } and run: "
             "locman.py <xcstrings> --apply --from <that file>"
         ),
         "languages": {
@@ -301,14 +345,21 @@ def apply_translations(data, translations, overwrite=False):
         unmatched = []
 
         for key, val in tmap.items():
-            if key not in strings or key == "" or not isinstance(val, str):
+            if key not in strings or key == "":
                 unmatched.append(key)
                 continue
             locs = ensure_localizations(strings[key])
+            # A phrase set needs a list and a plain string needs a string.
+            # Writing the wrong shape is worse than writing nothing: the build
+            # drops the entry and the phrases silently revert to English.
+            _, wants_set = source_value(locs, "en", key)
+            if wants_set != isinstance(val, list) or not isinstance(val, (str, list)):
+                unmatched.append(key)
+                continue
             if lang in locs and not overwrite:
                 skipped += 1
                 continue
-            locs[lang] = {"stringUnit": {"state": "translated", "value": val}}
+            locs[lang] = localization(val)
             added += 1
 
         # Auto-fill format-only keys this language is still missing
@@ -317,10 +368,8 @@ def apply_translations(data, translations, overwrite=False):
                 continue
             locs = ensure_localizations(value)
             if lang not in locs:
-                en_val = locs.get("en", {}).get("stringUnit", {}).get("value", key)
-                locs[lang] = {
-                    "stringUnit": {"state": "translated", "value": en_val}
-                }
+                en_val, _ = source_value(locs, "en", key)
+                locs[lang] = localization(en_val)
                 added += 1
 
         results[lang] = {"added": added, "skipped": skipped, "unmatched": unmatched}
@@ -343,7 +392,7 @@ def generate_template(data, output_path=None):
             continue
 
         locs = value.get("localizations", {})
-        hint = locs.get("en", {}).get("stringUnit", {}).get("value", key)
+        hint, _ = source_value(locs, "en", key)
         comment = value.get("comment", "")
 
         entry = {"hint": hint, "translation": ""}
@@ -375,8 +424,9 @@ def load_translations(path):
         sample = next(iter(raw.values()), {})
         if isinstance(sample, dict) and "translation" in sample:
             return {k: v["translation"] for k, v in raw.items() if v.get("translation")}
-        # Simple format: { key: "translation" }
-        if all(isinstance(v, str) for v in raw.values()):
+        # Simple format: { key: "translation" }, or for an App Shortcut phrase
+        # set { key: ["phrase", ...] } — the list carries every spoken variant.
+        if all(isinstance(v, (str, list)) for v in raw.values()):
             return raw
 
     return {}

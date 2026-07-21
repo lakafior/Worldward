@@ -64,6 +64,9 @@ struct SettingsView: View {
     }
 
     @State private var transferAlert: TransferAlert?
+    /// A picked backup held between validation and the user confirming the
+    /// (irreversible) trip replacement.
+    @State private var pendingImport: PendingImport?
     @State private var showManageContainers = false
     @State private var showManageTemplates = false
     @State private var remindersAccessDenied = false
@@ -106,7 +109,11 @@ struct SettingsView: View {
             isPresented: $showExporter,
             document: exportDocument,
             contentType: .json,
-            defaultFilename: "Worldward Backup",
+            // `defaultFilename` takes a plain String, so the name only gets
+            // localized if we resolve it ourselves — the save panel shows it.
+            defaultFilename: String(
+                localized: "Worldward Backup",
+                comment: "The title of the JSON backup file that can be shared."),
             onCompletion: handleExport
         )
         .fileImporter(
@@ -118,7 +125,9 @@ struct SettingsView: View {
             isPresented: $showCSVExporter,
             document: csvExportDocument,
             contentType: .commaSeparatedText,
-            defaultFilename: "Worldward Travel Data",
+            defaultFilename: String(
+                localized: "Worldward Travel Data",
+                comment: "The title of the CSV file that can be shared."),
             onCompletion: handleExport
         )
         .fileImporter(
@@ -133,6 +142,30 @@ struct SettingsView: View {
                     message: String(
                         localized: "Added \(visits) visits across \(countries) countries.",
                         comment: "Alert after a CSV import")
+                )
+            }
+        }
+        .confirmationDialog(
+            "Import this backup?",
+            isPresented: pendingImportIsPresented,
+            presenting: pendingImport
+        ) { pending in
+            // Destructive only when there is actually something to lose; a
+            // first-ever restore onto an empty store isn't a scary operation.
+            if pending.summary.tripsReplaced > 0 {
+                Button("Replace and Import", role: .destructive) { applyImport(pending) }
+            } else {
+                Button("Import") { applyImport(pending) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { pending in
+            if pending.summary.tripsReplaced > 0 {
+                Text(
+                    "This backup holds \(pending.summary.countries) countries and \(pending.summary.trips) trips. Importing it replaces the \(pending.summary.tripsReplaced) trips already in Worldward, along with their stops and packing lists. This can't be undone."
+                )
+            } else {
+                Text(
+                    "This backup holds \(pending.summary.countries) countries and \(pending.summary.trips) trips, and will update the matching countries in Worldward."
                 )
             }
         }
@@ -479,6 +512,13 @@ struct SettingsView: View {
         )
     }
 
+    private var pendingImportIsPresented: Binding<Bool> {
+        Binding(
+            get: { pendingImport != nil },
+            set: { if !$0 { pendingImport = nil } }
+        )
+    }
+
     private func handleExport(_ result: Result<URL, Error>) {
         if case .failure(let error) = result {
             transferAlert = TransferAlert(
@@ -579,6 +619,10 @@ struct SettingsView: View {
         showCSVExporter = true
     }
 
+    /// Reads and validates the picked backup, then hands it to the confirmation
+    /// step. Nothing is written here: a restore deletes every existing trip, so
+    /// the one irreversible flow in the app doesn't fire straight off a file
+    /// picker where a mis-tap costs the user their trips.
     private func performImport(from url: URL) {
         // A file returned by the system picker is security-scoped on iOS; bracket
         // the read so we keep access for exactly as long as we need it.
@@ -587,7 +631,20 @@ struct SettingsView: View {
 
         do {
             let data = try Data(contentsOf: url)
-            let count = try TravelDataTransfer.importData(data, into: modelContext)
+            pendingImport = PendingImport(
+                data: data,
+                summary: try TravelDataTransfer.summarize(data, in: modelContext))
+        } catch {
+            transferAlert = TransferAlert(
+                title: "Import Failed", message: error.localizedDescription)
+        }
+    }
+
+    /// Applies a backup the user has confirmed. The data was already decoded once
+    /// by `summarize`, so a failure here is a write failure, not a bad file.
+    private func applyImport(_ pending: PendingImport) {
+        do {
+            let count = try TravelDataTransfer.importData(pending.data, into: modelContext)
             transferAlert = TransferAlert(
                 title: "Import Complete",
                 message: String(localized: "Updated \(count) countries from the backup.")
@@ -597,6 +654,14 @@ struct SettingsView: View {
                 title: "Import Failed", message: error.localizedDescription)
         }
     }
+}
+
+/// A validated backup waiting for the user's go-ahead, with the counts the
+/// confirmation quotes back to them.
+private struct PendingImport: Identifiable {
+    let id = UUID()
+    let data: Data
+    let summary: TravelDataTransfer.ImportSummary
 }
 
 /// A one-shot alert payload for export/import results.

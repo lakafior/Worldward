@@ -1,0 +1,1124 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Proper noun — must stay identical in every language.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "CFBundleName" : {
+      "comment" : "Proper noun — must stay identical in every language.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "NSCalendarsFullAccessUsageDescription" : {
+      "comment" : "Permission prompt shown by the system when the app first requests this access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward keeps a dedicated “Worldward” calendar in step with your trips when you turn on “Sync Trips with Apple Calendar.” It only manages events it created in that calendar and never touches your other calendars."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward поддържа отделен календар „Worldward“ в синхрон с вашите пътувания, когато включите „Синхронизиране на пътувания с Apple Календар“. Управлява само събитията, които сам е създал в този календар, и никога не докосва останалите ви календари."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward udržuje vyhrazený kalendář „Worldward“ v souladu s vašimi cestami, když zapnete „Synchronizovat cesty s Apple Kalendářem“. Spravuje pouze události, které v tomto kalendáři sám vytvořil, a nikdy se nedotkne vašich ostatních kalendářů."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward holder en dedikeret „Worldward“-kalender i trit med dine rejser, når du slår „Synkroniser rejser med Apple Kalender“ til. Den administrerer kun begivenheder, den selv har oprettet i den kalender, og rører aldrig dine andre kalendere."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward hält einen eigenen Kalender „Worldward“ mit deinen Reisen im Einklang, wenn du „Reisen mit Apple Kalender synchronisieren“ aktivierst. Es verwaltet nur Termine, die es selbst in diesem Kalender erstellt hat, und rührt deine anderen Kalender nie an."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Worldward διατηρεί ένα αποκλειστικό ημερολόγιο «Worldward» συγχρονισμένο με τα ταξίδια σας, όταν ενεργοποιείτε τον «Συγχρονισμό ταξιδιών με το Apple Ημερολόγιο». Διαχειρίζεται μόνο τα συμβάντα που δημιούργησε το ίδιο σε αυτό το ημερολόγιο και δεν αγγίζει ποτέ τα υπόλοιπα ημερολόγιά σας."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward tenas dediĉitan kalendaron “Worldward” akorde kun viaj vojaĝoj, kiam vi ŝaltas “Sinkronigi vojaĝojn kun Apple Kalendaro”. Ĝi administras nur la eventojn, kiujn ĝi mem kreis en tiu kalendaro, kaj neniam tuŝas viajn aliajn kalendarojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward mantiene un calendario propio «Worldward» al día con tus viajes cuando activas «Sincronizar viajes con Apple Calendario». Solo gestiona los eventos que él mismo ha creado en ese calendario y nunca toca tus demás calendarios."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward hoiab eraldi kalendrit „Worldward“ teie reisidega kooskõlas, kui lülitate sisse „Sünkrooni reisid Apple Kalendriga“. See haldab ainult sündmusi, mille ta ise selles kalendris lõi, ega puuduta kunagi teie teisi kalendreid."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward pitää oman ”Worldward”-kalenterin ajan tasalla matkojesi kanssa, kun otat käyttöön ”Synkronoi matkat Apple-kalenterin kanssa”. Se hallinnoi vain itse luomiaan tapahtumia kyseisessä kalenterissa eikä koske muihin kalentereihisi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward tient un calendrier dédié « Worldward » à jour avec vos voyages lorsque vous activez « Synchroniser les voyages avec Apple Calendrier ». Il ne gère que les événements qu'il a lui-même créés dans ce calendrier et ne touche jamais à vos autres calendriers."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coinníonn Worldward féilire tiomnaithe “Worldward” ag teacht le do chuid turas nuair a chuireann tú “Sioncronaigh Turais le Féilire Apple” ar siúl. Ní bhainistíonn sé ach imeachtaí a chruthaigh sé féin san fhéilire sin agus ní bhaineann sé le d'fhéilirí eile riamh."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward održava zaseban kalendar „Worldward“ usklađenim s vašim putovanjima kada uključite „Sinkroniziraj putovanja s Apple Kalendarom“. Upravlja samo događajima koje je sam stvorio u tom kalendaru i nikada ne dira vaše ostale kalendare."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Worldward külön „Worldward” naptárat tart szinkronban az utazásaival, ha bekapcsolja az „Utazások szinkronizálása az Apple Naptárral” lehetőséget. Csak az általa létrehozott eseményeket kezeli abban a naptárban, és soha nem nyúl a többi naptárához."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward mantiene un calendario dedicato “Worldward” allineato ai tuoi viaggi quando attivi “Sincronizza viaggi con Apple Calendario”. Gestisce solo gli eventi che ha creato lui stesso in quel calendario e non tocca mai gli altri calendari."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「旅行をAppleカレンダーと同期」をオンにすると、Worldward は専用の“Worldward”カレンダーを旅行に合わせて更新します。そのカレンダー内で自ら作成したイベントのみを管理し、ほかのカレンダーには一切触れません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘여행을 Apple 캘린더와 동기화’를 켜면 Worldward가 전용 “Worldward” 캘린더를 여행에 맞춰 유지합니다. 해당 캘린더에서 직접 만든 이벤트만 관리하며 다른 캘린더는 건드리지 않습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kai įjungiate „Sinchronizuoti keliones su Apple Kalendorius“, Worldward palaiko atskirą kalendorių „Worldward“ pagal jūsų keliones. Jis tvarko tik tuos įvykius, kuriuos pats sukūrė tame kalendoriuje, ir niekada neliečia kitų jūsų kalendorių."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward uztur atsevišķu kalendāru „Worldward“ saskaņā ar jūsu ceļojumiem, kad ieslēdzat „Sinhronizēt ceļojumus ar Apple Kalendāru“. Tas pārvalda tikai tos notikumus, ko pats izveidojis šajā kalendārā, un nekad neaizskar pārējos kalendārus."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward iżomm kalendarju ddedikat “Worldward” allinjat mal-vjaġġi tiegħek meta tixgħel “Sinkronizza l-Vjaġġi mal-Kalendarju Apple”. Jimmaniġġja biss l-avvenimenti li hu stess ħoloq f'dak il-kalendarju u qatt ma jmiss il-kalendarji l-oħra tiegħek."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward houdt een aparte “Worldward”-agenda gelijk met je reizen wanneer je “Reizen synchroniseren met Apple Agenda” inschakelt. Het beheert alleen activiteiten die het zelf in die agenda heeft aangemaakt en raakt je andere agenda's nooit aan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward utrzymuje osobny kalendarz „Worldward“ zgodny z Twoimi podróżami, gdy włączysz „Synchronizuj podróże z Apple Kalendarz“. Zarządza wyłącznie wydarzeniami, które sam utworzył w tym kalendarzu, i nigdy nie rusza pozostałych kalendarzy."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward mantém um calendário dedicado “Worldward” em sintonia com suas viagens quando você ativa “Sincronizar viagens com o Apple Calendário”. Ele gerencia apenas os eventos que ele mesmo criou nesse calendário e nunca mexe nos seus outros calendários."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward mantém um calendário dedicado “Worldward” em sintonia com as suas viagens quando ativa “Sincronizar viagens com o Apple Calendário”. Gere apenas os eventos que o próprio criou nesse calendário e nunca mexe nos seus outros calendários."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward menține un calendar dedicat „Worldward” în acord cu călătoriile dvs. când activați „Sincronizați călătoriile cu Apple Calendar”. Gestionează doar evenimentele pe care le-a creat el însuși în acel calendar și nu atinge niciodată celelalte calendare."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward udržiava samostatný kalendár „Worldward“ v súlade s vašimi cestami, keď zapnete „Synchronizovať cesty s Apple Kalendár“. Spravuje iba udalosti, ktoré sám vytvoril v tomto kalendári, a nikdy sa nedotkne vašich ostatných kalendárov."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward vzdržuje ločen koledar „Worldward“ v skladu z vašimi potovanji, ko vklopite „Sinhroniziraj potovanja z Apple Koledar“. Upravlja samo dogodke, ki jih je sam ustvaril v tem koledarju, in se nikoli ne dotakne vaših drugih koledarjev."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward håller en egen “Worldward”-kalender i takt med dina resor när du slår på “Synkronisera resor med Apple Kalender”. Den hanterar bara händelser som den själv har skapat i den kalendern och rör aldrig dina andra kalendrar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启“与 Apple 日历同步旅行”后，Worldward 会让专属的“Worldward”日历与你的旅行保持一致。它只管理自己在该日历中创建的事件，绝不触碰你的其他日历。"
+          }
+        }
+      }
+    },
+    "NSCalendarsWriteOnlyAccessUsageDescription" : {
+      "comment" : "Permission prompt shown by the system when the app first requests this access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward adds your trips to your calendar when you choose “Add to Apple Calendar.” It never reads your existing events."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward добавя пътуванията ви във вашия календар, когато изберете „Добавяне в Apple Календар“. Никога не чете съществуващите ви събития."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward přidá vaše cesty do vašeho kalendáře, když zvolíte „Přidat do Apple Kalendáře“. Nikdy nečte vaše stávající události."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward føjer dine rejser til din kalender, når du vælger „Tilføj til Apple Kalender“. Den læser aldrig dine eksisterende begivenheder."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward fügt deine Reisen deinem Kalender hinzu, wenn du „Zu Apple Kalender hinzufügen“ wählst. Deine bestehenden Termine werden nie gelesen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Worldward προσθέτει τα ταξίδια σας στο ημερολόγιό σας όταν επιλέγετε «Προσθήκη στο Apple Ημερολόγιο». Δεν διαβάζει ποτέ τα υπάρχοντα συμβάντα σας."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward aldonas viajn vojaĝojn al via kalendaro, kiam vi elektas “Aldoni al Apple Kalendaro”. Ĝi neniam legas viajn ekzistantajn eventojn."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward añade tus viajes a tu calendario cuando eliges «Añadir al Calendario de Apple». Nunca lee tus eventos existentes."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward lisab teie reisid teie kalendrisse, kui valite „Lisa Apple'i kalendrisse“. See ei loe kunagi teie olemasolevaid sündmusi."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward lisää matkasi kalenteriisi, kun valitset ”Lisää Apple-kalenteriin”. Se ei koskaan lue olemassa olevia tapahtumiasi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward ajoute vos voyages à votre calendrier lorsque vous choisissez « Ajouter au Calendrier Apple ». Il ne lit jamais vos événements existants."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuireann Worldward do chuid turas le d'fhéilire nuair a roghnaíonn tú “Cuir le Féilire Apple”. Ní léann sé na himeachtaí atá agat cheana riamh."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward dodaje vaša putovanja u vaš kalendar kada odaberete „Dodaj u Apple Kalendar“. Nikada ne čita vaše postojeće događaje."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Worldward hozzáadja az utazásait a naptárához, ha a „Hozzáadás az Apple Naptárhoz” lehetőséget választja. Soha nem olvassa a meglévő eseményeit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward aggiunge i tuoi viaggi al tuo calendario quando scegli “Aggiungi al Calendario Apple”. Non legge mai i tuoi eventi esistenti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「Appleカレンダーに追加」を選ぶと、Worldward が旅行をカレンダーに追加します。既存のイベントを読み取ることはありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘Apple 캘린더에 추가’를 선택하면 Worldward가 여행을 캘린더에 추가합니다. 기존 이벤트는 읽지 않습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward prideda jūsų keliones į kalendorių, kai pasirenkate „Pridėti prie Apple Kalendoriaus“. Jis niekada neskaito jūsų esamų įvykių."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward pievieno jūsu ceļojumus kalendāram, kad izvēlaties „Pievienot Apple Kalendāram“. Tas nekad nelasa jūsu esošos notikumus."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward iżid il-vjaġġi tiegħek fil-kalendarju tiegħek meta tagħżel “Żid fil-Kalendarju Apple”. Qatt ma jaqra l-avvenimenti eżistenti tiegħek."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward voegt je reizen toe aan je agenda wanneer je “Voeg toe aan Apple Agenda” kiest. Het leest je bestaande activiteiten nooit."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward dodaje Twoje podróże do kalendarza, gdy wybierzesz „Dodaj do Kalendarza Apple“. Nigdy nie odczytuje istniejących wydarzeń."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward adiciona suas viagens ao seu calendário quando você escolhe “Adicionar ao Calendário Apple”. Ele nunca lê seus eventos existentes."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward adiciona as suas viagens ao seu calendário quando escolhe “Adicionar ao Calendário Apple”. Nunca lê os seus eventos existentes."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward adaugă călătoriile dvs. în calendar când alegeți „Adaugă în Apple Calendar”. Nu citește niciodată evenimentele existente."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward pridá vaše cesty do vášho kalendára, keď zvolíte „Pridať do Apple Kalendára“. Nikdy nečíta vaše existujúce udalosti."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward doda vaša potovanja v vaš koledar, ko izberete „Dodaj v Apple Koledar“. Vaših obstoječih dogodkov nikoli ne bere."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward lägger till dina resor i din kalender när du väljer “Lägg till i Apple Kalender”. Den läser aldrig dina befintliga händelser."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当你选择“添加到 Apple 日历”时，Worldward 会将旅行添加到你的日历中。它绝不会读取你已有的事件。"
+          }
+        }
+      }
+    },
+    "NSHumanReadableCopyright" : {
+      "comment" : "Proper noun — must stay identical in every language.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "© 2026 Smigi"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "Permission prompt shown by the system when the app first requests this access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward uses your location to detect which country you're in so it can mark it as visited."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward използва местоположението ви, за да разпознае в коя държава сте, и да я отбележи като посетена."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward používá vaši polohu, aby zjistil, ve které zemi jste, a mohl ji označit jako navštívenou."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward bruger din placering til at registrere, hvilket land du er i, så det kan markeres som besøgt."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward nutzt deinen Standort, um zu erkennen, in welchem Land du bist, und es als besucht zu markieren."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Worldward χρησιμοποιεί την τοποθεσία σας για να εντοπίσει σε ποια χώρα βρίσκεστε, ώστε να τη σημειώσει ως επισκεφθείσα."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward uzas vian lokon por rekoni, en kiu lando vi estas, por marki ĝin kiel vizititan."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward usa tu ubicación para detectar en qué país estás y poder marcarlo como visitado."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward kasutab teie asukohta, et tuvastada, millises riigis te olete, ja märkida see külastatuks."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward käyttää sijaintiasi tunnistaakseen, missä maassa olet, jotta se voi merkitä sen vierailluksi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward utilise votre position pour détecter dans quel pays vous vous trouvez afin de le marquer comme visité."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Úsáideann Worldward do shuíomh chun a aithint cén tír ina bhfuil tú, ionas gur féidir í a mharcáil mar thír ar thug tú cuairt uirthi."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward koristi vašu lokaciju kako bi prepoznao u kojoj se zemlji nalazite i označio je kao posjećenu."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Worldward a helyzetét használja annak felismerésére, hogy melyik országban tartózkodik, hogy meglátogatottként jelölhesse."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward usa la tua posizione per rilevare in quale paese ti trovi e poterlo segnare come visitato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward は現在地から滞在中の国を判別し、訪問済みとして記録するために位置情報を使用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward는 위치를 사용해 현재 어느 나라에 있는지 확인하고 방문한 국가로 표시합니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward naudoja jūsų vietovę, kad nustatytų, kurioje šalyje esate, ir pažymėtų ją kaip aplankytą."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward izmanto jūsu atrašanās vietu, lai noteiktu, kurā valstī atrodaties, un atzīmētu to kā apmeklētu."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward juża l-post tiegħek biex jagħraf f'liema pajjiż tinsab, ħalli jimmarkah bħala miżjur."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward gebruikt je locatie om te bepalen in welk land je bent, zodat het als bezocht kan worden gemarkeerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward używa Twojej lokalizacji, aby rozpoznać, w którym kraju jesteś, i oznaczyć go jako odwiedzony."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward usa sua localização para detectar em qual país você está e marcá-lo como visitado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward usa a sua localização para detetar em que país se encontra e marcá-lo como visitado."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward folosește locația dvs. pentru a detecta în ce țară vă aflați, ca să o poată marca drept vizitată."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward používa vašu polohu, aby zistil, v ktorej krajine sa nachádzate, a mohol ju označiť ako navštívenú."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward uporablja vašo lokacijo, da zazna, v kateri državi ste, in jo označi kot obiskano."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward använder din plats för att känna av vilket land du är i så att det kan markeras som besökt."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward 使用你的位置来识别你所在的国家，以便将其标记为已访问。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "Permission prompt shown by the system when the app first requests this access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward reads the location and date of your photos to automatically mark the countries you've visited. Your photos never leave your device."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward чете местоположението и датата на снимките ви, за да отбележи автоматично държавите, които сте посетили. Снимките ви никога не напускат устройството ви."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward čte polohu a datum vašich fotek, aby automaticky označil země, které jste navštívili. Vaše fotky nikdy neopustí vaše zařízení."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward læser placering og dato på dine billeder for automatisk at markere de lande, du har besøgt. Dine billeder forlader aldrig din enhed."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward liest Ort und Datum deiner Fotos, um die von dir besuchten Länder automatisch zu markieren. Deine Fotos verlassen dein Gerät nie."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Worldward διαβάζει την τοποθεσία και την ημερομηνία των φωτογραφιών σας για να σημειώνει αυτόματα τις χώρες που έχετε επισκεφθεί. Οι φωτογραφίες σας δεν φεύγουν ποτέ από τη συσκευή σας."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward legas la lokon kaj daton de viaj fotoj por aŭtomate marki la landojn, kiujn vi vizitis. Viaj fotoj neniam forlasas vian aparaton."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward lee la ubicación y la fecha de tus fotos para marcar automáticamente los países que has visitado. Tus fotos nunca salen de tu dispositivo."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward loeb teie fotode asukohta ja kuupäeva, et automaatselt märkida riigid, kus olete käinud. Teie fotod ei lahku kunagi teie seadmest."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward lukee kuviesi sijainnin ja päivämäärän merkitäkseen automaattisesti maat, joissa olet käynyt. Kuvasi eivät koskaan poistu laitteeltasi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward lit le lieu et la date de vos photos pour marquer automatiquement les pays que vous avez visités. Vos photos ne quittent jamais votre appareil."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Léann Worldward suíomh agus dáta do ghrianghraf chun na tíortha ar thug tú cuairt orthu a mharcáil go huathoibríoch. Ní fhágann do ghrianghraif do ghléas riamh."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward čita lokaciju i datum vaših fotografija kako bi automatski označio zemlje koje ste posjetili. Vaše fotografije nikada ne napuštaju vaš uređaj."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Worldward beolvassa fényképei helyét és dátumát, hogy automatikusan megjelölje a meglátogatott országokat. A fényképei soha nem hagyják el a készülékét."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward legge la posizione e la data delle tue foto per segnare automaticamente i paesi che hai visitato. Le tue foto non lasciano mai il tuo dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward は写真の位置情報と日付を読み取り、訪れた国を自動で記録します。写真がデバイスの外に送信されることはありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward는 사진의 위치와 날짜를 읽어 방문한 국가를 자동으로 표시합니다. 사진은 기기를 벗어나지 않습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward nuskaito jūsų nuotraukų vietą ir datą, kad automatiškai pažymėtų aplankytas šalis. Jūsų nuotraukos niekada nepalieka įrenginio."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward nolasa jūsu fotoattēlu atrašanās vietu un datumu, lai automātiski atzīmētu apmeklētās valstis. Jūsu fotoattēli nekad nepamet ierīci."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward jaqra l-post u d-data tar-ritratti tiegħek biex jimmarka awtomatikament il-pajjiżi li żort. Ir-ritratti tiegħek qatt ma jitilqu mill-apparat tiegħek."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward leest de locatie en datum van je foto's om automatisch de landen te markeren die je hebt bezocht. Je foto's verlaten je apparaat nooit."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward odczytuje lokalizację i datę Twoich zdjęć, aby automatycznie oznaczyć odwiedzone kraje. Twoje zdjęcia nigdy nie opuszczają urządzenia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward lê a localização e a data das suas fotos para marcar automaticamente os países que você visitou. Suas fotos nunca saem do seu dispositivo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward lê a localização e a data das suas fotografias para marcar automaticamente os países que visitou. As suas fotografias nunca saem do seu dispositivo."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward citește locația și data fotografiilor dvs. pentru a marca automat țările pe care le-ați vizitat. Fotografiile dvs. nu părăsesc niciodată dispozitivul."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward číta polohu a dátum vašich fotiek, aby automaticky označil krajiny, ktoré ste navštívili. Vaše fotky nikdy neopustia vaše zariadenie."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward prebere lokacijo in datum vaših fotografij, da samodejno označi države, ki ste jih obiskali. Vaše fotografije nikoli ne zapustijo vaše naprave."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward läser plats och datum för dina bilder för att automatiskt markera de länder du har besökt. Dina bilder lämnar aldrig din enhet."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward 读取照片的位置和日期，以自动标记你去过的国家。你的照片绝不会离开本设备。"
+          }
+        }
+      }
+    },
+    "NSRemindersFullAccessUsageDescription" : {
+      "comment" : "Permission prompt shown by the system when the app first requests this access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward mirrors your packing lists to Apple Reminders when you turn on “Sync with Apple Reminders,” so items ticked off in Reminders, with Siri, or on Apple Watch are marked packed here too."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward пренася списъците ви за багаж в Apple Напомняния, когато включите „Синхронизиране с Apple Напомняния“, така че елементите, отметнати в Напомняния, чрез Siri или на Apple Watch, се отбелязват като опаковани и тук."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward zrcadlí vaše seznamy věcí do Apple Připomínek, když zapnete „Synchronizovat s Apple Připomínkami“, takže položky odškrtnuté v Připomínkách, přes Siri nebo na Apple Watch se označí jako sbalené i zde."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward spejler dine paklister til Apple Påmindelser, når du slår „Synkroniser med Apple Påmindelser“ til, så emner, der krydses af i Påmindelser, med Siri eller på Apple Watch, også markeres som pakket her."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward spiegelt deine Packlisten in Apple Erinnerungen, wenn du „Mit Apple Erinnerungen synchronisieren“ aktivierst. So werden Einträge, die du in Erinnerungen, per Siri oder auf der Apple Watch abhakst, auch hier als gepackt markiert."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το Worldward αντικατοπτρίζει τις λίστες αποσκευών σας στις Apple Υπενθυμίσεις όταν ενεργοποιείτε τον «Συγχρονισμό με τις Apple Υπενθυμίσεις», ώστε τα στοιχεία που τσεκάρετε στις Υπενθυμίσεις, με το Siri ή στο Apple Watch, να σημειώνονται ως πακεταρισμένα και εδώ."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward spegulas viajn paklistojn al Apple Memorigiloj, kiam vi ŝaltas “Sinkronigi kun Apple Memorigiloj”, tiel ke eroj markitaj en Memorigiloj, per Siri aŭ sur Apple Watch, ankaŭ ĉi tie estas markitaj kiel pakitaj."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward replica tus listas de equipaje en Apple Recordatorios cuando activas «Sincronizar con Apple Recordatorios», de modo que los elementos marcados en Recordatorios, con Siri o en el Apple Watch también se marcan aquí como preparados."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward peegeldab teie pakkimisnimekirjad Apple'i Meeldetuletustesse, kui lülitate sisse „Sünkrooni Apple'i Meeldetuletustega“, nii et Meeldetuletustes, Siriga või Apple Watchis linnutatud esemed märgitakse pakituks ka siin."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward peilaa pakkauslistasi Apple Muistutuksiin, kun otat käyttöön ”Synkronoi Apple Muistutusten kanssa”, jolloin Muistutuksissa, Sirillä tai Apple Watchilla rastitut kohteet merkitään pakatuiksi myös täällä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward reproduit vos listes de bagages dans Apple Rappels lorsque vous activez « Synchroniser avec Apple Rappels », afin que les éléments cochés dans Rappels, avec Siri ou sur l'Apple Watch soient aussi marqués comme préparés ici."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déanann Worldward scáthánú ar do liostaí pacála chuig Apple Meabhrúcháin nuair a chuireann tú “Sioncronaigh le Apple Meabhrúcháin” ar siúl, ionas go marcáiltear míreanna a thiceáiltear i Meabhrúcháin, le Siri nó ar Apple Watch mar phacáilte anseo freisin."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward zrcali vaše popise za pakiranje u Apple Podsjetnike kada uključite „Sinkroniziraj s Apple Podsjetnicima“, pa se stavke označene u Podsjetnicima, putem Sirija ili na Apple Watchu i ovdje označavaju kao spakirane."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Worldward tükrözi a csomaglistáit az Apple Emlékeztetőkbe, ha bekapcsolja a „Szinkronizálás az Apple Emlékeztetőkkel” lehetőséget, így az Emlékeztetőkben, Sirivel vagy Apple Watchon kipipált tételek itt is becsomagoltként jelennek meg."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward replica le tue liste bagagli in Apple Promemoria quando attivi “Sincronizza con Apple Promemoria”, così gli elementi spuntati in Promemoria, con Siri o su Apple Watch vengono segnati come preparati anche qui."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「Appleリマインダーと同期」をオンにすると、Worldward がパッキングリストを Apple リマインダーに反映します。リマインダー、Siri、Apple Watch でチェックした項目は、ここでも荷造り済みとして記録されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘Apple 미리 알림과 동기화’를 켜면 Worldward가 짐 목록을 Apple 미리 알림에 반영합니다. 미리 알림, Siri 또는 Apple Watch에서 체크한 항목은 여기에서도 짐을 챙긴 것으로 표시됩니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kai įjungiate „Sinchronizuoti su Apple Priminimais“, Worldward perkelia jūsų daiktų sąrašus į Apple Priminimus, todėl Priminimuose, per Siri ar Apple Watch pažymėti daiktai ir čia pažymimi kaip supakuoti."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward atspoguļo jūsu iepakošanas sarakstus lietotnē Apple Atgādinājumi, kad ieslēdzat „Sinhronizēt ar Apple Atgādinājumiem“, tāpēc Atgādinājumos, ar Siri vai Apple Watch atzīmētās lietas tiek atzīmētas kā iepakotas arī šeit."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward jirrifletti l-listi tal-ippakkjar tiegħek fit-Tfakkiriet ta' Apple meta tixgħel “Issinkronizza mat-Tfakkiriet ta' Apple”, biex l-oġġetti mmarkati fit-Tfakkiriet, b'Siri jew fuq l-Apple Watch jiġu mmarkati bħala ppakkjati hawn ukoll."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward spiegelt je paklijsten naar Apple Herinneringen wanneer je “Synchroniseren met Apple Herinneringen” inschakelt, zodat items die je afvinkt in Herinneringen, met Siri of op de Apple Watch hier ook als ingepakt worden gemarkeerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward przenosi Twoje listy pakowania do Apple Przypomnienia, gdy włączysz „Synchronizuj z Apple Przypomnienia“, dzięki czemu rzeczy odhaczone w Przypomnieniach, przez Siri lub na Apple Watch są oznaczane jako spakowane również tutaj."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward espelha suas listas de bagagem no Apple Lembretes quando você ativa “Sincronizar com Apple Lembretes”, para que os itens marcados nos Lembretes, com a Siri ou no Apple Watch também sejam marcados como arrumados aqui."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Worldward espelha as suas listas de bagagem nos Apple Lembretes quando ativa “Sincronizar com Apple Lembretes”, para que os itens assinalados nos Lembretes, com a Siri ou no Apple Watch sejam também marcados como arrumados aqui."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward reflectă listele dvs. de bagaje în Apple Memento-uri când activați „Sincronizează cu Apple Memento-uri”, astfel încât articolele bifate în Memento-uri, cu Siri sau pe Apple Watch să fie marcate ca împachetate și aici."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward zrkadlí vaše zoznamy vecí do Apple Pripomienok, keď zapnete „Synchronizovať s Apple Pripomienkami“, takže položky odškrtnuté v Pripomienkach, cez Siri alebo na Apple Watch sa označia ako zbalené aj tu."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward zrcali vaše sezname za pakiranje v Apple Opomnike, ko vklopite „Sinhroniziraj z Apple Opomniki“, tako da so predmeti, odkljukani v Opomnikih, s Sirijem ali na Apple Watchu, tudi tukaj označeni kot spakirani."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward speglar dina packlistor till Apple Påminnelser när du slår på “Synka med Apple Påminnelser”, så att saker som bockas av i Påminnelser, med Siri eller på Apple Watch också markeras som packade här."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启“与 Apple 提醒事项同步”后，Worldward 会将行李清单同步到 Apple 提醒事项，这样在提醒事项、Siri 或 Apple Watch 中勾选的物品，在这里也会标记为已打包。"
+          }
+        }
+      }
+    },
+    "Worldward Trip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Worldward Trip"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пътуване Worldward"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cesta Worldward"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward-rejse"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward-Reise"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ταξίδι Worldward"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward-vojaĝo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viaje de Worldward"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldwardi reis"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward-matka"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voyage Worldward"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turas Worldward"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward putovanje"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward utazás"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viaggio Worldward"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward の旅行"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward 여행"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward kelionė"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward ceļojums"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vjaġġ Worldward"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward-reis"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podróż Worldward"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viagem do Worldward"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viagem Worldward"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Călătorie Worldward"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cesta Worldward"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potovanje Worldward"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward-resa"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worldward 旅行"
+          }
+        }
+      },
+      "comment" : "File kind for a shared .wwtrip file, shown in Finder and the share sheet."
+    }
+  },
+  "version" : "1.3"
+}

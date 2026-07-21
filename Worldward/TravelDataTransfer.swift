@@ -239,6 +239,32 @@ enum TravelDataTransfer {
         return try encoder.encode(file)
     }
 
+    /// What importing a backup would cost, measured before anything is written.
+    /// `tripsReplaced` is the part worth confirming: unlike the CSV import, a
+    /// backup restore deletes every existing trip, and there is no undo.
+    struct ImportSummary {
+        let countries: Int
+        let trips: Int
+        let tripsReplaced: Int
+    }
+
+    /// Decodes a backup and measures it against the current store without
+    /// mutating anything, so the confirmation can name real numbers. Throws the
+    /// same decoding errors `importData` would, which means a malformed file is
+    /// rejected *before* the user is asked to approve a destructive write.
+    @MainActor
+    static func summarize(_ data: Data, in context: ModelContext) throws -> ImportSummary {
+        let file = try decoder.decode(TravelDataFile.self, from: data)
+        // Mirrors `importData`'s matching rule so the count the user approves is
+        // the count they're told about afterwards.
+        let knownIDs = Set(try context.fetch(FetchDescriptor<Country>()).map(\.id))
+        return ImportSummary(
+            countries: file.countries.count { knownIDs.contains($0.id) },
+            trips: file.trips.count,
+            tripsReplaced: try context.fetchCount(FetchDescriptor<Trip>())
+        )
+    }
+
     /// Applies a backup to the store, matching records to existing countries by id.
     /// Unknown ids (e.g. from a newer dataset) are skipped. Returns the number of
     /// countries updated.

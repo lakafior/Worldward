@@ -1,0 +1,1689 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "How many countries have I visited in ${applicationName}?" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "How many countries have I visited in ${applicationName}?",
+              "Show my travel count from ${applicationName}",
+              "What's my country count in ${applicationName}?"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Колко държави съм посетил в ${applicationName}?",
+              "Покажи броя на пътуванията ми от ${applicationName}",
+              "Какъв е броят на държавите ми в ${applicationName}?"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kolik zemí jsem navštívil v ${applicationName}?",
+              "Zobraz počet mých cest z ${applicationName}",
+              "Jaký je můj počet zemí v ${applicationName}?"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hvor mange lande har jeg besøgt i ${applicationName}?",
+              "Vis mit rejseantal fra ${applicationName}",
+              "Hvad er mit landeantal i ${applicationName}?"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Wie viele Länder habe ich in ${applicationName} besucht?",
+              "Zeig meine Reisebilanz aus ${applicationName}",
+              "Wie viele Länder habe ich in ${applicationName}?"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Πόσες χώρες έχω επισκεφθεί στο ${applicationName};",
+              "Δείξε τον αριθμό ταξιδιών μου από το ${applicationName}",
+              "Πόσες χώρες έχω στο ${applicationName};"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kiom da landoj mi vizitis en ${applicationName}?",
+              "Montru mian vojaĝnombron el ${applicationName}",
+              "Kiom da landoj mi havas en ${applicationName}?"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "¿Cuántos países he visitado en ${applicationName}?",
+              "Muestra mi recuento de viajes de ${applicationName}",
+              "¿Cuántos países tengo en ${applicationName}?"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mitut riiki olen rakenduses ${applicationName} külastanud?",
+              "Näita mu reiside arvu rakendusest ${applicationName}",
+              "Mitu riiki mul rakenduses ${applicationName} on?"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kuinka monessa maassa olen käynyt ${applicationName}-sovelluksessa?",
+              "Näytä matkojeni määrä ${applicationName}-sovelluksesta",
+              "Montako maata minulla on ${applicationName}-sovelluksessa?"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Combien de pays ai-je visités dans ${applicationName} ?",
+              "Affiche mon nombre de voyages depuis ${applicationName}",
+              "Combien de pays ai-je dans ${applicationName} ?"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cé mhéad tír a thug mé cuairt orthu in ${applicationName}?",
+              "Taispeáin líon mo chuid turas ó ${applicationName}",
+              "Cé mhéad tír atá agam in ${applicationName}?"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Koliko sam zemalja posjetio u ${applicationName}?",
+              "Prikaži broj mojih putovanja iz ${applicationName}",
+              "Koliko zemalja imam u ${applicationName}?"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hány országban jártam a ${applicationName} szerint?",
+              "Mutasd az utazásaim számát a ${applicationName} alkalmazásból",
+              "Hány országom van a ${applicationName} alkalmazásban?"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quanti paesi ho visitato in ${applicationName}?",
+              "Mostra il conteggio dei miei viaggi da ${applicationName}",
+              "Quanti paesi ho in ${applicationName}?"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で訪れた国はいくつ？",
+              "${applicationName}の旅行数を表示",
+              "${applicationName}の国のカウントは？"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 몇 개국을 방문했어?",
+              "${applicationName}의 여행 수 보여줘",
+              "${applicationName}의 국가 수는?"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kiek šalių aplankiau programoje ${applicationName}?",
+              "Parodyk mano kelionių skaičių iš ${applicationName}",
+              "Kiek šalių turiu programoje ${applicationName}?"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cik valstis esmu apmeklējis lietotnē ${applicationName}?",
+              "Parādi manu ceļojumu skaitu no ${applicationName}",
+              "Cik valstu man ir lietotnē ${applicationName}?"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kemm-il pajjiż żort f'${applicationName}?",
+              "Uri l-għadd tal-vjaġġi tiegħi minn ${applicationName}",
+              "Kemm għandi pajjiżi f'${applicationName}?"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hoeveel landen heb ik bezocht in ${applicationName}?",
+              "Toon mijn reisaantal uit ${applicationName}",
+              "Hoeveel landen heb ik in ${applicationName}?"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ile krajów odwiedziłem w ${applicationName}?",
+              "Pokaż liczbę moich podróży z ${applicationName}",
+              "Jaka jest liczba moich krajów w ${applicationName}?"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quantos países eu visitei no ${applicationName}?",
+              "Mostre minha contagem de viagens do ${applicationName}",
+              "Qual é minha contagem de países no ${applicationName}?"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quantos países visitei no ${applicationName}?",
+              "Mostra a minha contagem de viagens do ${applicationName}",
+              "Qual é a minha contagem de países no ${applicationName}?"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Câte țări am vizitat în ${applicationName}?",
+              "Arată numărul călătoriilor mele din ${applicationName}",
+              "Care este numărul meu de țări în ${applicationName}?"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Koľko krajín som navštívil v ${applicationName}?",
+              "Zobraz počet mojich ciest z ${applicationName}",
+              "Aký je môj počet krajín v ${applicationName}?"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Koliko držav sem obiskal v ${applicationName}?",
+              "Pokaži število mojih potovanj iz ${applicationName}",
+              "Koliko držav imam v ${applicationName}?"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hur många länder har jag besökt i ${applicationName}?",
+              "Visa mitt reseantal från ${applicationName}",
+              "Hur många länder har jag i ${applicationName}?"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "我在${applicationName}里去过多少个国家？",
+              "显示${applicationName}中的旅行数量",
+              "${applicationName}里我的国家数是多少？"
+            ]
+          }
+        }
+      }
+    },
+    "Log a trip in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Log a trip in ${applicationName}",
+              "Describe my travels to ${applicationName}",
+              "Log visits from a description in ${applicationName}"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Запиши пътуване в ${applicationName}",
+              "Опиши пътуванията ми на ${applicationName}",
+              "Запиши посещения от описание в ${applicationName}"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zaznamenej cestu v ${applicationName}",
+              "Popiš mé cesty do ${applicationName}",
+              "Zaznamenej návštěvy z popisu v ${applicationName}"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registrer en rejse i ${applicationName}",
+              "Beskriv mine rejser til ${applicationName}",
+              "Registrer besøg fra en beskrivelse i ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Reise in ${applicationName} erfassen",
+              "Beschreib meine Reisen für ${applicationName}",
+              "Besuche aus einer Beschreibung in ${applicationName} erfassen"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Κατέγραψε ένα ταξίδι στο ${applicationName}",
+              "Περίγραψε τα ταξίδια μου στο ${applicationName}",
+              "Κατέγραψε επισκέψεις από περιγραφή στο ${applicationName}"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registru vojaĝon en ${applicationName}",
+              "Priskribu miajn vojaĝojn al ${applicationName}",
+              "Registru vizitojn el priskribo en ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registra un viaje en ${applicationName}",
+              "Describe mis viajes a ${applicationName}",
+              "Registra visitas desde una descripción en ${applicationName}"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Salvesta reis rakenduses ${applicationName}",
+              "Kirjelda mu reise rakendusele ${applicationName}",
+              "Salvesta külastused kirjeldusest rakenduses ${applicationName}"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kirjaa matka ${applicationName}-sovellukseen",
+              "Kuvaile matkani ${applicationName}-sovellukselle",
+              "Kirjaa käynnit kuvauksesta ${applicationName}-sovelluksessa"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Enregistre un voyage dans ${applicationName}",
+              "Décris mes voyages à ${applicationName}",
+              "Enregistre des visites à partir d'une description dans ${applicationName}"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Logáil turas in ${applicationName}",
+              "Déan cur síos ar mo chuid taistil do ${applicationName}",
+              "Logáil cuairteanna ó chur síos in ${applicationName}"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zabilježi putovanje u ${applicationName}",
+              "Opiši moja putovanja aplikaciji ${applicationName}",
+              "Zabilježi posjete iz opisa u ${applicationName}"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Rögzíts egy utazást a ${applicationName} alkalmazásban",
+              "Írd le az utazásaimat a ${applicationName} alkalmazásnak",
+              "Rögzíts látogatásokat leírásból a ${applicationName} alkalmazásban"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registra un viaggio in ${applicationName}",
+              "Descrivi i miei viaggi a ${applicationName}",
+              "Registra visite da una descrizione in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で旅行を記録",
+              "${applicationName}に旅行を説明する",
+              "${applicationName}で説明から訪問を記録"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에 여행 기록",
+              "${applicationName}에 내 여행 설명하기",
+              "${applicationName}에서 설명으로 방문 기록"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Įrašyk kelionę programoje ${applicationName}",
+              "Apibūdink mano keliones programai ${applicationName}",
+              "Įrašyk apsilankymus iš aprašymo programoje ${applicationName}"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Reģistrē ceļojumu lietotnē ${applicationName}",
+              "Apraksti manus ceļojumus lietotnei ${applicationName}",
+              "Reģistrē apmeklējumus no apraksta lietotnē ${applicationName}"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Irreġistra vjaġġ f'${applicationName}",
+              "Iddeskrivi l-vjaġġi tiegħi lil ${applicationName}",
+              "Irreġistra żjarat minn deskrizzjoni f'${applicationName}"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Leg een reis vast in ${applicationName}",
+              "Beschrijf mijn reizen aan ${applicationName}",
+              "Leg bezoeken vast vanuit een beschrijving in ${applicationName}"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zapisz podróż w ${applicationName}",
+              "Opisz moje podróże aplikacji ${applicationName}",
+              "Zapisz wizyty z opisu w ${applicationName}"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registre uma viagem no ${applicationName}",
+              "Descreva minhas viagens para o ${applicationName}",
+              "Registre visitas a partir de uma descrição no ${applicationName}"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Regista uma viagem no ${applicationName}",
+              "Descreve as minhas viagens ao ${applicationName}",
+              "Regista visitas a partir de uma descrição no ${applicationName}"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Înregistrează o călătorie în ${applicationName}",
+              "Descrie călătoriile mele în ${applicationName}",
+              "Înregistrează vizite dintr-o descriere în ${applicationName}"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zaznamenaj cestu v ${applicationName}",
+              "Opíš moje cesty do ${applicationName}",
+              "Zaznamenaj návštevy z opisu v ${applicationName}"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zabeleži potovanje v ${applicationName}",
+              "Opiši moja potovanja aplikaciji ${applicationName}",
+              "Zabeleži obiske iz opisa v ${applicationName}"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Logga en resa i ${applicationName}",
+              "Beskriv mina resor för ${applicationName}",
+              "Logga besök från en beskrivning i ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中记录一次旅行",
+              "向${applicationName}描述我的旅行",
+              "在${applicationName}中根据描述记录访问"
+            ]
+          }
+        }
+      }
+    },
+    "Log a visit to ${country} in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Log a visit to ${country} in ${applicationName}",
+              "Record a trip to ${country} with ${applicationName}"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Запиши посещение в ${country} в ${applicationName}",
+              "Отбележи пътуване до ${country} с ${applicationName}"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zaznamenej návštěvu ${country} v ${applicationName}",
+              "Zapiš cestu do ${country} pomocí ${applicationName}"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registrer et besøg i ${country} i ${applicationName}",
+              "Noter en rejse til ${country} med ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Besuch in ${country} in ${applicationName} erfassen",
+              "Reise nach ${country} mit ${applicationName} festhalten"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Κατέγραψε επίσκεψη στη ${country} στο ${applicationName}",
+              "Σημείωσε ταξίδι στη ${country} με το ${applicationName}"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registru viziton al ${country} en ${applicationName}",
+              "Notu vojaĝon al ${country} per ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registra una visita a ${country} en ${applicationName}",
+              "Anota un viaje a ${country} con ${applicationName}"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Salvesta külastus riiki ${country} rakenduses ${applicationName}",
+              "Märgi reis riiki ${country} rakendusega ${applicationName}"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kirjaa käynti maahan ${country} ${applicationName}-sovellukseen",
+              "Merkitse matka maahan ${country} ${applicationName}-sovelluksella"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Enregistre une visite en ${country} dans ${applicationName}",
+              "Note un voyage en ${country} avec ${applicationName}"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Logáil cuairt ar ${country} in ${applicationName}",
+              "Taifead turas go ${country} le ${applicationName}"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zabilježi posjet zemlji ${country} u ${applicationName}",
+              "Zapiši putovanje u ${country} pomoću ${applicationName}"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Rögzíts látogatást ide: ${country} a ${applicationName} alkalmazásban",
+              "Jegyezz fel utazást ide: ${country} a ${applicationName} alkalmazással"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registra una visita in ${country} in ${applicationName}",
+              "Annota un viaggio in ${country} con ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${country}への訪問を記録",
+              "${applicationName}で${country}への旅行を記録する"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에 ${country} 방문 기록",
+              "${applicationName}으로 ${country} 여행 기록"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Įrašyk apsilankymą šalyje ${country} programoje ${applicationName}",
+              "Užfiksuok kelionę į ${country} su ${applicationName}"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Reģistrē apmeklējumu valstī ${country} lietotnē ${applicationName}",
+              "Pieraksti ceļojumu uz ${country} ar ${applicationName}"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Irreġistra żjara f'${country} f'${applicationName}",
+              "Niżżel vjaġġ lejn ${country} b'${applicationName}"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Leg een bezoek aan ${country} vast in ${applicationName}",
+              "Noteer een reis naar ${country} met ${applicationName}"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zapisz wizytę w ${country} w ${applicationName}",
+              "Zanotuj podróż do ${country} w ${applicationName}"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Registre uma visita a ${country} no ${applicationName}",
+              "Anote uma viagem para ${country} com o ${applicationName}"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Regista uma visita a ${country} no ${applicationName}",
+              "Anota uma viagem a ${country} com o ${applicationName}"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Înregistrează o vizită în ${country} în ${applicationName}",
+              "Notează o călătorie în ${country} cu ${applicationName}"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zaznamenaj návštevu krajiny ${country} v ${applicationName}",
+              "Zapíš cestu do ${country} pomocou ${applicationName}"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zabeleži obisk države ${country} v ${applicationName}",
+              "Zapiši potovanje v ${country} z ${applicationName}"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Logga ett besök i ${country} i ${applicationName}",
+              "Registrera en resa till ${country} med ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中记录去${country}的访问",
+              "用${applicationName}记录前往${country}的旅行"
+            ]
+          }
+        }
+      }
+    },
+    "Mark ${country} in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Mark ${country} in ${applicationName}",
+              "Set travel status for ${country} with ${applicationName}",
+              "Flag ${country} with ${applicationName}"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Отбележи ${country} в ${applicationName}",
+              "Задай статус на пътуване за ${country} с ${applicationName}",
+              "Маркирай ${country} с ${applicationName}"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označ ${country} v ${applicationName}",
+              "Nastav stav cestování pro ${country} v ${applicationName}",
+              "Zvýrazni ${country} v ${applicationName}"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marker ${country} i ${applicationName}",
+              "Angiv rejsestatus for ${country} med ${applicationName}",
+              "Flag ${country} med ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${country} in ${applicationName} markieren",
+              "Reisestatus für ${country} mit ${applicationName} festlegen",
+              "${country} mit ${applicationName} kennzeichnen"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Σημείωσε τη ${country} στο ${applicationName}",
+              "Όρισε κατάσταση ταξιδιού για τη ${country} με το ${applicationName}",
+              "Επισήμανε τη ${country} με το ${applicationName}"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marku ${country} en ${applicationName}",
+              "Agordu vojaĝstaton por ${country} per ${applicationName}",
+              "Flagu ${country} per ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marca ${country} en ${applicationName}",
+              "Establece el estado de viaje de ${country} con ${applicationName}",
+              "Señala ${country} con ${applicationName}"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Märgi ${country} rakenduses ${applicationName}",
+              "Määra riigi ${country} reisistaatus rakendusega ${applicationName}",
+              "Tähista ${country} rakendusega ${applicationName}"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Merkitse ${country} ${applicationName}-sovelluksessa",
+              "Aseta maan ${country} matkatila ${applicationName}-sovelluksella",
+              "Liputa ${country} ${applicationName}-sovelluksella"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marque ${country} dans ${applicationName}",
+              "Définis le statut de voyage pour ${country} avec ${applicationName}",
+              "Signale ${country} avec ${applicationName}"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marcáil ${country} in ${applicationName}",
+              "Socraigh stádas taistil do ${country} le ${applicationName}",
+              "Cuir bratach ar ${country} le ${applicationName}"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označi ${country} u ${applicationName}",
+              "Postavi status putovanja za ${country} pomoću ${applicationName}",
+              "Istakni ${country} pomoću ${applicationName}"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Jelöld meg: ${country} a ${applicationName} alkalmazásban",
+              "Állítsd be ${country} utazási állapotát a ${applicationName} alkalmazással",
+              "Emeld ki: ${country} a ${applicationName} alkalmazással"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Segna ${country} in ${applicationName}",
+              "Imposta lo stato di viaggio per ${country} con ${applicationName}",
+              "Contrassegna ${country} con ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${country}をマーク",
+              "${applicationName}で${country}の旅行ステータスを設定",
+              "${applicationName}で${country}に印を付ける"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 ${country} 표시",
+              "${applicationName}으로 ${country} 여행 상태 설정",
+              "${applicationName}으로 ${country} 표시하기"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Pažymėk ${country} programoje ${applicationName}",
+              "Nustatyk šalies ${country} kelionės būseną su ${applicationName}",
+              "Pažymėk vėliavėle ${country} su ${applicationName}"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Atzīmē ${country} lietotnē ${applicationName}",
+              "Iestati ceļojuma statusu valstij ${country} ar ${applicationName}",
+              "Iezīmē ${country} ar ${applicationName}"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Immarka ${country} f'${applicationName}",
+              "Issettja l-istat tal-vjaġġ għal ${country} b'${applicationName}",
+              "Agħti bandiera lil ${country} b'${applicationName}"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Markeer ${country} in ${applicationName}",
+              "Stel de reisstatus voor ${country} in met ${applicationName}",
+              "Markeer ${country} met een vlag in ${applicationName}"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Oznacz ${country} w ${applicationName}",
+              "Ustaw status podróży dla ${country} w ${applicationName}",
+              "Zaznacz ${country} w ${applicationName}"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marque ${country} no ${applicationName}",
+              "Defina o status de viagem de ${country} com o ${applicationName}",
+              "Sinalize ${country} com o ${applicationName}"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marca ${country} no ${applicationName}",
+              "Define o estado de viagem de ${country} com o ${applicationName}",
+              "Assinala ${country} com o ${applicationName}"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marchează ${country} în ${applicationName}",
+              "Setează starea de călătorie pentru ${country} cu ${applicationName}",
+              "Semnalează ${country} cu ${applicationName}"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označ ${country} v ${applicationName}",
+              "Nastav stav cestovania pre ${country} pomocou ${applicationName}",
+              "Zvýrazni ${country} pomocou ${applicationName}"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označi ${country} v ${applicationName}",
+              "Nastavi stanje potovanja za ${country} z ${applicationName}",
+              "Označi z zastavico ${country} v ${applicationName}"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Markera ${country} i ${applicationName}",
+              "Ange resestatus för ${country} med ${applicationName}",
+              "Flagga ${country} med ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中标记${country}",
+              "用${applicationName}设置${country}的旅行状态",
+              "用${applicationName}标注${country}"
+            ]
+          }
+        }
+      }
+    },
+    "Mark where I am in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Mark where I am in ${applicationName}",
+              "Record my current location with ${applicationName}"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Отбележи къде съм в ${applicationName}",
+              "Запиши текущото ми местоположение с ${applicationName}"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označ, kde jsem, v ${applicationName}",
+              "Zaznamenej mou aktuální polohu v ${applicationName}"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marker hvor jeg er i ${applicationName}",
+              "Registrer min nuværende placering med ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Markier in ${applicationName}, wo ich bin",
+              "Meinen aktuellen Standort mit ${applicationName} erfassen"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Σημείωσε πού βρίσκομαι στο ${applicationName}",
+              "Κατέγραψε την τρέχουσα τοποθεσία μου με το ${applicationName}"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marku kie mi estas en ${applicationName}",
+              "Registru mian nunan lokon per ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marca dónde estoy en ${applicationName}",
+              "Registra mi ubicación actual con ${applicationName}"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Märgi, kus ma olen, rakenduses ${applicationName}",
+              "Salvesta mu praegune asukoht rakendusega ${applicationName}"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Merkitse missä olen ${applicationName}-sovelluksessa",
+              "Kirjaa nykyinen sijaintini ${applicationName}-sovelluksella"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marque où je suis dans ${applicationName}",
+              "Enregistre ma position actuelle avec ${applicationName}"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marcáil an áit a bhfuil mé in ${applicationName}",
+              "Taifead mo shuíomh reatha le ${applicationName}"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označi gdje sam u ${applicationName}",
+              "Zabilježi moju trenutnu lokaciju pomoću ${applicationName}"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Jelöld meg, hol vagyok a ${applicationName} alkalmazásban",
+              "Rögzítsd a jelenlegi helyzetemet a ${applicationName} alkalmazással"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Segna dove mi trovo in ${applicationName}",
+              "Registra la mia posizione attuale con ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で現在地をマーク",
+              "${applicationName}で現在の場所を記録"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 현재 위치 표시",
+              "${applicationName}으로 현재 위치 기록"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Pažymėk, kur esu, programoje ${applicationName}",
+              "Įrašyk mano dabartinę vietą su ${applicationName}"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Atzīmē, kur es esmu, lietotnē ${applicationName}",
+              "Reģistrē manu pašreizējo atrašanās vietu ar ${applicationName}"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Immarka fejn jien f'${applicationName}",
+              "Irreġistra l-post attwali tiegħi b'${applicationName}"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Markeer waar ik ben in ${applicationName}",
+              "Leg mijn huidige locatie vast met ${applicationName}"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Oznacz, gdzie jestem, w ${applicationName}",
+              "Zapisz moją obecną lokalizację w ${applicationName}"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marque onde eu estou no ${applicationName}",
+              "Registre minha localização atual com o ${applicationName}"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marca onde estou no ${applicationName}",
+              "Regista a minha localização atual com o ${applicationName}"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Marchează unde sunt în ${applicationName}",
+              "Înregistrează locația mea curentă cu ${applicationName}"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označ, kde som, v ${applicationName}",
+              "Zaznamenaj moju aktuálnu polohu pomocou ${applicationName}"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Označi, kje sem, v ${applicationName}",
+              "Zabeleži mojo trenutno lokacijo z ${applicationName}"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Markera var jag är i ${applicationName}",
+              "Registrera min nuvarande plats med ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中标记我的位置",
+              "用${applicationName}记录我的当前位置"
+            ]
+          }
+        }
+      }
+    },
+    "My progress in ${continent} from ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "My progress in ${continent} from ${applicationName}",
+              "How much of ${continent} have I seen in ${applicationName}?"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Моят напредък в ${continent} от ${applicationName}",
+              "Колко от ${continent} съм видял в ${applicationName}?"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Můj pokrok v ${continent} z ${applicationName}",
+              "Kolik z ${continent} jsem viděl v ${applicationName}?"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mit fremskridt i ${continent} fra ${applicationName}",
+              "Hvor meget af ${continent} har jeg set i ${applicationName}?"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mein Fortschritt in ${continent} aus ${applicationName}",
+              "Wie viel von ${continent} habe ich in ${applicationName} gesehen?"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Η πρόοδός μου στην ${continent} από το ${applicationName}",
+              "Πόσο από την ${continent} έχω δει στο ${applicationName};"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mia progreso en ${continent} el ${applicationName}",
+              "Kiom de ${continent} mi vidis en ${applicationName}?"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mi progreso en ${continent} desde ${applicationName}",
+              "¿Cuánto de ${continent} he visto en ${applicationName}?"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Minu edenemine piirkonnas ${continent} rakendusest ${applicationName}",
+              "Kui palju olen näinud piirkonnast ${continent} rakenduses ${applicationName}?"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Edistymiseni alueella ${continent} ${applicationName}-sovelluksesta",
+              "Kuinka paljon olen nähnyt alueesta ${continent} ${applicationName}-sovelluksessa?"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ma progression en ${continent} depuis ${applicationName}",
+              "Quelle part de ${continent} ai-je vue dans ${applicationName} ?"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mo dhul chun cinn san ${continent} ó ${applicationName}",
+              "Cé mhéad den ${continent} atá feicthe agam in ${applicationName}?"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Moj napredak u ${continent} iz ${applicationName}",
+              "Koliko sam ${continent} vidio u ${applicationName}?"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "A haladásom itt: ${continent} a ${applicationName} alkalmazásból",
+              "Mennyit láttam ebből: ${continent} a ${applicationName} alkalmazásban?"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "I miei progressi in ${continent} da ${applicationName}",
+              "Quanto di ${continent} ho visto in ${applicationName}?"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}の${continent}の進捗",
+              "${applicationName}で${continent}をどれくらい見た？"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}의 ${continent} 진행 상황",
+              "${applicationName}에서 ${continent} 얼마나 봤어?"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mano pažanga regione ${continent} iš ${applicationName}",
+              "Kiek regiono ${continent} mačiau programoje ${applicationName}?"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mans progress reģionā ${continent} no ${applicationName}",
+              "Cik daudz no ${continent} esmu redzējis lietotnē ${applicationName}?"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Il-progress tiegħi fl-${continent} minn ${applicationName}",
+              "Kemm rajt mill-${continent} f'${applicationName}?"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mijn voortgang in ${continent} uit ${applicationName}",
+              "Hoeveel van ${continent} heb ik gezien in ${applicationName}?"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mój postęp w ${continent} z ${applicationName}",
+              "Ile z ${continent} zobaczyłem w ${applicationName}?"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Meu progresso na ${continent} do ${applicationName}",
+              "Quanto da ${continent} eu já vi no ${applicationName}?"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "O meu progresso na ${continent} do ${applicationName}",
+              "Quanto da ${continent} já vi no ${applicationName}?"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Progresul meu în ${continent} din ${applicationName}",
+              "Cât din ${continent} am văzut în ${applicationName}?"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Môj pokrok v ${continent} z ${applicationName}",
+              "Koľko z ${continent} som videl v ${applicationName}?"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Moj napredek v ${continent} iz ${applicationName}",
+              "Koliko sem videl od ${continent} v ${applicationName}?"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mina framsteg i ${continent} från ${applicationName}",
+              "Hur mycket av ${continent} har jag sett i ${applicationName}?"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}中我在${continent}的进度",
+              "我在${applicationName}里看过多少${continent}？"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.3"
+}
