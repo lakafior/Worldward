@@ -14,10 +14,25 @@ import SwiftUI
 struct WatchTripsView: View {
     let trips: [Trip]
 
+    /// The trip a `-screen trip` capture opens: the soonest one still running, so
+    /// the itinerary shows a highlighted "Today" row.
+    private var screenshotTrip: Trip? {
+        #if DEBUG
+            guard ScreenshotSupport.isCapturing(.trip) else { return nil }
+            return trips.first { $0.isUpcoming(asOf: .now) } ?? trips.first
+        #else
+            nil
+        #endif
+    }
+
     var body: some View {
         NavigationStack {
             Group {
-                if trips.isEmpty {
+                if let screenshotTrip {
+                    // Rendered in place of the list rather than pushed onto it:
+                    // no tapping, and nothing that depends on a localized label.
+                    WatchTripView(trip: screenshotTrip)
+                } else if trips.isEmpty {
                     ContentUnavailableView {
                         Label(Str.Watch.emptyTitle, systemImage: "airplane.departure")
                     } description: {

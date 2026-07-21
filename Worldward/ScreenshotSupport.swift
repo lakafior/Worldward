@@ -10,6 +10,10 @@
     /// can capture it without tapping through localized UI. See `ScreenshotSupport`.
     enum ScreenshotScreen: String {
         case map, been, going, countryDetail, trip, packing, stats, achievements, wrapped, share
+        /// watchOS-only: the "Now" glance page. The watch reuses `been` (its Been
+        /// page), `going` (its trips list) and `trip` (a trip's detail), so the
+        /// two platforms name the same screens the same way.
+        case now
     }
 
     /// DEBUG-only harness that turns launch arguments into a seeded, deterministic
@@ -91,15 +95,29 @@
 
             // 1) Full catalog — mirror ContentView.seedDatabase so ids/continents match.
             var byID: [String: Country] = [:]
-            if let bundled = loadBundledGeo() {
-                for s in bundled.seeds where Continents.byISO[s.id] != nil {
-                    let c = Country(
-                        id: s.id, iso3: s.iso3, name: s.name,
-                        continent: Continents.name(for: s.id))
+            #if os(watchOS)
+                // The watch app doesn't bundle `countries.wmgb` — 675 KB of polygons
+                // for a map it never draws — so the catalog comes from the ISO →
+                // continent table the geo seed is filtered against anyway. Only ids
+                // and continents matter here: `Country.localizedName` resolves the
+                // display name from Foundation's region catalogue, and the flag is
+                // derived from the id, so nothing visible is lost.
+                for (id, continent) in Continents.byISO {
+                    let c = Country(id: id, name: id, continent: continent)
                     ctx.insert(c)
-                    byID[s.id] = c
+                    byID[id] = c
                 }
-            }
+            #else
+                if let bundled = loadBundledGeo() {
+                    for s in bundled.seeds where Continents.byISO[s.id] != nil {
+                        let c = Country(
+                            id: s.id, iso3: s.iso3, name: s.name,
+                            continent: Continents.name(for: s.id))
+                        ctx.insert(c)
+                        byID[s.id] = c
+                    }
+                }
+            #endif
 
             // 2) Statuses — a believable, well-filled traveller.
             func set(_ id: String, _ status: CountryStatus) { byID[id]?.status = status }

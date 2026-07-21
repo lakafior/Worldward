@@ -23,6 +23,15 @@ struct WorldwardWatch: App {
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
             PackingTemplateItem.self, TripAttachment.self,
         ])
+        // App Store screenshot capture: a throwaway in-memory store seeded with the
+        // same demo data the iPhone captures use, so the two sets stay consistent.
+        // The real CloudKit store is never opened. DEBUG-only, and inert without
+        // the `-UITEST` launch argument.
+        #if DEBUG
+            if ScreenshotSupport.isActive {
+                return ScreenshotSupport.makeSeededContainer(schema: schema)
+            }
+        #endif
         let cloud = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false,
             cloudKitDatabase: .private("iCloud.net.smigi.worldward"))

@@ -1101,6 +1101,9 @@ struct ContentView: View {
                     // TripsListView (inside the Going sidebar) sets `selectedTrip`
                     // itself once its own trips query is populated.
                     sidebarMode = .going
+                case .now:
+                    // watchOS-only screen; nothing to route to here.
+                    break
                 }
             #else
                 switch screen {
@@ -1123,6 +1126,9 @@ struct ContentView: View {
                 case .trip, .packing:
                     // TripsView opens the trip editor; it scrolls to packing when asked.
                     selectedTab = .going
+                case .now:
+                    // watchOS-only screen; nothing to route to here.
+                    break
                 }
             #endif
         }

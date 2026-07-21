@@ -22,12 +22,33 @@ struct WatchRootView: View {
     /// fix. `nil` only for the instant before the first `.task` lands.
     @State private var stats: TravelStats?
     @State private var groups: [WatchContinentGroup] = []
+    @State private var tab: Int = Self.initialTab
 
+    /// Normally the Now page. App Store screenshot capture routes straight to the
+    /// page it wants via `-screen`, so nothing has to be tapped through — the same
+    /// approach the iPhone captures use.
+    private static var initialTab: Int {
+        #if DEBUG
+            switch ScreenshotSupport.screen {
+            case .been: 1
+            case .going, .trip: 2
+            default: 0
+            }
+        #else
+            0
+        #endif
+    }
+
+    // Note: no `-appearance` handling here, unlike the iPhone. watchOS has no
+    // light appearance — `.preferredColorScheme(.light)` produces a byte-identical
+    // render, and `simctl ui <watch> appearance` reports "unsupported". The old
+    // offline renderer could emit a light variant only because it drew on macOS,
+    // where colorScheme applies; that variant never showed a real watch.
     var body: some View {
-        TabView {
-            WatchNowView(stats: stats, trips: trips)
-            WatchBeenView(stats: stats, groups: groups)
-            WatchTripsView(trips: trips)
+        TabView(selection: $tab) {
+            WatchNowView(stats: stats, trips: trips).tag(0)
+            WatchBeenView(stats: stats, groups: groups).tag(1)
+            WatchTripsView(trips: trips).tag(2)
         }
         .tint(.brand)
         // Once on appear (covers a cold launch after CloudKit has hydrated) and
