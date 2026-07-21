@@ -286,7 +286,7 @@ private struct TripRow: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(trip.title.isEmpty ? "Untitled Trip" : trip.title)
                 .font(.headline)
-            Text(dateRange)
+            Text(trip.dateRangeText)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if !trip.flags.isEmpty {
@@ -295,11 +295,15 @@ private struct TripRow: View {
         }
         .contentShape(Rectangle())
     }
+}
 
-    private var dateRange: String {
-        let start = trip.startDate.formatted(date: .abbreviated, time: .omitted)
-        let end = trip.endDate.formatted(date: .abbreviated, time: .omitted)
-        return start == end ? start : "\(start) – \(end)"
+extension String {
+    /// Capitalizes only the first character, locale-aware. `.localizedCapitalized`
+    /// would title-case every word ("In 12 Days"); relative date phrases want
+    /// sentence case.
+    fileprivate var sentenceCased: String {
+        guard let first else { return self }
+        return String(first).localizedUppercase + dropFirst()
     }
 }
 
@@ -396,35 +400,9 @@ struct TripDetailView: View {
         // type-checking past a reasonable time budget.
         Group {
             let list = List {
-                Section {
-                    TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
-                    DatePicker("Start", selection: $trip.startDate, displayedComponents: .date)
-                    DatePicker(
-                        "End", selection: $trip.endDate, in: trip.startDate...,
-                        displayedComponents: .date)
-                    if !trip.flags.isEmpty {
-                        Text(trip.flags).font(.title3)
-                    }
-                    if !calendarSyncEnabled {
-                        Button {
-                            addToCalendar()
-                        } label: {
-                            Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
-                        }
-                    }
-                    exportButtons
-                    Button {
-                        // Hands the trip to ContentView through the router (the map
-                        // lives several presentation layers away), which switches to
-                        // the Map tab and frames the route.
-                        IntentRouter.shared.pendingMapTrip = trip
-                        dismiss()
-                    } label: {
-                        Label("View Route on Map", systemImage: "map")
-                    }
-                    .disabled((trip.itinerary ?? []).isEmpty)
-                }
-
+                tripHeaderSection
+                tripDetailsSection
+                tripActionsSection
                 tripPhotosSection
                 itinerarySection
                 packingSections
@@ -528,6 +506,106 @@ struct TripDetailView: View {
             .quickLookPreview($filePreviewURL)
         #endif
     }
+
+    /// At-a-glance identity for the trip: its flags, its dates, and how near it
+    /// is. Opening a trip you've already built used to tell you nothing without
+    /// reading a date picker — this answers "which trip, and how soon?" before
+    /// any of the form rows. Rendered without a row background so it reads as a
+    /// header rather than as the first item in the form.
+    private var tripHeaderSection: some View {
+        Section {
+            VStack(spacing: 12) {
+                if !trip.flags.isEmpty {
+                    Text(trip.flags)
+                        .font(.system(size: 44))
+                        .lineLimit(1)
+                        // Long-haul trips can carry a dozen flags; scale them down
+                        // rather than truncating the set.
+                        .minimumScaleFactor(0.4)
+                        // The itinerary below names every country properly —
+                        // VoiceOver reciting the emoji here would just be noise.
+                        .accessibilityHidden(true)
+                }
+                VStack(spacing: 4) {
+                    Text(trip.dateRangeText)
+                        .font(.headline)
+                    Text(countdownText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
+                }
+                // Editing either date picker below re-derives the countdown;
+                // rolling the digits ties the two together visually.
+                .animation(.snappy, value: countdownText)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .listRowBackground(Color.clear)
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    /// The trip's editable identity — name and dates, and nothing else.
+    private var tripDetailsSection: some View {
+        Section {
+            TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
+            DatePicker("Start", selection: $trip.startDate, displayedComponents: .date)
+            DatePicker(
+                "End", selection: $trip.endDate, in: trip.startDate...,
+                displayedComponents: .date)
+        }
+    }
+
+    /// Things you *do* with the trip, kept apart from the fields you edit.
+    private var tripActionsSection: some View {
+        Section {
+            if !calendarSyncEnabled {
+                Button {
+                    addToCalendar()
+                } label: {
+                    Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
+                }
+            }
+            exportButtons
+            Button {
+                // Hands the trip to ContentView through the router (the map
+                // lives several presentation layers away), which switches to
+                // the Map tab and frames the route.
+                IntentRouter.shared.pendingMapTrip = trip
+                dismiss()
+            } label: {
+                Label("View Route on Map", systemImage: "map")
+            }
+            .disabled((trip.itinerary ?? []).isEmpty)
+        }
+    }
+
+    /// A one-line answer to "how soon?". `RelativeDateTimeFormatter` supplies the
+    /// localized "in 12 days" / "3 weeks ago" phrasing in all 29 languages for
+    /// free — only the mid-trip case needs a catalog string of its own.
+    private var countdownText: String {
+        switch trip.phase() {
+        case .upcoming(let days):
+            Self.relativeFormatter.localizedString(from: DateComponents(day: days))
+                .sentenceCased
+        case .underway(let day, let total):
+            String(
+                localized: "Day \(day) of \(total)",
+                comment: "Trip header countdown while the trip is under way")
+        case .past(let days):
+            Self.relativeFormatter.localizedString(from: DateComponents(day: -days))
+                .sentenceCased
+        }
+    }
+
+    /// `.named` so a trip starting tomorrow reads "Tomorrow" rather than
+    /// "in 1 day".
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.dateTimeStyle = .named
+        formatter.unitsStyle = .full
+        return formatter
+    }()
 
     private func addToCalendar() {
         Task {
@@ -1274,6 +1352,15 @@ private struct TripNotesPreview: View {
     }
 }
 
+/// Minimum tappable size for the small glyph buttons in the trip rows. 44pt is
+/// the iOS HIG floor; macOS drives with a pointer, where 44pt would bloat these
+/// already-dense nested rows.
+#if os(macOS)
+    private let minimumHitTarget: CGFloat = 28
+#else
+    private let minimumHitTarget: CGFloat = 44
+#endif
+
 /// A packing-list row: a tappable check-off control on the left and a "move to
 /// container" menu on the right. Editing `item.container` directly persists the
 /// change through SwiftData.
@@ -1283,65 +1370,98 @@ private struct PackingItemRow: View {
     /// Invoked when the user picks "New container…" so the parent can present the
     /// naming alert with this item queued to be filed into the new container.
     let onNewContainer: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// Three controls on one line only works while the title has room to breathe.
+    /// At accessibility sizes the stepper and menu grow enough to crush it down to
+    /// a couple of characters, so the row stacks instead. Keyed on the type size
+    /// rather than `ViewThatFits` so a merely *long* item name doesn't reflow the
+    /// layout at normal sizes.
     var body: some View {
-        HStack {
-            Button {
-                item.isPacked.toggle()
-                #if canImport(WatchConnectivity)
-                    PackingDeltaSync.send(dedupID: item.dedupID, isPacked: item.isPacked)
-                #endif
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(item.isPacked ? .green : .secondary)
-                    Text(item.title)
-                        .strikethrough(item.isPacked)
-                        .foregroundStyle(item.isPacked ? .secondary : .primary)
-                    if item.quantity > 1 {
-                        Text("×\(item.quantity)")
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
-                    }
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
+                checkOffControl
+                HStack {
+                    quantityStepper
+                    Spacer()
+                    containerMenu
                 }
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            // Reads as a switch: "Sunscreen, on/off" — clearer than a button
-            // whose label happens to contain a checkmark image.
-            .accessibilityLabel(item.title)
-            .accessibilityValue(
-                item.isPacked
-                    ? Text("Packed", comment: "Accessibility value: packing item is checked off")
-                    : Text("Not packed", comment: "Accessibility value: packing item still open"))
-            .accessibilityAddTraits(.isToggle)
-
-            Spacer()
-
-            Stepper("Quantity", value: $item.quantity, in: 1...99)
-                .labelsHidden()
-
-            Menu {
-                Picker("Container", selection: containerSelection) {
-                    Text("Ungrouped").tag(nil as PersistentIdentifier?)
-                    ForEach(containers) { container in
-                        Label(container.name, systemImage: container.symbolName)
-                            .tag(container.persistentModelID as PersistentIdentifier?)
-                    }
-                }
-                Divider()
-                Button {
-                    onNewContainer()
-                } label: {
-                    Label("New container…", systemImage: "plus")
-                }
-            } label: {
-                Image(systemName: "tray.and.arrow.down")
-                    .foregroundStyle(.secondary)
+        } else {
+            HStack {
+                checkOffControl
+                Spacer()
+                quantityStepper
+                containerMenu
             }
-            .buttonStyle(.borderless)
-            .accessibilityLabel(Text("Move to container"))
         }
+    }
+
+    private var checkOffControl: some View {
+        Button {
+            item.isPacked.toggle()
+            #if canImport(WatchConnectivity)
+                PackingDeltaSync.send(dedupID: item.dedupID, isPacked: item.isPacked)
+            #endif
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(item.isPacked ? .green : .secondary)
+                Text(item.title)
+                    .strikethrough(item.isPacked)
+                    .foregroundStyle(item.isPacked ? .secondary : .primary)
+                if item.quantity > 1 {
+                    Text("×\(item.quantity)")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        // Reads as a switch: "Sunscreen, on/off" — clearer than a button
+        // whose label happens to contain a checkmark image.
+        .accessibilityLabel(item.title)
+        .accessibilityValue(
+            item.isPacked
+                ? Text("Packed", comment: "Accessibility value: packing item is checked off")
+                : Text("Not packed", comment: "Accessibility value: packing item still open"))
+        .accessibilityAddTraits(.isToggle)
+        // The tactile heart of the screen — you check these off standing over a
+        // suitcase, often without looking at the phone.
+        .sensoryFeedback(.impact(flexibility: .soft), trigger: item.isPacked)
+    }
+
+    private var quantityStepper: some View {
+        Stepper("Quantity", value: $item.quantity, in: 1...99)
+            .labelsHidden()
+    }
+
+    private var containerMenu: some View {
+        Menu {
+            Picker("Container", selection: containerSelection) {
+                Text("Ungrouped").tag(nil as PersistentIdentifier?)
+                ForEach(containers) { container in
+                    Label(container.name, systemImage: container.symbolName)
+                        .tag(container.persistentModelID as PersistentIdentifier?)
+                }
+            }
+            Divider()
+            Button {
+                onNewContainer()
+            } label: {
+                Label("New container…", systemImage: "plus")
+            }
+        } label: {
+            Image(systemName: "tray.and.arrow.down")
+                .foregroundStyle(.secondary)
+                // The glyph alone is ~20pt — well under the touch minimum, and it
+                // sits a thumb's width from the stepper.
+                .frame(width: minimumHitTarget, height: minimumHitTarget)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("Move to container"))
     }
 
     private var containerSelection: Binding<PersistentIdentifier?> {
@@ -1366,28 +1486,50 @@ private struct StopRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
+            // The country *is* the stop's identity — it's what drives the map, the
+            // plan status and the trip's flags, and it's what `displayTitle` falls
+            // back to everywhere else (exports, PDF, calendar, watch). Showing it
+            // only as a `prompt` rendered it in placeholder grey, so the one piece
+            // of information that matters read as unset. It's real text now, and
+            // the *optional* custom name takes the trailing value slot — the same
+            // label-leading/value-trailing shape as the Date row below it.
+            HStack(spacing: 8) {
                 Text(stop.country?.flagEmoji ?? "📍")
-                TextField(
-                    "Stop", text: $stop.title,
-                    prompt: Text(stop.country?.localizedName ?? "Stop"))
+                if let country = stop.country {
+                    Text(country.localizedName)
+                        .font(.headline)
+                    Spacer(minLength: 12)
+                    TextField("Add a name", text: $stop.title)
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(.secondary)
+                } else {
+                    // No country to fall back on: whatever the user types here is
+                    // the stop's only identity, so it stays primary.
+                    TextField("Stop", text: $stop.title)
+                }
             }
 
+            // No `.font` override: a control's label belongs at body size. Shrinking
+            // it left a full-size switch wearing a caption-sized label, and made the
+            // label a smaller tap target than the switch beside it.
             Toggle("Set a date", isOn: $hasDate)
-                .font(.caption)
                 .onChange(of: hasDate) { _, on in
                     stop.date = on ? (stop.date ?? Date()) : nil
                 }
+                .animation(.snappy, value: hasDate)
 
             if hasDate {
                 DatePicker(
                     "Date",
                     selection: Binding(get: { stop.date ?? Date() }, set: { stop.date = $0 }),
                     displayedComponents: .date)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
+            // `.subheadline`, not `.caption`: this is text the user wrote, and the
+            // caption styles are for metadata *about* content, not content itself.
             TextField("Note", text: $stop.note, axis: .vertical)
-                .font(.caption)
+                .font(.subheadline)
                 .lineLimit(1...3)
 
             ForEach(stop.sortedPlaces) { place in
@@ -1398,7 +1540,7 @@ private struct StopRow: View {
                 showPlaceSearch = true
             } label: {
                 Label("Add a place to see", systemImage: "mappin.and.ellipse")
-                    .font(.caption)
+                    .font(.subheadline)
             }
             .buttonStyle(.borderless)
         }
@@ -1434,16 +1576,24 @@ private struct StopPlaceRow: View {
     let onDelete: () -> Void
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Image(systemName: "mappin.circle.fill")
-                .foregroundStyle(Color.brand)
-                .font(.caption)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(place.title).font(.caption)
-                if !place.detail.isEmpty {
-                    Text(place.detail)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+        // Baseline alignment is scoped to the pin + text group: the trailing
+        // buttons now carry 44pt frames, which have no meaningful text baseline
+        // to align against.
+        HStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Image(systemName: "mappin.circle.fill")
+                    .foregroundStyle(Color.brand)
+                    .font(.subheadline)
+                VStack(alignment: .leading, spacing: 2) {
+                    // A saved place is content, not a caption. Its nesting under the
+                    // stop is carried by the leading indent and the secondary colour
+                    // below — not by shrinking the type, which is what Apple does.
+                    Text(place.title).font(.subheadline)
+                    if !place.detail.isEmpty {
+                        Text(place.detail)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             Spacer()
@@ -1451,9 +1601,11 @@ private struct StopPlaceRow: View {
                 Button {
                     openInMaps()
                 } label: {
-                    Image(systemName: "arrow.up.right.square")
-                        .font(.caption)
+                    Image(systemName: "arrow.up.right.square.fill")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .frame(width: minimumHitTarget, height: minimumHitTarget)
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.borderless)
                 .help("Open in Apple Maps")
@@ -1463,14 +1615,19 @@ private struct StopPlaceRow: View {
                 onDelete()
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    // Both glyphs were ~14pt and touching. One of them deletes the
+                    // place outright, with no undo — the mis-tap risk was real.
+                    .frame(width: minimumHitTarget, height: minimumHitTarget)
+                    .contentShape(.rect)
             }
             .buttonStyle(.borderless)
             .help("Remove place")
             .accessibilityLabel(Text("Remove place"))
         }
-        .padding(.leading, 4)
+        // Indentation now does the nesting work the shrunken type used to.
+        .padding(.leading, 12)
     }
 
     private func openInMaps() {

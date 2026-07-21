@@ -4,6 +4,17 @@ import CoreLocation
 import Foundation
 import SwiftData
 
+/// Where "now" falls relative to a trip. Purely derived from the trip's dates
+/// on each read — nothing about it is stored, so it can never go stale.
+enum TripPhase: Equatable {
+    /// Days until departure; `0` means the trip starts today.
+    case upcoming(daysAway: Int)
+    /// The 1-based day within the trip, and the trip's total length in days.
+    case underway(day: Int, of: Int)
+    /// Days since the trip ended; `0` means it ended today.
+    case past(daysAgo: Int)
+}
+
 /// A planned journey — the heart of the "Going" workflow. A trip is multi-country
 /// *through its itinerary*: it owns an ordered list of stops, each optionally tied
 /// to a country, so the trip's countries are simply the distinct countries across
@@ -87,6 +98,29 @@ final class Trip {
 
     /// `true` while the trip hasn't finished yet (ends on or after `now`).
     func isUpcoming(asOf now: Date) -> Bool { endDate >= now }
+
+    /// The trip's date span, as one line ("12 Mar – 20 Mar", or a single date
+    /// for a day trip).
+    var dateRangeText: String {
+        let start = startDate.formatted(date: .abbreviated, time: .omitted)
+        let end = endDate.formatted(date: .abbreviated, time: .omitted)
+        return start == end ? start : "\(start) – \(end)"
+    }
+
+    /// Where today sits relative to the trip. Compared on *calendar day*
+    /// boundaries rather than exact instants, so a trip starting later today
+    /// reads as "today" and not "in 6 hours".
+    func phase(asOf now: Date = Date(), calendar: Calendar = .current) -> TripPhase {
+        let today = calendar.startOfDay(for: now)
+        let start = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: max(endDate, startDate))
+        func days(_ from: Date, _ to: Date) -> Int {
+            calendar.dateComponents([.day], from: from, to: to).day ?? 0
+        }
+        if today < start { return .upcoming(daysAway: days(today, start)) }
+        if today > end { return .past(daysAgo: days(end, today)) }
+        return .underway(day: days(start, today) + 1, of: days(start, end) + 1)
+    }
 
     /// Items already ticked off the packing list.
     var packedCount: Int { (packing ?? []).filter(\.isPacked).count }
