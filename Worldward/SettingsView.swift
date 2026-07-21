@@ -71,6 +71,13 @@ struct SettingsView: View {
     @State private var showManageTemplates = false
     @State private var remindersAccessDenied = false
     @State private var calendarAccessDenied = false
+    @State private var notificationsAccessDenied = false
+    /// In-flight flags for the three permission-gated toggles. Each covers the
+    /// whole round trip — permission prompt plus the first sync — so the switch
+    /// can't be re-tapped while a sync is mid-write.
+    @State private var notificationsBusy = false
+    @State private var calendarBusy = false
+    @State private var remindersBusy = false
     #if os(macOS)
         /// Lets the File ▸ Import/Export menu commands (see `DataTransferCommands`
         /// in Worldward.swift) trigger the same pickers as the buttons below,
@@ -103,7 +110,9 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         #if os(macOS)
-            .frame(width: 480, height: 540)
+            // Ideal, not fixed: nine sections of long-form footers overflow a
+            // hard 540pt at large Dynamic Type or in a wordier language.
+            .frame(minWidth: 480, idealWidth: 520, minHeight: 420, idealHeight: 560)
         #endif
         .fileExporter(
             isPresented: $showExporter,
@@ -233,12 +242,22 @@ struct SettingsView: View {
             }
 
             #if !os(macOS)
+                // Deep-links out to the system Settings app, so it carries the
+                // same leaving-the-app glyph as the About links.
                 Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
                 } label: {
-                    Label("Language", systemImage: "globe")
+                    HStack {
+                        Label("Language", systemImage: "globe")
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.square")
+                            .font(.footnote)
+                            .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(.rect)
                 }
             #endif
         }
@@ -249,12 +268,46 @@ struct SettingsView: View {
             Toggle(isOn: Binding(get: { notificationsEnabled }, set: setNotifications)) {
                 Label("Travel reminders", systemImage: "bell")
             }
+            .disabled(notificationsBusy)
+            if notificationsBusy {
+                SyncProgressRow(title: "Scheduling…")
+            }
         } header: {
             Text("Notifications")
         } footer: {
             Text(
                 "Occasional on-device reminders: “on this day” travel memories, a year-in-review nudge each December, and a gentle prompt if you haven't logged a trip in a while. Off by default; nothing is sent unless you turn this on."
             )
+        }
+        .animation(.snappy, value: notificationsBusy)
+        .sensoryFeedback(.success, trigger: notificationsEnabled) { _, on in on }
+        .alert("Notifications Off", isPresented: $notificationsAccessDenied) {
+            openPrivacySettingsButton(macPane: "Privacy_Notifications")
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(
+                "Turn on notifications for Worldward in the Settings app to receive travel reminders."
+            )
+        }
+    }
+
+    /// The escape hatch on every permission-denied alert. Telling someone to go
+    /// to Settings without taking them there leaves them to find the pane
+    /// themselves; iOS deep-links straight to Worldward's own page, and macOS
+    /// opens the matching Privacy & Security pane, the closest equivalent.
+    @ViewBuilder private func openPrivacySettingsButton(macPane: String) -> some View {
+        Button("Open Settings") {
+            #if os(macOS)
+                if let url = URL(
+                    string: "x-apple.systempreferences:com.apple.preference.security?\(macPane)")
+                {
+                    NSWorkspace.shared.open(url)
+                }
+            #else
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            #endif
         }
     }
 
@@ -267,16 +320,14 @@ struct SettingsView: View {
             NotificationManager.cancelAll()
             return
         }
+        // The switch stays off until authorization actually comes back — writing
+        // it optimistically made a denial flick the knob on and straight back off.
+        notificationsBusy = true
         Task {
+            defer { notificationsBusy = false }
             guard await NotificationManager.requestAuthorization() else {
                 notificationsEnabled = false
-                transferAlert = TransferAlert(
-                    title: "Notifications Off",
-                    message: String(
-                        localized:
-                            "Turn on notifications for Worldward in the Settings app to receive travel reminders."
-                    )
-                )
+                notificationsAccessDenied = true
                 return
             }
             notificationsEnabled = true
@@ -336,28 +387,28 @@ struct SettingsView: View {
             Toggle(isOn: $calendarSyncEnabled) {
                 Label("Sync Trips with Apple Calendar", systemImage: "calendar.badge.checkmark")
             }
+            .disabled(calendarBusy)
             .onChange(of: calendarSyncEnabled) { _, enabled in
-                if enabled {
-                    Task {
-                        if await CalendarSync.requestAccess() {
-                            await CalendarSync.syncAll(context: modelContext)
-                        } else {
-                            calendarSyncEnabled = false
-                            calendarAccessDenied = true
-                        }
+                calendarBusy = true
+                Task {
+                    defer { calendarBusy = false }
+                    guard enabled else {
+                        await CalendarSync.disable(context: modelContext)
+                        return
                     }
-                } else {
-                    Task { await CalendarSync.disable(context: modelContext) }
+                    if await CalendarSync.requestAccess() {
+                        await CalendarSync.syncAll(context: modelContext)
+                    } else {
+                        calendarSyncEnabled = false
+                        calendarAccessDenied = true
+                    }
                 }
             }
-            if calendarSyncEnabled {
-                Picker("Remove after trip ends", selection: $calendarCleanupDays) {
-                    Text("Never (keep with trip)").tag(0)
-                    ForEach([1, 3, 7, 14, 30], id: \.self) { days in
-                        Text("^[\(days) day](inflect: true)").tag(days)
-                    }
-                }
-                .onChange(of: calendarCleanupDays) {
+            if calendarBusy {
+                SyncProgressRow(title: "Syncing…")
+            }
+            if calendarSyncEnabled && !calendarBusy {
+                CleanupDaysPicker(selection: $calendarCleanupDays) {
                     Task { await CalendarSync.syncAll(context: modelContext) }
                 }
             }
@@ -368,7 +419,17 @@ struct SettingsView: View {
                 "Mirrors your trips to a dedicated “Worldward” calendar: an event spanning each trip plus one per dated stop — with the map and weather shown where a stop has a place. Kept up to date as you edit the itinerary. Needs full calendar access to update its own events; it never touches your other calendars. Turning this off removes the Worldward calendar; your trips always stay in Worldward."
             )
         }
+        // The cleanup picker is a consequence of the toggle, so let it slide in
+        // rather than materialise — an instant row insert reads as a glitch.
+        .animation(.snappy, value: calendarSyncEnabled)
+        .animation(.snappy, value: calendarBusy)
+        // Only when a sync actually landed: the denial path clears the toggle
+        // before this fires, and switching off shouldn't feel like a success.
+        .sensoryFeedback(.success, trigger: calendarBusy) { was, now in
+            was && !now && calendarSyncEnabled
+        }
         .alert("Calendar Access Needed", isPresented: $calendarAccessDenied) {
+            openPrivacySettingsButton(macPane: "Privacy_Calendars")
             Button("OK", role: .cancel) {}
         } message: {
             Text(
@@ -382,28 +443,28 @@ struct SettingsView: View {
             Toggle(isOn: $remindersSyncEnabled) {
                 Label("Sync with Apple Reminders", systemImage: "checklist")
             }
+            .disabled(remindersBusy)
             .onChange(of: remindersSyncEnabled) { _, enabled in
-                if enabled {
-                    Task {
-                        if await ReminderSync.requestAccess() {
-                            await ReminderSync.syncAll(context: modelContext)
-                        } else {
-                            remindersSyncEnabled = false
-                            remindersAccessDenied = true
-                        }
+                remindersBusy = true
+                Task {
+                    defer { remindersBusy = false }
+                    guard enabled else {
+                        await ReminderSync.disable(context: modelContext)
+                        return
                     }
-                } else {
-                    Task { await ReminderSync.disable(context: modelContext) }
+                    if await ReminderSync.requestAccess() {
+                        await ReminderSync.syncAll(context: modelContext)
+                    } else {
+                        remindersSyncEnabled = false
+                        remindersAccessDenied = true
+                    }
                 }
             }
-            if remindersSyncEnabled {
-                Picker("Remove after trip ends", selection: $remindersCleanupDays) {
-                    Text("Never (keep with trip)").tag(0)
-                    ForEach([1, 3, 7, 14, 30], id: \.self) { days in
-                        Text("^[\(days) day](inflect: true)").tag(days)
-                    }
-                }
-                .onChange(of: remindersCleanupDays) {
+            if remindersBusy {
+                SyncProgressRow(title: "Syncing…")
+            }
+            if remindersSyncEnabled && !remindersBusy {
+                CleanupDaysPicker(selection: $remindersCleanupDays) {
                     Task { await ReminderSync.syncAll(context: modelContext) }
                 }
             }
@@ -414,7 +475,13 @@ struct SettingsView: View {
                 "Mirrors every upcoming trip's packing list to a Reminders list, two-way: tick items off in Reminders, via Siri, or on Apple Watch and they're marked packed here. Containers appear in each reminder's notes. Turning this off removes the lists from Reminders; your packing lists always stay in Worldward."
             )
         }
+        .animation(.snappy, value: remindersSyncEnabled)
+        .animation(.snappy, value: remindersBusy)
+        .sensoryFeedback(.success, trigger: remindersBusy) { was, now in
+            was && !now && remindersSyncEnabled
+        }
         .alert("Reminders Access Needed", isPresented: $remindersAccessDenied) {
+            openPrivacySettingsButton(macPane: "Privacy_Reminders")
             Button("OK", role: .cancel) {}
         } message: {
             Text(
@@ -459,6 +526,8 @@ struct SettingsView: View {
                         .foregroundStyle(iCloudSyncActive ? Color.green : Color.orange)
                 }
                 .font(.callout)
+                // Symbol plus two text runs is three VoiceOver stops otherwise.
+                .accessibilityElement(children: .combine)
             }
         } header: {
             Text("iCloud")
@@ -467,6 +536,7 @@ struct SettingsView: View {
                 "Keeps your travel data — statuses, visits, trips, packing lists, and attachments — up to date across your devices through your personal iCloud. Takes effect the next time Worldward starts."
             )
         }
+        .animation(.snappy, value: iCloudSyncEnabled)
     }
 
     /// The two transfer flows, kept deliberately separate: the JSON backup is the
@@ -474,6 +544,9 @@ struct SettingsView: View {
     /// outward-facing exchange format for spreadsheets and other trackers
     /// (import only adds).
     @ViewBuilder private var dataSection: some View {
+        // Two sections, not one: a Form footer belongs to its own Section, so
+        // merging these put both captions under all four buttons with nothing
+        // tying either to its pair. The grouping is what carries the meaning.
         Section {
             Button(action: startExport) {
                 Label("Export Travel Data…", systemImage: "square.and.arrow.up")
@@ -567,12 +640,24 @@ struct SettingsView: View {
     }
 
     @ViewBuilder private var aboutSection: some View {
+        // The identity block, matching the macOS About window (`AboutView`):
+        // the app's own name and version are a header, not key-value trivia.
         Section {
-            LabeledContent {
+            VStack(spacing: 4) {
                 Text("Worldward")
-            } label: {
-                Label("App Name", systemImage: "app.badge")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Text(versionString)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .listRowBackground(Color.clear)
+            .accessibilityElement(children: .combine)
+        }
+
+        Section {
             LabeledContent {
                 Text("MPL 2.0")
             } label: {
@@ -583,20 +668,18 @@ struct SettingsView: View {
             } label: {
                 Label("Author", systemImage: "person")
             }
-            LabeledContent {
-                Text(versionString)
-            } label: {
-                Label("Version", systemImage: "number")
-            }
-            Link(destination: URL(string: "https://worldward.smigi.net")!) {
-                Label("Website", systemImage: "globe")
-            }
-            Link(destination: URL(string: "https://worldward.smigi.net/privacy")!) {
-                Label("Privacy Policy", systemImage: "hand.raised")
-            }
-            Link(destination: URL(string: "https://github.com/lakafior/Worldward")!) {
-                Label("GitHub Repository", systemImage: "chevron.left.forwardslash.chevron.right")
-            }
+            ExternalLinkRow(
+                title: "Website",
+                systemImage: "globe",
+                destination: URL(string: "https://worldward.smigi.net")!)
+            ExternalLinkRow(
+                title: "Privacy Policy",
+                systemImage: "hand.raised",
+                destination: URL(string: "https://worldward.smigi.net/privacy")!)
+            ExternalLinkRow(
+                title: "GitHub Repository",
+                systemImage: "chevron.left.forwardslash.chevron.right",
+                destination: URL(string: "https://github.com/lakafior/Worldward")!)
         } header: {
             Text("About")
         }
@@ -653,6 +736,68 @@ struct SettingsView: View {
             transferAlert = TransferAlert(
                 title: "Import Failed", message: error.localizedDescription)
         }
+    }
+}
+
+/// A row that opens something outside Worldward. The trailing glyph is the
+/// standard signal that the tap leaves the app for a browser — without it the
+/// row is indistinguishable from a push into another screen.
+private struct ExternalLinkRow: View {
+    let title: LocalizedStringKey
+    let systemImage: String
+    let destination: URL
+
+    var body: some View {
+        Link(destination: destination) {
+            HStack {
+                Label(title, systemImage: systemImage)
+                Spacer()
+                Image(systemName: "arrow.up.forward.square")
+                    .font(.footnote)
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+            // Without this the hit area is only the label, not the full row.
+            .contentShape(.rect)
+        }
+    }
+}
+
+/// The inline "working" row shown while a permission request or sync is in
+/// flight. It lives in the section the user just acted in, so the feedback is
+/// where their attention already is rather than in a modal.
+private struct SyncProgressRow: View {
+    let title: LocalizedStringKey
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ProgressView().controlSize(.small)
+            Text(title)
+                .foregroundStyle(.secondary)
+        }
+        .font(.callout)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// How long a synced trip's events or reminders outlive the trip itself.
+/// Shared by the Calendar and Reminders sections, which differ only in which
+/// service they re-sync once the choice changes.
+private struct CleanupDaysPicker: View {
+    @Binding var selection: Int
+    /// Re-runs the owning service's sync so the new window applies immediately.
+    let resync: () -> Void
+
+    var body: some View {
+        Picker(selection: $selection) {
+            Text("Never (keep with trip)").tag(0)
+            ForEach([1, 3, 7, 14, 30], id: \.self) { days in
+                Text("^[\(days) day](inflect: true)").tag(days)
+            }
+        } label: {
+            Label("Remove after trip ends", systemImage: "clock.badge.xmark")
+        }
+        .onChange(of: selection) { resync() }
     }
 }
 
@@ -732,10 +877,12 @@ private struct CSVPayload: Identifiable {
 
         var body: some View {
             Section {
-                Picker("Language", selection: $selection) {
+                Picker(selection: $selection) {
                     ForEach(AppLanguages.shipped, id: \.self) { code in
                         Text(AppLanguages.displayName(for: code)).tag(code)
                     }
+                } label: {
+                    Label("Language", systemImage: "globe")
                 }
                 .onChange(of: selection) { _, newValue in
                     guard newValue != launchLanguage else { return }
@@ -749,6 +896,7 @@ private struct CSVPayload: Identifiable {
                     Text("Restart Worldward to finish changing the language.")
                 }
             }
+            .animation(.snappy, value: selection)
             .confirmationDialog(
                 "Restart to change language?", isPresented: $showRestart
             ) {
