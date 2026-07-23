@@ -34,14 +34,63 @@ struct ExportableTrip: Transferable {
     let title: String
     let markdown: String
 
-    init(trip: Trip) {
+    init(trip: Trip, options: TripExportOptions = .all) {
         self.title = trip.title
-        self.markdown = trip.markdownSummary
+        self.markdown = trip.markdown(options: options)
     }
 
     static var transferRepresentation: some TransferRepresentation {
         ProxyRepresentation(exporting: \.markdown)
             .suggestedFileName { "\(sanitizedFileName($0.title)).md" }
+    }
+}
+
+/// The include/exclude toggles for a shared trip file. Bound to the parent's
+/// `@AppStorage`-backed raw value, so a choice sticks across trips and shapes
+/// both the Markdown and the PDF the organizer hands out.
+private struct TripExportOptionsSheet: View {
+    @Binding var optionsRaw: Int
+    @Environment(\.dismiss) private var dismiss
+
+    private var options: TripExportOptions { TripExportOptions(rawValue: optionsRaw) }
+
+    private func binding(_ option: TripExportOptions) -> Binding<Bool> {
+        Binding(
+            get: { options.contains(option) },
+            set: { on in
+                var updated = options
+                if on { updated.insert(option) } else { updated.remove(option) }
+                optionsRaw = updated.rawValue
+            })
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Toggle("Itinerary", isOn: binding(.itinerary))
+                    Toggle("Packing list", isOn: binding(.packing))
+                    Toggle("Notes", isOn: binding(.notes))
+                    Toggle("Attachments", isOn: binding(.attachments))
+                } header: {
+                    Text("Include in export")
+                } footer: {
+                    Text(
+                        "Applies to the Markdown and PDF share files. Markdown lists attached files by name; the PDF also embeds image attachments as pages."
+                    )
+                }
+            }
+            .navigationTitle("Export options")
+            #if !os(macOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+        }
+        #if os(macOS)
+            .frame(minWidth: 360, minHeight: 320)
+        #endif
     }
 }
 
@@ -322,6 +371,30 @@ extension String {
 
 // MARK: - Trip detail
 
+/// How the itinerary list is ordered. Country isn't a *level* above the stops —
+/// it's an attribute each stop wears (a flag chip) — so grouping by it is just an
+/// alternate sort, not a container. Manual keeps the user's hand-dragged order.
+enum ItinerarySort: String, CaseIterable, Identifiable {
+    case date, country, manual
+    var id: String { rawValue }
+
+    var label: LocalizedStringKey {
+        switch self {
+        case .date: "By date"
+        case .country: "By country"
+        case .manual: "Manual"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .date: "calendar"
+        case .country: "flag"
+        case .manual: "line.3.horizontal"
+        }
+    }
+}
+
 /// Internal (not private): also presented by `SuggestionsView` when a
 /// suggestion spins off a new trip.
 struct TripDetailSheet: View {
@@ -353,6 +426,11 @@ struct TripDetailView: View {
     /// Dismisses the containing sheet on iOS when jumping to the map; a no-op
     /// in the macOS detail column, where no sheet is presented.
     @Environment(\.dismiss) private var dismiss
+    /// Country outline paths (id → polygon rings, `MKMapPoint` space) published by
+    /// ContentView once the map loads. Lets an added place resolve its country
+    /// on-device — no network, no deprecated geocoder — the same way
+    /// `TripPhotoSuggestionsSheet` matches photo coordinates.
+    @Environment(\.countryPaths) private var countryPaths
     /// The shared container catalog, used for the move menu, the assistant, and
     /// first-run seeding. Sorted so groups appear in a stable order everywhere.
     @Query(sort: \PackingContainer.sortOrder) private var allContainers: [PackingContainer]
@@ -360,7 +438,19 @@ struct TripDetailView: View {
     @Query(sort: \PackingTemplate.name) private var templates: [PackingTemplate]
     /// Every trip, so the "Start from…" menu can copy another trip's packing list.
     @Query private var allTrips: [Trip]
-    @State private var showCountryPicker = false
+    /// Presents the MapKit place search for adding a stop to the itinerary.
+    @State private var showPlaceSearch = false
+    /// The stop a picked file should attach to, or `nil` to attach it as a
+    /// trip-level document. Set just before the file importer opens, read back in
+    /// `attachFiles`.
+    @State private var attachingToStop: ItineraryItem?
+    /// How the itinerary is ordered on screen. Remembered across trips: someone
+    /// who thinks in days keeps By date, someone touring one region keeps By
+    /// country. Stored as the raw value so `@AppStorage` can persist it.
+    @AppStorage("tripItinerarySort") private var itinerarySortRaw = ItinerarySort.date.rawValue
+    private var itinerarySort: ItinerarySort {
+        ItinerarySort(rawValue: itinerarySortRaw) ?? .date
+    }
     @State private var newPackingTitle = ""
     @State private var calendarAlert: CalendarAlert?
     @State private var pdfExportError: String?
@@ -394,6 +484,11 @@ struct TripDetailView: View {
     /// Hides the one-shot "Add to Apple Calendar" button while calendar sync is
     /// on — the sync already mirrors the trip, so the button would double-book.
     @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
+    /// Which sections the Markdown/PDF export carries — the organizer's control
+    /// over the shared file. Persisted across trips as the OptionSet's raw value.
+    @AppStorage("tripExportOptions") private var exportOptionsRaw = TripExportOptions.all.rawValue
+    private var exportOptions: TripExportOptions { TripExportOptions(rawValue: exportOptionsRaw) }
+    @State private var showExportOptions = false
 
     /// Translates freshly generated (English) assistant output into the user's
     /// language before it's saved. The on-device LLM names items in English;
@@ -416,14 +511,12 @@ struct TripDetailView: View {
         // type-checking past a reasonable time budget.
         Group {
             let list = List {
-                tripHeaderSection
-                tripDetailsSection
-                tripActionsSection
-                tripPhotosSection
+                tripIdentitySection
                 itinerarySection
                 packingSections
                 notesSection
-                attachmentsSection
+                documentsSection
+                tripPhotosSection
             }
             // Drag-to-reorder packing items within and across container groups; the
             // closure rewrites each moved item's container + `order`. The itinerary's
@@ -442,10 +535,26 @@ struct TripDetailView: View {
                 .scrollDismissesKeyboard(.interactively)
             #endif
             .task { seedContainersIfNeeded() }
-            .sheet(isPresented: $showCountryPicker) {
-                CountryPickerSheet(allCountries: allCountries) { country in
-                    addStop(country: country)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        tripActionsMenu
+                    } label: {
+                        Label("Trip actions", systemImage: "ellipsis.circle")
+                    }
                 }
+            }
+            .sheet(isPresented: $showPlaceSearch) {
+                // Bias the search to the trip's country when there's exactly one;
+                // otherwise search worldwide. One sheet handles searched places
+                // (auto country) and free-form custom stops.
+                PlaceSearchSheet(
+                    country: soleCountry,
+                    onPick: { item in addPlace(item) },
+                    onAddCustom: { title in addCustomStop(title) })
+            }
+            .sheet(isPresented: $showExportOptions) {
+                TripExportOptionsSheet(optionsRaw: $exportOptionsRaw)
             }
             .sheet(isPresented: $showPhotoSuggestions) {
                 TripPhotoSuggestionsSheet(trip: trip)
@@ -538,7 +647,11 @@ struct TripDetailView: View {
     /// reading a date picker — this answers "which trip, and how soon?" before
     /// any of the form rows. Rendered without a row background so it reads as a
     /// header rather than as the first item in the form.
-    private var tripHeaderSection: some View {
+    /// The trip's identity in one section: a clear-backgrounded header (flags,
+    /// dates, countdown) floating above the editable name and dates. Merged from
+    /// the old separate header + details sections — one fewer thing to scroll past
+    /// before the itinerary.
+    private var tripIdentitySection: some View {
         Section {
             VStack(spacing: 12) {
                 if !trip.flags.isEmpty {
@@ -568,12 +681,7 @@ struct TripDetailView: View {
             .padding(.vertical, 8)
             .listRowBackground(Color.clear)
             .accessibilityElement(children: .combine)
-        }
-    }
 
-    /// The trip's editable identity — name and dates, and nothing else.
-    private var tripDetailsSection: some View {
-        Section {
             TextField("Trip name", text: $trip.title, prompt: Text("e.g. Europe 2026"))
             DatePicker("Start", selection: $trip.startDate, displayedComponents: .date)
             DatePicker(
@@ -582,28 +690,36 @@ struct TripDetailView: View {
         }
     }
 
-    /// Things you *do* with the trip, kept apart from the fields you edit.
-    private var tripActionsSection: some View {
-        Section {
-            if !calendarSyncEnabled {
-                Button {
-                    addToCalendar()
-                } label: {
-                    Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
-                }
-            }
-            exportButtons
+    /// The trip's countries when there's exactly one, else `nil`. Biases place
+    /// search and is the country a freshly added place inherits, so a
+    /// single-country trip stays coherent without the user tagging every place.
+    private var soleCountry: Country? {
+        let countries = trip.countries
+        return countries.count == 1 ? countries.first : nil
+    }
+
+    /// The trip's verbs, gathered into the toolbar's overflow menu rather than
+    /// spending a whole form section on them: add to Calendar (unless sync already
+    /// mirrors the trip), the Share/Export submenu, and jump-to-map.
+    @ViewBuilder private var tripActionsMenu: some View {
+        if !calendarSyncEnabled {
             Button {
-                // Hands the trip to ContentView through the router (the map
-                // lives several presentation layers away), which switches to
-                // the Map tab and frames the route.
-                IntentRouter.shared.pendingMapTrip = trip
-                dismiss()
+                addToCalendar()
             } label: {
-                Label("View Route on Map", systemImage: "map")
+                Label("Add to Apple Calendar", systemImage: "calendar.badge.plus")
             }
-            .disabled((trip.itinerary ?? []).isEmpty)
         }
+        exportButtons
+        Button {
+            // Hands the trip to ContentView through the router (the map lives
+            // several presentation layers away), which switches to the Map tab
+            // and frames the route.
+            IntentRouter.shared.pendingMapTrip = trip
+            dismiss()
+        } label: {
+            Label("View Route on Map", systemImage: "map")
+        }
+        .disabled((trip.itinerary ?? []).isEmpty)
     }
 
     /// A one-line answer to "how soon?". `RelativeDateTimeFormatter` supplies the
@@ -668,7 +784,7 @@ struct TripDetailView: View {
     /// the viewer always loads new content instead of a stale, already-open
     /// document at a reused path.
     private func exportPDFAndOpen() {
-        let data = TripPDFRenderer.render(trip: trip)
+        let data = TripPDFRenderer.render(trip: trip, options: exportOptions)
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         let url =
@@ -688,17 +804,22 @@ struct TripDetailView: View {
         }
     }
 
-    /// Markdown + PDF export, folded into a single Share row so the trip-info
-    /// section doesn't spend two rows on export. Split out of that `Section` —
-    /// folding it in there pushed the `@ViewBuilder` closure's type-checking
-    /// past a reasonable time budget on iOS.
+    /// Markdown + PDF export, folded into a single Share submenu. "Export options…"
+    /// leads: it opens the include/exclude sheet whose choices (persisted) shape
+    /// both the Markdown and the PDF below it — the control a group organizer
+    /// wants over the file they hand out.
     @ViewBuilder private var exportButtons: some View {
         Menu {
+            Button {
+                showExportOptions = true
+            } label: {
+                Label("Export options…", systemImage: "slider.horizontal.3")
+            }
             ShareLink(
-                item: ExportableTrip(trip: trip),
+                item: ExportableTrip(trip: trip, options: exportOptions),
                 preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
             ) {
-                Label("Share / Export (Markdown)", systemImage: "doc.plaintext")
+                Label("Share as Markdown", systemImage: "doc.plaintext")
             }
             // The share picker only lists a couple of generic services (Shortcuts,
             // AirDrop) for arbitrary PDF data, so this opens the rendered file
@@ -711,7 +832,8 @@ struct TripDetailView: View {
             }
             // App-to-app: a `.wwtrip` file (AirDrop, Messages, Files) that
             // another Worldward install opens as an add-or-update import —
-            // see `TripFileTransfer.swift`.
+            // see `TripFileTransfer.swift`. Always the whole trip, so the export
+            // options don't apply.
             ShareLink(
                 item: ExportableTripFile(trip: trip),
                 preview: SharePreview(trip.title.isEmpty ? "Trip" : trip.title)
@@ -741,28 +863,133 @@ struct TripDetailView: View {
         }
     }
 
-    private var itinerarySection: some View {
-        Section("Itinerary") {
-            if (trip.itinerary ?? []).isEmpty {
-                // This is the first thing a brand-new trip shows, and it used to
-                // be a bare secondary `Text` — an absence, not a design. The Add
-                // button directly below is the next action, so this only needs to
-                // name the gap and look considered doing it.
+    /// A single flat list of stops, each wearing its country as a flag chip rather
+    /// than sitting under a country *level*. One "Add stop" adds a searched place
+    /// (its country resolved automatically from its location) or a free-form stop.
+    /// The list re-sorts By date, By country (a light grouped view), or Manual.
+    @ViewBuilder private var itinerarySection: some View {
+        if (trip.itinerary ?? []).isEmpty {
+            Section("Itinerary") {
+                // The Add button right below is the next action, so this only
+                // needs to name the gap and look considered doing it.
                 emptySectionPlaceholder(
                     symbol: "signpost.right.and.left",
                     message: Text("No stops yet", comment: "Empty itinerary placeholder"))
-            } else {
-                ForEach(trip.sortedStops) { stop in
-                    StopRow(stop: stop)
+                addStopButton
+            }
+        } else if itinerarySort == .country {
+            // Each country is a light sort-label header (like Contacts' A/B/C),
+            // not a container the stops live inside. The chip is dropped from the
+            // rows here since the header already names the country.
+            ForEach(countryGroups) { group in
+                Section {
+                    ForEach(group.stops) { stop in stopRow(stop, showCountryChip: false) }
+                        .onDelete { deleteDisplayed($0, in: group.stops) }
+                } header: {
+                    if group.id == countryGroups.first?.id {
+                        itineraryHeader(Text(group.headerText))
+                    } else {
+                        Text(group.headerText).textCase(nil)
+                    }
                 }
-                .onMove(perform: moveItineraryStop)
-                .onDelete(perform: deleteStops)
             }
-            Button {
-                showCountryPicker = true
+            Section { addStopButton }
+        } else {
+            Section {
+                let stops = displayedStops
+                // `.onMove` only in Manual — dragging a list that's sorted by a
+                // computed key (date) can't map a drop back to a stable order.
+                if itinerarySort == .manual {
+                    ForEach(stops) { stop in stopRow(stop, showCountryChip: true) }
+                        .onDelete { deleteDisplayed($0, in: stops) }
+                        .onMove(perform: moveItineraryStop)
+                } else {
+                    ForEach(stops) { stop in stopRow(stop, showCountryChip: true) }
+                        .onDelete { deleteDisplayed($0, in: stops) }
+                }
+                addStopButton
+            } header: {
+                itineraryHeader(Text("Itinerary"))
+            }
+        }
+    }
+
+    private var addStopButton: some View {
+        Button {
+            showPlaceSearch = true
+        } label: {
+            Label("Add stop", systemImage: "plus")
+        }
+    }
+
+    private func stopRow(_ stop: ItineraryItem, showCountryChip: Bool) -> some View {
+        StopRow(
+            stop: stop,
+            showCountryChip: showCountryChip,
+            onAddAttachment: { attachToStop(stop) },
+            onOpenAttachment: { openAttachment($0) })
+    }
+
+    /// A section header carrying the sort control on its trailing edge. `.textCase(nil)`
+    /// keeps "Itinerary" and country names in their natural case.
+    private func itineraryHeader(_ leading: Text) -> some View {
+        HStack {
+            leading
+            Spacer()
+            Menu {
+                Picker("Sort", selection: sortSelection) {
+                    ForEach(ItinerarySort.allCases) { sort in
+                        Label(sort.label, systemImage: sort.symbol).tag(sort)
+                    }
+                }
             } label: {
-                Label("Add a country / stop", systemImage: "plus")
+                Label("Sort", systemImage: "arrow.up.arrow.down")
+                    .labelStyle(.iconOnly)
             }
+            .textCase(nil)
+        }
+        .textCase(nil)
+    }
+
+    private var sortSelection: Binding<ItinerarySort> {
+        Binding(get: { itinerarySort }, set: { itinerarySortRaw = $0.rawValue })
+    }
+
+    /// Stops ordered for the flat (By date / Manual) views. By date sends dated
+    /// stops up in chronological order and lets undated ones settle at the bottom
+    /// in their manual order; Manual is simply the hand-dragged order.
+    private var displayedStops: [ItineraryItem] {
+        guard itinerarySort == .date else { return trip.sortedStops }
+        return trip.sortedStops.sorted {
+            switch ($0.date, $1.date) {
+            case let (left?, right?): return (left, $0.order) < (right, $1.order)
+            case (_?, nil): return true
+            case (nil, _?): return false
+            case (nil, nil): return $0.order < $1.order
+            }
+        }
+    }
+
+    /// The stops grouped by country in first-appearance order, for the By country
+    /// view. A stop with no country falls into a trailing "No country" group.
+    private var countryGroups: [ItineraryCountryGroup] {
+        var order: [String] = []
+        var buckets: [String: [ItineraryItem]] = [:]
+        for stop in trip.sortedStops {
+            let key = stop.country?.id ?? "__none"
+            if buckets[key] == nil { order.append(key) }
+            buckets[key, default: []].append(stop)
+        }
+        return order.map { key in
+            let stops = (buckets[key] ?? []).sorted {
+                ($0.date ?? .distantFuture, $0.order) < ($1.date ?? .distantFuture, $1.order)
+            }
+            let country = stops.first?.country
+            return ItineraryCountryGroup(
+                id: key,
+                flag: country?.flagEmoji ?? "📍",
+                name: country?.localizedName ?? String(localized: "No country"),
+                stops: stops)
         }
     }
 
@@ -1049,26 +1276,33 @@ struct TripDetailView: View {
         .animation(.snappy, value: isEditingNotes)
     }
 
-    /// Tickets, confirmations, boarding passes — any file, stored inside the
-    /// trip itself (`.externalStorage`), so it's always on-device when you're
-    /// standing at a gate with no connectivity.
-    private var attachmentsSection: some View {
-        Section("Attachments") {
-            if trip.sortedAttachments.isEmpty {
+    /// Trip-wide documents — files not tied to a single stop (insurance, a
+    /// passport scan, a group itinerary PDF). A ticket for one place lives under
+    /// that place's stop instead; both are stored inside the trip itself
+    /// (`.externalStorage`), so they're on-device at a gate with no connectivity.
+    private var documentsSection: some View {
+        Section {
+            if trip.documents.isEmpty {
                 emptySectionPlaceholder(
-                    symbol: "paperclip",
+                    symbol: "doc",
                     message: Text(
-                        "No files yet", comment: "Empty trip attachments placeholder"))
+                        "No documents yet", comment: "Empty trip documents placeholder"))
             }
-            ForEach(trip.sortedAttachments) { attachment in
+            ForEach(trip.documents) { attachment in
                 AttachmentRow(attachment: attachment) { openAttachment(attachment) }
             }
-            .onDelete(perform: deleteAttachments)
+            .onDelete(perform: deleteDocuments)
             Button {
+                // A trip-level document isn't tied to any stop.
+                attachingToStop = nil
                 showAttachmentImporter = true
             } label: {
                 Label("Add File", systemImage: "paperclip")
             }
+        } header: {
+            Text("Documents")
+        } footer: {
+            Text("Files for the whole trip. To attach a ticket to a place, use its stop above.")
         }
     }
 
@@ -1116,27 +1350,71 @@ struct TripDetailView: View {
 
     // MARK: Mutations
 
-    private func addStop(country: Country) {
-        let nextOrder = ((trip.itinerary ?? []).map(\.order).max() ?? -1) + 1
-        let stop = ItineraryItem(order: nextOrder, country: country, trip: trip)
+    /// The next free ordering slot, so a new stop lands at the end of the list.
+    private var nextStopOrder: Int { ((trip.itinerary ?? []).map(\.order).max() ?? -1) + 1 }
+
+    /// Adds a place picked from search as a stop carrying its own coordinate and
+    /// address line. Its country is resolved from the location (see
+    /// `resolveCountry`) rather than chosen by hand, so the flag chip and the
+    /// trip's hero flags fill themselves in.
+    private func addPlace(_ item: MKMapItem) {
+        let coordinate = item.location.coordinate
+        let stop = ItineraryItem(
+            title: item.name ?? String(localized: "Place"),
+            order: nextStopOrder, country: nil, trip: trip,
+            detail: item.address?.shortAddress ?? item.address?.fullAddress ?? "",
+            latitude: coordinate.latitude, longitude: coordinate.longitude)
+        insertStop(stop)
+        resolveCountry(for: stop, at: coordinate)
+    }
+
+    /// Adds a free-form stop the user typed — no map location, so no auto country
+    /// (they can leave it untagged, or it groups under "No country").
+    private func addCustomStop(_ title: String) {
+        insertStop(ItineraryItem(title: title, order: nextStopOrder, trip: trip))
+    }
+
+    private func insertStop(_ stop: ItineraryItem) {
         modelContext.insert(stop)
+        if trip.itinerary == nil { trip.itinerary = [] }
         trip.itinerary?.append(stop)
-        // Map tie-in: a planned stop's country joins the blue "going" layer.
+    }
+
+    /// Resolves a place's coordinate to its country using the bundled country
+    /// outlines (the same `\.countryPaths` `TripPhotoSuggestionsSheet` matches
+    /// photos against), and tags the stop — so its flag chip and the trip's hero
+    /// flags reflect it and the country joins the blue "going" plan layer. Fully
+    /// on-device: no network, no deprecated geocoder. Best-effort — if nothing
+    /// contains the point (or the outlines haven't loaded) the stop stays
+    /// unflagged, exactly as a country-less custom stop would.
+    private func resolveCountry(for stop: ItineraryItem, at coordinate: CLLocationCoordinate2D) {
+        let mapPoint = MKMapPoint(coordinate)
+        let point = CGPoint(x: mapPoint.x, y: mapPoint.y)
+        var matchedID: String?
+        outer: for (id, rings) in countryPaths {
+            for ring in rings where ring.contains(point) {
+                matchedID = id
+                break outer
+            }
+        }
+        guard let matchedID,
+            let country = allCountries.first(where: { $0.id == matchedID })
+        else { return }
+        stop.country = country
         if country.planStatus == .none { country.planStatus = .planning }
     }
 
-    private func deleteStops(at offsets: IndexSet) {
-        let ordered = trip.sortedStops
-        for index in offsets { modelContext.delete(ordered[index]) }
-    }
-
     /// Applies a drag-to-reorder of the itinerary (a single collection) and
-    /// renumbers every stop's `order` so the new arrangement persists.
-    /// Uses the legacy `.onMove` API (available since macOS 14 / iOS 17).
+    /// renumbers every stop's `order` so the new arrangement persists. Only wired
+    /// up in Manual sort. Uses the legacy `.onMove` API (macOS 14 / iOS 17).
     private func moveItineraryStop(from source: IndexSet, to destination: Int) {
         var ordered = trip.sortedStops
         ordered.move(fromOffsets: source, toOffset: destination)
         for (index, stop) in ordered.enumerated() { stop.order = index }
+    }
+
+    private func deleteDisplayed(_ offsets: IndexSet, in stops: [ItineraryItem]) {
+        for index in offsets { modelContext.delete(stops[index]) }
     }
 
     private func addPacking() {
@@ -1353,7 +1631,19 @@ struct TripDetailView: View {
 
     /// Copies the picked files into the trip as attachments. Oversized or
     /// unreadable files are skipped with an alert; the rest still attach.
+    /// Queues a picked file to attach to `stop` rather than the trip as a whole,
+    /// then opens the importer (shared with the trip-level "Add File").
+    private func attachToStop(_ stop: ItineraryItem) {
+        attachingToStop = stop
+        showAttachmentImporter = true
+    }
+
     private func attachFiles(_ result: Result<[URL], Error>) {
+        // Which stop (if any) these files belong to was set just before the
+        // importer opened; clear it once we're done so the next pick defaults to
+        // a trip-level document.
+        let targetStop = attachingToStop
+        defer { attachingToStop = nil }
         switch result {
         case .failure(let error):
             attachmentAlert = error.localizedDescription
@@ -1372,9 +1662,15 @@ struct TripDetailView: View {
                         continue
                     }
                     let attachment = TripAttachment(
-                        filename: url.lastPathComponent, data: data, order: order, trip: trip)
+                        filename: url.lastPathComponent, data: data, order: order, trip: trip,
+                        item: targetStop)
                     modelContext.insert(attachment)
+                    if trip.attachments == nil { trip.attachments = [] }
                     trip.attachments?.append(attachment)
+                    if let targetStop {
+                        if targetStop.attachments == nil { targetStop.attachments = [] }
+                        targetStop.attachments?.append(attachment)
+                    }
                     order += 1
                 } catch {
                     attachmentAlert = error.localizedDescription
@@ -1403,8 +1699,8 @@ struct TripDetailView: View {
         }
     }
 
-    private func deleteAttachments(at offsets: IndexSet) {
-        let ordered = trip.sortedAttachments
+    private func deleteDocuments(at offsets: IndexSet) {
+        let ordered = trip.documents
         for index in offsets { modelContext.delete(ordered[index]) }
     }
 
@@ -1628,47 +1924,58 @@ private struct PackingItemRow: View {
     }
 }
 
-/// An inline-editable itinerary stop: its country flag, an optional custom name,
-/// an optional date, a note, and the places to see there.
+/// One country's stops for the itinerary's By-country view: the flag, the
+/// localized name, and the stops filed under it. A grouping for *display* only —
+/// the stops remain a flat list; this never becomes a stored container.
+private struct ItineraryCountryGroup: Identifiable {
+    let id: String
+    let flag: String
+    let name: String
+    let stops: [ItineraryItem]
+
+    var headerText: String { "\(flag) \(name)" }
+}
+
+/// An inline-editable itinerary stop — the single flat unit the itinerary is now
+/// built from. It's either a *place* (a pin picked from search, shown with 📍, an
+/// address line and an "Open in Apple Maps" button) or a *country / region*
+/// marker (shown with its flag). Either way it carries its own optional date,
+/// note, and attached files. Places-to-see are no longer nested inside a stop —
+/// they *are* stops, siblings in the same list.
 private struct StopRow: View {
     @Bindable var stop: ItineraryItem
+    /// Whether to show the country as a flag chip on this row. Hidden in the
+    /// By-country view, where the section header already names the country.
+    let showCountryChip: Bool
+    /// Queues a file to attach to *this* stop, then opens the shared importer.
+    let onAddAttachment: () -> Void
+    /// Opens an attached file (Quick Look on iOS, default app on macOS).
+    let onOpenAttachment: (TripAttachment) -> Void
     @Environment(\.modelContext) private var modelContext
     @State private var hasDate: Bool
-    @State private var showPlaceSearch = false
 
-    init(stop: ItineraryItem) {
+    init(
+        stop: ItineraryItem,
+        showCountryChip: Bool,
+        onAddAttachment: @escaping () -> Void,
+        onOpenAttachment: @escaping (TripAttachment) -> Void
+    ) {
         self.stop = stop
+        self.showCountryChip = showCountryChip
+        self.onAddAttachment = onAddAttachment
+        self.onOpenAttachment = onOpenAttachment
         _hasDate = State(initialValue: stop.date != nil)
     }
 
+    /// A stop with a coordinate came from place search — render it as a place.
+    private var isPlace: Bool { stop.coordinate != nil }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // The country *is* the stop's identity — it's what drives the map, the
-            // plan status and the trip's flags, and it's what `displayTitle` falls
-            // back to everywhere else (exports, PDF, calendar, watch). Showing it
-            // only as a `prompt` rendered it in placeholder grey, so the one piece
-            // of information that matters read as unset. It's real text now, and
-            // the *optional* custom name takes the trailing value slot — the same
-            // label-leading/value-trailing shape as the Date row below it.
-            HStack(spacing: 8) {
-                Text(stop.country?.flagEmoji ?? "📍")
-                if let country = stop.country {
-                    Text(country.localizedName)
-                        .font(.headline)
-                    Spacer(minLength: 12)
-                    TextField("Add a name", text: $stop.title)
-                        .multilineTextAlignment(.trailing)
-                        .foregroundStyle(.secondary)
-                } else {
-                    // No country to fall back on: whatever the user types here is
-                    // the stop's only identity, so it stays primary.
-                    TextField("Stop", text: $stop.title)
-                }
-            }
+            identityRow
+            secondaryLine
 
-            // No `.font` override: a control's label belongs at body size. Shrinking
-            // it left a full-size switch wearing a caption-sized label, and made the
-            // label a smaller tap target than the switch beside it.
+            // No `.font` override: a control's label belongs at body size.
             Toggle("Set a date", isOn: $hasDate)
                 .onChange(of: hasDate) { _, on in
                     stop.date = on ? (stop.date ?? Date()) : nil
@@ -1689,110 +1996,104 @@ private struct StopRow: View {
                 .font(.subheadline)
                 .lineLimit(1...3)
 
-            ForEach(stop.sortedPlaces) { place in
-                StopPlaceRow(place: place) { delete(place) }
-            }
-
-            Button {
-                showPlaceSearch = true
-            } label: {
-                Label("Add a place to see", systemImage: "mappin.and.ellipse")
-                    .font(.subheadline)
-            }
-            .buttonStyle(.borderless)
-        }
-        .padding(.vertical, 2)
-        .sheet(isPresented: $showPlaceSearch) {
-            PlaceSearchSheet(country: stop.country) { item in add(item) }
-        }
-    }
-
-    /// Saves a picked search result as a place under this stop.
-    private func add(_ item: MKMapItem) {
-        let nextOrder = ((stop.places ?? []).map(\.order).max() ?? -1) + 1
-        let coordinate = item.location.coordinate
-        let place = StopPlace(
-            title: item.name ?? String(localized: "Place"),
-            detail: item.address?.shortAddress ?? item.address?.fullAddress ?? "",
-            latitude: coordinate.latitude, longitude: coordinate.longitude,
-            order: nextOrder, stop: stop)
-        modelContext.insert(place)
-        if stop.places == nil { stop.places = [] }
-        stop.places?.append(place)
-    }
-
-    private func delete(_ place: StopPlace) {
-        modelContext.delete(place)
-    }
-}
-
-/// One place-to-see under a stop: a pin, the name and location line, a button to
-/// open it in Apple Maps (when it has a coordinate), and a remove button.
-private struct StopPlaceRow: View {
-    let place: StopPlace
-    let onDelete: () -> Void
-
-    var body: some View {
-        // Baseline alignment is scoped to the pin + text group: the trailing
-        // buttons now carry 44pt frames, which have no meaningful text baseline
-        // to align against.
-        HStack(spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Image(systemName: "mappin.circle.fill")
-                    .foregroundStyle(Color.brand)
-                    .font(.subheadline)
-                VStack(alignment: .leading, spacing: 2) {
-                    // A saved place is content, not a caption. Its nesting under the
-                    // stop is carried by the leading indent and the secondary colour
-                    // below — not by shrinking the type, which is what Apple does.
-                    Text(place.title).font(.subheadline)
-                    if !place.detail.isEmpty {
-                        Text(place.detail)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            Spacer()
-            if place.coordinate != nil {
+            if isPlace {
                 Button {
                     openInMaps()
                 } label: {
-                    Image(systemName: "arrow.up.right.square.fill")
+                    Label("Open in Apple Maps", systemImage: "arrow.up.right.square")
+                        .font(.subheadline)
+                }
+                .buttonStyle(.borderless)
+            }
+
+            attachments
+        }
+        .padding(.vertical, 2)
+    }
+
+    /// The row's secondary line: the country as a flag chip (the whole point of
+    /// "country as an attribute, not a level"), then the address line when the
+    /// stop is a searched place. Hidden for country markers, whose flag+name are
+    /// already the title, and in the By-country view, where the header names it.
+    @ViewBuilder private var secondaryLine: some View {
+        let country = showCountryChip && isPlace ? stop.country : nil
+        let hasDetail = !stop.detail.isEmpty
+        if country != nil || hasDetail {
+            HStack(spacing: 6) {
+                if let country {
+                    Text("\(country.flagEmoji) \(country.localizedName)")
+                }
+                if country != nil && hasDetail {
+                    Text(verbatim: "·").foregroundStyle(.tertiary)
+                }
+                if hasDetail {
+                    Text(stop.detail)
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    /// The stop's identity line: a pin for a place or a flag for a country/region,
+    /// then its name. A country marker shows the country name with an optional
+    /// custom name trailing; a place shows its own title.
+    @ViewBuilder private var identityRow: some View {
+        HStack(spacing: 8) {
+            Text(isPlace ? "📍" : (stop.country?.flagEmoji ?? "📍"))
+            if !isPlace, let country = stop.country {
+                // The country *is* this marker's identity — real text, not a grey
+                // prompt — with the optional custom name in the trailing value slot.
+                Text(country.localizedName)
+                    .font(.headline)
+                Spacer(minLength: 12)
+                TextField("Add a name", text: $stop.title)
+                    .multilineTextAlignment(.trailing)
+                    .foregroundStyle(.secondary)
+            } else {
+                // A place (or a country-less stop): whatever it's titled is its
+                // only identity, so it stays primary.
+                TextField(isPlace ? "Place" : "Stop", text: $stop.title)
+                    .font(.headline)
+            }
+        }
+    }
+
+    /// Files attached to this stop, each openable with a remove button. A List
+    /// row can't host `.onDelete`, so each carries its own destructive control.
+    @ViewBuilder private var attachments: some View {
+        ForEach(stop.sortedAttachments) { attachment in
+            HStack(spacing: 8) {
+                AttachmentRow(attachment: attachment) { onOpenAttachment(attachment) }
+                Button(role: .destructive) {
+                    modelContext.delete(attachment)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(width: minimumHitTarget, height: minimumHitTarget)
                         .contentShape(.rect)
                 }
                 .buttonStyle(.borderless)
-                .help("Open in Apple Maps")
-                .accessibilityLabel(Text("Open in Apple Maps"))
+                .help("Remove file")
+                .accessibilityLabel(Text("Remove file"))
             }
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    // Both glyphs were ~14pt and touching. One of them deletes the
-                    // place outright, with no undo — the mis-tap risk was real.
-                    .frame(width: minimumHitTarget, height: minimumHitTarget)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.borderless)
-            .help("Remove place")
-            .accessibilityLabel(Text("Remove place"))
         }
-        // Indentation now does the nesting work the shrunken type used to.
-        .padding(.leading, 12)
+        Button {
+            onAddAttachment()
+        } label: {
+            Label("Attach file", systemImage: "paperclip")
+                .font(.subheadline)
+        }
+        .buttonStyle(.borderless)
     }
 
     private func openInMaps() {
-        guard let coordinate = place.coordinate else { return }
+        guard let coordinate = stop.coordinate else { return }
         let item = MKMapItem(
             location: CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude),
             address: nil)
-        item.name = place.title
+        item.name = stop.displayTitle
         item.openInMaps()
     }
 }

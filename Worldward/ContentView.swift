@@ -1281,6 +1281,11 @@ struct ContentView: View {
         deduplicateCountries()
         LaunchClock.mark("loadGeoJSON: deduplicated")
 
+        // One-shot: unfold any legacy nested itinerary places (pre-flatten stores)
+        // into sibling stops. Guarded to a no-op once the store has been drained.
+        TravelDataTransfer.flattenLegacyPlaces(in: modelContext)
+        LaunchClock.mark("loadGeoJSON: flattened places")
+
         self.countryPolygons = extractedPolygons
         self.countryDetailPolygons = extractedDetailPolygons
         self.countryPaths = extractedPaths

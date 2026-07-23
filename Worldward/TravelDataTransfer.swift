@@ -140,12 +140,20 @@ nonisolated struct AttachmentRecord: Codable {
     var filename: String
     var data: Data
     var order: Int
+    /// The file's description, and which stop it belongs to (by that stop's
+    /// `order`, matched back to a rebuilt `ItineraryItem` on import). Both optional
+    /// so pre-v5 backups still decode; a missing `stopOrder` restores as a
+    /// trip-level document.
+    var caption: String?
+    var stopOrder: Int?
 
     @MainActor
     init(from attachment: TripAttachment) {
         self.filename = attachment.filename
         self.data = attachment.data
         self.order = attachment.order
+        self.caption = attachment.caption.isEmpty ? nil : attachment.caption
+        self.stopOrder = attachment.item?.order
     }
 }
 
@@ -155,7 +163,13 @@ nonisolated struct ItineraryItemRecord: Codable {
     var date: Date?
     var order: Int
     var countryID: String?  // ISO alpha-2; re-linked on import, skipped if unknown
-    var places: [StopPlaceRecord]?  // optional so pre-places backups still decode
+    /// A stop can now *be* a place, so it carries its own address line and pin.
+    /// All optional so older backups (which kept these under nested `places`)
+    /// still decode; `fill(_:from:)` unfolds any such `places` into sibling stops.
+    var detail: String?
+    var latitude: Double?
+    var longitude: Double?
+    var places: [StopPlaceRecord]?  // legacy nested places; unfolded on import
 
     @MainActor
     init(from item: ItineraryItem) {
@@ -164,7 +178,12 @@ nonisolated struct ItineraryItemRecord: Codable {
         self.date = item.date
         self.order = item.order
         self.countryID = item.country?.id
-        self.places = item.sortedPlaces.map(StopPlaceRecord.init)
+        self.detail = item.detail.isEmpty ? nil : item.detail
+        self.latitude = item.latitude
+        self.longitude = item.longitude
+        // Flat model: stops no longer nest places. Kept nil rather than [] so new
+        // files don't carry an empty legacy field.
+        self.places = nil
     }
 }
 
@@ -209,9 +228,11 @@ nonisolated struct PackingItemRecord: Codable {
 /// Encodes and decodes the travel-data backup, and applies an import to the store.
 enum TravelDataTransfer {
     /// v3 added quantity/order/containerName to packing items; v4 added trip
-    /// attachments. Older files still decode (the fields are optional), and
-    /// older builds ignore the extra keys.
-    static let currentVersion = 4
+    /// attachments; v5 flattened the itinerary — stops carry their own
+    /// coordinate/detail, and attachments carry a caption + the stop they belong
+    /// to. Older files still decode (the new fields are optional; legacy nested
+    /// `places` are unfolded on import), and older builds ignore the extra keys.
+    static let currentVersion = 5
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -345,20 +366,32 @@ enum TravelDataTransfer {
         trip.packing = []
         trip.attachments = []
 
+        // The itinerary is a single flat list of stops now. A legacy record's
+        // nested `places` (from a build before the flatten) are unfolded into
+        // sibling stops here — each place becomes its own stop carrying the
+        // parent's country — so an old backup or `.wwtrip` still imports whole.
+        // A running `order` interleaves stop, its places, next stop… in sequence.
+        // `stopsByRecordOrder` re-links per-stop attachments below.
+        var order = 0
+        var stopsByRecordOrder: [Int: ItineraryItem] = [:]
         for stop in record.itinerary.sorted(by: { $0.order < $1.order }) {
+            let country = stop.countryID.flatMap { countriesByID[$0] }
             let item = ItineraryItem(
-                title: stop.title, note: stop.note, date: stop.date, order: stop.order,
-                country: stop.countryID.flatMap { countriesByID[$0] }, trip: trip)
+                title: stop.title, note: stop.note, date: stop.date, order: order,
+                country: country, trip: trip,
+                detail: stop.detail ?? "", latitude: stop.latitude, longitude: stop.longitude)
             context.insert(item)
             if trip.itinerary == nil { trip.itinerary = [] }
             trip.itinerary?.append(item)
+            stopsByRecordOrder[stop.order] = item
+            order += 1
             for record in (stop.places ?? []).sorted(by: { $0.order < $1.order }) {
-                let place = StopPlace(
-                    title: record.title, detail: record.detail,
-                    latitude: record.latitude, longitude: record.longitude,
-                    order: record.order, stop: item)
+                let place = ItineraryItem(
+                    title: record.title, order: order, country: country, trip: trip,
+                    detail: record.detail, latitude: record.latitude, longitude: record.longitude)
                 context.insert(place)
-                item.places?.append(place)
+                trip.itinerary?.append(place)
+                order += 1
             }
         }
         for (index, pack) in record.packing.enumerated() {
@@ -373,12 +406,58 @@ enum TravelDataTransfer {
             trip.packing?.append(item)
         }
         for record in (record.attachments ?? []).sorted(by: { $0.order < $1.order }) {
+            // Re-link to the stop it belonged to (by that stop's record order); a
+            // missing or unmatched `stopOrder` lands it as a trip-level document.
+            let stop = record.stopOrder.flatMap { stopsByRecordOrder[$0] }
             let attachment = TripAttachment(
-                filename: record.filename, data: record.data, order: record.order, trip: trip)
+                filename: record.filename, data: record.data, order: record.order, trip: trip,
+                caption: record.caption ?? "", item: stop)
             context.insert(attachment)
             if trip.attachments == nil { trip.attachments = [] }
             trip.attachments?.append(attachment)
+            if let stop {
+                if stop.attachments == nil { stop.attachments = [] }
+                stop.attachments?.append(attachment)
+            }
         }
+    }
+
+    /// One-shot migration for stores written before the itinerary flatten: every
+    /// `StopPlace` becomes a sibling `ItineraryItem` inserted right after its old
+    /// parent, inheriting the parent's country and keeping its own coordinate and
+    /// address line. Idempotent — once drained the store holds no `StopPlace`, so
+    /// the guard makes every later launch a cheap no-op. Runs on the main actor at
+    /// launch (see `ContentView.loadGeoJSON`), the only place SwiftData is touched.
+    ///
+    /// This can't run while the editor still *creates* `StopPlace`s (a relaunch
+    /// mid-transition would convert places the UI just made), which is why it
+    /// lands together with the flat-itinerary cutover rather than in Phase 1.
+    @MainActor
+    static func flattenLegacyPlaces(in context: ModelContext) {
+        let legacy = (try? context.fetch(FetchDescriptor<StopPlace>())) ?? []
+        guard !legacy.isEmpty else { return }
+
+        // Rebuild each affected trip's itinerary as one flat, renumbered sequence:
+        // stop, then the places that were nested under it, then the next stop.
+        for trip in Set(legacy.compactMap { $0.stop?.trip }) {
+            var order = 0
+            for stop in trip.sortedStops {
+                stop.order = order
+                order += 1
+                for place in stop.sortedPlaces {
+                    let sibling = ItineraryItem(
+                        title: place.title, order: order, country: stop.country, trip: trip,
+                        detail: place.detail, latitude: place.latitude, longitude: place.longitude)
+                    context.insert(sibling)
+                    trip.itinerary?.append(sibling)
+                    context.delete(place)
+                    order += 1
+                }
+            }
+        }
+        // Orphans whose stop or trip is already gone: just drop them.
+        for place in legacy where place.stop?.trip == nil { context.delete(place) }
+        try? context.save()
     }
 }
 

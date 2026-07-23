@@ -4,6 +4,21 @@ import CoreLocation
 import Foundation
 import SwiftData
 
+/// Which sections a shared trip file carries — the control a group organizer
+/// wants over the Markdown/PDF they hand out. `nonisolated`/`Sendable` (plain
+/// `Int` raw value) so the exporters can read it off the main actor, and so it
+/// round-trips through `@AppStorage` as a single integer.
+nonisolated struct TripExportOptions: OptionSet, Sendable {
+    let rawValue: Int
+
+    static let itinerary = TripExportOptions(rawValue: 1 << 0)
+    static let packing = TripExportOptions(rawValue: 1 << 1)
+    static let notes = TripExportOptions(rawValue: 1 << 2)
+    static let attachments = TripExportOptions(rawValue: 1 << 3)
+
+    static let all: TripExportOptions = [.itinerary, .packing, .notes, .attachments]
+}
+
 /// Where "now" falls relative to a trip. Purely derived from the trip's dates
 /// on each read — nothing about it is stored, so it can never go stale.
 enum TripPhase: Equatable {
@@ -81,6 +96,13 @@ final class Trip {
         (attachments ?? []).sorted { $0.order < $1.order }
     }
 
+    /// Trip-level documents — attachments not tied to any one stop (insurance,
+    /// passport scan, a group itinerary PDF). Files linked to a stop show under
+    /// that stop instead. In first-added order.
+    var documents: [TripAttachment] {
+        sortedAttachments.filter { $0.item == nil }
+    }
+
     /// The distinct countries this trip touches, in first-appearance (stop) order.
     var countries: [Country] {
         var seen = Set<String>()
@@ -152,8 +174,13 @@ final class Trip {
     }
 
     /// A shareable Markdown summary of the trip — for the system share sheet
-    /// (Apple Notes, Messages, Mail) or pasting into any Markdown editor.
-    var markdownSummary: String {
+    /// (Apple Notes, Messages, Mail) or pasting into any Markdown editor. The
+    /// default includes everything; the export sheet narrows it down.
+    var markdownSummary: String { markdown(options: .all) }
+
+    /// The trip as Markdown, carrying only the sections `options` selects, so an
+    /// organizer can hand out exactly what a group needs.
+    func markdown(options: TripExportOptions) -> String {
         let name = title.isEmpty ? Str.Trip.untitled : title
         let start = startDate.formatted(date: .abbreviated, time: .omitted)
         let end = endDate.formatted(date: .abbreviated, time: .omitted)
@@ -166,9 +193,11 @@ final class Trip {
         if !header.isEmpty { lines.append(header) }
 
         let stops = sortedStops
-        if !stops.isEmpty {
+        if options.contains(.itinerary), !stops.isEmpty {
             lines.append("")
             lines.append("## \(Str.Trip.itineraryLabel)")
+            // Flat list: each stop is its own numbered line (places are stops
+            // now), with its country flag, optional date, note and address line.
             for (index, stop) in stops.enumerated() {
                 let flag = stop.country?.flagEmoji ?? "📍"
                 var line = "\(index + 1). \(flag) \(stop.displayTitle)"
@@ -176,14 +205,12 @@ final class Trip {
                     line += " — \(date.formatted(date: .abbreviated, time: .omitted))"
                 }
                 lines.append(line)
+                if !stop.detail.isEmpty { lines.append("   \(stop.detail)") }
                 if !stop.note.isEmpty { lines.append("   \(stop.note)") }
-                for place in stop.sortedPlaces {
-                    lines.append("   - 📍 \(place.title)")
-                }
             }
         }
 
-        if !(packing ?? []).isEmpty {
+        if options.contains(.packing), !(packing ?? []).isEmpty {
             lines.append("")
             lines.append("## \(Str.Trip.packing)")
             let groups = packingGroups
@@ -202,10 +229,24 @@ final class Trip {
             }
         }
 
-        if !notes.isEmpty {
+        if options.contains(.notes), !notes.isEmpty {
             lines.append("")
             lines.append("## \(Str.Trip.notesLabel)")
             lines.append(notes)
+        }
+
+        // Markdown is text, so files can only be *listed* — filename, caption,
+        // and which stop each belongs to. The PDF export embeds the images.
+        let attachments = sortedAttachments
+        if options.contains(.attachments), !attachments.isEmpty {
+            lines.append("")
+            lines.append("## \(Str.Trip.attachmentsLabel)")
+            for attachment in attachments {
+                var line = "- \(attachment.filename)"
+                if !attachment.caption.isEmpty { line += " — \(attachment.caption)" }
+                if let stop = attachment.item { line += " (\(stop.displayTitle))" }
+                lines.append(line)
+            }
         }
 
         return lines.joined(separator: "\n")
@@ -223,6 +264,18 @@ final class ItineraryItem {
     var country: Country?
     var trip: Trip?
 
+    /// A short, human-readable location line (e.g. "Rue de Rivoli, Paris") when
+    /// this stop is a specific place picked from MapKit search. Empty for a plain
+    /// country stop or a hand-typed one. Merged up from `StopPlace` as part of
+    /// collapsing the itinerary to a single flat unit — a stop can now *be* a
+    /// place, rather than owning a separate list of them.
+    var detail: String = ""
+    /// The stop's map coordinate when it came from search, kept so it can be
+    /// reopened in Apple Maps and drawn on the trip route. Merged up from
+    /// `StopPlace`.
+    var latitude: Double?
+    var longitude: Double?
+
     /// Identifier of this stop's event in the app-owned Worldward calendar, or
     /// empty when calendar sync is off or the stop has no date. See `CalendarSync`.
     var calendarEventID: String = ""
@@ -231,9 +284,17 @@ final class ItineraryItem {
     @Relationship(deleteRule: .cascade, inverse: \StopPlace.stop)
     var places: [StopPlace]?
 
+    /// Files attached to *this stop* — a museum ticket on the museum stop, a
+    /// booking on the hotel stop. `.nullify` (not `.cascade`) so deleting the
+    /// stop keeps the file, demoting it to a trip-level document rather than
+    /// destroying it. An attachment with no `item` is exactly such a document.
+    @Relationship(deleteRule: .nullify, inverse: \TripAttachment.item)
+    var attachments: [TripAttachment]?
+
     init(
         title: String = "", note: String = "", date: Date? = nil, order: Int = 0,
-        country: Country? = nil, trip: Trip? = nil
+        country: Country? = nil, trip: Trip? = nil,
+        detail: String = "", latitude: Double? = nil, longitude: Double? = nil
     ) {
         self.title = title
         self.note = note
@@ -241,6 +302,9 @@ final class ItineraryItem {
         self.order = order
         self.country = country
         self.trip = trip
+        self.detail = detail
+        self.latitude = latitude
+        self.longitude = longitude
     }
 
     /// A friendly label: the stop's title, else its country's name, else "Stop".
@@ -253,6 +317,18 @@ final class ItineraryItem {
     /// The stop's places-to-see in the order they were added.
     var sortedPlaces: [StopPlace] {
         (places ?? []).sorted { $0.order < $1.order }
+    }
+
+    /// Files attached to this stop, in the order they were added.
+    var sortedAttachments: [TripAttachment] {
+        (attachments ?? []).sorted { $0.order < $1.order }
+    }
+
+    /// The stop's map coordinate, or `nil` when it wasn't picked from search.
+    /// Mirrors `StopPlace.coordinate`.
+    var coordinate: CLLocationCoordinate2D? {
+        guard let latitude, let longitude else { return nil }
+        return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
 
@@ -414,17 +490,34 @@ final class TripAttachment {
     var byteCount: Int = 0
     var order: Int = 0
 
+    /// A short, user-written description of what the file is ("Louvre e-ticket",
+    /// "Hotel booking"). The filename answers "which file"; this answers "what
+    /// for". Empty when the user hasn't added one.
+    var caption: String = ""
+
     /// Per-row token for CloudKit de-duplication, mirroring `Trip.dedupID`.
     var dedupID: String = UUID().uuidString
 
     var trip: Trip?
 
-    init(filename: String = "", data: Data = Data(), order: Int = 0, trip: Trip? = nil) {
+    /// The itinerary stop this file belongs to, or `nil` for a trip-level
+    /// document (insurance, passport scan) that isn't tied to one place. This is
+    /// the relation attachments used to lack entirely — it's what lets a ticket
+    /// live under the stop it's for, and drives where the file renders in both
+    /// the editor and the export.
+    var item: ItineraryItem?
+
+    init(
+        filename: String = "", data: Data = Data(), order: Int = 0, trip: Trip? = nil,
+        caption: String = "", item: ItineraryItem? = nil
+    ) {
         self.filename = filename
         self.data = data
         self.byteCount = data.count
         self.order = order
         self.trip = trip
+        self.caption = caption
+        self.item = item
     }
 }
 

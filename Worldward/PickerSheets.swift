@@ -9,15 +9,23 @@ import SwiftUI
 /// restaurants… biased toward the stop's country. Results come from
 /// `MKLocalSearch`, so each pick carries a real coordinate and address.
 struct PlaceSearchSheet: View {
-    /// The stop's country, used to bias the search toward its region. `nil` for
-    /// a free-form stop — the search is then simply worldwide.
+    /// The country to bias the search toward its region. `nil` for a worldwide
+    /// search (a trip spanning several countries, or none yet).
     let country: Country?
     let onPick: (MKMapItem) -> Void
+    /// Adds whatever the user typed as a plain, unsearched stop — a free day, a
+    /// friend's place, anywhere MapKit doesn't list. Keeps the itinerary to a
+    /// single "Add stop" entry point rather than a second button.
+    let onAddCustom: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
     @State private var results: [MKMapItem] = []
     @State private var isSearching = false
+
+    private var trimmedSearch: String {
+        search.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
     /// Resolves the country's bounding region exactly once, shared by every
     /// search. A task (rather than the region itself) so the first search can
     /// *await* the lookup instead of racing it — an unbiased worldwide query
@@ -36,11 +44,21 @@ struct PlaceSearchSheet: View {
                     }
                     .buttonStyle(.plain)
                 }
+                // Anything MapKit doesn't find can still go on the itinerary as a
+                // plain stop, so the single "Add stop" flow never dead-ends.
+                if !trimmedSearch.isEmpty {
+                    Button {
+                        onAddCustom(trimmedSearch)
+                        dismiss()
+                    } label: {
+                        Label("Add “\(trimmedSearch)”", systemImage: "plus.circle")
+                    }
+                }
             }
             .overlay {
                 if isSearching && results.isEmpty {
                     ProgressView()
-                } else if results.isEmpty {
+                } else if results.isEmpty && trimmedSearch.isEmpty {
                     ContentUnavailableView(
                         "Find places to see",
                         systemImage: "mappin.and.ellipse",

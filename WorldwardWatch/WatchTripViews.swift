@@ -137,25 +137,21 @@ struct WatchTripView: View {
     }
 }
 
-/// An itinerary stop: flag and title, the date (highlighted when it's today),
-/// and its places-to-see.
+/// An itinerary stop in the flat list: a place (📍) or a country/region (flag),
+/// its title, and the date (highlighted when it's today).
 private struct WatchStopRow: View {
     let stop: ItineraryItem
 
     var body: some View {
         let isToday = stop.date.map { Calendar.current.isDateInToday($0) } ?? false
+        let glyph = stop.coordinate != nil ? "📍" : (stop.country?.flagEmoji ?? "📍")
         VStack(alignment: .leading, spacing: 2) {
-            Text("\(stop.country?.flagEmoji ?? "📍") \(stop.displayTitle)")
+            Text("\(glyph) \(stop.displayTitle)")
             if let date = stop.date {
                 Text(isToday ? Str.Watch.today : date.formatted(date: .abbreviated, time: .omitted))
                     .font(.footnote)
                     .bold(isToday)
                     .foregroundStyle(isToday ? Color.brand : Color.secondary)
-            }
-            ForEach(stop.sortedPlaces) { place in
-                Text("📍 \(place.title)")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         }
     }

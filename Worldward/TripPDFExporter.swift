@@ -3,6 +3,8 @@
 import CoreGraphics
 import CoreText
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 
 /// Renders a trip's itinerary as a formatted, paginated PDF — the PDFKit-era
 /// counterpart to `Trip.markdownSummary` (see `ExportableTripPDF` in
@@ -35,9 +37,25 @@ nonisolated enum TripPDFRenderer {
     /// the app.
     private static let brandColor = CGColor(srgbRed: 0.161, green: 0.350, blue: 0.832, alpha: 1)
 
-    static func render(trip: Trip) -> Data {
+    static func render(trip: Trip, options: TripExportOptions = .all) -> Data {
         let name = trip.title.isEmpty ? Str.Trip.untitled : trip.title
-        return paginate(content(for: trip), footerTitle: name)
+        let data = CFDataCreateMutable(nil, 0) as CFMutableData
+        guard let consumer = CGDataConsumer(data: data) else { return Data() }
+        var mediaBox = CGRect(origin: .zero, size: pageSize)
+        guard let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) else {
+            return Data()
+        }
+
+        // The formatted text (header/itinerary/packing/notes/attachment manifest),
+        // then a full page per image attachment. Page numbers run continuously
+        // across both so the footer keeps counting.
+        var page = drawTextPages(
+            content(for: trip, options: options), footerTitle: name, in: context)
+        if options.contains(.attachments) {
+            page = drawImagePages(for: trip, footerTitle: name, in: context, startingPage: page)
+        }
+        context.closePDF()
+        return data as Data
     }
 
     // MARK: Content
@@ -57,7 +75,7 @@ nonisolated enum TripPDFRenderer {
         case separator
     }
 
-    private static func content(for trip: Trip) -> NSAttributedString {
+    private static func content(for trip: Trip, options: TripExportOptions) -> NSAttributedString {
         let result = NSMutableAttributedString()
 
         let name = trip.title.isEmpty ? Str.Trip.untitled : trip.title
@@ -72,8 +90,10 @@ nonisolated enum TripPDFRenderer {
         if !header.isEmpty { result.append(line(header, .subtitle, rule: .brand)) }
 
         let stops = trip.sortedStops
-        if !stops.isEmpty {
+        if options.contains(.itinerary), !stops.isEmpty {
             result.append(line(Str.Trip.itineraryLabel, .sectionHeader, rule: .separator))
+            // Flat list — places are stops now, so each is its own numbered line
+            // with its flag, date, address line and note.
             for (index, stop) in stops.enumerated() {
                 let flag = stop.country?.flagEmoji ?? "📍"
                 var stopLine = "\(index + 1). \(flag)  \(stop.displayTitle)"
@@ -81,14 +101,12 @@ nonisolated enum TripPDFRenderer {
                     stopLine += "   —   \(date.formatted(date: .abbreviated, time: .omitted))"
                 }
                 result.append(line(stopLine, .body))
+                if !stop.detail.isEmpty { result.append(line(stop.detail, .subItem)) }
                 if !stop.note.isEmpty { result.append(line(stop.note, .note)) }
-                for place in stop.sortedPlaces {
-                    result.append(line("📍  \(place.title)", .subItem))
-                }
             }
         }
 
-        if !(trip.packing ?? []).isEmpty {
+        if options.contains(.packing), !(trip.packing ?? []).isEmpty {
             result.append(line(Str.Trip.packing, .sectionHeader, rule: .separator))
             let groups = trip.packingGroups
             let useHeadings = groups.contains { $0.container != nil }
@@ -102,9 +120,22 @@ nonisolated enum TripPDFRenderer {
             }
         }
 
-        if !trip.notes.isEmpty {
+        if options.contains(.notes), !trip.notes.isEmpty {
             result.append(line(Str.Trip.notesLabel, .sectionHeader, rule: .separator))
             result.append(notesContent(trip.notes))
+        }
+
+        // A manifest of every attached file (filename, caption, stop). Image
+        // files then follow as full pages; other files appear here only.
+        let attachments = trip.sortedAttachments
+        if options.contains(.attachments), !attachments.isEmpty {
+            result.append(line(Str.Trip.attachmentsLabel, .sectionHeader, rule: .separator))
+            for attachment in attachments {
+                var line = "•  \(attachment.filename)"
+                if !attachment.caption.isEmpty { line += "  —  \(attachment.caption)" }
+                if let stop = attachment.item { line += "  (\(stop.displayTitle))" }
+                result.append(self.line(line, .body))
+            }
         }
 
         return result
@@ -197,17 +228,15 @@ nonisolated enum TripPDFRenderer {
     // MARK: Pagination
 
     /// Draws `text` across as many Core Text frames as it takes to exhaust it,
-    /// one PDF page per frame. A raw `CGContext(consumer:)` — rather than
-    /// `UIGraphicsPDFRenderer` — already uses the bottom-left-origin, y-up
-    /// coordinate space `CTFrameDraw` expects, so no manual flip is needed.
-    private static func paginate(_ text: NSAttributedString, footerTitle: String) -> Data {
-        let data = CFDataCreateMutable(nil, 0) as CFMutableData
-        guard let consumer = CGDataConsumer(data: data) else { return Data() }
-        var mediaBox = CGRect(origin: .zero, size: pageSize)
-        guard let context = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) else {
-            return Data()
-        }
-
+    /// one PDF page per frame, into an existing context — returning the last page
+    /// number so image pages can keep the footer counting. A raw
+    /// `CGContext(consumer:)` — rather than `UIGraphicsPDFRenderer` — already uses
+    /// the bottom-left-origin, y-up coordinate space `CTFrameDraw` and
+    /// `context.draw(_:in:)` expect, so no manual flip is needed.
+    private static func drawTextPages(
+        _ text: NSAttributedString, footerTitle: String, in context: CGContext
+    ) -> Int {
+        let mediaBox = CGRect(origin: .zero, size: pageSize)
         let framesetter = CTFramesetterCreateWithAttributedString(text)
         let path = CGPath(rect: mediaBox.insetBy(dx: margin, dy: margin), transform: nil)
 
@@ -228,9 +257,74 @@ nonisolated enum TripPDFRenderer {
             guard visible.length > 0 else { break }
             index += visible.length
         }
-        context.closePDF()
+        return page
+    }
 
-        return data as Data
+    /// One page per image attachment: the image fit within the margins with a
+    /// caption beneath it. Non-image files (PDFs, passes) stay in the manifest
+    /// only — embedding those would need PDFKit and defeats the single-code-path
+    /// Core Graphics approach. Returns the last page number.
+    private static func drawImagePages(
+        for trip: Trip, footerTitle: String, in context: CGContext, startingPage: Int
+    ) -> Int {
+        let mediaBox = CGRect(origin: .zero, size: pageSize)
+        let content = mediaBox.insetBy(dx: margin, dy: margin)
+        var page = startingPage
+        for attachment in trip.sortedAttachments where isImage(attachment.filename) {
+            guard let image = decodeImage(attachment.data) else { continue }
+            page += 1
+            context.beginPDFPage(nil)
+            // Reserve a strip at the bottom of the content area for the caption.
+            let captionGap: CGFloat = 22
+            let area = CGRect(
+                x: content.minX, y: content.minY + captionGap,
+                width: content.width, height: content.height - captionGap)
+            context.draw(image, in: aspectFit(width: image.width, height: image.height, in: area))
+            let caption =
+                attachment.caption.isEmpty
+                ? attachment.filename : "\(attachment.filename)   —   \(attachment.caption)"
+            drawCaption(caption, in: context, y: content.minY)
+            drawFooter(in: context, page: page, title: footerTitle)
+            context.endPDFPage()
+        }
+        return page
+    }
+
+    /// Whether a filename is a raster image the PDF can embed as a page, decided
+    /// by its uniform type rather than a hand-kept extension list.
+    private static func isImage(_ filename: String) -> Bool {
+        guard let type = UTType(filenameExtension: (filename as NSString).pathExtension) else {
+            return false
+        }
+        return type.conforms(to: .image)
+    }
+
+    private static func decodeImage(_ data: Data) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        return CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    /// The largest rect with the image's aspect ratio that fits in `bounds`, centered.
+    private static func aspectFit(width: Int, height: Int, in bounds: CGRect) -> CGRect {
+        guard width > 0, height > 0 else { return bounds }
+        let scale = min(bounds.width / CGFloat(width), bounds.height / CGFloat(height))
+        let size = CGSize(width: CGFloat(width) * scale, height: CGFloat(height) * scale)
+        return CGRect(
+            x: bounds.midX - size.width / 2, y: bounds.midY - size.height / 2,
+            width: size.width, height: size.height)
+    }
+
+    /// A centered gray caption line with its baseline at `y`.
+    private static func drawCaption(_ text: String, in context: CGContext, y: CGFloat) {
+        let attributes: [NSAttributedString.Key: Any] = [
+            fontKey: CTFontCreateWithName("Helvetica" as CFString, 9.5, nil),
+            colorKey: CGColor(gray: 0.4, alpha: 1),
+        ]
+        let ctLine = CTLineCreateWithAttributedString(
+            NSAttributedString(string: text, attributes: attributes))
+        let width = CTLineGetTypographicBounds(ctLine, nil, nil, nil)
+        context.textPosition = CGPoint(x: (pageSize.width - CGFloat(width)) / 2, y: y)
+        CTLineDraw(ctLine, context)
     }
 
     /// The `Rule` marker of a laid-out line, read from its first glyph run

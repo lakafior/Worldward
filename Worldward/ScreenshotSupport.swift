@@ -191,15 +191,22 @@
                     title: title, startDate: daysFromNow(start),
                     endDate: daysFromNow(start + length), notes: notes)
                 ctx.insert(t)
-                for (i, s) in stops.enumerated() {
+                // Flat itinerary: each country is a stop, and every place under it
+                // is a sibling stop carrying that country and its own coordinate.
+                var order = 0
+                for s in stops {
                     let country = byID[s.country]
-                    let item = ItineraryItem(
-                        date: daysFromNow(start + s.day), order: i, country: country, trip: t)
-                    ctx.insert(item)
-                    for (j, p) in s.places.enumerated() {
+                    ctx.insert(
+                        ItineraryItem(
+                            date: daysFromNow(start + s.day), order: order, country: country,
+                            trip: t))
+                    order += 1
+                    for p in s.places {
                         ctx.insert(
-                            StopPlace(
-                                title: p.0, latitude: p.1, longitude: p.2, order: j, stop: item))
+                            ItineraryItem(
+                                title: p.0, order: order, country: country, trip: t,
+                                latitude: p.1, longitude: p.2))
+                        order += 1
                     }
                     if let country, country.planStatus == .none { country.planStatus = .planning }
                 }

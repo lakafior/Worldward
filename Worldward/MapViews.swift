@@ -39,10 +39,9 @@ struct CountryMapPolygons: MapContent {
 }
 
 /// Draws a trip's itinerary on the world map: a dashed line connecting its stops
-/// in order, a numbered flag badge per stop, and a small pin for each saved
-/// place. A stop anchors on its first saved place when it has one (a real
-/// coordinate from search), else on its country's centroid; stops with neither
-/// are skipped.
+/// in order and a numbered flag badge per stop. A stop anchors on its own
+/// coordinate when it has one (a place picked from search), else on its
+/// country's centroid; stops with neither are skipped.
 struct TripRouteContent: MapContent {
     let trip: Trip
     let centroids: [String: CLLocationCoordinate2D]
@@ -63,9 +62,9 @@ struct TripRouteContent: MapContent {
     ) -> [RoutePoint] {
         var points: [RoutePoint] = []
         for stop in trip.sortedStops {
-            let coordinate =
-                stop.sortedPlaces.compactMap(\.coordinate).first
-                ?? stop.country.flatMap { centroids[$0.id] }
+            // A stop anchors on its own coordinate (a place picked from search),
+            // else on its country's centroid; stops with neither are skipped.
+            let coordinate = stop.coordinate ?? stop.country.flatMap { centroids[$0.id] }
             guard let coordinate else { continue }
             points.append(
                 RoutePoint(
@@ -80,26 +79,12 @@ struct TripRouteContent: MapContent {
         Self.routePoints(for: trip, centroids: centroids)
     }
 
-    /// Every saved place with a real coordinate, for the fine-grained pins.
-    private var places: [StopPlace] {
-        trip.sortedStops.flatMap(\.sortedPlaces).filter { $0.coordinate != nil }
-    }
-
     var body: some MapContent {
         if points.count > 1 {
             MapPolyline(coordinates: points.map(\.coordinate))
                 .stroke(
                     Color.brand,
                     style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: [7, 5]))
-        }
-
-        ForEach(places, id: \.persistentModelID) { place in
-            if let coordinate = place.coordinate {
-                Annotation(place.title, coordinate: coordinate, anchor: .bottom) {
-                    Image(systemName: "mappin.circle.fill")
-                        .foregroundStyle(Color.brand, .white)
-                }
-            }
         }
 
         ForEach(points) { point in

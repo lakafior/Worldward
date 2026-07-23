@@ -209,18 +209,18 @@ enum CalendarSync {
             }
 
             let flag = stop.country?.flagEmoji ?? ""
-            let placeLines = stop.sortedPlaces.map { "• \($0.title)" }.joined(separator: "\n")
-            // The first place with a coordinate carries the structuredLocation;
-            // without one, the country name rides along as plain location text.
-            let located = stop.sortedPlaces.first { $0.coordinate != nil }
+            // A stop that's a searched place carries its own coordinate, which
+            // becomes the event's structuredLocation (so Calendar shows a map and
+            // weather); a country/region or custom stop has no pin, so its address
+            // line — else its country name — rides along as plain location text.
+            let coordinate = stop.coordinate
             let spec = EventSpec(
                 title: [flag, stop.displayTitle].filter { !$0.isEmpty }.joined(separator: " "),
                 start: date, end: date,
-                notes: [stop.note, placeLines].filter { !$0.isEmpty }.joined(separator: "\n\n"),
-                locationText: located == nil ? stop.country?.localizedName : nil,
-                place: located.flatMap { place in
-                    place.coordinate.map { (place.title, $0.latitude, $0.longitude) }
-                })
+                notes: stop.note,
+                locationText: coordinate == nil
+                    ? (stop.detail.isEmpty ? stop.country?.localizedName : stop.detail) : nil,
+                place: coordinate.map { (stop.displayTitle, $0.latitude, $0.longitude) })
             if let id = upsert(spec, existingID: stop.calendarEventID, in: calendar, dirty: &dirty) {
                 stop.calendarEventID = id
                 expected.insert(id)

@@ -73,19 +73,18 @@ struct StoreWatchers: View {
                 hasher.combine(item.quantity)
                 hasher.combine(item.order)
             }
-            // Itinerary edits must change the key too: calendar sync mirrors
-            // stops (title, date, note, places) to events.
+            // Itinerary edits must change the key too: calendar sync mirrors each
+            // stop (title, date, note, country, and its own coordinate/detail) to
+            // an event.
             for stop in trip.itinerary ?? [] {
                 hasher.combine(stop.title)
                 hasher.combine(stop.note)
                 hasher.combine(stop.date)
                 hasher.combine(stop.order)
                 hasher.combine(stop.country?.id)
-                for place in stop.places ?? [] {
-                    hasher.combine(place.title)
-                    hasher.combine(place.latitude)
-                    hasher.combine(place.longitude)
-                }
+                hasher.combine(stop.latitude)
+                hasher.combine(stop.longitude)
+                hasher.combine(stop.detail)
             }
         }
         return hasher.finalize()
