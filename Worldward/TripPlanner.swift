@@ -218,14 +218,64 @@ final class TripPlanner {
                 bullets) of must-see sights, experiences or tips. Be specific and \
                 practical — name real places — and write no preamble.
                 """
+                """
+                Output plain Markdown text only — exactly as it should read in a notes \
+                field. Never wrap it in a code fence, and never format the answer as \
+                JSON, an array, or key–value objects.
+                """
                 Self.interestsInstruction()
             }
             let text = try await session.respond(
                 to: "Suggest things to see and do on this trip.\n\(Self.facts(for: trip))",
                 options: GenerationOptions(maximumResponseTokens: 900)
-            ).content.trimmingCharacters(in: .whitespacesAndNewlines)
-            return text.isEmpty ? nil : text
+            ).content
+            let cleaned = Self.plainMarkdown(from: text)
+            return cleaned.isEmpty ? nil : cleaned
         }
+    }
+
+    /// The small on-device model sometimes ignores "reply in Markdown" and wraps
+    /// its answer in a code fence, or emits JSON (an array of lines, or a
+    /// country→tips object) instead of prose. Unwrap those so the notes field ends
+    /// up with readable Markdown rather than literal JSON. Plain Markdown passes
+    /// through untouched.
+    static func plainMarkdown(from raw: String) -> String {
+        var text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Strip a surrounding ``` / ```json / ```markdown fence.
+        if text.hasPrefix("```") {
+            var lines = text.components(separatedBy: .newlines)
+            lines.removeFirst()
+            if lines.last?.trimmingCharacters(in: .whitespaces) == "```" { lines.removeLast() }
+            text = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        guard let data = text.data(using: .utf8) else { return text }
+
+        // A JSON array of strings → one per line.
+        if text.hasPrefix("["), let lines = try? JSONDecoder().decode([String].self, from: data) {
+            return lines.joined(separator: "\n")
+        }
+        // A JSON object keyed by country → a bold heading + bullets per country.
+        // Values may be a list of tips or a single string; both are handled.
+        if text.hasPrefix("{"),
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        {
+            let blocks = object.map { country, value -> String in
+                let bullets: [String]
+                switch value {
+                case let list as [String]: bullets = list
+                case let single as String: bullets = [single]
+                default: bullets = []
+                }
+                let body = bullets.map { "- \($0)" }.joined(separator: "\n")
+                return body.isEmpty ? "**\(country)**" : "**\(country)**\n\(body)"
+            }
+            let joined = blocks.joined(separator: "\n\n")
+            if !joined.isEmpty { return joined }
+        }
+
+        return text
     }
 
     /// Clears any error banner.
