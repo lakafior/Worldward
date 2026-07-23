@@ -86,6 +86,20 @@ final class Trip {
         self.notes = notes
     }
 
+    /// A brand-new trip a month out, lasting a week — so it opens in "Upcoming"
+    /// rather than dropping straight into Past Trips, which the plain `Date()`
+    /// default did the moment the day turned over. Import and demo flows build
+    /// `Trip` directly with their own real dates instead. `Date()` stays the raw
+    /// model default because CloudKit requires every stored property to have one.
+    static func newUpcoming(title: String = "") -> Trip {
+        let calendar = Calendar.current
+        let start =
+            calendar.date(byAdding: .month, value: 1, to: calendar.startOfDay(for: Date()))
+            ?? Date()
+        let end = calendar.date(byAdding: .day, value: 7, to: start) ?? start
+        return Trip(title: title, startDate: start, endDate: end)
+    }
+
     /// Stops in their user-defined order.
     var sortedStops: [ItineraryItem] {
         (itinerary ?? []).sorted { $0.order < $1.order }

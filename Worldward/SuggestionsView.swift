@@ -160,7 +160,7 @@ struct SuggestionsView: View {
     /// traveler can fill in dates and details.
     private func createTrip(_ countries: [Country]) {
         guard !countries.isEmpty else { return }
-        let trip = Trip(title: Self.tripTitle(for: countries))
+        let trip = Trip.newUpcoming(title: Self.tripTitle(for: countries))
         modelContext.insert(trip)
         for (index, country) in countries.enumerated() {
             let stop = ItineraryItem(order: index, country: country, trip: trip)

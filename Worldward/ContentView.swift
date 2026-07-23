@@ -643,7 +643,7 @@ struct ContentView: View {
         /// `TripsListView.addTrip`, opening it straight in the inspector the
         /// way selecting a trip row would.
         private func addTrip() {
-            let trip = Trip(title: "New Trip")
+            let trip = Trip.newUpcoming(title: "New Trip")
             modelContext.insert(trip)
             selectedTrip = trip
         }

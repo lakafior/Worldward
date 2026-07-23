@@ -314,7 +314,7 @@ private struct TripsListView: View {
     }
 
     private func addTrip() {
-        let trip = Trip(title: "New Trip")
+        let trip = Trip.newUpcoming(title: "New Trip")
         modelContext.insert(trip)
         editingTrip = trip
     }

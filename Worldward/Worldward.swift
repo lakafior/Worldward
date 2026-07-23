@@ -50,13 +50,19 @@ struct Worldward: App {
                 return ScreenshotSupport.makeSeededContainer(schema: schema)
             }
         #endif
-        // `.none` explicitly: the default is `.automatic`, which would silently
-        // start syncing the moment the iCloud entitlement appears in a build,
-        // regardless of the user's toggle. Sync must stay opt-in.
+        // Sync now defaults ON so the iPhone, Mac and Watch converge without the
+        // user hunting for a toggle (the Watch has always been CloudKit-only, so
+        // an off-by-default phone left it starved). Still gated on a UserDefault
+        // rather than always-CloudKit so Settings can turn it off: an explicit
+        // `false` is honoured; an unset value (fresh install, or an existing user
+        // who never touched it) reads as on. `.none` stays explicit on the local
+        // fallback so a failed CloudKit attach never silently `.automatic`-syncs.
+        let syncEnabled = UserDefaults.standard.object(forKey: syncEnabledKey) as? Bool ?? true
+
         let modelConfiguration = ModelConfiguration(
             schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
 
-        if UserDefaults.standard.bool(forKey: syncEnabledKey) {
+        if syncEnabled {
             let cloudConfiguration = ModelConfiguration(
                 schema: schema, isStoredInMemoryOnly: false,
                 cloudKitDatabase: .private(cloudKitContainerID))

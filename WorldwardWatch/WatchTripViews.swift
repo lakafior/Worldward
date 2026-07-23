@@ -49,19 +49,28 @@ struct WatchTripsView: View {
                         if !upcoming.isEmpty {
                             Section(Str.Watch.upcoming) {
                                 ForEach(upcoming) { trip in
-                                    NavigationLink(value: trip) { WatchTripRow(trip: trip) }
+                                    NavigationLink { WatchTripView(trip: trip) } label: {
+                                        WatchTripRow(trip: trip)
+                                    }
                                 }
                             }
                         }
                         if !past.isEmpty {
                             Section(Str.Watch.past) {
                                 ForEach(past) { trip in
-                                    NavigationLink(value: trip) { WatchTripRow(trip: trip) }
+                                    NavigationLink { WatchTripView(trip: trip) } label: {
+                                        WatchTripRow(trip: trip)
+                                    }
                                 }
                             }
                         }
                     }
-                    .navigationDestination(for: Trip.self) { WatchTripView(trip: $0) }
+                    // View-based navigation (not `.navigationDestination(for: Trip.self)`):
+                    // a SwiftData `@Model` used as a navigation *value* can detach from
+                    // its context in the path — especially across a CloudKit merge —
+                    // and then its `itinerary`/`packing` relationships read back empty
+                    // (the trip's title shows, but the detail is blank). Capturing the
+                    // live object in the destination closure keeps it attached.
                 }
             }
             .navigationTitle(Str.Trip.tabTrips)

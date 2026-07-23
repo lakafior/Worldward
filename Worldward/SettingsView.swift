@@ -72,7 +72,7 @@ struct SettingsView: View {
     @AppStorage(CalendarSync.enabledKey) private var calendarSyncEnabled = false
     @AppStorage(CalendarSync.cleanupDaysKey) private var calendarCleanupDays =
         CalendarSync.cleanupDaysDefault
-    @AppStorage(Worldward.syncEnabledKey) private var iCloudSyncEnabled = false
+    @AppStorage(Worldward.syncEnabledKey) private var iCloudSyncEnabled = true
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
