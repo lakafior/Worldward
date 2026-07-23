@@ -447,7 +447,7 @@ struct TripDetailView: View {
     /// How the itinerary is ordered on screen. Remembered across trips: someone
     /// who thinks in days keeps By date, someone touring one region keeps By
     /// country. Stored as the raw value so `@AppStorage` can persist it.
-    @AppStorage("tripItinerarySort") private var itinerarySortRaw = ItinerarySort.date.rawValue
+    @AppStorage("tripItinerarySort") private var itinerarySortRaw = ItinerarySort.country.rawValue
     private var itinerarySort: ItinerarySort {
         ItinerarySort(rawValue: itinerarySortRaw) ?? .date
     }
@@ -550,7 +550,10 @@ struct TripDetailView: View {
                 // (auto country) and free-form custom stops.
                 PlaceSearchSheet(
                     country: soleCountry,
+                    scopeCountries: trip.countries,
+                    allCountries: allCountries,
                     onPick: { item in addPlace(item) },
+                    onPickCountry: { country in addCountryStop(country) },
                     onAddCustom: { title in addCustomStop(title) })
             }
             .sheet(isPresented: $showExportOptions) {
@@ -928,6 +931,16 @@ struct TripDetailView: View {
             showCountryChip: showCountryChip,
             onAddAttachment: { attachToStop(stop) },
             onOpenAttachment: { openAttachment($0) })
+            // The iOS list has swipe-to-delete; macOS has no swipe, so a context
+            // menu (right-click / long-press) is the way to remove a stop there —
+            // and it's a fine second affordance on iOS too.
+            .contextMenu {
+                Button(role: .destructive) {
+                    modelContext.delete(stop)
+                } label: {
+                    Label("Delete Stop", systemImage: "trash")
+                }
+            }
     }
 
     /// A section header carrying the sort control on its trailing edge. `.textCase(nil)`
@@ -1366,6 +1379,15 @@ struct TripDetailView: View {
             latitude: coordinate.latitude, longitude: coordinate.longitude)
         insertStop(stop)
         resolveCountry(for: stop, at: coordinate)
+    }
+
+    /// Adds one of the app's countries as a country/region stop (flag + name, no
+    /// coordinate) — for planning "we're going to Latvia" before picking places,
+    /// and the way to add a second country when place search is region-locked.
+    private func addCountryStop(_ country: Country) {
+        let stop = ItineraryItem(order: nextStopOrder, country: country, trip: trip)
+        insertStop(stop)
+        if country.planStatus == .none { country.planStatus = .planning }
     }
 
     /// Adds a free-form stop the user typed — no map location, so no auto country

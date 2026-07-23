@@ -9,10 +9,21 @@ import SwiftUI
 /// restaurants… biased toward the stop's country. Results come from
 /// `MKLocalSearch`, so each pick carries a real coordinate and address.
 struct PlaceSearchSheet: View {
-    /// The country to bias the search toward its region. `nil` for a worldwide
-    /// search (a trip spanning several countries, or none yet).
+    /// The country to bias the place search toward its region. `nil` for a
+    /// worldwide search (a trip spanning several countries, or none yet).
     let country: Country?
+    /// The trip's countries, offered as a scope selector when it spans more than
+    /// one — so the search can be pointed at the leg you're planning rather than
+    /// falling back to a worldwide search (the flat itinerary has no per-country
+    /// context of its own). Empty or single-country trips show no selector.
+    let scopeCountries: [Country]
+    /// The app's own country catalog, matched against the query and offered above
+    /// the MapKit results — so typing "Latvia" adds Latvia as a stop even when the
+    /// place search is region-locked to another country.
+    let allCountries: [Country]
     let onPick: (MKMapItem) -> Void
+    /// Adds one of the app's countries as a country/region stop.
+    let onPickCountry: (Country) -> Void
     /// Adds whatever the user typed as a plain, unsearched stop — a free day, a
     /// friend's place, anywhere MapKit doesn't list. Keeps the itinerary to a
     /// single "Add stop" entry point rather than a second button.
@@ -26,33 +37,90 @@ struct PlaceSearchSheet: View {
     private var trimmedSearch: String {
         search.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    /// Resolves the country's bounding region exactly once, shared by every
-    /// search. A task (rather than the region itself) so the first search can
-    /// *await* the lookup instead of racing it — an unbiased worldwide query
-    /// returns a single arbitrary global match, not places in the country.
-    @State private var regionTask: Task<MKCoordinateRegion?, Never>?
+
+    /// App countries whose name matches the query, shown above the map results.
+    /// Capped so a broad query ("stan") doesn't bury the places section.
+    private var countryMatches: [Country] {
+        guard !trimmedSearch.isEmpty else { return [] }
+        return allCountries.filter {
+            $0.localizedName.localizedStandardContains(trimmedSearch)
+                || $0.name.localizedStandardContains(trimmedSearch)
+        }
+        .sorted { $0.localizedName.localizedStandardCompare($1.localizedName) == .orderedAscending }
+        .prefix(4).map { $0 }
+    }
+    /// The chosen scope country's id in a multi-country trip, or `nil` for
+    /// "Anywhere". Single-country trips ignore this and always bias to `country`.
+    @State private var selectedScopeID: String?
+    /// Country bounding regions, resolved once each and reused as the scope changes.
+    @State private var regionCache: [String: MKCoordinateRegion] = [:]
+
+    /// The country the place search is biased toward: the picked scope on a
+    /// multi-country trip, else the trip's sole country (or `nil` = worldwide).
+    private var biasCountry: Country? {
+        if scopeCountries.count >= 2 {
+            return scopeCountries.first { $0.id == selectedScopeID }
+        }
+        return country
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(results, id: \.self) { item in
-                    Button {
-                        onPick(item)
-                        dismiss()
-                    } label: {
-                        resultRow(item)
+                // Multi-country trips: point the place search at one leg (or
+                // Anywhere). Single-country trips are auto-scoped, so no selector.
+                if scopeCountries.count >= 2 {
+                    Picker("Search in", selection: $selectedScopeID) {
+                        Text("Anywhere").tag(nil as String?)
+                        ForEach(scopeCountries) { country in
+                            Text("\(country.flagEmoji) \(country.localizedName)")
+                                .tag(country.id as String?)
+                        }
                     }
-                    .buttonStyle(.plain)
                 }
-                // Anything MapKit doesn't find can still go on the itinerary as a
-                // plain stop, so the single "Add stop" flow never dead-ends.
-                if !trimmedSearch.isEmpty {
-                    Button {
-                        onAddCustom(trimmedSearch)
-                        dismiss()
-                    } label: {
-                        Label("Add “\(trimmedSearch)”", systemImage: "plus.circle")
+                // App countries first — a whole-country stop, and the escape hatch
+                // when the map search is region-locked to a different country.
+                if !countryMatches.isEmpty {
+                    Section(header: Text("Countries")) {
+                        ForEach(countryMatches) { country in
+                            Button {
+                                onPickCountry(country)
+                                dismiss()
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Text(country.flagEmoji)
+                                    Text(country.localizedName)
+                                    Spacer()
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
+                }
+                Section {
+                    ForEach(results, id: \.self) { item in
+                        Button {
+                            onPick(item)
+                            dismiss()
+                        } label: {
+                            resultRow(item)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    // Anything MapKit doesn't find can still go on the itinerary as
+                    // a plain stop, so the single "Add stop" flow never dead-ends.
+                    if !trimmedSearch.isEmpty {
+                        Button {
+                            onAddCustom(trimmedSearch)
+                            dismiss()
+                        } label: {
+                            Label("Add “\(trimmedSearch)”", systemImage: "plus.circle")
+                        }
+                    }
+                } header: {
+                    // Only labelled once the countries section is also present.
+                    if !countryMatches.isEmpty { Text("Places") }
                 }
             }
             .overlay {
@@ -73,8 +141,9 @@ struct PlaceSearchSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
             }
-            .task { _ = await countryRegion() }
-            .task(id: search) { await runSearch() }
+            // Re-runs when the query *or* the chosen scope changes, so switching
+            // countries immediately re-biases the results.
+            .task(id: "\(search)|\(selectedScopeID ?? "")") { await runSearch() }
         }
         #if os(macOS)
             .frame(minWidth: 420, minHeight: 480)
@@ -82,9 +151,9 @@ struct PlaceSearchSheet: View {
     }
 
     private var emptyDescription: String {
-        if let country {
+        if let biasCountry {
             return String(
-                localized: "Search for sights and spots to visit in \(country.localizedName).")
+                localized: "Search for sights and spots to visit in \(biasCountry.localizedName).")
         }
         return String(localized: "Search for sights and spots to visit at this stop.")
     }
@@ -171,22 +240,17 @@ struct PlaceSearchSheet: View {
         }
     }
 
-    /// The country's bounding region, looked up on first use and cached. `nil`
-    /// for free-form stops or when the lookup finds nothing. No `resultTypes`
-    /// restriction on the lookup — a country isn't an *address*, so restricting
-    /// to `.address` made the lookup fail and left every search unbiased.
-    private func countryRegion() async -> MKCoordinateRegion? {
-        if let regionTask { return await regionTask.value }
-        guard let country else { return nil }
-        let name = country.name
-        let task = Task { () -> MKCoordinateRegion? in
-            let request = MKLocalSearch.Request()
-            request.naturalLanguageQuery = name
-            let response = try? await MKLocalSearch(request: request).start()
-            return response?.boundingRegion
-        }
-        regionTask = task
-        return await task.value
+    /// A country's bounding region, looked up on first use and cached so switching
+    /// scope doesn't re-fetch. `nil` when the lookup finds nothing. No `resultTypes`
+    /// restriction — a country isn't an *address*, so restricting to `.address`
+    /// made the lookup fail and left every search unbiased.
+    private func region(for country: Country) async -> MKCoordinateRegion? {
+        if let cached = regionCache[country.id] { return cached }
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = country.name
+        let response = try? await MKLocalSearch(request: request).start()
+        if let region = response?.boundingRegion { regionCache[country.id] = region }
+        return response?.boundingRegion
     }
 
     /// Debounced live search: re-runs as the query changes, cancelling stale runs.
@@ -203,15 +267,16 @@ struct PlaceSearchSheet: View {
         defer { isSearching = false }
 
         let request = MKLocalSearch.Request()
-        if let region = await countryRegion() {
+        let bias = biasCountry
+        if let bias, let region = await region(for: bias) {
             request.naturalLanguageQuery = term
             request.region = region
             // Keep results inside the country — a mere hint still lets "castle"
             // resolve to a stronger match on the other side of the world.
             request.regionPriority = .required
-        } else if let country {
+        } else if let bias {
             // Region lookup failed: bias the query textually instead.
-            request.naturalLanguageQuery = "\(term), \(country.name)"
+            request.naturalLanguageQuery = "\(term), \(bias.name)"
         } else {
             request.naturalLanguageQuery = term
         }

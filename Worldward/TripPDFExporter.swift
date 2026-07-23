@@ -52,7 +52,7 @@ nonisolated enum TripPDFRenderer {
         var page = drawTextPages(
             content(for: trip, options: options), footerTitle: name, in: context)
         if options.contains(.attachments) {
-            page = drawImagePages(for: trip, footerTitle: name, in: context, startingPage: page)
+            page = drawAttachmentPages(for: trip, footerTitle: name, in: context, startingPage: page)
         }
         context.closePDF()
         return data as Data
@@ -103,6 +103,15 @@ nonisolated enum TripPDFRenderer {
                 result.append(line(stopLine, .body))
                 if !stop.detail.isEmpty { result.append(line(stop.detail, .subItem)) }
                 if !stop.note.isEmpty { result.append(line(stop.note, .note)) }
+                // Files attached to this stop read under it (and, if image/PDF,
+                // follow as full pages later).
+                if options.contains(.attachments) {
+                    for attachment in stop.sortedAttachments {
+                        let caption =
+                            attachment.caption.isEmpty ? "" : "  —  \(attachment.caption)"
+                        result.append(line("📎  \(attachment.filename)\(caption)", .subItem))
+                    }
+                }
             }
         }
 
@@ -125,15 +134,15 @@ nonisolated enum TripPDFRenderer {
             result.append(notesContent(trip.notes))
         }
 
-        // A manifest of every attached file (filename, caption, stop). Image
-        // files then follow as full pages; other files appear here only.
-        let attachments = trip.sortedAttachments
-        if options.contains(.attachments), !attachments.isEmpty {
+        // Only trip-level documents get a manifest section (per-stop files were
+        // listed under their stop above). Image and PDF attachments — wherever
+        // they're attached — then follow as full pages.
+        let documents = trip.documents
+        if options.contains(.attachments), !documents.isEmpty {
             result.append(line(Str.Trip.attachmentsLabel, .sectionHeader, rule: .separator))
-            for attachment in attachments {
+            for attachment in documents {
                 var line = "•  \(attachment.filename)"
                 if !attachment.caption.isEmpty { line += "  —  \(attachment.caption)" }
-                if let stop = attachment.item { line += "  (\(stop.displayTitle))" }
                 result.append(self.line(line, .body))
             }
         }
@@ -260,32 +269,56 @@ nonisolated enum TripPDFRenderer {
         return page
     }
 
-    /// One page per image attachment: the image fit within the margins with a
-    /// caption beneath it. Non-image files (PDFs, passes) stay in the manifest
-    /// only — embedding those would need PDFKit and defeats the single-code-path
-    /// Core Graphics approach. Returns the last page number.
-    private static func drawImagePages(
+    /// Full pages for the trip's file attachments: one per image, and one per page
+    /// of any PDF attachment (a ticket, a boarding pass). Everything is fit within
+    /// the margins with a caption beneath. Other file types (passes, docs) stay in
+    /// the manifest only. Returns the last page number.
+    private static func drawAttachmentPages(
         for trip: Trip, footerTitle: String, in context: CGContext, startingPage: Int
     ) -> Int {
         let mediaBox = CGRect(origin: .zero, size: pageSize)
         let content = mediaBox.insetBy(dx: margin, dy: margin)
+        // Reserve a strip at the bottom of the content area for the caption.
+        let captionGap: CGFloat = 22
+        let area = CGRect(
+            x: content.minX, y: content.minY + captionGap,
+            width: content.width, height: content.height - captionGap)
         var page = startingPage
-        for attachment in trip.sortedAttachments where isImage(attachment.filename) {
-            guard let image = decodeImage(attachment.data) else { continue }
-            page += 1
-            context.beginPDFPage(nil)
-            // Reserve a strip at the bottom of the content area for the caption.
-            let captionGap: CGFloat = 22
-            let area = CGRect(
-                x: content.minX, y: content.minY + captionGap,
-                width: content.width, height: content.height - captionGap)
-            context.draw(image, in: aspectFit(width: image.width, height: image.height, in: area))
-            let caption =
+
+        for attachment in trip.sortedAttachments {
+            let base =
                 attachment.caption.isEmpty
                 ? attachment.filename : "\(attachment.filename)   —   \(attachment.caption)"
-            drawCaption(caption, in: context, y: content.minY)
-            drawFooter(in: context, page: page, title: footerTitle)
-            context.endPDFPage()
+
+            if isImage(attachment.filename), let image = decodeImage(attachment.data) {
+                page += 1
+                context.beginPDFPage(nil)
+                context.draw(
+                    image, in: aspectFit(width: image.width, height: image.height, in: area))
+                drawCaption(base, in: context, y: content.minY)
+                drawFooter(in: context, page: page, title: footerTitle)
+                context.endPDFPage()
+            } else if isPDF(attachment.filename), let document = pdfDocument(attachment.data) {
+                let count = document.numberOfPages
+                for index in 1...max(count, 1) {
+                    guard let pdfPage = document.page(at: index) else { continue }
+                    page += 1
+                    context.beginPDFPage(nil)
+                    // Scale the page into the caption-reserved area, clipped so any
+                    // overflow can't paint over the caption.
+                    let transform = pdfPage.getDrawingTransform(
+                        .mediaBox, rect: area, rotate: 0, preserveAspectRatio: true)
+                    context.saveGState()
+                    context.clip(to: area)
+                    context.concatenate(transform)
+                    context.drawPDFPage(pdfPage)
+                    context.restoreGState()
+                    let caption = count > 1 ? "\(base)   (\(index)/\(count))" : base
+                    drawCaption(caption, in: context, y: content.minY)
+                    drawFooter(in: context, page: page, title: footerTitle)
+                    context.endPDFPage()
+                }
+            }
         }
         return page
     }
@@ -299,9 +332,21 @@ nonisolated enum TripPDFRenderer {
         return type.conforms(to: .image)
     }
 
+    private static func isPDF(_ filename: String) -> Bool {
+        guard let type = UTType(filenameExtension: (filename as NSString).pathExtension) else {
+            return false
+        }
+        return type.conforms(to: .pdf)
+    }
+
     private static func decodeImage(_ data: Data) -> CGImage? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         return CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    private static func pdfDocument(_ data: Data) -> CGPDFDocument? {
+        guard let provider = CGDataProvider(data: data as CFData) else { return nil }
+        return CGPDFDocument(provider)
     }
 
     /// The largest rect with the image's aspect ratio that fits in `bounds`, centered.

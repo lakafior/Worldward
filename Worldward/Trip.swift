@@ -207,6 +207,15 @@ final class Trip {
                 lines.append(line)
                 if !stop.detail.isEmpty { lines.append("   \(stop.detail)") }
                 if !stop.note.isEmpty { lines.append("   \(stop.note)") }
+                // A file the user attached to *this* stop reads under it, where
+                // they put it — not lumped into a trip-wide list at the end.
+                if options.contains(.attachments) {
+                    for attachment in stop.sortedAttachments {
+                        var fileLine = "   - 📎 \(attachment.filename)"
+                        if !attachment.caption.isEmpty { fileLine += " — \(attachment.caption)" }
+                        lines.append(fileLine)
+                    }
+                }
             }
         }
 
@@ -235,16 +244,16 @@ final class Trip {
             lines.append(notes)
         }
 
-        // Markdown is text, so files can only be *listed* — filename, caption,
-        // and which stop each belongs to. The PDF export embeds the images.
-        let attachments = sortedAttachments
-        if options.contains(.attachments), !attachments.isEmpty {
+        // Only trip-level documents here (per-stop files already read under their
+        // stop above). Markdown is text, so files are listed by name + caption;
+        // the PDF export embeds image and PDF attachments as pages.
+        let tripDocuments = documents
+        if options.contains(.attachments), !tripDocuments.isEmpty {
             lines.append("")
             lines.append("## \(Str.Trip.attachmentsLabel)")
-            for attachment in attachments {
+            for attachment in tripDocuments {
                 var line = "- \(attachment.filename)"
                 if !attachment.caption.isEmpty { line += " — \(attachment.caption)" }
-                if let stop = attachment.item { line += " (\(stop.displayTitle))" }
                 lines.append(line)
             }
         }
