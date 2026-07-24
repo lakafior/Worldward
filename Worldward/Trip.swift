@@ -446,6 +446,30 @@ final class ItineraryItem {
         set { transportMode = newValue?.rawValue ?? "" }
     }
 
+    /// How long the traveler stays at this stop, inferred from the gap to the next
+    /// dated stop (chronologically), or the trip's end date for the final one.
+    /// `nil` when the stop has no date, there's nothing to measure against, or the
+    /// span is zero — so the row can simply omit the "N days" hint. This is a
+    /// *display hint*, not a stored duration: it assumes you stay until the next
+    /// stop, so an excursion that loops back to a base reads long. Deliberately
+    /// cheaper than a second stored end-date — no schema change, no CloudKit
+    /// redeploy, just the dates already on the itinerary.
+    var stayDayCount: Int? {
+        guard let start = date, let trip else { return nil }
+        let calendar = Calendar.current
+        let startDay = calendar.startOfDay(for: start)
+        // The next stop *in time* — the earliest dated stop that starts after this
+        // one — regardless of how the list is currently sorted or grouped.
+        let nextStart = trip.sortedStops
+            .compactMap(\.date)
+            .map { calendar.startOfDay(for: $0) }
+            .filter { $0 > startDay }
+            .min()
+        let end = nextStart ?? calendar.startOfDay(for: trip.endDate)
+        let days = calendar.dateComponents([.day], from: startDay, to: end).day ?? 0
+        return days > 0 ? days : nil
+    }
+
     /// The stop's places-to-see in the order they were added.
     var sortedPlaces: [StopPlace] {
         (places ?? []).sorted { $0.order < $1.order }

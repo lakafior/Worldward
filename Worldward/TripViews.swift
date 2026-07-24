@@ -2077,6 +2077,15 @@ private struct StopRow: View {
                     } else {
                         DatePicker("Date", selection: selection, displayedComponents: .date)
                     }
+                    // How long you're here, inferred from the gap to the next dated
+                    // stop (the trip's end for the last one). A gray hint, not an
+                    // editable field — see `ItineraryItem.stayDayCount`.
+                    if let days = stop.stayDayCount {
+                        Text("^[\(days) day](inflect: true)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
