@@ -63,6 +63,7 @@ final class TravelIntelligence {
             localized: "Which European countries haven't I been to?",
             comment: "Chat starter question"),
         String(localized: "What was my busiest travel year?", comment: "Chat starter question"),
+        String(localized: "When's my next trip?", comment: "Chat starter question"),
         String(localized: "Where have I lived?", comment: "Chat starter question"),
     ]
 
@@ -107,23 +108,26 @@ final class TravelIntelligence {
             TravelSummaryTool(),
             CountriesTool(),
             ContinentProgressTool(),
+            TripsTool(),
         ]
         let session = LanguageModelSession(tools: tools) {
             """
             You are Worldward's travel assistant. You help the user understand \
-            their own travel history: which countries they have visited, when, \
-            and how far along they are on each continent.
+            their own travel: which countries they have visited, when, and how \
+            far along they are on each continent — and the trips they have \
+            planned, including dates, itineraries, and packing.
             """
             """
             Always call a tool to get real data before answering. Never invent \
-            country names, counts, or dates, and never rely on your own \
-            geographic knowledge for the user's records — the tools are the only \
-            source of truth.
+            country names, trip details, counts, or dates, and never rely on your \
+            own geographic knowledge for the user's records — the tools are the \
+            only source of truth. Use getTrips for anything about upcoming or \
+            past trips, itineraries, or packing.
             """
             """
             Keep answers short and friendly. Show country flag emoji when you \
-            list countries. If the user has no relevant travels, say so plainly \
-            and encourage them to start logging visits.
+            list countries. If the user has no relevant travels or trips, say so \
+            plainly and encourage them to start logging visits or planning a trip.
             """
         }
         self.session = session
@@ -139,6 +143,13 @@ final class TravelIntelligence {
 private func fetchCountries() throws -> [Country] {
     let context = ModelContext(Worldward.sharedModelContainer)
     return try context.fetch(FetchDescriptor<Country>())
+}
+
+/// Loads every trip from the main actor, creating a short-lived `ModelContext`.
+/// Mirrors `fetchCountries` for the trip-aware tool.
+private func fetchTrips() throws -> [Trip] {
+    let context = ModelContext(Worldward.sharedModelContainer)
+    return try context.fetch(FetchDescriptor<Trip>())
 }
 
 /// Formats a country's recorded visit dates as a short, human-readable phrase,
@@ -342,6 +353,96 @@ private struct ContinentProgressTool: Tool {
             if remaining.count > cap {
                 result += " …and \(remaining.count - cap) more."
             }
+        }
+        return result
+    }
+}
+
+// MARK: - Tool 4: Trips
+
+/// Reports the user's planned and recent trips: dates, where each trip is relative
+/// to today (upcoming / underway / past), the countries it touches, packing
+/// progress, and the dated itinerary stops. Use for "when's my next trip", "what's
+/// on my itinerary", "what do I still need to pack", "where am I going".
+private struct TripsTool: Tool {
+    let name = "getTrips"
+    let description =
+        "Returns the user's trips with their dates, whether each is upcoming, "
+        + "underway, or past, the countries visited, packing progress, and the "
+        + "dated itinerary stops. Use for any question about planned or recent "
+        + "trips, itineraries, or packing."
+
+    @Generable
+    struct Arguments {
+        @Guide(
+            description:
+                "When true, include finished (past) trips too; when false or omitted, only upcoming and in-progress trips."
+        )
+        var includePast: Bool?
+    }
+
+    func call(arguments: Arguments) async throws -> String {
+        try await summarize(includePast: arguments.includePast ?? false)
+    }
+
+    @MainActor private func summarize(includePast: Bool) throws -> String {
+        let now = Date()
+        let all = try fetchTrips()
+        let upcoming = all.filter { $0.endDate >= now }.sorted { $0.startDate < $1.startDate }
+        let past = all.filter { $0.endDate < now }.sorted { $0.startDate > $1.startDate }
+        let trips = includePast ? upcoming + past : upcoming
+
+        guard !trips.isEmpty else {
+            return includePast
+                ? "The user has not planned any trips yet."
+                : "The user has no upcoming or in-progress trips. They may have past trips — call again with includePast set to true to see them."
+        }
+
+        // Cap so a long trip history can't overflow the context window.
+        let cap = 8
+        let shown = trips.prefix(cap)
+
+        let blocks = shown.map { trip -> String in
+            let name = trip.title.isEmpty ? "Untitled trip" : trip.title
+            let flags = trip.flags.isEmpty ? "" : " \(trip.flags)"
+            var lines: [String] = ["\(name)\(flags) — \(trip.dateRangeText)"]
+
+            switch trip.phase(asOf: now) {
+            case .upcoming(let daysAway):
+                lines.append(daysAway == 0 ? "Status: starts today" : "Status: in \(daysAway) day(s)")
+            case .underway(let day, let total):
+                lines.append("Status: underway, day \(day) of \(total)")
+            case .past(let daysAgo):
+                lines.append("Status: ended \(daysAgo) day(s) ago")
+            }
+
+            let packingTotal = (trip.packing ?? []).count
+            if packingTotal > 0 {
+                lines.append("Packing: \(trip.packedCount) of \(packingTotal) packed")
+            }
+
+            let stops = trip.sortedStops
+            if !stops.isEmpty {
+                let stopLines = stops.prefix(12).map { stop -> String in
+                    let flag = stop.country?.flagEmoji ?? "📍"
+                    var line = "  - \(flag) \(stop.displayTitle)"
+                    if let date = stop.date {
+                        line += " (\(date.formatted(date: .abbreviated, time: .omitted)))"
+                    }
+                    if let mode = stop.transport { line += " \(mode.emoji)" }
+                    return line
+                }
+                lines.append("Itinerary:")
+                lines.append(contentsOf: stopLines)
+                if stops.count > 12 { lines.append("  …and \(stops.count - 12) more stops") }
+            }
+
+            return lines.joined(separator: "\n")
+        }
+
+        var result = "\(trips.count) trip(s):\n\n" + blocks.joined(separator: "\n\n")
+        if trips.count > cap {
+            result += "\n\n…and \(trips.count - cap) more not shown."
         }
         return result
     }

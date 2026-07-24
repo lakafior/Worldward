@@ -812,6 +812,7 @@ struct ContentView: View {
             .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
             .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
             .onChange(of: intentRouter.pendingMapTrip) { consumePendingMapTrip() }
+            .onChange(of: intentRouter.pendingOpenTripID) { consumePendingOpenTrip() }
             // The catalog arrives after `loadGeoJSON`; re-try a pending country
             // selection once it does, so a cold-launched intent still resolves.
             // The count also changes as iCloud syncs rows in, so collapse any
@@ -873,6 +874,7 @@ struct ContentView: View {
                 consumePendingOpenCountry()
                 consumePendingSearch()
                 consumePendingOpenPhotoImporter()
+                consumePendingOpenTrip()
                 checkControlRequest()
             }
     }
@@ -988,6 +990,25 @@ struct ContentView: View {
         guard let trip = intentRouter.pendingMapTrip else { return }
         intentRouter.pendingMapTrip = nil
         showTripOnMap(trip)
+    }
+
+    /// Routes `OpenTripIntent` to the trip's details. On macOS the trip fills the
+    /// window inspector directly; on iOS the Going tab comes forward and its trips
+    /// list opens the sheet (and clears the id — see `TripsListView`), which also
+    /// covers the cold-launch case where the list mounts after this runs.
+    private func consumePendingOpenTrip() {
+        guard let id = intentRouter.pendingOpenTripID else { return }
+        #if os(macOS)
+            let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
+            // Leave the id pending if the store hasn't loaded the trip yet; the
+            // `onChange`/`onAppear` hooks retry once it has.
+            guard let trip = trips.first(where: { $0.dedupID == id }) else { return }
+            intentRouter.pendingOpenTripID = nil
+            macPath.removeAll()
+            selectedTrip = trip
+        #else
+            selectedTab = .going
+        #endif
     }
 
     /// Handles a `.wwtrip` file opened from outside the app (AirDrop's "Open
@@ -1490,6 +1511,10 @@ struct ContentView: View {
         // invalidate this whole scene; `StoreWatchers` decides when to call.
         let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
         refreshWidgetSnapshot(countries: allCountries, trips: trips)
+        // Keep trips searchable in Spotlight (and reasoned over by Apple
+        // Intelligence). Gated internally on a content signature, so this is a
+        // no-op unless a trip was actually added, edited, or removed.
+        Task { await TripSpotlightIndexer.indexIfNeeded(trips) }
     }
 
     /// Applies packing-list toggles made on the widget to the model. Ids that no

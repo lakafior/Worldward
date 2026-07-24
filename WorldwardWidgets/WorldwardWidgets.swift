@@ -457,6 +457,126 @@ struct MiniMapWidget: Widget {
         }
     }
 
+    // MARK: - Next-trip accessory
+
+    /// A glanceable countdown to the next trip for the Lock Screen. Reuses
+    /// `UpcomingTripProvider` so it re-renders at midnight and rolls over to the
+    /// following journey on its own. Monochrome, so it leans on SF Symbols and the
+    /// day count rather than the home-screen widget's flags.
+    struct NextTripAccessoryView: View {
+        @Environment(\.widgetFamily) private var family
+        let entry: WorldwardEntry
+
+        private var trip: WidgetSnapshot.UpcomingTrip? {
+            entry.snapshot.upcomingTrips.first { $0.endDate >= entry.date }
+        }
+
+        /// Whole days from today to the trip's start; 0 on departure day, negative
+        /// once underway.
+        private func daysToGo(_ trip: WidgetSnapshot.UpcomingTrip) -> Int {
+            let calendar = Calendar.current
+            return calendar.dateComponents(
+                [.day],
+                from: calendar.startOfDay(for: entry.date),
+                to: calendar.startOfDay(for: trip.startDate)
+            ).day ?? 0
+        }
+
+        private func shortCountdown(_ days: Int) -> String {
+            if days <= 0 { return String(localized: "now") }
+            if days == 1 { return String(localized: "tomorrow") }
+            return String(localized: "in \(days)d")
+        }
+
+        var body: some View {
+            switch family {
+            case .accessoryInline:
+                if let trip {
+                    let days = daysToGo(trip)
+                    Label(
+                        days <= 0
+                            ? String(localized: "\(tripName(trip)) now")
+                            : String(localized: "\(tripName(trip)) \(shortCountdown(days))"),
+                        systemImage: "airplane.departure")
+                } else {
+                    Label("No trips planned", systemImage: "airplane")
+                }
+
+            case .accessoryCircular:
+                if let trip {
+                    let days = daysToGo(trip)
+                    VStack(spacing: 0) {
+                        Image(systemName: "airplane.departure").font(.caption2)
+                        if days <= 0 {
+                            Image(systemName: "suitcase.fill").font(.caption)
+                        } else {
+                            Text("\(days)")
+                                .font(.system(.title2, design: .rounded).weight(.bold))
+                                .minimumScaleFactor(0.5)
+                            Text("days").font(.system(size: 8))
+                        }
+                    }
+                } else {
+                    Image(systemName: "airplane").font(.title3).widgetAccentable()
+                }
+
+            case .accessoryRectangular:
+                if let trip {
+                    let days = daysToGo(trip)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Label(tripName(trip), systemImage: "airplane.departure")
+                            .font(.headline)
+                            .widgetAccentable()
+                            .lineLimit(1)
+                        Text(
+                            days <= 0
+                                ? String(localized: "Traveling now")
+                                : String(localized: "\(shortCountdown(days).capitalized) · \(dateRange(trip))")
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Label("No trips planned", systemImage: "airplane")
+                            .font(.headline)
+                            .widgetAccentable()
+                        Text("Plan one in Worldward.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+            default:
+                EmptyView()
+            }
+        }
+
+        private func tripName(_ trip: WidgetSnapshot.UpcomingTrip) -> String {
+            trip.title.isEmpty ? String(localized: "Next trip") : trip.title
+        }
+
+        private func dateRange(_ trip: WidgetSnapshot.UpcomingTrip) -> String {
+            let start = trip.startDate.formatted(date: .abbreviated, time: .omitted)
+            let end = trip.endDate.formatted(date: .abbreviated, time: .omitted)
+            return start == end ? start : "\(start) – \(end)"
+        }
+    }
+
+    struct NextTripAccessoryWidget: Widget {
+        var body: some WidgetConfiguration {
+            StaticConfiguration(kind: "WorldwardNextTripAccessory", provider: UpcomingTripProvider())
+            { entry in
+                NextTripAccessoryView(entry: entry)
+                    .containerBackground(for: .widget) { Color.clear }
+            }
+            .configurationDisplayName("Next Trip Countdown")
+            .description("A countdown to your next trip, on the Lock Screen.")
+            .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        }
+    }
+
 #endif
 
 // MARK: - Control Center

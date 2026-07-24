@@ -131,6 +131,7 @@ struct GoingView: View {
     }
 
     @State private var segment: Segment = .trips
+    @State private var intentRouter = IntentRouter.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -164,6 +165,15 @@ struct GoingView: View {
             // the selected section shows a compact empty state.
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        // `OpenTripIntent` needs the trips list mounted to open its sheet, so a
+        // pending request forces this section forward off whatever the user last
+        // browsed (wishlist / suggestions).
+        .onChange(of: intentRouter.pendingOpenTripID) {
+            if intentRouter.pendingOpenTripID != nil { segment = .trips }
+        }
+        .onAppear {
+            if intentRouter.pendingOpenTripID != nil { segment = .trips }
+        }
     }
 }
 
@@ -177,6 +187,7 @@ private struct TripsListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var trips: [Trip]
     @State private var editingTrip: Trip?
+    @State private var intentRouter = IntentRouter.shared
 
     /// Whether the "Past Trips" disclosure is open. Collapsed by default so
     /// finished trips don't crowd the list; purely derived from `endDate` — a
@@ -253,6 +264,12 @@ private struct TripsListView: View {
         .sheet(item: $editingTrip) { trip in
             TripDetailSheet(trip: trip, allCountries: allCountries)
         }
+        // `OpenTripIntent` routes here via the shared router. Watch both the
+        // request and the query: on a cold launch the trip may not have loaded
+        // when the request arrives, so a `trips` change retries.
+        .onChange(of: intentRouter.pendingOpenTripID) { openPendingTripIfNeeded() }
+        .onChange(of: trips.count) { openPendingTripIfNeeded() }
+        .onAppear { openPendingTripIfNeeded() }
         .task {
             #if DEBUG
                 // Screenshot capture: open the demo trip (the packing run then
@@ -324,6 +341,22 @@ private struct TripsListView: View {
     private func delete(_ trip: Trip) {
         if selectedTrip == trip { selectedTrip = nil }
         modelContext.delete(trip)
+    }
+
+    /// Opens a trip requested by `OpenTripIntent`. Resolves the id against the
+    /// live query; if the trip hasn't loaded/synced in yet it leaves the request
+    /// pending (a `trips` change retries). Clears the id once opened so it fires
+    /// exactly once — iOS presents the sheet, macOS fills the detail column.
+    private func openPendingTripIfNeeded() {
+        guard let id = intentRouter.pendingOpenTripID,
+            let trip = trips.first(where: { $0.dedupID == id })
+        else { return }
+        intentRouter.pendingOpenTripID = nil
+        #if os(macOS)
+            selectedTrip = trip
+        #else
+            editingTrip = trip
+        #endif
     }
 
 }

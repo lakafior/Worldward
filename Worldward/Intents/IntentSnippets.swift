@@ -2,6 +2,112 @@
 
 import SwiftUI
 
+// MARK: - Next Trip Snippet
+
+/// The visual result for `GetNextTripIntent`: the trip's flags and title, a big
+/// countdown (or "day N of M" while underway), and the date range. Built from
+/// plain values so it renders cheaply wherever the system shows it.
+struct NextTripSnippet: View {
+    let title: String
+    let flags: String
+    let phase: TripPhase
+    let dateRange: String
+
+    /// The big number and its caption, derived from the phase.
+    private var headline: (number: String, caption: String) {
+        switch phase {
+        case .upcoming(let daysAway):
+            return daysAway == 0
+                ? (String(localized: "Today"), String(localized: "departure"))
+                : ("\(daysAway)", daysAway == 1 ? String(localized: "day to go") : String(localized: "days to go"))
+        case .underway(let day, let total):
+            return ("\(day)", String(localized: "of \(total) days"))
+        case .past(let daysAgo):
+            return ("\(daysAgo)", String(localized: "days ago"))
+        }
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                Label("Next Trip", systemImage: "airplane.departure")
+                    .font(.headline)
+                    .foregroundStyle(Color.brand)
+
+                if !flags.isEmpty {
+                    Text(flags).font(.title3).lineLimit(1)
+                }
+                Text(title)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                Text(dateRange)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(spacing: 0) {
+                Text(headline.number)
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.brand)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                Text(headline.caption)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Packing Progress Snippet
+
+/// The visual result for `GetPackingProgressIntent`: a progress bar plus the
+/// packed / total counts for a trip.
+struct PackingProgressSnippet: View {
+    let title: String
+    let flags: String
+    let packed: Int
+    let total: Int
+
+    private var fraction: Double {
+        total > 0 ? Double(packed) / Double(total) : 0
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Packing", systemImage: "suitcase.fill")
+                .font(.headline)
+                .foregroundStyle(Color.brand)
+
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("\(packed)")
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.brand)
+                Text("of \(total) packed")
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+            }
+
+            ProgressView(value: fraction)
+                .tint(Color.brand)
+
+            HStack(spacing: 6) {
+                if !flags.isEmpty { Text(flags).font(.subheadline).lineLimit(1) }
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 // MARK: - Visit Count Snippet
 
 /// The visual result for `GetVisitCountIntent`, shown by Siri, Spotlight, and

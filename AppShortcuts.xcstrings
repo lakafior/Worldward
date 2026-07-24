@@ -1,19 +1,275 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "How many countries have I visited in ${applicationName}?" : {
+    "Add to my packing list in ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringSet" : {
             "state" : "new",
             "values" : [
-              "How many countries have I visited in ${applicationName}?",
-              "Show my travel count from ${applicationName}",
-              "What's my country count in ${applicationName}?"
+              "Add to my packing list in ${applicationName}",
+              "Add a packing item in ${applicationName}"
             ]
           }
         },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Добави в моя списък за опаковане в ${applicationName}",
+              "Добави предмет за опаковане в ${applicationName}"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Přidat do mého balicího seznamu v ${applicationName}",
+              "Přidat položku k balení v ${applicationName}"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Tilføj til min pakkeliste i ${applicationName}",
+              "Tilføj en pakkevare i ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Zu meiner Packliste in ${applicationName} hinzufügen",
+              "Einen Packgegenstand in ${applicationName} hinzufügen"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Προσθήκη στη λίστα συσκευασίας μου στο ${applicationName}",
+              "Προσθήκη αντικειμένου συσκευασίας στο ${applicationName}"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Aldoni al mia pakaĵlisto en ${applicationName}",
+              "Aldoni pakaĵeron en ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Añadir a mi lista de equipaje en ${applicationName}",
+              "Añadir un artículo de equipaje en ${applicationName}"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Lisa minu pakkimisnimekirja rakenduses ${applicationName}",
+              "Lisa pakkimisese rakenduses ${applicationName}"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Lisää pakkauslistalleni sovelluksessa ${applicationName}",
+              "Lisää pakattava sovelluksessa ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ajouter à ma liste de colisage dans ${applicationName}",
+              "Ajouter un article de colisage dans ${applicationName}"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cuir le mo liosta pacála in ${applicationName}",
+              "Cuir earra pacála in ${applicationName}"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Dodaj na moj popis za pakiranje u ${applicationName}",
+              "Dodaj stavku za pakiranje u ${applicationName}"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hozzáadás a csomagolási listámhoz a ${applicationName} alkalmazásban",
+              "Csomagolási elem hozzáadása a ${applicationName} alkalmazásban"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Aggiungi alla mia lista bagagli in ${applicationName}",
+              "Aggiungi un articolo da imballare in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で私の荷造りリストに追加",
+              "${applicationName}で荷造りアイテムを追加"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 내 짐 목록에 추가",
+              "${applicationName}에서 짐 항목 추가"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Pridėti į mano pakavimo sąrašą ${applicationName}",
+              "Pridėti pakavimo daiktą ${applicationName}"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Pievienot manam iepakošanas sarakstam lietotnē ${applicationName}",
+              "Pievienot iepakojamo vienumu lietotnē ${applicationName}"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Żid mal-lista tal-ippakkjar tiegħi f'${applicationName}",
+              "Żid oġġett tal-ippakkjar f'${applicationName}"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Toevoegen aan mijn paklijst in ${applicationName}",
+              "Een inpakitem toevoegen in ${applicationName}"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Dodaj do mojej listy pakunkowej w ${applicationName}",
+              "Dodaj przedmiot do pakowania w ${applicationName}"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Adicionar à minha lista de bagagem no ${applicationName}",
+              "Adicionar um item de bagagem no ${applicationName}"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Adicionar à minha lista de bagagem no ${applicationName}",
+              "Adicionar um item de bagagem no ${applicationName}"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Adaugă la lista mea de ambalare în ${applicationName}",
+              "Adaugă un articol de ambalat în ${applicationName}"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Pridať do môjho baliaceho zoznamu v ${applicationName}",
+              "Pridať položku na balenie v ${applicationName}"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Dodaj na moj seznam za pakiranje v ${applicationName}",
+              "Dodaj predmet za pakiranje v ${applicationName}"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Lägg till i min packlista i ${applicationName}",
+              "Lägg till en packningssak i ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "添加到我在${applicationName}中的打包清单",
+              "在${applicationName}中添加打包物品"
+            ]
+          }
+        }
+      }
+    },
+    "How many countries have I visited in ${applicationName}?" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
         "bg" : {
           "stringSet" : {
             "state" : "translated",
@@ -61,6 +317,16 @@
               "Πόσες χώρες έχω επισκεφθεί στο ${applicationName};",
               "Δείξε τον αριθμό ταξιδιών μου από το ${applicationName}",
               "Πόσες χώρες έχω στο ${applicationName};"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "How many countries have I visited in ${applicationName}?",
+              "Show my travel count from ${applicationName}",
+              "What's my country count in ${applicationName}?"
             ]
           }
         },
@@ -296,19 +562,304 @@
         }
       }
     },
-    "Log a trip in ${applicationName}" : {
+    "How much have I packed in ${applicationName}?" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringSet" : {
             "state" : "new",
             "values" : [
-              "Log a trip in ${applicationName}",
-              "Describe my travels to ${applicationName}",
-              "Log visits from a description in ${applicationName}"
+              "How much have I packed in ${applicationName}?",
+              "What's my packing progress in ${applicationName}?",
+              "Am I ready for my ${applicationName} trip?"
             ]
           }
         },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Колко съм опаковал в ${applicationName}?",
+              "Какъв е напредъкът ми в ${applicationName}?",
+              "Готов ли съм за пътуването си в ${applicationName}?"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kolik jsem zabalil v ${applicationName}?",
+              "Jaký je stav mého balení v ${applicationName}?",
+              "Jsem připraven na cestu v ${applicationName}?"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hvor meget har jeg pakket i ${applicationName}?",
+              "Hvad er min pakkefremskridt i ${applicationName}?",
+              "Er jeg klar til min ${applicationName} rejse?"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Wie viel habe ich in ${applicationName} gepackt?",
+              "Wie ist mein Packfortschritt in ${applicationName}?",
+              "Bin ich bereit für meine ${applicationName} Reise?"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Πόσα έχω συσκευάσει στο ${applicationName};",
+              "Ποια είναι η πρόοδος συσκευασίας μου στο ${applicationName};",
+              "Είμαι έτοιμος για το ταξίδι μου στο ${applicationName};"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kiom mi pakis en ${applicationName}?",
+              "Kia estas mia pakaĵprogreso en ${applicationName}?",
+              "Ĉu mi estas preta por mia ${applicationName} vojaĝo?"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "¿Cuánto he empacado en ${applicationName}?",
+              "¿Cuál es mi progreso de equipaje en ${applicationName}?",
+              "¿Estoy listo para mi viaje en ${applicationName}?"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kui palju ma olen pakkinud rakenduses ${applicationName}?",
+              "Milline on minu pakkimise edenemine rakenduses ${applicationName}?",
+              "Kas olen oma ${applicationName} reisiks valmis?"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kuinka paljon olen pakannut sovelluksessa ${applicationName}?",
+              "Mikä on pakkaukseni edistyminen sovelluksessa ${applicationName}?",
+              "Olenko valmis ${applicationName} matkaani?"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Combien ai-je emballé dans ${applicationName} ?",
+              "Quelle est ma progression de colisage dans ${applicationName} ?",
+              "Suis-je prêt pour mon voyage ${applicationName} ?"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cé mhéad atá pacáilte agam in ${applicationName}?",
+              "Cad é mo dhul chun cinn pacála in ${applicationName}?",
+              "An bhfuil mé réidh le mo thuras ${applicationName}?"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Koliko sam spakirao u ${applicationName}?",
+              "Kakav je moj napredak pakiranja u ${applicationName}?",
+              "Jesam li spreman za svoje ${applicationName} putovanje?"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mennyit csomagoltam a ${applicationName} alkalmazásban?",
+              "Mi a csomagolásom állapota a ${applicationName} alkalmazásban?",
+              "Készen állok a ${applicationName} utamra?"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quanto ho imballato in ${applicationName}?",
+              "Qual è lo stato dei miei bagagli in ${applicationName}?",
+              "Sono pronto per il mio viaggio ${applicationName}?"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でどれだけ荷造りしましたか？",
+              "${applicationName}での荷造りの進捗は？",
+              "${applicationName}の旅行の準備はできましたか？"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 얼마나 챙겼나요?",
+              "${applicationName}에서 내 짐 진행 상황은?",
+              "${applicationName} 여행 준비가 되었나요?"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kiek aš supakovau ${applicationName}?",
+              "Kokia mano pakavimo progresas ${applicationName}?",
+              "Ar aš pasiruošęs savo ${applicationName} kelionei?"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cik daudz esmu sapakojis lietotnē ${applicationName}?",
+              "Kāds ir mans iepakošanas progress lietotnē ${applicationName}?",
+              "Vai esmu gatavs savam ${applicationName} ceļojumam?"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kemm ippakkjajt f'${applicationName}?",
+              "X'inhu l-progress tal-ippakkjar tiegħi f'${applicationName}?",
+              "Jien lest għall-vjaġġ ${applicationName} tiegħi?"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hoeveel heb ik ingepakt in ${applicationName}?",
+              "Wat is mijn inpakvoortgang in ${applicationName}?",
+              "Ben ik klaar voor mijn ${applicationName} reis?"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ile spakowałem w ${applicationName}?",
+              "Jaki jest postęp mojego pakowania w ${applicationName}?",
+              "Czy jestem gotowy na podróż ${applicationName}?"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quanto eu arrumei no ${applicationName}?",
+              "Qual é o meu progresso de bagagem no ${applicationName}?",
+              "Estou pronto para minha viagem no ${applicationName}?"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quanto arrumei no ${applicationName}?",
+              "Qual é o meu progresso de bagagem no ${applicationName}?",
+              "Estou pronto para a minha viagem ${applicationName}?"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cât am ambalat în ${applicationName}?",
+              "Care este progresul meu de ambalare în ${applicationName}?",
+              "Sunt pregătit pentru călătoria mea ${applicationName}?"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Koľko som zabalil v ${applicationName}?",
+              "Aký je stav môjho balenia v ${applicationName}?",
+              "Som pripravený na cestu ${applicationName}?"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Koliko sem zapakiral v ${applicationName}?",
+              "Kakšen je moj napredek pakiranja v ${applicationName}?",
+              "Sem pripravljen na svoje ${applicationName} potovanje?"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hur mycket har jag packat i ${applicationName}?",
+              "Vad är min packningsstatus i ${applicationName}?",
+              "Är jag redo för min ${applicationName} resa?"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "我在${applicationName}中打包了多少？",
+              "我在${applicationName}中的打包进度如何？",
+              "我准备好${applicationName}的旅行了吗？"
+            ]
+          }
+        }
+      }
+    },
+    "Log a trip in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
         "bg" : {
           "stringSet" : {
             "state" : "translated",
@@ -356,6 +907,16 @@
               "Κατέγραψε ένα ταξίδι στο ${applicationName}",
               "Περίγραψε τα ταξίδια μου στο ${applicationName}",
               "Κατέγραψε επισκέψεις από περιγραφή στο ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Log a trip in ${applicationName}",
+              "Describe my travels to ${applicationName}",
+              "Log visits from a description in ${applicationName}"
             ]
           }
         },
@@ -594,15 +1155,6 @@
     "Log a visit to ${country} in ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "Log a visit to ${country} in ${applicationName}",
-              "Record a trip to ${country} with ${applicationName}"
-            ]
-          }
-        },
         "bg" : {
           "stringSet" : {
             "state" : "translated",
@@ -645,6 +1197,15 @@
             "values" : [
               "Κατέγραψε επίσκεψη στη ${country} στο ${applicationName}",
               "Σημείωσε ταξίδι στη ${country} με το ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Log a visit to ${country} in ${applicationName}",
+              "Record a trip to ${country} with ${applicationName}"
             ]
           }
         },
@@ -860,16 +1421,6 @@
     "Mark ${country} in ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "Mark ${country} in ${applicationName}",
-              "Set travel status for ${country} with ${applicationName}",
-              "Flag ${country} with ${applicationName}"
-            ]
-          }
-        },
         "bg" : {
           "stringSet" : {
             "state" : "translated",
@@ -917,6 +1468,16 @@
               "Σημείωσε τη ${country} στο ${applicationName}",
               "Όρισε κατάσταση ταξιδιού για τη ${country} με το ${applicationName}",
               "Επισήμανε τη ${country} με το ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Mark ${country} in ${applicationName}",
+              "Set travel status for ${country} with ${applicationName}",
+              "Flag ${country} with ${applicationName}"
             ]
           }
         },
@@ -1155,15 +1716,6 @@
     "Mark where I am in ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "Mark where I am in ${applicationName}",
-              "Record my current location with ${applicationName}"
-            ]
-          }
-        },
         "bg" : {
           "stringSet" : {
             "state" : "translated",
@@ -1206,6 +1758,15 @@
             "values" : [
               "Σημείωσε πού βρίσκομαι στο ${applicationName}",
               "Κατέγραψε την τρέχουσα τοποθεσία μου με το ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Mark where I am in ${applicationName}",
+              "Record my current location with ${applicationName}"
             ]
           }
         },
@@ -1421,15 +1982,6 @@
     "My progress in ${continent} from ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "My progress in ${continent} from ${applicationName}",
-              "How much of ${continent} have I seen in ${applicationName}?"
-            ]
-          }
-        },
         "bg" : {
           "stringSet" : {
             "state" : "translated",
@@ -1472,6 +2024,15 @@
             "values" : [
               "Η πρόοδός μου στην ${continent} από το ${applicationName}",
               "Πόσο από την ${continent} έχω δει στο ${applicationName};"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "My progress in ${continent} from ${applicationName}",
+              "How much of ${continent} have I seen in ${applicationName}?"
             ]
           }
         },
@@ -1679,6 +2240,567 @@
             "values" : [
               "${applicationName}中我在${continent}的进度",
               "我在${applicationName}里看过多少${continent}？"
+            ]
+          }
+        }
+      }
+    },
+    "Open ${target} in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Open ${target} in ${applicationName}",
+              "Show ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Отвори ${target} в ${applicationName}",
+              "Покажи ${target} в ${applicationName}"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Otevřít ${target} v ${applicationName}",
+              "Zobrazit ${target} v ${applicationName}"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Åbn ${target} i ${applicationName}",
+              "Vis ${target} i ${applicationName}"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${target} in ${applicationName} öffnen",
+              "${target} in ${applicationName} anzeigen"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Άνοιγμα ${target} στο ${applicationName}",
+              "Εμφάνιση ${target} στο ${applicationName}"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Malfermi ${target} en ${applicationName}",
+              "Montri ${target} en ${applicationName}"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Abrir ${target} en ${applicationName}",
+              "Mostrar ${target} en ${applicationName}"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ava ${target} rakenduses ${applicationName}",
+              "Näita ${target} rakenduses ${applicationName}"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Avaa ${target} sovelluksessa ${applicationName}",
+              "Näytä ${target} sovelluksessa ${applicationName}"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Ouvrir ${target} dans ${applicationName}",
+              "Afficher ${target} dans ${applicationName}"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Oscail ${target} in ${applicationName}",
+              "Taispeáin ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Otvori ${target} u ${applicationName}",
+              "Prikaži ${target} u ${applicationName}"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${target} megnyitása a ${applicationName} alkalmazásban",
+              "${target} megjelenítése a ${applicationName} alkalmazásban"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Apri ${target} in ${applicationName}",
+              "Mostra ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${target}を開く",
+              "${applicationName}で${target}を表示"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 ${target} 열기",
+              "${applicationName}에서 ${target} 보기"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Atidaryti ${target} ${applicationName}",
+              "Rodyti ${target} ${applicationName}"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Atvērt ${target} lietotnē ${applicationName}",
+              "Parādīt ${target} lietotnē ${applicationName}"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Iftaħ ${target} f'${applicationName}",
+              "Uri ${target} f'${applicationName}"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Open ${target} in ${applicationName}",
+              "Toon ${target} in ${applicationName}"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Otwórz ${target} w ${applicationName}",
+              "Pokaż ${target} w ${applicationName}"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Abrir ${target} no ${applicationName}",
+              "Mostrar ${target} no ${applicationName}"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Abrir ${target} no ${applicationName}",
+              "Mostrar ${target} no ${applicationName}"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Deschide ${target} în ${applicationName}",
+              "Arată ${target} în ${applicationName}"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Otvoriť ${target} v ${applicationName}",
+              "Zobraziť ${target} v ${applicationName}"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Odpri ${target} v ${applicationName}",
+              "Pokaži ${target} v ${applicationName}"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Öppna ${target} i ${applicationName}",
+              "Visa ${target} i ${applicationName}"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "在${applicationName}中打开${target}",
+              "在${applicationName}中显示${target}"
+            ]
+          }
+        }
+      }
+    },
+    "When's my next trip in ${applicationName}?" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "When's my next trip in ${applicationName}?",
+              "What's my next trip in ${applicationName}?",
+              "How long until my ${applicationName} trip?"
+            ]
+          }
+        },
+        "bg" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Кога е следващото ми пътуване в ${applicationName}?",
+              "Какво е следващото ми пътуване в ${applicationName}?",
+              "Колко време остава до пътуването ми в ${applicationName}?"
+            ]
+          }
+        },
+        "cs" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kdy je moje další cesta v ${applicationName}?",
+              "Jaká je moje další cesta v ${applicationName}?",
+              "Jak dlouho do mé cesty v ${applicationName}?"
+            ]
+          }
+        },
+        "da" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Hvornår er min næste rejse i ${applicationName}?",
+              "Hvad er min næste rejse i ${applicationName}?",
+              "Hvor lang tid til min ${applicationName} rejse?"
+            ]
+          }
+        },
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Wann ist meine nächste Reise in ${applicationName}?",
+              "Was ist meine nächste Reise in ${applicationName}?",
+              "Wie lange bis zu meiner ${applicationName} Reise?"
+            ]
+          }
+        },
+        "el" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Πότε είναι το επόμενο ταξίδι μου στο ${applicationName};",
+              "Ποιο είναι το επόμενο ταξίδι μου στο ${applicationName};",
+              "Πόσος χρόνος απομένει για το ταξίδι μου στο ${applicationName};"
+            ]
+          }
+        },
+        "eo" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kiam estas mia venonta vojaĝo en ${applicationName}?",
+              "Kio estas mia venonta vojaĝo en ${applicationName}?",
+              "Kiom da tempo ĝis mia ${applicationName} vojaĝo?"
+            ]
+          }
+        },
+        "es" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "¿Cuándo es mi próximo viaje en ${applicationName}?",
+              "¿Cuál es mi próximo viaje en ${applicationName}?",
+              "¿Cuánto falta para mi viaje en ${applicationName}?"
+            ]
+          }
+        },
+        "et" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Millal on minu järgmine reis rakenduses ${applicationName}?",
+              "Mis on minu järgmine reis rakenduses ${applicationName}?",
+              "Kui palju aega on jäänud minu ${applicationName} reisini?"
+            ]
+          }
+        },
+        "fi" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Milloin on seuraava matkani sovelluksessa ${applicationName}?",
+              "Mikä on seuraava matkani sovelluksessa ${applicationName}?",
+              "Kuinka pitkä aika ${applicationName} matkaani?"
+            ]
+          }
+        },
+        "fr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quand est mon prochain voyage dans ${applicationName} ?",
+              "Quel est mon prochain voyage dans ${applicationName} ?",
+              "Combien de temps avant mon voyage ${applicationName} ?"
+            ]
+          }
+        },
+        "ga" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Cathain atá mo chéad turas eile in ${applicationName}?",
+              "Cad é mo chéad turas eile in ${applicationName}?",
+              "Cé chomh fada go dtí mo thuras ${applicationName}?"
+            ]
+          }
+        },
+        "hr" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kada je moje sljedeće putovanje u ${applicationName}?",
+              "Koje je moje sljedeće putovanje u ${applicationName}?",
+              "Koliko dugo do mog ${applicationName} putovanja?"
+            ]
+          }
+        },
+        "hu" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Mikor van a következő utazásom a ${applicationName} alkalmazásban?",
+              "Mi a következő utazásom a ${applicationName} alkalmazásban?",
+              "Mennyi idő van a ${applicationName} utamig?"
+            ]
+          }
+        },
+        "it" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quando è il mio prossimo viaggio in ${applicationName}?",
+              "Qual è il mio prossimo viaggio in ${applicationName}?",
+              "Quanto manca al mio viaggio ${applicationName}?"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で次の旅行はいつですか？",
+              "${applicationName}での次の旅行は何ですか？",
+              "${applicationName}の旅行まであとどのくらいですか？"
+            ]
+          }
+        },
+        "ko" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}에서 다음 여행은 언제인가요?",
+              "${applicationName}에서 다음 여행은 무엇인가요?",
+              "${applicationName} 여행까지 얼마나 남았나요?"
+            ]
+          }
+        },
+        "lt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kada mano kita kelionė ${applicationName}?",
+              "Kokia mano kita kelionė ${applicationName}?",
+              "Kiek laiko iki mano ${applicationName} kelionės?"
+            ]
+          }
+        },
+        "lv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kad ir mans nākamais ceļojums lietotnē ${applicationName}?",
+              "Kāds ir mans nākamais ceļojums lietotnē ${applicationName}?",
+              "Cik ilgi līdz manam ${applicationName} ceļojumam?"
+            ]
+          }
+        },
+        "mt" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Meta hu l-vjaġġ li jmiss tiegħi f'${applicationName}?",
+              "X'inhu l-vjaġġ li jmiss tiegħi f'${applicationName}?",
+              "Kemm fadal għall-vjaġġ ${applicationName} tiegħi?"
+            ]
+          }
+        },
+        "nl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Wanneer is mijn volgende reis in ${applicationName}?",
+              "Wat is mijn volgende reis in ${applicationName}?",
+              "Hoe lang tot mijn ${applicationName} reis?"
+            ]
+          }
+        },
+        "pl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kiedy jest moja następna podróż w ${applicationName}?",
+              "Jaka jest moja następna podróż w ${applicationName}?",
+              "Ile czasu do mojej podróży ${applicationName}?"
+            ]
+          }
+        },
+        "pt-BR" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quando é minha próxima viagem no ${applicationName}?",
+              "Qual é minha próxima viagem no ${applicationName}?",
+              "Quanto tempo até minha viagem no ${applicationName}?"
+            ]
+          }
+        },
+        "pt-PT" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Quando é a minha próxima viagem no ${applicationName}?",
+              "Qual é a minha próxima viagem no ${applicationName}?",
+              "Quanto tempo até à minha viagem ${applicationName}?"
+            ]
+          }
+        },
+        "ro" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Când este următoarea mea călătorie în ${applicationName}?",
+              "Care este următoarea mea călătorie în ${applicationName}?",
+              "Cât timp până la călătoria mea ${applicationName}?"
+            ]
+          }
+        },
+        "sk" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kedy je moja ďalšia cesta v ${applicationName}?",
+              "Aká je moja ďalšia cesta v ${applicationName}?",
+              "Ako dlho do mojej cesty ${applicationName}?"
+            ]
+          }
+        },
+        "sl" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Kdaj je moje naslednje potovanje v ${applicationName}?",
+              "Kaj je moje naslednje potovanje v ${applicationName}?",
+              "Koliko časa do mojega ${applicationName} potovanja?"
+            ]
+          }
+        },
+        "sv" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "När är min nästa resa i ${applicationName}?",
+              "Vad är min nästa resa i ${applicationName}?",
+              "Hur länge tills min ${applicationName} resa?"
+            ]
+          }
+        },
+        "zh-Hans" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "我在${applicationName}中的下一次旅行是什么时候？",
+              "我在${applicationName}中的下一次旅行是什么？",
+              "距离我的${applicationName}旅行还有多久？"
             ]
           }
         }

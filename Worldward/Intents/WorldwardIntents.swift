@@ -127,8 +127,10 @@ func refreshWidgetSnapshot(countries: [Country], trips: [Trip]) {
 }
 
 /// Convenience for intents, which fetch from their own short-lived context.
+/// Internal (not `private`) so the trip intents in `TripIntents.swift` can reuse
+/// it after a mutation.
 @MainActor
-private func refreshWidgetSnapshot(using context: ModelContext) {
+func refreshWidgetSnapshot(using context: ModelContext) {
     let countries = (try? context.fetch(FetchDescriptor<Country>())) ?? []
     let trips = (try? context.fetch(FetchDescriptor<Trip>())) ?? []
     refreshWidgetSnapshot(countries: countries, trips: trips)
@@ -386,6 +388,11 @@ final class IntentRouter {
     /// A search term to apply to the country list, set by `SearchCountriesIntent`.
     var pendingSearchText: String?
 
+    /// `dedupID` of a trip to open in the Going tab, set by `OpenTripIntent`. Held
+    /// until the trips list is on-screen so a cold launch can still resolve it once
+    /// `@Query` populates; `TripsListView` clears it when it opens the trip.
+    var pendingOpenTripID: String?
+
     /// A trip whose itinerary should be drawn on the map, set by the trip
     /// editor's "View Route on Map" button — which may live in a sheet several
     /// presentation layers away from the map. Not an intent, but the same
@@ -620,6 +627,48 @@ struct WorldwardShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Mark Location",
             systemImageName: "location.fill"
+        )
+
+        AppShortcut(
+            intent: GetNextTripIntent(),
+            phrases: [
+                "When's my next trip in \(.applicationName)?",
+                "What's my next trip in \(.applicationName)?",
+                "How long until my \(.applicationName) trip?",
+            ],
+            shortTitle: "Next Trip",
+            systemImageName: "airplane.departure"
+        )
+
+        AppShortcut(
+            intent: AddPackingItemIntent(),
+            phrases: [
+                "Add to my packing list in \(.applicationName)",
+                "Add a packing item in \(.applicationName)",
+            ],
+            shortTitle: "Add to Packing",
+            systemImageName: "suitcase.rolling.fill"
+        )
+
+        AppShortcut(
+            intent: GetPackingProgressIntent(),
+            phrases: [
+                "How much have I packed in \(.applicationName)?",
+                "What's my packing progress in \(.applicationName)?",
+                "Am I ready for my \(.applicationName) trip?",
+            ],
+            shortTitle: "Packing Progress",
+            systemImageName: "suitcase.fill"
+        )
+
+        AppShortcut(
+            intent: OpenTripIntent(),
+            phrases: [
+                "Open \(\.$target) in \(.applicationName)",
+                "Show \(\.$target) in \(.applicationName)",
+            ],
+            shortTitle: "Open Trip",
+            systemImageName: "map.fill"
         )
     }
 }

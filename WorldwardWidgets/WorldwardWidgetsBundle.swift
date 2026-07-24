@@ -17,6 +17,7 @@ struct WorldwardWidgetsBundle: WidgetBundle {
         // (see WorldwardWidgets.swift).
         #if os(iOS)
             AccessoryWidget()
+            NextTripAccessoryWidget()
             MarkHereControl()
         #endif
     }
