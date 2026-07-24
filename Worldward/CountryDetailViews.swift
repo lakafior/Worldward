@@ -15,6 +15,14 @@ struct CountryDetailView: View {
     @State private var newVisitNotes = ""
     @State private var showingAddVisit = false
 
+    /// Every trip, filtered on-device to those whose itinerary touches this
+    /// country — where the app's two halves, Been and Going, meet on a country.
+    @Query private var allTrips: [Trip]
+    /// Countries, handed to the trip editor a tapped trip opens into.
+    @Query private var allCountries: [Country]
+    /// A related trip the user tapped, opened as a sheet over the country detail.
+    @State private var openTrip: Trip?
+
     init(country: Country) {
         self.country = country
         // Default to one day after the most recent visit, so adding
@@ -52,6 +60,20 @@ struct CountryDetailView: View {
                     ForEach(PlanStatus.allCases) { plan in
                         Label(plan.label, systemImage: plan.symbolName)
                             .tag(plan)
+                    }
+                }
+            }
+
+            // MARK: Trips touching this country
+            if !relatedTrips.isEmpty {
+                Section("Trips") {
+                    ForEach(relatedTrips) { trip in
+                        Button {
+                            openTrip = trip
+                        } label: {
+                            CountryTripRow(trip: trip)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -148,6 +170,25 @@ struct CountryDetailView: View {
             activity.title = "Viewing \(entity.flagEmoji) \(entity.name)"
             activity.appEntityIdentifier = EntityIdentifier(for: entity)
         }
+        // Tapping a related trip opens its editor right here, so you can jump from
+        // "I've been to Spain" straight into the trip that took you there.
+        .sheet(item: $openTrip) { trip in
+            TripDetailSheet(trip: trip, allCountries: allCountries)
+        }
+    }
+
+    /// Trips whose itinerary touches this country, upcoming/underway first (soonest
+    /// first) and then past (most recent first) — matching how the Going tab leads
+    /// with what's ahead. Computed on demand from the flat trip set; the touched
+    /// countries come straight off each trip's stops.
+    private var relatedTrips: [Trip] {
+        let now = Date()
+        let matching = allTrips.filter { trip in
+            trip.countries.contains { $0.id == country.id }
+        }
+        let upcoming = matching.filter { $0.endDate >= now }.sorted { $0.startDate < $1.startDate }
+        let past = matching.filter { $0.endDate < now }.sorted { $0.startDate > $1.startDate }
+        return upcoming + past
     }
 
     private func addVisit() {
@@ -171,6 +212,38 @@ struct CountryDetailView: View {
         for index in offsets {
             modelContext.delete(sorted[index])
         }
+    }
+}
+
+// MARK: - Country Trip Row
+
+/// One related-trip row in the country detail: the trip's name over its flags and
+/// date span, with a chevron marking it as tappable (opens the trip's editor).
+private struct CountryTripRow: View {
+    let trip: Trip
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(trip.title.isEmpty ? String(localized: "Trip") : trip.title)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                HStack(spacing: 6) {
+                    if !trip.flags.isEmpty {
+                        Text(trip.flags)
+                            .lineLimit(1)
+                    }
+                    Text(trip.dateRangeText)
+                        .foregroundStyle(.secondary)
+                }
+                .font(.caption)
+            }
+            Spacer(minLength: 12)
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
     }
 }
 

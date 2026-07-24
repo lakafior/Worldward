@@ -1992,6 +1992,25 @@ private struct StopRow: View {
     /// A stop with a coordinate came from place search — render it as a place.
     private var isPlace: Bool { stop.coordinate != nil }
 
+    /// A sensible date for a stop the user just decided to schedule: pick up from
+    /// the last dated stop (so a run of stops flows forward from where the plan
+    /// left off), else the trip's own start — never today, which is rarely where
+    /// a planned trip begins.
+    private var defaultStopDate: Date {
+        let others = (stop.trip?.sortedStops ?? []).filter { $0 !== stop }
+        if let latest = others.compactMap(\.date).max() { return latest }
+        return stop.trip?.startDate ?? Date()
+    }
+
+    /// The trip's span, used to keep a stop's date inside it — a stop can't fall
+    /// before the trip starts or after it ends. `nil` when there's no trip or the
+    /// span is somehow inverted, leaving the picker unbounded rather than crashing
+    /// on a bad `ClosedRange`.
+    private var tripDateRange: ClosedRange<Date>? {
+        guard let trip = stop.trip, trip.startDate <= trip.endDate else { return nil }
+        return trip.startDate...trip.endDate
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             identityRow
@@ -2000,16 +2019,25 @@ private struct StopRow: View {
             // No `.font` override: a control's label belongs at body size.
             Toggle("Set a date", isOn: $hasDate)
                 .onChange(of: hasDate) { _, on in
-                    stop.date = on ? (stop.date ?? Date()) : nil
+                    stop.date = on ? (stop.date ?? defaultStopDate) : nil
                 }
                 .animation(.snappy, value: hasDate)
 
             if hasDate {
-                DatePicker(
-                    "Date",
-                    selection: Binding(get: { stop.date ?? Date() }, set: { stop.date = $0 }),
-                    displayedComponents: .date)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                let selection = Binding(
+                    get: { stop.date ?? defaultStopDate }, set: { stop.date = $0 })
+                Group {
+                    // Clamp to the trip's span so a stop's date can't wander
+                    // outside it; unbounded only when there's no valid range.
+                    if let range = tripDateRange {
+                        DatePicker(
+                            "Date", selection: selection, in: range,
+                            displayedComponents: .date)
+                    } else {
+                        DatePicker("Date", selection: selection, displayedComponents: .date)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             // `.subheadline`, not `.caption`: this is text the user wrote, and the

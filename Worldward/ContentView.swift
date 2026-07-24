@@ -745,7 +745,13 @@ struct ContentView: View {
             // iOS opens the country detail as a sheet; macOS shows it in the split
             // view's trailing detail column (see `countryDetailColumn`).
             #if os(iOS)
-                .sheet(item: $detailCountry) { country in
+                // Closing the sheet also clears the selection, so tapping the
+                // *same* country again is a real change to `selectedCountry` and
+                // re-presents the sheet. Without this the selection stuck, and only
+                // tapping a different country and coming back reopened detail.
+                // macOS is unaffected — it shows detail in the split view's column,
+                // not this sheet.
+                .sheet(item: $detailCountry, onDismiss: { selectedCountry = nil }) { country in
                     CountryDetailSheet(country: country)
                 }
             #endif
