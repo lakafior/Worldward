@@ -109,6 +109,8 @@ nonisolated enum Str {
         static let notesLabel = String(localized: "Notes", comment: "Section header for trip notes")
         static let attachmentsLabel = String(
             localized: "Attachments", comment: "Section header for trip attachments in exports")
+        static let linksLabel = String(
+            localized: "Links", comment: "Section header for trip links in exports")
         static let untitled = String(
             localized: "Untitled Trip",
             comment: "Fallback trip title in Markdown/PDF exports when the trip has no name")

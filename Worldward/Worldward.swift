@@ -40,7 +40,7 @@ struct Worldward: App {
         let schema = Schema([
             Country.self, Visit.self, Trip.self, ItineraryItem.self, StopPlace.self,
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
-            PackingTemplateItem.self, TripAttachment.self,
+            PackingTemplateItem.self, TripAttachment.self, TripLink.self,
         ])
         #if DEBUG
             // App Store screenshot automation: replace the on-disk store with a

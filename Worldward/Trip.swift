@@ -77,6 +77,9 @@ final class Trip {
     @Relationship(deleteRule: .cascade, inverse: \TripAttachment.trip)
     var attachments: [TripAttachment]?
 
+    @Relationship(deleteRule: .cascade, inverse: \TripLink.trip)
+    var links: [TripLink]?
+
     init(
         title: String = "", startDate: Date = Date(), endDate: Date = Date(), notes: String = ""
     ) {
@@ -115,6 +118,18 @@ final class Trip {
     /// that stop instead. In first-added order.
     var documents: [TripAttachment] {
         sortedAttachments.filter { $0.item == nil }
+    }
+
+    /// Links in the order they were added.
+    var sortedLinks: [TripLink] {
+        (links ?? []).sorted { $0.order < $1.order }
+    }
+
+    /// Trip-level links — not tied to any one stop (hotel booking page, the
+    /// public-transport timetable for the whole trip). Stop links read under
+    /// their stop instead. Mirrors `documents`.
+    var tripLinks: [TripLink] {
+        sortedLinks.filter { $0.item == nil }
     }
 
     /// The distinct countries this trip touches, in first-appearance (stop) order.
@@ -220,14 +235,25 @@ final class Trip {
                 }
                 lines.append(line)
                 if !stop.detail.isEmpty { lines.append("   \(stop.detail)") }
+                // How the traveler gets to this stop reads right under it, ahead
+                // of the free note — it's the first thing you check for a leg.
+                if let mode = stop.transport {
+                    var travel = "   \(mode.emoji) \(mode.label)"
+                    if !stop.transportDetail.isEmpty { travel += " — \(stop.transportDetail)" }
+                    lines.append(travel)
+                }
                 if !stop.note.isEmpty { lines.append("   \(stop.note)") }
-                // A file the user attached to *this* stop reads under it, where
-                // they put it — not lumped into a trip-wide list at the end.
+                // A file or link the user pinned to *this* stop reads under it,
+                // where they put it — not lumped into a trip-wide list at the end.
+                // Both are "reference material", so they ride the same option.
                 if options.contains(.attachments) {
                     for attachment in stop.sortedAttachments {
                         var fileLine = "   - 📎 \(attachment.filename)"
                         if !attachment.caption.isEmpty { fileLine += " — \(attachment.caption)" }
                         lines.append(fileLine)
+                    }
+                    for link in stop.sortedLinks where link.resolvedURL != nil {
+                        lines.append("   - 🔗 [\(link.displayTitle)](\(link.url))")
                     }
                 }
             }
@@ -272,7 +298,68 @@ final class Trip {
             }
         }
 
+        // Trip-level links (booking pages, timetables) — reference material like
+        // the documents above, so gated on the same option.
+        let links = tripLinks.filter { $0.resolvedURL != nil }
+        if options.contains(.attachments), !links.isEmpty {
+            lines.append("")
+            lines.append("## \(Str.Trip.linksLabel)")
+            for link in links {
+                lines.append("- [\(link.displayTitle)](\(link.url))")
+            }
+        }
+
         return lines.joined(separator: "\n")
+    }
+}
+
+/// How the traveler reaches a stop — an optional, lightweight attribute on each
+/// itinerary stop ("how I get *to* this place"). Persisted as a raw `String`
+/// (like `CountryStatus`/`PlanStatus`) so it migrates without schema versioning.
+/// `nonisolated`/`Sendable` so the model's nonisolated helpers and the exporters
+/// can read it off the main actor.
+nonisolated enum TransportMode: String, CaseIterable, Identifiable, Sendable {
+    case plane, train, bus, car, ferry, walk, other
+
+    var id: String { rawValue }
+
+    /// SF Symbol for the mode, shown in the stop editor's picker.
+    var symbolName: String {
+        switch self {
+        case .plane: "airplane"
+        case .train: "train.side.front.car"
+        case .bus: "bus.fill"
+        case .car: "car.fill"
+        case .ferry: "ferry.fill"
+        case .walk: "figure.walk"
+        case .other: "signpost.right.fill"
+        }
+    }
+
+    /// A plain emoji for text contexts (Markdown/PDF export) where SF Symbols
+    /// don't render.
+    var emoji: String {
+        switch self {
+        case .plane: "✈️"
+        case .train: "🚆"
+        case .bus: "🚌"
+        case .car: "🚗"
+        case .ferry: "⛴️"
+        case .walk: "🚶"
+        case .other: "🧭"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .plane: String(localized: "Plane", comment: "Transport mode")
+        case .train: String(localized: "Train", comment: "Transport mode")
+        case .bus: String(localized: "Bus", comment: "Transport mode")
+        case .car: String(localized: "Car", comment: "Transport mode")
+        case .ferry: String(localized: "Ferry", comment: "Transport mode")
+        case .walk: String(localized: "Walk", comment: "Transport mode")
+        case .other: String(localized: "Other", comment: "Transport mode")
+        }
     }
 }
 
@@ -299,6 +386,15 @@ final class ItineraryItem {
     var latitude: Double?
     var longitude: Double?
 
+    /// How the traveler gets *to* this stop (raw `TransportMode`, empty = none)
+    /// and the free-form details that go with it — flight number, bus line,
+    /// rental company, times, confirmation codes. Deliberately one text field
+    /// rather than many typed ones: the traveler writes "IB1234 · dep 14:30 · arr
+    /// 17:05" however suits the leg. Boarding passes ride along as this stop's
+    /// `attachments`.
+    var transportMode: String = ""
+    var transportDetail: String = ""
+
     /// Identifier of this stop's event in the app-owned Worldward calendar, or
     /// empty when calendar sync is off or the stop has no date. See `CalendarSync`.
     var calendarEventID: String = ""
@@ -313,6 +409,12 @@ final class ItineraryItem {
     /// destroying it. An attachment with no `item` is exactly such a document.
     @Relationship(deleteRule: .nullify, inverse: \TripAttachment.item)
     var attachments: [TripAttachment]?
+
+    /// Web links pinned to *this stop* — a specific bus timetable, a museum's
+    /// ticket page. `.nullify` mirrors `attachments`: deleting the stop demotes
+    /// the link to a trip-level link rather than destroying it.
+    @Relationship(deleteRule: .nullify, inverse: \TripLink.item)
+    var links: [TripLink]?
 
     init(
         title: String = "", note: String = "", date: Date? = nil, order: Int = 0,
@@ -337,6 +439,13 @@ final class ItineraryItem {
         return "Stop"
     }
 
+    /// The stop's transport as a typed value, or `nil` when none is set. Setting
+    /// it writes through to the raw `transportMode` string.
+    var transport: TransportMode? {
+        get { TransportMode(rawValue: transportMode) }
+        set { transportMode = newValue?.rawValue ?? "" }
+    }
+
     /// The stop's places-to-see in the order they were added.
     var sortedPlaces: [StopPlace] {
         (places ?? []).sorted { $0.order < $1.order }
@@ -345,6 +454,11 @@ final class ItineraryItem {
     /// Files attached to this stop, in the order they were added.
     var sortedAttachments: [TripAttachment] {
         (attachments ?? []).sorted { $0.order < $1.order }
+    }
+
+    /// Links pinned to this stop, in the order they were added.
+    var sortedLinks: [TripLink] {
+        (links ?? []).sorted { $0.order < $1.order }
     }
 
     /// The stop's map coordinate, or `nil` when it wasn't picked from search.
@@ -542,6 +656,50 @@ final class TripAttachment {
         self.caption = caption
         self.item = item
     }
+}
+
+/// A saved web link on a trip — a hotel booking page, a public-transport
+/// timetable, a car-rental confirmation. Trip-level (loose logistics) when `item`
+/// is nil, else pinned to one stop. Mirrors `TripAttachment`'s dual trip/item
+/// ownership, but holds a URL string instead of a file blob. CloudKit-safe:
+/// defaults on every property, to-one relationships, dedup token.
+@Model
+final class TripLink {
+    var title: String = ""
+    var url: String = ""
+    var order: Int = 0
+
+    /// Per-row token for CloudKit de-duplication, mirroring `Trip.dedupID`.
+    var dedupID: String = UUID().uuidString
+
+    var trip: Trip?
+
+    /// The itinerary stop this link belongs to, or `nil` for a trip-level link.
+    var item: ItineraryItem?
+
+    init(
+        title: String = "", url: String = "", order: Int = 0, trip: Trip? = nil,
+        item: ItineraryItem? = nil
+    ) {
+        self.title = title
+        self.url = url
+        self.order = order
+        self.trip = trip
+        self.item = item
+    }
+
+    /// The link as an openable `URL`, or `nil` when the field is empty/unparseable.
+    /// A bare "example.com" is upgraded to `https://` so a hand-typed link still
+    /// opens.
+    var resolvedURL: URL? {
+        let trimmed = url.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        if let parsed = URL(string: trimmed), parsed.scheme != nil { return parsed }
+        return URL(string: "https://\(trimmed)")
+    }
+
+    /// What to show as the link's label: its title, else the raw URL.
+    var displayTitle: String { title.isEmpty ? url : title }
 }
 
 /// One rendered group of a trip's packing list: a container (or `nil` for the

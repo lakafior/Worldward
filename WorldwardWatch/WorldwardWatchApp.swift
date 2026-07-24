@@ -21,7 +21,7 @@ struct WorldwardWatch: App {
         let schema = Schema([
             Country.self, Visit.self, Trip.self, ItineraryItem.self, StopPlace.self,
             PackingItem.self, PackingContainer.self, PackingTemplate.self,
-            PackingTemplateItem.self, TripAttachment.self,
+            PackingTemplateItem.self, TripAttachment.self, TripLink.self,
         ])
         // App Store screenshot capture: a throwaway in-memory store seeded with the
         // same demo data the iPhone captures use, so the two sets stay consistent.

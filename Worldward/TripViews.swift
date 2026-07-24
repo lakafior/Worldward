@@ -516,6 +516,7 @@ struct TripDetailView: View {
                 packingSections
                 notesSection
                 documentsSection
+                linksSection
                 tripPhotosSection
             }
             // Drag-to-reorder packing items within and across container groups; the
@@ -1319,6 +1320,45 @@ struct TripDetailView: View {
         }
     }
 
+    /// Trip-level web links — booking pages, timetables — that aren't tied to any
+    /// one stop. Links pinned to a place live under that stop's row instead.
+    private var linksSection: some View {
+        Section {
+            if trip.tripLinks.isEmpty {
+                emptySectionPlaceholder(
+                    symbol: "link",
+                    message: Text("No links yet", comment: "Empty trip links placeholder"))
+            }
+            ForEach(trip.tripLinks) { link in
+                LinkRow(link: link) { modelContext.delete(link) }
+            }
+            .onDelete(perform: deleteTripLinks)
+            Button {
+                addTripLink()
+            } label: {
+                Label("Add link", systemImage: "link")
+            }
+        } header: {
+            Text("Links")
+        } footer: {
+            Text(
+                "Web links for the whole trip — booking pages, timetables. To pin a link to a place, use its stop above."
+            )
+        }
+    }
+
+    private func addTripLink() {
+        let link = TripLink(order: trip.tripLinks.count, trip: trip)
+        modelContext.insert(link)
+        if trip.links == nil { trip.links = [] }
+        trip.links?.append(link)
+    }
+
+    private func deleteTripLinks(_ offsets: IndexSet) {
+        let links = trip.tripLinks
+        for index in offsets { modelContext.delete(links[index]) }
+    }
+
     /// A section-scoped empty state: symbol above a line of text, centred in the
     /// row. Deliberately lighter than `ContentUnavailableView`, which is sized for
     /// a whole screen and dwarfs the add button sitting right beneath it.
@@ -2015,6 +2055,7 @@ private struct StopRow: View {
         VStack(alignment: .leading, spacing: 6) {
             identityRow
             secondaryLine
+            transportEditor
 
             // No `.font` override: a control's label belongs at body size.
             Toggle("Set a date", isOn: $hasDate)
@@ -2057,8 +2098,67 @@ private struct StopRow: View {
             }
 
             attachments
+            linksEditor
         }
         .padding(.vertical, 2)
+    }
+
+    /// "Getting here": how the traveler reaches this stop. Optional — a menu picks
+    /// the mode (or clears it); choosing one reveals a free-text field for flight
+    /// or bus numbers, times, rental and confirmation details. Boarding passes go
+    /// in this stop's attachments below.
+    @ViewBuilder private var transportEditor: some View {
+        Menu {
+            Picker("Getting here", selection: transportSelection) {
+                Text("None").tag(TransportMode?.none)
+                ForEach(TransportMode.allCases) { mode in
+                    Label(mode.label, systemImage: mode.symbolName)
+                        .tag(TransportMode?.some(mode))
+                }
+            }
+        } label: {
+            Label {
+                Text(stop.transport?.label ?? String(localized: "Getting here"))
+            } icon: {
+                Image(systemName: stop.transport?.symbolName ?? "arrow.triangle.branch")
+            }
+            .font(.subheadline)
+        }
+        .buttonStyle(.borderless)
+
+        if stop.transport != nil {
+            TextField(
+                "Flight no., times, confirmation…", text: $stop.transportDetail, axis: .vertical
+            )
+            .font(.subheadline)
+            .lineLimit(1...3)
+        }
+    }
+
+    private var transportSelection: Binding<TransportMode?> {
+        Binding(get: { stop.transport }, set: { stop.transport = $0 })
+    }
+
+    /// Links pinned to this stop (a bus timetable, a ticket page), each openable
+    /// and removable, followed by an "Add link" button — mirroring `attachments`.
+    @ViewBuilder private var linksEditor: some View {
+        ForEach(stop.sortedLinks) { link in
+            LinkRow(link: link) { modelContext.delete(link) }
+        }
+        Button {
+            addStopLink()
+        } label: {
+            Label("Add link", systemImage: "link")
+                .font(.subheadline)
+        }
+        .buttonStyle(.borderless)
+    }
+
+    private func addStopLink() {
+        let link = TripLink(order: (stop.links ?? []).count, trip: stop.trip, item: stop)
+        modelContext.insert(link)
+        if stop.links == nil { stop.links = [] }
+        stop.links?.append(link)
     }
 
     /// The row's secondary line: the country as a flag chip (the whole point of
@@ -2145,6 +2245,54 @@ private struct StopRow: View {
             address: nil)
         item.name = stop.displayTitle
         item.openInMaps()
+    }
+}
+
+/// One editable link row — a title over its URL, an open button when the URL
+/// parses, and a remove control. Shared by the trip-level Links section and each
+/// stop's own links; both edit the `TripLink` in place, matching how stops and
+/// packing items are edited inline rather than through a sheet.
+private struct LinkRow: View {
+    @Bindable var link: TripLink
+    let onDelete: () -> Void
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                TextField("Title", text: $link.title)
+                    .font(.subheadline)
+                TextField("https://…", text: $link.url)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .autocorrectionDisabled()
+                    #if !os(macOS)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                    #endif
+            }
+            if let resolved = link.resolvedURL {
+                Button {
+                    openURL(resolved)
+                } label: {
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.subheadline)
+                }
+                .buttonStyle(.borderless)
+                .help("Open link")
+                .accessibilityLabel(Text("Open link"))
+            }
+            Button(role: .destructive, action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(width: minimumHitTarget, height: minimumHitTarget)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.borderless)
+            .help("Remove link")
+            .accessibilityLabel(Text("Remove link"))
+        }
     }
 }
 
