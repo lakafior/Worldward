@@ -112,6 +112,18 @@ nonisolated enum TripPDFRenderer {
                         result.append(line("📎  \(attachment.filename)\(caption)", .subItem))
                     }
                 }
+                // Links ride with `.attachments`, matching how the Markdown
+                // export has always grouped them.
+                if options.contains(.attachments) {
+                    for link in stop.sortedLinks where link.resolvedURL != nil {
+                        result.append(line("🔗  \(link.displayTitle)", .subItem))
+                    }
+                }
+                if options.contains(.contacts) {
+                    for contact in stop.sortedContacts {
+                        result.append(line(contactLine(contact), .subItem))
+                    }
+                }
             }
         }
 
@@ -147,7 +159,37 @@ nonisolated enum TripPDFRenderer {
             }
         }
 
+        let tripLinks = trip.tripLinks.filter { $0.resolvedURL != nil }
+        if options.contains(.attachments), !tripLinks.isEmpty {
+            result.append(line(Str.Trip.linksLabel, .sectionHeader, rule: .separator))
+            for link in tripLinks {
+                // Both halves, since a printed page can't be tapped — the title
+                // alone would strand the reader with no way to reach the page.
+                var text = "•  \(link.displayTitle)"
+                if !link.url.isEmpty, link.displayTitle != link.url { text += "  —  \(link.url)" }
+                result.append(self.line(text, .body))
+            }
+        }
+
+        let tripContacts = trip.tripContacts
+        if options.contains(.contacts), !tripContacts.isEmpty {
+            result.append(line(Str.Trip.contactsLabel, .sectionHeader, rule: .separator))
+            for contact in tripContacts {
+                result.append(line(contactLine(contact), .body))
+            }
+        }
+
         return result
+    }
+
+    /// One contact as a printable line: the kind's emoji (SF Symbols don't render
+    /// here), the name, then the number or address itself.
+    private static func contactLine(_ contact: TripContact) -> String {
+        var text = "\(contact.contactKind.emoji)  \(contact.displayName)"
+        if !contact.value.isEmpty, contact.displayName != contact.value {
+            text += "  —  \(contact.value)"
+        }
+        return text
     }
 
     private static func line(

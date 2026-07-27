@@ -118,6 +118,11 @@ nonisolated struct TripRecord: Codable {
     /// backups grow accordingly, but a backup that silently dropped your tickets
     /// wouldn't be a backup.
     var attachments: [AttachmentRecord]?
+    /// Saved links and contacts, both optional so pre-v6 backups still decode.
+    /// Links shipped before this and were never carried here — a backup written
+    /// by those builds restores with none, which is the same as it behaved then.
+    var links: [LinkRecord]?
+    var contacts: [ContactRecord]?
     /// The trip's CloudKit dedup token, carried so a re-shared `.wwtrip` file
     /// *updates* the receiver's copy instead of duplicating it. Optional so
     /// pre-v4 backups still decode; a missing value imports as a fresh ID.
@@ -132,7 +137,46 @@ nonisolated struct TripRecord: Codable {
         self.itinerary = trip.sortedStops.map(ItineraryItemRecord.init)
         self.packing = (trip.packing ?? []).map(PackingItemRecord.init)
         self.attachments = trip.sortedAttachments.map(AttachmentRecord.init)
+        self.links = trip.sortedLinks.map(LinkRecord.init)
+        self.contacts = trip.sortedContacts.map(ContactRecord.init)
         self.dedupID = trip.dedupID
+    }
+}
+
+/// A saved link, with the stop it was pinned to carried the same way
+/// `AttachmentRecord` carries it — by that stop's `order`, matched back to a
+/// rebuilt `ItineraryItem` on import. A nil `stopOrder` restores trip-level.
+nonisolated struct LinkRecord: Codable {
+    var title: String
+    var url: String
+    var order: Int
+    var stopOrder: Int?
+
+    @MainActor
+    init(from link: TripLink) {
+        self.title = link.title
+        self.url = link.url
+        self.order = link.order
+        self.stopOrder = link.item?.order
+    }
+}
+
+/// A saved contact. `kind` rides as the raw string so an unknown value from a
+/// newer build survives the round trip and degrades to `.other` on read.
+nonisolated struct ContactRecord: Codable {
+    var name: String
+    var value: String
+    var kind: String
+    var order: Int
+    var stopOrder: Int?
+
+    @MainActor
+    init(from contact: TripContact) {
+        self.name = contact.name
+        self.value = contact.value
+        self.kind = contact.kind
+        self.order = contact.order
+        self.stopOrder = contact.item?.order
     }
 }
 
@@ -230,9 +274,10 @@ enum TravelDataTransfer {
     /// v3 added quantity/order/containerName to packing items; v4 added trip
     /// attachments; v5 flattened the itinerary — stops carry their own
     /// coordinate/detail, and attachments carry a caption + the stop they belong
-    /// to. Older files still decode (the new fields are optional; legacy nested
-    /// `places` are unfolded on import), and older builds ignore the extra keys.
-    static let currentVersion = 5
+    /// to; v6 added trip links and contacts. Older files still decode (the new
+    /// fields are optional; legacy nested `places` are unfolded on import), and
+    /// older builds ignore the extra keys.
+    static let currentVersion = 6
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -362,9 +407,13 @@ enum TravelDataTransfer {
         for stop in trip.itinerary ?? [] { context.delete(stop) }
         for item in trip.packing ?? [] { context.delete(item) }
         for attachment in trip.attachments ?? [] { context.delete(attachment) }
+        for link in trip.links ?? [] { context.delete(link) }
+        for contact in trip.contacts ?? [] { context.delete(contact) }
         trip.itinerary = []
         trip.packing = []
         trip.attachments = []
+        trip.links = []
+        trip.contacts = []
 
         // The itinerary is a single flat list of stops now. A legacy record's
         // nested `places` (from a build before the flatten) are unfolded into
@@ -418,6 +467,32 @@ enum TravelDataTransfer {
             if let stop {
                 if stop.attachments == nil { stop.attachments = [] }
                 stop.attachments?.append(attachment)
+            }
+        }
+        for record in (record.links ?? []).sorted(by: { $0.order < $1.order }) {
+            let stop = record.stopOrder.flatMap { stopsByRecordOrder[$0] }
+            let link = TripLink(
+                title: record.title, url: record.url, order: record.order, trip: trip, item: stop)
+            context.insert(link)
+            if trip.links == nil { trip.links = [] }
+            trip.links?.append(link)
+            if let stop {
+                if stop.links == nil { stop.links = [] }
+                stop.links?.append(link)
+            }
+        }
+        for record in (record.contacts ?? []).sorted(by: { $0.order < $1.order }) {
+            let stop = record.stopOrder.flatMap { stopsByRecordOrder[$0] }
+            let contact = TripContact(
+                name: record.name, value: record.value,
+                kind: ContactKind(rawValue: record.kind) ?? .other,
+                order: record.order, trip: trip, item: stop)
+            context.insert(contact)
+            if trip.contacts == nil { trip.contacts = [] }
+            trip.contacts?.append(contact)
+            if let stop {
+                if stop.contacts == nil { stop.contacts = [] }
+                stop.contacts?.append(contact)
             }
         }
     }

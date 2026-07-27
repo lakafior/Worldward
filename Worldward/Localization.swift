@@ -111,6 +111,8 @@ nonisolated enum Str {
             localized: "Attachments", comment: "Section header for trip attachments in exports")
         static let linksLabel = String(
             localized: "Links", comment: "Section header for trip links in exports")
+        static let contactsLabel = String(
+            localized: "Contacts", comment: "Section header for trip contacts in exports")
         static let untitled = String(
             localized: "Untitled Trip",
             comment: "Fallback trip title in Markdown/PDF exports when the trip has no name")

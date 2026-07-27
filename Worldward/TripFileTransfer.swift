@@ -159,6 +159,12 @@ struct TripFileImportSheet: View {
                     if let attachments = record.attachments, !attachments.isEmpty {
                         LabeledContent("Attachments", value: "\(attachments.count)")
                     }
+                    if let links = record.links, !links.isEmpty {
+                        LabeledContent("Links", value: "\(links.count)")
+                    }
+                    if let contacts = record.contacts, !contacts.isEmpty {
+                        LabeledContent("Contacts", value: "\(contacts.count)")
+                    }
                 } footer: {
                     if let existing {
                         Text(

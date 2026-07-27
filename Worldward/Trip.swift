@@ -15,8 +15,15 @@ nonisolated struct TripExportOptions: OptionSet, Sendable {
     static let packing = TripExportOptions(rawValue: 1 << 1)
     static let notes = TripExportOptions(rawValue: 1 << 2)
     static let attachments = TripExportOptions(rawValue: 1 << 3)
+    /// Contacts carry phone numbers, so they get their own switch rather than
+    /// riding along with `.attachments` the way links do. Anyone upgrading has a
+    /// stored raw value without this bit, which is deliberate: a shared file
+    /// never starts carrying numbers until it's asked for.
+    static let contacts = TripExportOptions(rawValue: 1 << 4)
 
-    static let all: TripExportOptions = [.itinerary, .packing, .notes, .attachments]
+    static let all: TripExportOptions = [
+        .itinerary, .packing, .notes, .attachments, .contacts,
+    ]
 }
 
 /// Where "now" falls relative to a trip. Purely derived from the trip's dates
@@ -80,6 +87,9 @@ final class Trip {
     @Relationship(deleteRule: .cascade, inverse: \TripLink.trip)
     var links: [TripLink]?
 
+    @Relationship(deleteRule: .cascade, inverse: \TripContact.trip)
+    var contacts: [TripContact]?
+
     init(
         title: String = "", startDate: Date = Date(), endDate: Date = Date(), notes: String = ""
     ) {
@@ -130,6 +140,18 @@ final class Trip {
     /// their stop instead. Mirrors `documents`.
     var tripLinks: [TripLink] {
         sortedLinks.filter { $0.item == nil }
+    }
+
+    /// Contacts in the order they were added.
+    var sortedContacts: [TripContact] {
+        (contacts ?? []).sorted { $0.order < $1.order }
+    }
+
+    /// Trip-level contacts — reachable for the whole trip rather than tied to one
+    /// stop (the travel-insurance emergency line, a tour operator). Stop contacts
+    /// read under their stop instead. Mirrors `tripLinks`.
+    var tripContacts: [TripContact] {
+        sortedContacts.filter { $0.item == nil }
     }
 
     /// The distinct countries this trip touches, in first-appearance (stop) order.
@@ -256,6 +278,11 @@ final class Trip {
                         lines.append("   - 🔗 [\(link.displayTitle)](\(link.url))")
                     }
                 }
+                if options.contains(.contacts) {
+                    for contact in stop.sortedContacts {
+                        lines.append("   - \(Self.markdownContact(contact))")
+                    }
+                }
             }
         }
 
@@ -309,7 +336,32 @@ final class Trip {
             }
         }
 
+        let contacts = tripContacts
+        if options.contains(.contacts), !contacts.isEmpty {
+            lines.append("")
+            lines.append("## \(Str.Trip.contactsLabel)")
+            for contact in contacts {
+                lines.append("- \(Self.markdownContact(contact))")
+            }
+        }
+
         return lines.joined(separator: "\n")
+    }
+
+    /// One contact as a Markdown list entry. The value becomes a `tel:`/`mailto:`
+    /// link where the kind supports it, so the number stays tappable in whatever
+    /// app opens the exported file — the whole reason contacts are their own
+    /// model. `.other` (and anything unparseable) degrades to plain text.
+    private static func markdownContact(_ contact: TripContact) -> String {
+        let kind = contact.contactKind
+        var line = "\(kind.emoji) \(contact.displayName)"
+        guard !contact.value.isEmpty else { return line }
+        if let action = contact.actionURL {
+            line += " — [\(contact.value)](\(action.absoluteString))"
+        } else if contact.displayName != contact.value {
+            line += " — \(contact.value)"
+        }
+        return line
     }
 }
 
@@ -416,6 +468,12 @@ final class ItineraryItem {
     @Relationship(deleteRule: .nullify, inverse: \TripLink.item)
     var links: [TripLink]?
 
+    /// People to reach about *this stop* — the hotel's front desk, the guide for
+    /// a booked tour. `.nullify` mirrors `links`: deleting the stop demotes the
+    /// contact to a trip-level one rather than losing the number.
+    @Relationship(deleteRule: .nullify, inverse: \TripContact.item)
+    var contacts: [TripContact]?
+
     init(
         title: String = "", note: String = "", date: Date? = nil, order: Int = 0,
         country: Country? = nil, trip: Trip? = nil,
@@ -483,6 +541,11 @@ final class ItineraryItem {
     /// Links pinned to this stop, in the order they were added.
     var sortedLinks: [TripLink] {
         (links ?? []).sorted { $0.order < $1.order }
+    }
+
+    /// Contacts pinned to this stop, in the order they were added.
+    var sortedContacts: [TripContact] {
+        (contacts ?? []).sorted { $0.order < $1.order }
     }
 
     /// The stop's map coordinate, or `nil` when it wasn't picked from search.
@@ -726,6 +789,140 @@ final class TripLink {
     var displayTitle: String { title.isEmpty ? url : title }
 }
 
+/// How to reach a contact — decides its icon and what tapping the row does.
+/// Persisted as a raw `String` on `TripContact`, matching `TransportMode` and the
+/// status enums, so a value written by a newer version degrades to `.other`
+/// instead of failing to decode.
+nonisolated enum ContactKind: String, CaseIterable, Identifiable, Sendable {
+    case phone, whatsapp, email, other
+
+    var id: String { rawValue }
+
+    /// SF Symbol for the kind, shown in the contact row and its picker.
+    var symbolName: String {
+        switch self {
+        case .phone: "phone.fill"
+        case .whatsapp: "message.fill"
+        case .email: "envelope.fill"
+        case .other: "person.crop.circle"
+        }
+    }
+
+    /// A plain emoji for text contexts (Markdown/PDF export) where SF Symbols
+    /// don't render.
+    var emoji: String {
+        switch self {
+        case .phone: "📞"
+        case .whatsapp: "💬"
+        case .email: "✉️"
+        case .other: "👤"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .phone: String(localized: "Phone", comment: "Contact kind")
+        case .whatsapp: String(localized: "WhatsApp", comment: "Contact kind")
+        case .email: String(localized: "Email", comment: "Contact kind")
+        case .other: String(localized: "Other", comment: "Contact kind")
+        }
+    }
+
+    /// Placeholder for the value field, so the expected shape is clear before
+    /// anything is typed.
+    var valuePrompt: String {
+        switch self {
+        case .phone, .whatsapp:
+            String(localized: "Phone number", comment: "Contact value placeholder")
+        case .email:
+            String(localized: "Email address", comment: "Contact value placeholder")
+        case .other:
+            String(localized: "Details", comment: "Contact value placeholder")
+        }
+    }
+
+    /// The value turned into something the system can open — a dialer, WhatsApp,
+    /// or a mail composer. `nil` for `.other` (free-form, nothing to launch) and
+    /// for values with no usable characters, which is what hides the action
+    /// button on a half-typed row.
+    func actionURL(for value: String) -> URL? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        switch self {
+        case .phone:
+            let digits = trimmed.filter(\.isNumber)
+            guard !digits.isEmpty else { return nil }
+            // "+" is the one non-digit `tel:` accepts across dialers; the spaces,
+            // parens and dashes people type are dropped.
+            return URL(string: trimmed.hasPrefix("+") ? "tel:+\(digits)" : "tel:\(digits)")
+        case .whatsapp:
+            // wa.me takes digits only — no "+", no spaces, no punctuation.
+            let digits = trimmed.filter(\.isNumber)
+            return digits.isEmpty ? nil : URL(string: "https://wa.me/\(digits)")
+        case .email:
+            guard trimmed.contains("@"), !trimmed.contains(" ") else { return nil }
+            return URL(string: "mailto:\(trimmed)")
+        case .other:
+            return nil
+        }
+    }
+}
+
+/// A person or desk to reach on a trip — the hotel's front desk, the car-rental
+/// WhatsApp, an insurer's emergency line. Trip-level (reachable throughout) when
+/// `item` is nil, else pinned to one stop. Mirrors `TripLink`'s dual trip/item
+/// ownership, holding a number or address instead of a URL. It's its own model
+/// rather than free text in the notes so each row carries a real tap-to-call
+/// action. CloudKit-safe: defaults on every property, to-one relationships,
+/// dedup token.
+@Model
+final class TripContact {
+    /// Who this is — "Hotel Ibis front desk", "Ola (car rental)".
+    var name: String = ""
+
+    /// The number or address exactly as typed. Kept verbatim so it reads back the
+    /// way it was written; `ContactKind.actionURL` does the normalising.
+    var value: String = ""
+
+    /// `ContactKind.rawValue`. Raw so an unrecognised value degrades gracefully.
+    var kind: String = ContactKind.phone.rawValue
+
+    var order: Int = 0
+
+    /// Per-row token for CloudKit de-duplication, mirroring `Trip.dedupID`.
+    var dedupID: String = UUID().uuidString
+
+    var trip: Trip?
+
+    /// The itinerary stop this contact belongs to, or `nil` for a trip-level one.
+    var item: ItineraryItem?
+
+    init(
+        name: String = "", value: String = "", kind: ContactKind = .phone, order: Int = 0,
+        trip: Trip? = nil, item: ItineraryItem? = nil
+    ) {
+        self.name = name
+        self.value = value
+        self.kind = kind.rawValue
+        self.order = order
+        self.trip = trip
+        self.item = item
+    }
+
+    /// The kind as a typed value, falling back to `.other` for anything
+    /// unrecognised. Setting it writes through to the raw `kind` string.
+    var contactKind: ContactKind {
+        get { ContactKind(rawValue: kind) ?? .other }
+        set { kind = newValue.rawValue }
+    }
+
+    /// What tapping this contact opens, or `nil` when there's nothing to launch.
+    var actionURL: URL? { contactKind.actionURL(for: value) }
+
+    /// What to show as the contact's label: its name, else the raw value.
+    var displayName: String { name.isEmpty ? value : name }
+}
+
 /// One rendered group of a trip's packing list: a container (or `nil` for the
 /// ungrouped "Other" bucket) and the items filed under it. `Identifiable` so the
 /// grouped UI can `ForEach` over it. `nonisolated` so the `Trip` model's
@@ -736,4 +933,81 @@ nonisolated struct PackingGroup: Identifiable {
     let items: [PackingItem]
 
     var id: String { container?.dedupID ?? "ungrouped" }
+}
+
+/// One `#`-delimited chunk of a trip's notes — a heading and the text beneath it.
+///
+/// Notes remain a single Markdown string on `Trip`: this is a *view over* that
+/// string, never a stored shape. Nothing here touches the schema or CloudKit,
+/// and the Markdown/PDF exports keep rendering the very same headings they
+/// always did — a section boundary and a heading are the same character.
+///
+/// Splitting is deliberately strict: only a line starting `"# "` opens a
+/// section. `##`/`###` stay inside a body as sub-headings, and so does a
+/// fully-bold line — `TripPDFRenderer.headingText` also reads that as a heading,
+/// and it's how `TripPlanner.suggestNotes` marks its country headings, so
+/// splitting on it would burst a generated note into a dozen sections.
+///
+/// `parse` and `serialize` are exact inverses: serializing a parse gives back
+/// the original string byte for byte, blank lines and all. That's what lets the
+/// editor hand out one field per section without ever rewriting what the user
+/// wrote.
+nonisolated struct NoteSection: Identifiable, Equatable, Sendable {
+    let id = UUID()
+
+    /// The heading text, or `nil` for the lead chunk before the first `#` line —
+    /// which is the whole of any note written before sections existed.
+    var title: String?
+
+    /// The lines beneath the heading, kept verbatim (blank ones included) so the
+    /// round trip stays lossless.
+    var bodyLines: [String]
+
+    var body: String {
+        get { bodyLines.joined(separator: "\n") }
+        set { bodyLines = newValue.components(separatedBy: "\n") }
+    }
+
+    /// `true` when the section holds nothing but whitespace — used to hide the
+    /// empty lead field on a note that opens straight with a heading.
+    var isBodyBlank: Bool {
+        body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// The heading a line opens, or `nil` when it isn't one. The space after `#`
+    /// is required, so "#1 priority" and a bare "#" stay ordinary body text.
+    private static func headingTitle(_ line: String) -> String? {
+        line.hasPrefix("# ") ? String(line.dropFirst(2)) : nil
+    }
+
+    static func parse(_ notes: String) -> [NoteSection] {
+        var sections: [NoteSection] = []
+        var title: String?
+        var lines: [String] = []
+        for line in notes.components(separatedBy: "\n") {
+            if let heading = headingTitle(line) {
+                sections.append(NoteSection(title: title, bodyLines: lines))
+                title = heading
+                lines = []
+            } else {
+                lines.append(line)
+            }
+        }
+        sections.append(NoteSection(title: title, bodyLines: lines))
+        return sections
+    }
+
+    static func serialize(_ sections: [NoteSection]) -> String {
+        var lines: [String] = []
+        for section in sections {
+            if let title = section.title {
+                // A newline pasted into the heading field would split the section
+                // on the next parse and strand the remainder under a heading the
+                // user never wrote; fold it to a space instead.
+                lines.append("# " + title.replacingOccurrences(of: "\n", with: " "))
+            }
+            lines.append(contentsOf: section.bodyLines)
+        }
+        return lines.joined(separator: "\n")
+    }
 }

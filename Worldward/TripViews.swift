@@ -72,6 +72,7 @@ private struct TripExportOptionsSheet: View {
                     Toggle("Packing list", isOn: binding(.packing))
                     Toggle("Notes", isOn: binding(.notes))
                     Toggle("Attachments", isOn: binding(.attachments))
+                    Toggle("Contacts", isOn: binding(.contacts))
                 } header: {
                     Text("Include in export")
                 } footer: {
@@ -392,6 +393,36 @@ private struct NotesHeaderButton: ViewModifier {
     }
 }
 
+/// Which note field holds focus. Sections are addressed by id, never by index,
+/// so a re-parse that merges or inserts one can't hand focus to a different
+/// field than the one being typed in.
+private enum NoteFieldFocus: Hashable {
+    case title(UUID)
+    case body(UUID)
+}
+
+/// Starter headings offered by "Add section", so the feature reads as something
+/// more inviting than an empty box. Each is only text — the emoji is the first
+/// character of the heading, so it needs no storage and exports like any other.
+private enum NoteSectionPreset: String, CaseIterable, Identifiable {
+    case insurance, transport, money, emergency
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .insurance:
+            String(localized: "🛡️ Insurance", comment: "Preset heading for a trip note section")
+        case .transport:
+            String(localized: "✈️ Transport", comment: "Preset heading for a trip note section")
+        case .money:
+            String(localized: "💳 Money", comment: "Preset heading for a trip note section")
+        case .emergency:
+            String(localized: "🏥 Emergency", comment: "Preset heading for a trip note section")
+        }
+    }
+}
+
 extension String {
     /// Capitalizes only the first character, locale-aware. `.localizedCapitalized`
     /// would title-case every word ("In 12 Days"); relative date phrases want
@@ -506,11 +537,14 @@ struct TripDetailView: View {
     @State private var showSaveTemplate = false
     @State private var newTemplateName = ""
     @State private var showPhotoSuggestions = false
-    /// Swaps the Notes row between the read-only Markdown preview and the raw
-    /// `TextField`. Tapping the preview flips it on; the field losing focus
-    /// flips it back off (see `notesSection`).
-    @State private var isEditingNotes = false
-    @FocusState private var notesFieldFocused: Bool
+    /// `trip.notes` split on its `#` headings — one editable field per section.
+    /// Derived state, re-parsed only when editing ends (see `reparseNotes`); the
+    /// text itself always lives on the trip.
+    @State private var noteSections: [NoteSection] = []
+    /// Which section's body is showing the raw editor rather than the rendered
+    /// preview. Tapping a preview flips it on; "Done" flips it back off.
+    @State private var editingBodyID: NoteSection.ID?
+    @FocusState private var noteFocus: NoteFieldFocus?
     /// Held across submits so a run of new packing items can be typed without
     /// tapping back into the field between each one.
     @FocusState private var packingFieldFocused: Bool
@@ -547,9 +581,10 @@ struct TripDetailView: View {
                 tripIdentitySection
                 itinerarySection
                 packingSections
-                notesSection
+                notesSections
                 documentsSection
                 linksSection
+                contactsSection
                 tripPhotosSection
             }
             // Drag-to-reorder packing items within and across container groups; the
@@ -568,7 +603,29 @@ struct TripDetailView: View {
                 // to the Notes section's Done button.
                 .scrollDismissesKeyboard(.interactively)
             #endif
-            .task { seedContainersIfNeeded() }
+            .task(id: trip.persistentModelID) {
+                seedContainersIfNeeded()
+                // Unconditional, and keyed on the trip: editing a second trip
+                // reuses this view, and a stale field list would then show — and
+                // on the next keystroke save — the previous trip's notes.
+                noteSections = NoteSection.parse(trip.notes)
+            }
+            // Every keystroke mirrors straight back onto the trip, so closing the
+            // editor mid-word can't lose anything.
+            .onChange(of: noteSections) { writeNotesThrough() }
+            // Editing ended: only now may a typed "# " split a field in two.
+            .onChange(of: noteFocus) { previous, current in
+                if previous != nil, current == nil { reparseNotes() }
+            }
+            // A write from somewhere else — CloudKit landing a sync, the
+            // assistant appending — rebuilds the fields. Skipped while a field
+            // has focus so an arriving sync can't yank the cursor mid-sentence.
+            .onChange(of: trip.notes) { _, updated in
+                guard noteFocus == nil, NoteSection.serialize(noteSections) != updated else {
+                    return
+                }
+                noteSections = NoteSection.parse(updated)
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
@@ -1264,63 +1321,172 @@ struct TripDetailView: View {
         }
     }
 
-    /// Notes often carry Markdown (the assistant's `suggestNotes` writes bold
-    /// country headings and bullet lists), which a bare `TextField` shows as raw
-    /// asterisks and dashes. Since a text field can't render styled text, the
-    /// row swaps between two modes: a read-only rendered preview normally, and
-    /// the raw editor after a tap — ended again by the field losing focus.
-    private var notesSection: some View {
+    /// Notes are one Markdown string, split on its `# ` headings into a field per
+    /// section (see `NoteSection`). The lead field — everything before the first
+    /// heading — is the plain "Notes" box the trip has always had, so a note
+    /// written before sections existed keeps behaving exactly as it did.
+    ///
+    /// Each body keeps the old two-mode swap: a rendered preview normally (the
+    /// assistant's `suggestNotes` writes bold headings and bullet lists, which a
+    /// bare `TextField` shows as raw asterisks), the raw editor after a tap.
+    @ViewBuilder private var notesSections: some View {
+        ForEach($noteSections) { $section in
+            Section {
+                noteBody(for: $section)
+                // The assistant appends to the note as a whole, so its button
+                // belongs to the lead section rather than to every heading.
+                if section.title == nil, canUseAssistant {
+                    fillButton(field: .notes, action: fillNotes)
+                }
+            } header: {
+                noteHeader(for: $section)
+            }
+            // Headings are text the user wrote; a section header would otherwise
+            // upper-case them and misrepresent what's stored.
+            .textCase(nil)
+        }
         Section {
-            if trip.notes.isEmpty || isEditingNotes {
-                TextField("Links, confirmations, ideas…", text: $trip.notes, axis: .vertical)
+            addNoteSectionMenu
+        } footer: {
+            Text(
+                "Sections are Markdown headings — they show as headings in the shared file, and typing “# ” on its own line makes one here."
+            )
+        }
+    }
+
+    /// One section's body: the rendered preview until tapped, then the raw
+    /// editor. A titled section can also have its heading removed from here,
+    /// which merges its text upward rather than deleting anything.
+    @ViewBuilder private func noteBody(for section: Binding<NoteSection>) -> some View {
+        let id = section.wrappedValue.id
+        Group {
+            if section.wrappedValue.isBodyBlank || editingBodyID == id {
+                TextField("Links, confirmations, ideas…", text: section.body, axis: .vertical)
                     .lineLimit(3...8)
-                    .focused($notesFieldFocused)
+                    .focused($noteFocus, equals: .body(id))
                     // Only grabs focus when arriving via a tap on the preview —
-                    // not when the section first shows the empty-notes field,
-                    // where a keyboard popping up unasked would be hostile.
-                    .onAppear { if isEditingNotes { notesFieldFocused = true } }
-                    .onChange(of: notesFieldFocused) { isEditingNotes = notesFieldFocused }
+                    // not when the section first shows an empty field, where a
+                    // keyboard popping up unasked would be hostile.
+                    .onAppear { if editingBodyID == id { noteFocus = .body(id) } }
             } else {
-                TripNotesPreview(markdown: trip.notes)
+                TripNotesPreview(markdown: section.wrappedValue.body)
                     .contentShape(.rect)
-                    .onTapGesture { isEditingNotes = true }
+                    .onTapGesture { editingBodyID = id }
                     // The tap-to-edit affordance is invisible to assistive tech.
                     .accessibilityAddTraits(.isButton)
                     .accessibilityHint(
                         Text("Edits the notes", comment: "Accessibility hint on the notes preview"))
             }
-
-            if canUseAssistant {
-                fillButton(field: .notes, action: fillNotes)
+        }
+        .swipeActions(edge: .trailing) {
+            if section.wrappedValue.title != nil {
+                Button {
+                    removeHeading(id)
+                } label: {
+                    Label("Remove section heading", systemImage: "text.badge.minus")
+                }
             }
-        } header: {
-            notesSectionHeader
+        }
+        .contextMenu {
+            if section.wrappedValue.title != nil {
+                Button {
+                    removeHeading(id)
+                } label: {
+                    Label("Remove section heading", systemImage: "text.badge.minus")
+                }
+            }
         }
     }
 
-    /// Carries both halves of the notes mode switch. Editing is ended by the
-    /// field losing focus, but nothing inside a `List` takes it away — tapping
-    /// other rows or the space around them leaves a text field first responder,
-    /// so the raw Markdown used to stay on screen with no way back to the
-    /// preview. "Done" is the explicit way out (`.scrollDismissesKeyboard` on the
-    /// list gives the gestural one), and "Edit" is the way *in*: the rendered
-    /// preview is tappable but looks exactly like static text, so the one
-    /// affordance it had was invisible.
-    @ViewBuilder private var notesSectionHeader: some View {
+    /// The lead section keeps the static "Notes" title; every other section's
+    /// header *is* its heading, editable in place. "Done" is the explicit way out
+    /// of the raw editor — nothing inside a `List` takes focus away, so tapping
+    /// another row would otherwise leave the raw Markdown on screen with no way
+    /// back to the preview.
+    @ViewBuilder private func noteHeader(for section: Binding<NoteSection>) -> some View {
+        let id = section.wrappedValue.id
         HStack {
-            Text("Notes")
+            if section.wrappedValue.title == nil {
+                Text("Notes")
+            } else {
+                TextField(
+                    "Section title",
+                    text: Binding(
+                        get: { section.wrappedValue.title ?? "" },
+                        set: { section.wrappedValue.title = $0 })
+                )
+                .font(.headline)
+                .focused($noteFocus, equals: .title(id))
+            }
             Spacer()
-            if isEditingNotes {
-                Button("Done") { notesFieldFocused = false }
-                    .modifier(NotesHeaderButton())
-            } else if !trip.notes.isEmpty {
+            if editingBodyID == id {
+                Button("Done") {
+                    editingBodyID = nil
+                    noteFocus = nil
+                }
+                .modifier(NotesHeaderButton())
+            } else if !section.wrappedValue.isBodyBlank {
                 // Setting the flag swaps in the field, whose `.onAppear` takes
                 // focus — the same path a tap on the preview follows.
-                Button("Edit") { isEditingNotes = true }
+                Button("Edit") { editingBodyID = id }
                     .modifier(NotesHeaderButton())
             }
         }
-        .animation(.snappy, value: isEditingNotes)
+        .animation(.snappy, value: editingBodyID)
+    }
+
+    /// Starter headings, so the feature is discoverable as something other than
+    /// an empty box. Each is just text: the emoji is the first character of the
+    /// heading, needing no storage of its own and exporting like any other.
+    private var addNoteSectionMenu: some View {
+        Menu {
+            ForEach(NoteSectionPreset.allCases) { preset in
+                Button(preset.title) { addNoteSection(titled: preset.title) }
+            }
+            Divider()
+            Button("Custom section…") { addNoteSection(titled: "") }
+        } label: {
+            Label("Add section", systemImage: "text.append")
+        }
+    }
+
+    private func addNoteSection(titled title: String) {
+        let section = NoteSection(title: title, bodyLines: [""])
+        withAnimation(.snappy) { noteSections.append(section) }
+        writeNotesThrough()
+        // A preset lands ready to write in; a custom one needs its name first.
+        editingBodyID = title.isEmpty ? nil : section.id
+        noteFocus = title.isEmpty ? .title(section.id) : .body(section.id)
+    }
+
+    /// Drops a section's heading and folds its text into the section above.
+    /// Nothing is deleted, which is what lets this be a one-tap action with no
+    /// confirmation — to remove the text you clear the field.
+    private func removeHeading(_ id: NoteSection.ID) {
+        guard let index = noteSections.firstIndex(where: { $0.id == id }), index > 0 else { return }
+        withAnimation(.snappy) {
+            let removed = noteSections.remove(at: index)
+            noteSections[index - 1].bodyLines.append(contentsOf: removed.bodyLines)
+        }
+        writeNotesThrough()
+    }
+
+    /// Mirrors the fields back into `trip.notes` on every keystroke, exactly as
+    /// the single bound field used to, so leaving the screen can never lose text.
+    /// Deliberately does *not* re-parse: rebuilding the field list mid-word would
+    /// change view identity and yank the cursor. Restructuring is `reparseNotes`.
+    private func writeNotesThrough() {
+        let text = NoteSection.serialize(noteSections)
+        if text != trip.notes { trip.notes = text }
+    }
+
+    /// Re-derives the fields once editing ends — this is where a "# " typed
+    /// inside a body finally becomes its own section. Skipped when the heading
+    /// structure is unchanged, so tabbing between fields doesn't churn identity.
+    private func reparseNotes() {
+        let reparsed = NoteSection.parse(trip.notes)
+        guard reparsed.map(\.title) != noteSections.map(\.title) else { return }
+        withAnimation(.snappy) { noteSections = reparsed }
     }
 
     /// Trip-wide documents — files not tied to a single stop (insurance, a
@@ -1378,6 +1544,46 @@ struct TripDetailView: View {
                 "Web links for the whole trip — booking pages, timetables. To pin a link to a place, use its stop above."
             )
         }
+    }
+
+    /// Trip-level contacts — numbers you'd want at a gate with no signal: the
+    /// insurer's emergency line, a tour operator. Contacts for one place live
+    /// under that stop's row instead. Mirrors `linksSection`.
+    private var contactsSection: some View {
+        Section {
+            if trip.tripContacts.isEmpty {
+                emptySectionPlaceholder(
+                    symbol: "person.crop.circle",
+                    message: Text("No contacts yet", comment: "Empty trip contacts placeholder"))
+            }
+            ForEach(trip.tripContacts) { contact in
+                ContactRow(contact: contact) { modelContext.delete(contact) }
+            }
+            .onDelete(perform: deleteTripContacts)
+            Button {
+                addTripContact()
+            } label: {
+                Label("Add contact", systemImage: "person.crop.circle.badge.plus")
+            }
+        } header: {
+            Text("Contacts")
+        } footer: {
+            Text(
+                "Numbers and addresses for the whole trip — insurance, emergency lines. To pin a contact to a place, use its stop above."
+            )
+        }
+    }
+
+    private func addTripContact() {
+        let contact = TripContact(order: trip.tripContacts.count, trip: trip)
+        modelContext.insert(contact)
+        if trip.contacts == nil { trip.contacts = [] }
+        trip.contacts?.append(contact)
+    }
+
+    private func deleteTripContacts(_ offsets: IndexSet) {
+        let contacts = trip.tripContacts
+        for index in offsets { modelContext.delete(contacts[index]) }
     }
 
     private func addTripLink() {
@@ -2141,6 +2347,7 @@ private struct StopRow: View {
 
             attachments
             linksEditor
+            contactsEditor
         }
         .padding(.vertical, 2)
     }
@@ -2201,6 +2408,29 @@ private struct StopRow: View {
         modelContext.insert(link)
         if stop.links == nil { stop.links = [] }
         stop.links?.append(link)
+    }
+
+    /// Contacts pinned to this stop — the hotel's front desk on the hotel stop,
+    /// a guide on a booked tour. Mirrors `linksEditor`.
+    @ViewBuilder private var contactsEditor: some View {
+        ForEach(stop.sortedContacts) { contact in
+            ContactRow(contact: contact) { modelContext.delete(contact) }
+        }
+        Button {
+            addStopContact()
+        } label: {
+            Label("Add contact", systemImage: "person.crop.circle.badge.plus")
+                .font(.subheadline)
+        }
+        .buttonStyle(.borderless)
+    }
+
+    private func addStopContact() {
+        let contact = TripContact(
+            order: (stop.contacts ?? []).count, trip: stop.trip, item: stop)
+        modelContext.insert(contact)
+        if stop.contacts == nil { stop.contacts = [] }
+        stop.contacts?.append(contact)
     }
 
     /// The row's secondary line: the country as a flag chip (the whole point of
@@ -2336,5 +2566,93 @@ private struct LinkRow: View {
             .accessibilityLabel(Text("Remove link"))
         }
     }
+}
+
+/// One editable contact: its kind, a name, the number or address, and a button
+/// that hands the value to the system — the dialer, WhatsApp, or a mail
+/// composer. Mirrors `LinkRow`; the kind leads the row because it drives the
+/// icon, the keyboard and what the action button does.
+private struct ContactRow: View {
+    @Bindable var contact: TripContact
+    let onDelete: () -> Void
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Menu {
+                Picker("Contact kind", selection: $contact.contactKind) {
+                    ForEach(ContactKind.allCases) { kind in
+                        Label(kind.label, systemImage: kind.symbolName).tag(kind)
+                    }
+                }
+            } label: {
+                Image(systemName: contact.contactKind.symbolName)
+                    .font(.subheadline)
+                    .frame(width: 22)
+            }
+            .buttonStyle(.borderless)
+            .help("Contact kind")
+            .accessibilityLabel(Text("Contact kind"))
+
+            VStack(alignment: .leading, spacing: 2) {
+                TextField("Name", text: $contact.name)
+                    .font(.subheadline)
+                TextField(contact.contactKind.valuePrompt, text: $contact.value)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .autocorrectionDisabled()
+                    #if !os(macOS)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(keyboardType)
+                    #endif
+            }
+
+            // Absent until the value parses into something openable, so a
+            // half-typed number doesn't offer a call that would fail.
+            if let action = contact.actionURL {
+                Button {
+                    openURL(action)
+                } label: {
+                    Image(systemName: contact.contactKind.symbolName)
+                        .font(.subheadline)
+                }
+                .buttonStyle(.borderless)
+                .help(actionLabel)
+                .accessibilityLabel(Text(actionLabel))
+            }
+
+            Button(role: .destructive, action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(width: minimumHitTarget, height: minimumHitTarget)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.borderless)
+            .help("Remove contact")
+            .accessibilityLabel(Text("Remove contact"))
+        }
+    }
+
+    /// What the action button promises, phrased per kind so VoiceOver announces
+    /// "Call" rather than a generic "Open".
+    private var actionLabel: String {
+        switch contact.contactKind {
+        case .phone: String(localized: "Call", comment: "Contact action")
+        case .whatsapp: String(localized: "Open WhatsApp", comment: "Contact action")
+        case .email: String(localized: "Send email", comment: "Contact action")
+        case .other: String(localized: "Open", comment: "Contact action")
+        }
+    }
+
+    #if !os(macOS)
+        private var keyboardType: UIKeyboardType {
+            switch contact.contactKind {
+            case .phone, .whatsapp: .phonePad
+            case .email: .emailAddress
+            case .other: .default
+            }
+        }
+    #endif
 }
 
