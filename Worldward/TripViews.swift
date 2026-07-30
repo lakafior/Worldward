@@ -545,6 +545,12 @@ struct TripDetailView: View {
     /// preview. Tapping a preview flips it on; "Done" flips it back off.
     @State private var editingBodyID: NoteSection.ID?
     @FocusState private var noteFocus: NoteFieldFocus?
+    #if os(macOS)
+        /// The itinerary stop the pointer is currently over, driving its trailing
+        /// delete button. macOS has no swipe-to-delete, so without this the only
+        /// visible way to remove a stop is a right-click most people never try.
+        @State private var hoveredStopID: ItineraryItem.ID?
+    #endif
     /// Held across submits so a run of new packing items can be typed without
     /// tapping back into the field between each one.
     @FocusState private var packingFieldFocused: Bool
@@ -1016,15 +1022,38 @@ struct TripDetailView: View {
         }
     }
 
-    private func stopRow(_ stop: ItineraryItem, showCountryChip: Bool) -> some View {
+    @ViewBuilder private func stopRow(_ stop: ItineraryItem, showCountryChip: Bool) -> some View {
+        #if os(macOS)
+            // The row reserves the trailing slot whether or not the pointer is
+            // there, so fading the button in can't reflow the row underneath it.
+            HStack(alignment: .top, spacing: 8) {
+                stopRowBody(stop, showCountryChip: showCountryChip)
+                deleteStopButton(stop)
+            }
+            .onHover { inside in
+                if inside {
+                    hoveredStopID = stop.id
+                } else if hoveredStopID == stop.id {
+                    // Only clear when *this* row is the one being left: rows exit
+                    // and enter in either order, and a stale exit would otherwise
+                    // blank the button on the row the pointer just arrived at.
+                    hoveredStopID = nil
+                }
+            }
+        #else
+            stopRowBody(stop, showCountryChip: showCountryChip)
+        #endif
+    }
+
+    private func stopRowBody(_ stop: ItineraryItem, showCountryChip: Bool) -> some View {
         StopRow(
             stop: stop,
             showCountryChip: showCountryChip,
             onAddAttachment: { attachToStop(stop) },
             onOpenAttachment: { openAttachment($0) })
-            // The iOS list has swipe-to-delete; macOS has no swipe, so a context
-            // menu (right-click / long-press) is the way to remove a stop there —
-            // and it's a fine second affordance on iOS too.
+            // The iOS list has swipe-to-delete; macOS has the hover button above.
+            // The context menu backs both up — right-click on macOS, long-press on
+            // iOS — and is the only one of the three VoiceOver reaches by pointer.
             .contextMenu {
                 Button(role: .destructive) {
                     modelContext.delete(stop)
@@ -1033,6 +1062,31 @@ struct TripDetailView: View {
                 }
             }
     }
+
+    #if os(macOS)
+        /// The hover-revealed delete control, aligned to the top of the row so it
+        /// sits beside the stop's name rather than floating against the middle of
+        /// a tall row of date and transport controls. Faded rather than removed —
+        /// see `stopRow` — and left hit-testable while transparent, which costs
+        /// nothing (the pointer can't reach it without first revealing it) and
+        /// keeps it reachable by VoiceOver.
+        private func deleteStopButton(_ stop: ItineraryItem) -> some View {
+            Button(role: .destructive) {
+                modelContext.delete(stop)
+            } label: {
+                Image(systemName: "trash")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(width: minimumHitTarget, height: minimumHitTarget)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.borderless)
+            .opacity(hoveredStopID == stop.id ? 1 : 0)
+            .animation(.easeInOut(duration: 0.12), value: hoveredStopID)
+            .help("Delete Stop")
+            .accessibilityLabel(Text("Delete Stop"))
+        }
+    #endif
 
     /// A section header carrying the sort control on its trailing edge. `.textCase(nil)`
     /// keeps "Itinerary" and country names in their natural case.
@@ -1427,9 +1481,14 @@ struct TripDetailView: View {
                 .modifier(NotesHeaderButton())
             } else if !section.wrappedValue.isBodyBlank {
                 // Setting the flag swaps in the field, whose `.onAppear` takes
-                // focus — the same path a tap on the preview follows.
-                Button("Edit") { editingBodyID = id }
-                    .modifier(NotesHeaderButton())
+                // focus — the same path a tap on the preview follows. The pencil
+                // does the real discoverability work: the rendered preview below
+                // is tappable but looks inert, so the header needs to signal that
+                // this section is editable at all.
+                Button { editingBodyID = id } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                .modifier(NotesHeaderButton())
             }
         }
         .animation(.snappy, value: editingBodyID)

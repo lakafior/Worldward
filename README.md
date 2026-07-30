@@ -360,11 +360,9 @@ WorldwardWidgets/               # Widget extension target
 
 ## Roadmap
 
-Planned next, in rough priority order — everything stays native-only, lightweight, and local-first:
+Planned next — everything stays native-only, lightweight, and local-first:
 
 - **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
-- **City-level itinerary stops** — today a stop is always a whole *country*, with sights nested inside it as places-to-see. Allow a stop to be a city or region directly, so a multi-stop trip within one country reads naturally (Reykjavík → Vík → Höfn) instead of collapsing into a single country row. Country stops stay the default; the model already supports it (`ItineraryItem.title` is free text with the country optional).
-- **Discoverability tips** (TipKit) — one-shot native hints for affordances that are easy to miss, e.g. "tap a badge to see how to unlock it" on first visit to Achievements, or pointing out photo import when adding a visit.
 
 ---
 
