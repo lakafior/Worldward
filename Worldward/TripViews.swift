@@ -588,9 +588,7 @@ struct TripDetailView: View {
                 itinerarySection
                 packingSections
                 notesSections
-                documentsSection
-                linksSection
-                contactsSection
+                essentialsSection
                 tripPhotosSection
             }
             // Drag-to-reorder packing items within and across container groups; the
@@ -1548,88 +1546,50 @@ struct TripDetailView: View {
         withAnimation(.snappy) { noteSections = reparsed }
     }
 
-    /// Trip-wide documents — files not tied to a single stop (insurance, a
-    /// passport scan, a group itinerary PDF). A ticket for one place lives under
-    /// that place's stop instead; both are stored inside the trip itself
+    /// What the trip as a whole carries rather than any one stop: files (insurance,
+    /// a passport scan, a group itinerary PDF), web links (a booking page, the
+    /// city's transport timetable) and contacts (the insurer's emergency line, a
+    /// tour operator). Attachments are stored inside the trip itself
     /// (`.externalStorage`), so they're on-device at a gate with no connectivity.
-    private var documentsSection: some View {
+    ///
+    /// One section rather than three, and no placeholders: an empty trip shows a
+    /// single "Add to trip" row instead of three empty sections whose footers had
+    /// to explain which level each kind of item belonged to. The scope is now
+    /// carried by *where you add from* — this menu for the whole trip, a stop's own
+    /// menu for that stop — so there's nothing left to spell out.
+    private var essentialsSection: some View {
         Section {
-            if trip.documents.isEmpty {
-                emptySectionPlaceholder(
-                    symbol: "doc",
-                    message: Text(
-                        "No documents yet", comment: "Empty trip documents placeholder"))
-            }
             ForEach(trip.documents) { attachment in
                 AttachmentRow(attachment: attachment) { openAttachment(attachment) }
             }
             .onDelete(perform: deleteDocuments)
-            Button {
-                // A trip-level document isn't tied to any stop.
-                attachingToStop = nil
-                showAttachmentImporter = true
-            } label: {
-                Label("Add File", systemImage: "paperclip")
-            }
-        } header: {
-            Text("Documents")
-        } footer: {
-            Text("Files for the whole trip. To attach a ticket to a place, use its stop above.")
-        }
-    }
-
-    /// Trip-level web links — booking pages, timetables — that aren't tied to any
-    /// one stop. Links pinned to a place live under that stop's row instead.
-    private var linksSection: some View {
-        Section {
-            if trip.tripLinks.isEmpty {
-                emptySectionPlaceholder(
-                    symbol: "link",
-                    message: Text("No links yet", comment: "Empty trip links placeholder"))
-            }
             ForEach(trip.tripLinks) { link in
                 LinkRow(link: link) { modelContext.delete(link) }
             }
             .onDelete(perform: deleteTripLinks)
-            Button {
-                addTripLink()
-            } label: {
-                Label("Add link", systemImage: "link")
-            }
-        } header: {
-            Text("Links")
-        } footer: {
-            Text(
-                "Web links for the whole trip — booking pages, timetables. To pin a link to a place, use its stop above."
-            )
-        }
-    }
-
-    /// Trip-level contacts — numbers you'd want at a gate with no signal: the
-    /// insurer's emergency line, a tour operator. Contacts for one place live
-    /// under that stop's row instead. Mirrors `linksSection`.
-    private var contactsSection: some View {
-        Section {
-            if trip.tripContacts.isEmpty {
-                emptySectionPlaceholder(
-                    symbol: "person.crop.circle",
-                    message: Text("No contacts yet", comment: "Empty trip contacts placeholder"))
-            }
             ForEach(trip.tripContacts) { contact in
                 ContactRow(contact: contact) { modelContext.delete(contact) }
             }
             .onDelete(perform: deleteTripContacts)
-            Button {
-                addTripContact()
+            Menu {
+                Button {
+                    // A trip-level document isn't tied to any stop.
+                    attachingToStop = nil
+                    showAttachmentImporter = true
+                } label: {
+                    Label("Add file", systemImage: "paperclip")
+                }
+                Button(action: addTripLink) {
+                    Label("Add link", systemImage: "link")
+                }
+                Button(action: addTripContact) {
+                    Label("Add contact", systemImage: "person.crop.circle.badge.plus")
+                }
             } label: {
-                Label("Add contact", systemImage: "person.crop.circle.badge.plus")
+                Label("Add to trip", systemImage: "plus")
             }
         } header: {
-            Text("Contacts")
-        } footer: {
-            Text(
-                "Numbers and addresses for the whole trip — insurance, emergency lines. To pin a contact to a place, use its stop above."
-            )
+            Text("Essentials")
         }
     }
 
@@ -1637,7 +1597,7 @@ struct TripDetailView: View {
         let contact = TripContact(order: trip.tripContacts.count, trip: trip)
         modelContext.insert(contact)
         if trip.contacts == nil { trip.contacts = [] }
-        trip.contacts?.append(contact)
+        withAnimation(.snappy) { trip.contacts?.append(contact) }
     }
 
     private func deleteTripContacts(_ offsets: IndexSet) {
@@ -1649,7 +1609,7 @@ struct TripDetailView: View {
         let link = TripLink(order: trip.tripLinks.count, trip: trip)
         modelContext.insert(link)
         if trip.links == nil { trip.links = [] }
-        trip.links?.append(link)
+        withAnimation(.snappy) { trip.links?.append(link) }
     }
 
     private func deleteTripLinks(_ offsets: IndexSet) {
@@ -1992,7 +1952,7 @@ struct TripDetailView: View {
     /// Copies the picked files into the trip as attachments. Oversized or
     /// unreadable files are skipped with an alert; the rest still attach.
     /// Queues a picked file to attach to `stop` rather than the trip as a whole,
-    /// then opens the importer (shared with the trip-level "Add File").
+    /// then opens the importer (shared with Essentials' trip-level "Add file").
     private func attachToStop(_ stop: ItineraryItem) {
         attachingToStop = stop
         showAttachmentImporter = true
@@ -2312,7 +2272,16 @@ private struct StopRow: View {
     /// Opens an attached file (Quick Look on iOS, default app on macOS).
     let onOpenAttachment: (TripAttachment) -> Void
     @Environment(\.modelContext) private var modelContext
-    @State private var hasDate: Bool
+    /// Whether the note field is on screen. Every other optional field is driven
+    /// by its own content — a date shows because there *is* a date — but a note
+    /// starts empty, so this bridges the gap between choosing "Add note" and
+    /// typing into it.
+    @State private var showsNote: Bool
+    /// Set when "Add note" is chosen so the freshly revealed field takes focus,
+    /// and cleared the moment it does. A plain `onAppear` check would re-grab
+    /// focus every time the row scrolled back into view.
+    @State private var focusNoteOnAppear = false
+    @FocusState private var noteFocused: Bool
 
     init(
         stop: ItineraryItem,
@@ -2324,7 +2293,7 @@ private struct StopRow: View {
         self.showCountryChip = showCountryChip
         self.onAddAttachment = onAddAttachment
         self.onOpenAttachment = onOpenAttachment
-        _hasDate = State(initialValue: stop.date != nil)
+        _showsNote = State(initialValue: !stop.note.isEmpty)
     }
 
     /// A stop with a coordinate came from place search — render it as a place.
@@ -2349,81 +2318,122 @@ private struct StopRow: View {
         return trip.startDate...trip.endDate
     }
 
+    /// Every field is driven by its own content: a stop that carries nothing is a
+    /// single line, and each editor appears the moment there's something for it to
+    /// hold. Adding any of them is one control — `detailMenu`, on the identity row
+    /// — rather than a permanently open row per capability, which left a plain
+    /// stop standing nine rows tall with seven of them empty.
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             identityRow
             secondaryLine
-            transportEditor
-
-            // No `.font` override: a control's label belongs at body size.
-            Toggle("Set a date", isOn: $hasDate)
-                .onChange(of: hasDate) { _, on in
-                    stop.date = on ? (stop.date ?? defaultStopDate) : nil
-                }
-                .animation(.snappy, value: hasDate)
-
-            if hasDate {
-                let selection = Binding(
-                    get: { stop.date ?? defaultStopDate }, set: { stop.date = $0 })
-                Group {
-                    // Clamp to the trip's span so a stop's date can't wander
-                    // outside it; unbounded only when there's no valid range.
-                    if let range = tripDateRange {
-                        DatePicker(
-                            "Date", selection: selection, in: range,
-                            displayedComponents: .date)
-                    } else {
-                        DatePicker("Date", selection: selection, displayedComponents: .date)
+            if stop.transport != nil { transportEditor }
+            if stop.date != nil { dateEditor }
+            if showsNote {
+                // `.subheadline`, not `.caption`: this is text the user wrote, and
+                // the caption styles are for metadata *about* content, not content.
+                TextField("Note", text: $stop.note, axis: .vertical)
+                    .font(.subheadline)
+                    .lineLimit(1...3)
+                    .focused($noteFocused)
+                    .onAppear {
+                        if focusNoteOnAppear {
+                            focusNoteOnAppear = false
+                            noteFocused = true
+                        }
                     }
-                    // How long you're here, inferred from the gap to the next dated
-                    // stop (the trip's end for the last one). A gray hint, not an
-                    // editable field — see `ItineraryItem.stayDayCount`.
-                    if let days = stop.stayDayCount {
-                        Text("^[\(days) day](inflect: true)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
-
-            // `.subheadline`, not `.caption`: this is text the user wrote, and the
-            // caption styles are for metadata *about* content, not content itself.
-            TextField("Note", text: $stop.note, axis: .vertical)
-                .font(.subheadline)
-                .lineLimit(1...3)
-
-            if isPlace {
-                Button {
-                    openInMaps()
-                } label: {
-                    Label("Open in Apple Maps", systemImage: "arrow.up.right.square")
-                        .font(.subheadline)
-                }
-                .buttonStyle(.borderless)
-            }
-
             attachments
-            linksEditor
-            contactsEditor
+            links
+            contacts
         }
         .padding(.vertical, 2)
     }
 
-    /// "Getting here": how the traveler reaches this stop. Optional — a menu picks
-    /// the mode (or clears it); choosing one reveals a free-text field for flight
-    /// or bus numbers, times, rental and confirmation details. Boarding passes go
-    /// in this stop's attachments below.
-    @ViewBuilder private var transportEditor: some View {
+    /// The stop's date and how long you're staying. Shown only once a date is
+    /// set — "Set a date" in `detailMenu` assigns `defaultStopDate`, which is
+    /// what reveals this; "Remove date" clears it away again.
+    @ViewBuilder private var dateEditor: some View {
+        let selection = Binding(get: { stop.date ?? defaultStopDate }, set: { stop.date = $0 })
+        // Clamp to the trip's span so a stop's date can't wander outside it;
+        // unbounded only when there's no valid range.
+        if let range = tripDateRange {
+            DatePicker("Date", selection: selection, in: range, displayedComponents: .date)
+        } else {
+            DatePicker("Date", selection: selection, displayedComponents: .date)
+        }
+        // How long you're here, inferred from the gap to the next dated stop (the
+        // trip's end for the last one). A gray hint, not an editable field — see
+        // `ItineraryItem.stayDayCount`.
+        if let days = stop.stayDayCount {
+            Text("^[\(days) day](inflect: true)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Everything optional a stop can carry, behind one control on the identity
+    /// row. Entries drop out as they're taken up — a stop that already has a date
+    /// offers to remove it instead — so the menu only ever lists what's actually
+    /// available to do next.
+    private var detailMenu: some View {
         Menu {
-            Picker("Getting here", selection: transportSelection) {
-                Text("None").tag(TransportMode?.none)
-                ForEach(TransportMode.allCases) { mode in
-                    Label(mode.label, systemImage: mode.symbolName)
-                        .tag(TransportMode?.some(mode))
+            Button {
+                withAnimation(.snappy) { stop.date = stop.date == nil ? defaultStopDate : nil }
+            } label: {
+                stop.date == nil
+                    ? Label("Set a date", systemImage: "calendar")
+                    : Label("Remove date", systemImage: "calendar.badge.minus")
+            }
+            // Once a mode is picked the row shows its own copy of this picker, so
+            // the mode can be changed or cleared where it's displayed.
+            if stop.transport == nil { transportPicker }
+            if !showsNote {
+                Button {
+                    focusNoteOnAppear = true
+                    withAnimation(.snappy) { showsNote = true }
+                } label: {
+                    Label("Add note", systemImage: "text.alignleft")
                 }
             }
+            Button(action: onAddAttachment) {
+                Label("Attach file", systemImage: "paperclip")
+            }
+            Button(action: addStopLink) {
+                Label("Add link", systemImage: "link")
+            }
+            Button(action: addStopContact) {
+                Label("Add contact", systemImage: "person.crop.circle.badge.plus")
+            }
+            if isPlace {
+                Divider()
+                Button(action: openInMaps) {
+                    Label("Open in Apple Maps", systemImage: "arrow.up.right.square")
+                }
+            }
+        } label: {
+            Image(systemName: "plus.circle")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                // The glyph alone is well under the touch minimum, and it sits
+                // beside a text field that would otherwise swallow near misses.
+                .frame(width: minimumHitTarget, height: minimumHitTarget)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
+        .help("Add detail")
+        .accessibilityLabel(Text("Add detail"))
+    }
+
+    /// "Getting here": how the traveler reaches this stop. Rendered only once a
+    /// mode has been picked (from `detailMenu`) — the menu stays on the row so the
+    /// mode can be changed or cleared where it shows, and the free-text field takes
+    /// flight or bus numbers, times, rental and confirmation details. Boarding
+    /// passes go in this stop's attachments.
+    @ViewBuilder private var transportEditor: some View {
+        Menu {
+            transportPicker
         } label: {
             Label {
                 Text(stop.transport?.label ?? String(localized: "Getting here"))
@@ -2434,54 +2444,52 @@ private struct StopRow: View {
         }
         .buttonStyle(.borderless)
 
-        if stop.transport != nil {
-            TextField(
-                "Flight no., times, confirmation…", text: $stop.transportDetail, axis: .vertical
-            )
+        TextField("Flight no., times, confirmation…", text: $stop.transportDetail, axis: .vertical)
             .font(.subheadline)
             .lineLimit(1...3)
+    }
+
+    /// The mode list itself, shared by `detailMenu` (which offers it while the stop
+    /// has no transport) and `transportEditor` (which offers it afterwards), so the
+    /// two can't drift apart.
+    private var transportPicker: some View {
+        Picker("Getting here", selection: transportSelection) {
+            Text("None").tag(TransportMode?.none)
+            ForEach(TransportMode.allCases) { mode in
+                Label(mode.label, systemImage: mode.symbolName)
+                    .tag(TransportMode?.some(mode))
+            }
         }
     }
 
     private var transportSelection: Binding<TransportMode?> {
-        Binding(get: { stop.transport }, set: { stop.transport = $0 })
+        Binding(
+            get: { stop.transport },
+            set: { mode in withAnimation(.snappy) { stop.transport = mode } })
     }
 
     /// Links pinned to this stop (a bus timetable, a ticket page), each openable
-    /// and removable, followed by an "Add link" button — mirroring `attachments`.
-    @ViewBuilder private var linksEditor: some View {
+    /// and removable. Adding one is in `detailMenu` — a stop with no links shows
+    /// nothing here rather than a standing "Add link" button.
+    @ViewBuilder private var links: some View {
         ForEach(stop.sortedLinks) { link in
             LinkRow(link: link) { modelContext.delete(link) }
         }
-        Button {
-            addStopLink()
-        } label: {
-            Label("Add link", systemImage: "link")
-                .font(.subheadline)
-        }
-        .buttonStyle(.borderless)
     }
 
     private func addStopLink() {
         let link = TripLink(order: (stop.links ?? []).count, trip: stop.trip, item: stop)
         modelContext.insert(link)
         if stop.links == nil { stop.links = [] }
-        stop.links?.append(link)
+        withAnimation(.snappy) { stop.links?.append(link) }
     }
 
     /// Contacts pinned to this stop — the hotel's front desk on the hotel stop,
-    /// a guide on a booked tour. Mirrors `linksEditor`.
-    @ViewBuilder private var contactsEditor: some View {
+    /// a guide on a booked tour. Mirrors `links`.
+    @ViewBuilder private var contacts: some View {
         ForEach(stop.sortedContacts) { contact in
             ContactRow(contact: contact) { modelContext.delete(contact) }
         }
-        Button {
-            addStopContact()
-        } label: {
-            Label("Add contact", systemImage: "person.crop.circle.badge.plus")
-                .font(.subheadline)
-        }
-        .buttonStyle(.borderless)
     }
 
     private func addStopContact() {
@@ -2489,7 +2497,7 @@ private struct StopRow: View {
             order: (stop.contacts ?? []).count, trip: stop.trip, item: stop)
         modelContext.insert(contact)
         if stop.contacts == nil { stop.contacts = [] }
-        stop.contacts?.append(contact)
+        withAnimation(.snappy) { stop.contacts?.append(contact) }
     }
 
     /// The row's secondary line: the country as a flag chip (the whole point of
@@ -2537,11 +2545,13 @@ private struct StopRow: View {
                 TextField(isPlace ? "Place" : "Stop", text: $stop.title)
                     .font(.headline)
             }
+            detailMenu
         }
     }
 
     /// Files attached to this stop, each openable with a remove button. A List
     /// row can't host `.onDelete`, so each carries its own destructive control.
+    /// Attaching one is in `detailMenu`.
     @ViewBuilder private var attachments: some View {
         ForEach(stop.sortedAttachments) { attachment in
             HStack(spacing: 8) {
@@ -2560,13 +2570,6 @@ private struct StopRow: View {
                 .accessibilityLabel(Text("Remove file"))
             }
         }
-        Button {
-            onAddAttachment()
-        } label: {
-            Label("Attach file", systemImage: "paperclip")
-                .font(.subheadline)
-        }
-        .buttonStyle(.borderless)
     }
 
     private func openInMaps() {
