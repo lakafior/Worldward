@@ -151,6 +151,9 @@ struct ContentView: View {
     @State private var eventKitSyncDebounce: Task<Void, Never>?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    /// Opens a trip contact's `tel:`/`wa.me`/`mailto:` action when the trip
+    /// widget's contact chip is tapped (see `consumePendingContactAction`).
+    @Environment(\.openURL) private var openURL
     /// Camera fly-tos and the toast's slide-in are real motion; with Reduce
     /// Motion on they become instant jumps / plain fades.
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -788,7 +791,7 @@ struct ContentView: View {
             } message: {
                 Text(locationError ?? "")
             }
-            .onOpenURL(perform: handleOpenedFile)
+            .onOpenURL(perform: handleIncomingURL)
             .task {
                 #if DEBUG
                     applyScreenshotRouting()
@@ -812,7 +815,10 @@ struct ContentView: View {
             .onChange(of: intentRouter.pendingOpenCountryID) { consumePendingOpenCountry() }
             .onChange(of: intentRouter.pendingSearchText) { consumePendingSearch() }
             .onChange(of: intentRouter.pendingMapTrip) { consumePendingMapTrip() }
-            .onChange(of: intentRouter.pendingOpenTripID) { consumePendingOpenTrip() }
+            .onChange(of: intentRouter.pendingOpenTripID) {
+                consumePendingOpenTrip()
+                consumePendingContactAction()
+            }
             // The catalog arrives after `loadGeoJSON`; re-try a pending country
             // selection once it does, so a cold-launched intent still resolves.
             // The count also changes as iCloud syncs rows in, so collapse any
@@ -875,6 +881,7 @@ struct ContentView: View {
                 consumePendingSearch()
                 consumePendingOpenPhotoImporter()
                 consumePendingOpenTrip()
+                consumePendingContactAction()
                 checkControlRequest()
             }
     }
@@ -1009,6 +1016,54 @@ struct ContentView: View {
         #else
             selectedTab = .going
         #endif
+    }
+
+    /// Everything the app is opened *with*: a `.wwtrip` file, or a `worldward://`
+    /// deep link from the trip widget. Split by scheme so each handler stays
+    /// about one thing.
+    private func handleIncomingURL(_ url: URL) {
+        if url.scheme?.lowercased() == "worldward" {
+            handleWidgetLink(url)
+        } else {
+            handleOpenedFile(url)
+        }
+    }
+
+    /// Routes a tap on the trip widget. `worldward://trip?id=…` opens the trip;
+    /// adding `&contact=…` also fires that contact's action once the store has
+    /// loaded. Both ids are `dedupID`s and both are held pending, so a cold
+    /// launch resolves them as soon as `@Query` populates — the same hand-off
+    /// `OpenTripIntent` uses.
+    private func handleWidgetLink(_ url: URL) {
+        guard url.host == "trip",
+            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+            let tripID = items.first(where: { $0.name == "id" })?.value, !tripID.isEmpty
+        else { return }
+        intentRouter.pendingOpenTripID = tripID
+        intentRouter.pendingContactActionID = items.first { $0.name == "contact" }?.value
+        consumePendingOpenTrip()
+        consumePendingContactAction()
+    }
+
+    /// Dials (or messages, or mails) the contact a widget chip named. The widget
+    /// hands over only a `dedupID` — the number stays in the store — so the
+    /// lookup happens here, and `ContactKind.actionURL` turns the value into
+    /// something the system can open. iOS confirms the call itself, so this
+    /// stays one tap without being a call placed behind the user's back.
+    ///
+    /// Leaves the id pending while the store is still empty (cold launch, or
+    /// iCloud mid-sync) and clears it once trips exist — a contact that has been
+    /// deleted since resolves to nothing rather than lingering all session.
+    private func consumePendingContactAction() {
+        guard let id = intentRouter.pendingContactActionID else { return }
+        let trips = (try? modelContext.fetch(FetchDescriptor<Trip>())) ?? []
+        guard !trips.isEmpty else { return }
+        intentRouter.pendingContactActionID = nil
+        let contact = trips.lazy
+            .flatMap { $0.sortedContacts }
+            .first { $0.dedupID == id }
+        guard let action = contact?.actionURL else { return }
+        openURL(action)
     }
 
     /// Handles a `.wwtrip` file opened from outside the app (AirDrop's "Open

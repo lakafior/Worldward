@@ -124,6 +124,50 @@ func refreshWidgetSnapshot(countries: [Country], trips: [Trip]) {
             tripEndDate: packingTrip?.endDate ?? .distantPast,
             appTheme: theme,
             items: packingItems))
+
+    // Every trip the configurable trip widget can be pointed at. Unlike the two
+    // snapshots above — which each follow one trip the app picks — this one is a
+    // menu: the widget's configuration names a trip, so the writer can't know
+    // which one matters and ships them all (bounded). See `TripDetailSnapshot`
+    // for why contact values are deliberately left behind.
+    let widgetTrips = trips
+        .filter { $0.isUpcoming(asOf: now) }
+        .sorted { $0.startDate < $1.startDate }
+        .prefix(TripDetailSnapshot.tripLimit)
+        .map { trip in
+            TripDetailSnapshot.Trip(
+                id: trip.dedupID,
+                title: trip.title,
+                flags: trip.flags,
+                startDate: trip.startDate,
+                endDate: trip.endDate,
+                stops: trip.sortedStops.prefix(TripDetailSnapshot.stopLimit).map { stop in
+                    TripDetailSnapshot.Stop(
+                        title: stop.title,
+                        detail: stop.detail,
+                        date: stop.date,
+                        // Resolved here because `TransportMode` and `ContactKind`
+                        // live in `Trip.swift`, which the widget extension doesn't
+                        // compile.
+                        transportSymbol: TransportMode(rawValue: stop.transportMode)?.symbolName
+                            ?? "",
+                        transportDetail: stop.transportDetail)
+                },
+                contacts: trip.tripContacts.prefix(TripDetailSnapshot.contactLimit).map { contact in
+                    TripDetailSnapshot.Contact(
+                        id: contact.dedupID,
+                        // Not `displayName`, which falls back to the raw value —
+                        // that would put the number in the file and on the
+                        // widget face. An unnamed contact shows its kind instead.
+                        name: contact.name.isEmpty
+                            ? contact.contactKind.label : contact.name,
+                        symbolName: contact.contactKind.symbolName)
+                },
+                documentCount: trip.documents.count,
+                linkCount: trip.tripLinks.count)
+        }
+    TripDetailSnapshotStore.write(
+        TripDetailSnapshot(appTheme: theme, trips: Array(widgetTrips)))
 }
 
 /// Convenience for intents, which fetch from their own short-lived context.
@@ -392,6 +436,13 @@ final class IntentRouter {
     /// until the trips list is on-screen so a cold launch can still resolve it once
     /// `@Query` populates; `TripsListView` clears it when it opens the trip.
     var pendingOpenTripID: String?
+
+    /// `dedupID` of a `TripContact` whose action should fire — dial the number,
+    /// open the WhatsApp thread, start the mail draft — set when the trip widget's
+    /// contact chip is tapped. The widget only ever knows the id: the number
+    /// itself never leaves the store (see `TripDetailSnapshot`), so the app looks
+    /// it up here. Held, like `pendingOpenTripID`, until the store has loaded.
+    var pendingContactActionID: String?
 
     /// A trip whose itinerary should be drawn on the map, set by the trip
     /// editor's "View Route on Map" button — which may live in a sheet several

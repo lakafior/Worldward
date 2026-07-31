@@ -505,6 +505,159 @@ struct TogglePackingItemIntent: AppIntent {
     }
 }
 
+// MARK: - Trip widget
+
+/// Every trip the configurable trip widget can be pointed at, with just enough
+/// of each to render "what's happening now" — the stops around today, who to
+/// reach, and how much else is filed under the trip.
+///
+/// Deliberately *not* a copy of the trip. Three rules shape what's in here:
+///
+/// 1. **No contact values.** A contact carries its name, icon, and `dedupID` —
+///    never the phone number or address. A home-screen widget is readable on a
+///    locked device, and the App Group file is readable by every target in the
+///    group; neither needs someone's number. The app resolves the id against the
+///    model when the chip is tapped, and dials from there.
+/// 2. **Selection happens at render, not at write.** The whole span of stops
+///    ships and `TripWidgetView` picks "now" and "next" against the entry date,
+///    so the widget rolls forward on its own between app launches — the same
+///    reasoning behind `WidgetSnapshot.upcomingTrips`.
+/// 3. **Caps everywhere.** Bounded on trips, stops, and contacts: a typical file
+///    is one to three kilobytes, and ~16 KB with every cap saturated.
+struct TripDetailSnapshot: Codable, Hashable {
+    /// The app's appearance preference, mirroring `WidgetSnapshot.appTheme`.
+    var appTheme: String = "system"
+
+    /// Upcoming and underway trips, soonest first. Finished trips are dropped:
+    /// they'd pad the configuration picker with journeys nobody needs on a home
+    /// screen.
+    var trips: [Trip] = []
+
+    /// How many trips, stops per trip, and contacts per trip the writer keeps.
+    /// Read by `refreshWidgetSnapshot`; named here so both sides agree on the
+    /// shape of the file.
+    static let tripLimit = 8
+    static let stopLimit = 8
+    static let contactLimit = 4
+
+    /// One selectable trip: identity and header for the picker, plus the content
+    /// the widget draws.
+    struct Trip: Codable, Hashable, Identifiable {
+        /// The trip's `dedupID` — the same token `TripEntity` and the deep link
+        /// use, so a widget configured today still resolves after a sync.
+        var id: String = ""
+        var title: String = ""
+        var flags: String = ""
+        var startDate: Date = .distantPast
+        var endDate: Date = .distantPast
+        var stops: [Stop] = []
+        var contacts: [Contact] = []
+        /// Trip-level documents and links — shown as counts, never contents.
+        var documentCount: Int = 0
+        var linkCount: Int = 0
+    }
+
+    /// One itinerary stop as the widget needs it. `transportSymbol` is resolved
+    /// app-side from `TransportMode`, which lives in `Trip.swift` and so isn't
+    /// compiled into the widget extension.
+    struct Stop: Codable, Hashable {
+        var title: String = ""
+        /// The stop's location line ("Rue de Rivoli, Paris"), empty for a plain
+        /// country or hand-typed stop.
+        var detail: String = ""
+        /// `nil` for an undated stop, which the widget renders without a label.
+        var date: Date?
+        /// SF Symbol for the leg's transport, empty when the stop has none.
+        var transportSymbol: String = ""
+        /// The free-form leg details — "IB1234 · dep 14:30". The single most
+        /// useful line to have without unlocking the phone.
+        var transportDetail: String = ""
+    }
+
+    /// A person or desk to reach, reduced to what's safe to display: who they
+    /// are and how you'd contact them. The number itself stays in the store.
+    struct Contact: Codable, Hashable, Identifiable {
+        /// The `TripContact.dedupID`, resolved app-side on tap.
+        var id: String = ""
+        var name: String = ""
+        /// SF Symbol from `ContactKind`, resolved app-side for the same reason
+        /// as `Stop.transportSymbol`.
+        var symbolName: String = "person.crop.circle"
+    }
+
+    /// A fresh install, or no upcoming trips.
+    static let empty = TripDetailSnapshot()
+
+    /// A populated example for the widget gallery and Xcode previews.
+    static let sample = TripDetailSnapshot(
+        trips: [
+            Trip(
+                id: "sample-trip", title: "Japan & Korea", flags: "🇯🇵 🇰🇷",
+                startDate: Date.now.addingTimeInterval(-2 * 86_400),
+                endDate: Date.now.addingTimeInterval(12 * 86_400),
+                stops: [
+                    Stop(
+                        title: "Kyoto", detail: "Gion, Kyoto",
+                        date: Date.now.addingTimeInterval(-2 * 86_400)),
+                    Stop(
+                        title: "Osaka", detail: "Umeda, Osaka",
+                        date: Date.now,
+                        transportSymbol: "train.side.front.car",
+                        transportDetail: "Nozomi 231 · dep 14:30"),
+                    Stop(
+                        title: "Seoul", detail: "Jung-gu, Seoul",
+                        date: Date.now.addingTimeInterval(4 * 86_400),
+                        transportSymbol: "airplane", transportDetail: "KE724 · dep 09:15"),
+                ],
+                contacts: [
+                    Contact(id: "c1", name: "Hotel Granvia", symbolName: "phone.fill"),
+                    Contact(id: "c2", name: "Yuki", symbolName: "message.fill"),
+                ],
+                documentCount: 3, linkCount: 2)
+        ])
+}
+
+extension TripDetailSnapshot.Trip {
+    /// The trip hasn't finished yet — the same test `Trip.isUpcoming(asOf:)`
+    /// applies in the app, restated here because the model isn't in the widget.
+    func isCurrent(asOf now: Date) -> Bool { endDate >= now }
+}
+
+/// Reads and writes the shared `TripDetailSnapshot`. A third file rather than
+/// more fields on `WidgetSnapshot`: only this widget reads it, so a change to a
+/// trip's itinerary reloads the trip widget alone instead of every widget the
+/// user has placed.
+enum TripDetailSnapshotStore {
+    /// The trip widget's kind, so app-side writes can reload just it.
+    nonisolated static let widgetKind = "WorldwardTrip"
+
+    private nonisolated static let fileName = "trip-snapshot.json"
+
+    private nonisolated static var fileURL: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)?
+            .appendingPathComponent(fileName)
+    }
+
+    /// Persist the snapshot and reload just this widget, skipping unchanged
+    /// writes the way the other two stores do — the app rewrites on every launch
+    /// and after every mutation, and the refresh budget is finite.
+    static func write(_ snapshot: TripDetailSnapshot) {
+        guard snapshot != read() else { return }
+        guard let fileURL, let data = try? JSONEncoder().encode(snapshot) else { return }
+        try? data.write(to: fileURL, options: .atomic)
+        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+    }
+
+    /// The last snapshot the app wrote, or `.empty`.
+    static func read() -> TripDetailSnapshot {
+        guard let fileURL, let data = try? Data(contentsOf: fileURL),
+            let snapshot = try? JSONDecoder().decode(TripDetailSnapshot.self, from: data)
+        else { return .empty }
+        return snapshot
+    }
+}
+
 // MARK: - Shared map view
 
 /// The map's yellow-to-orange status scale (mirrors `CountryStatus.color`), keyed
