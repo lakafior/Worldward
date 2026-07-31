@@ -410,9 +410,7 @@
                     inputSchema: $0.schema,
                     annotations: ToolDescriptor.Annotations(
                         readOnlyHint: $0.isReadOnly,
-                        // Nothing in the catalog deletes: the worst a write does is
-                        // add rows or replace a value it hands back to you.
-                        destructiveHint: false,
+                        destructiveHint: $0.isDestructive,
                         idempotentHint: $0.isReadOnly,
                         openWorldHint: false))
             }

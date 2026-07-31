@@ -80,6 +80,19 @@ final class Country {
         Country.flagEmoji(for: id)
     }
 
+    /// Gives every visit a `dedupID`, returning `true` when it had to assign any.
+    /// The lazy backfill for visits recorded before the field existed — mirrors
+    /// `Trip.assignStopIDs()`, and likewise leaves saving to the caller.
+    @discardableResult
+    func assignVisitIDs() -> Bool {
+        var assigned = false
+        for visit in visits ?? [] where visit.dedupID.isEmpty {
+            visit.dedupID = UUID().uuidString
+            assigned = true
+        }
+        return assigned
+    }
+
     /// The country's name in the user's language, taken from the system's own
     /// region catalogue — Foundation already ships every country name in every
     /// language, so none of these need translating (or storing) ourselves.

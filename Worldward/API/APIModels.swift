@@ -75,12 +75,20 @@ nonisolated struct PackingItemDTO: Codable, Sendable {
     let container: String?
 }
 
+// Swift spells it `stopID`; the wire spells it `stopId`, matching every other
+// camelCase parameter in the schemas. This mapping is the only place the two
+// conventions meet.
 nonisolated struct LinkDTO: Codable, Sendable {
     let id: String
     let title: String
     let url: String
     /// `dedupID` of the stop this link is pinned to, or `nil` when trip-level.
     let stopID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, url
+        case stopID = "stopId"
+    }
 }
 
 nonisolated struct ContactDTO: Codable, Sendable {
@@ -90,6 +98,34 @@ nonisolated struct ContactDTO: Codable, Sendable {
     let kind: String
     let value: String
     let stopID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, kind, value
+        case stopID = "stopId"
+    }
+}
+
+/// A file attached to a trip or one of its stops. The bytes are deliberately not
+/// included — a caller that wants them can ask, and most only need to know what's
+/// there.
+nonisolated struct AttachmentDTO: Codable, Sendable {
+    let id: String
+    let filename: String
+    let caption: String
+    let byteCount: Int
+    let stopID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, filename, caption, byteCount
+        case stopID = "stopId"
+    }
+}
+
+/// One `# Heading`-delimited chunk of a trip's notes. The lead chunk before any
+/// heading has no `heading` — that's the whole of a note written as plain prose.
+nonisolated struct NoteSectionDTO: Codable, Sendable {
+    let heading: String?
+    let body: String
 }
 
 /// A trip with everything hanging off it — the shape `get_trip` returns, and what
@@ -100,8 +136,11 @@ nonisolated struct TripDetailDTO: Codable, Sendable {
     let packing: [PackingItemDTO]
     let links: [LinkDTO]
     let contacts: [ContactDTO]
-    /// Names of attached files. The bytes are deliberately not exposed.
-    let documents: [String]
+    let attachments: [AttachmentDTO]
+    /// The trip's notes split on `# ` headings. `trip.notes` still carries the raw
+    /// Markdown; this is the same text addressed by section, so a caller can
+    /// rewrite one part without having to reconstruct the rest.
+    let noteSections: [NoteSectionDTO]
 }
 
 nonisolated struct CountryDTO: Codable, Sendable {
@@ -192,6 +231,38 @@ nonisolated struct TripNotesChangeDTO: Codable, Sendable {
     let previousNotes: String
 }
 
+/// What a delete removed. Nothing in this app has an undo (see `WorldwardAPI`), so
+/// a delete reports enough about what it destroyed for a caller to say precisely
+/// what happened — and, for the small things, to put it back.
+nonisolated struct DeletionDTO: Codable, Sendable {
+    /// `"trip"`, `"stop"`, `"packingItem"`, `"link"`, `"contact"`, `"attachment"`,
+    /// `"visit"`, `"container"`, `"packingTemplate"`.
+    let kind: String
+    let id: String
+    /// Human-readable label of the thing that's gone — a stop's title, a file's
+    /// name, a visit's date.
+    let label: String
+}
+
+/// A visit, addressable now that `Visit` carries a `dedupID`.
+nonisolated struct VisitDTO: Codable, Sendable {
+    let id: String
+    /// ISO alpha-2 of the country visited.
+    let country: String
+    let date: Date
+    let notes: String
+    /// `true` when the photo importer created this rather than the traveller.
+    let isImported: Bool
+    let photoCount: Int
+}
+
+nonisolated struct ContainerDTO: Codable, Sendable {
+    let name: String
+    /// SF Symbol shown beside the container in the app.
+    let symbolName: String
+    let itemCount: Int
+}
+
 // MARK: - Inputs
 
 nonisolated enum TripScope: String, Codable, Sendable, CaseIterable {
@@ -237,6 +308,89 @@ nonisolated struct PackingItemInput: Codable, Sendable {
     let container: String?
 }
 
+/// Fields of an existing stop to change. Every one is optional and `nil` means
+/// "leave it alone" — the distinction that lets a caller set a flight number
+/// without having to restate the stop's title, date and country.
+///
+/// Clearing a field is therefore explicit: pass `""` for text, and `clearDate` /
+/// `clearCountry` / `clearTransport` for the ones where empty isn't a value.
+nonisolated struct StopUpdateInput: Codable, Sendable {
+    let id: String
+    let title: String?
+    let country: String?
+    let clearCountry: Bool?
+    let date: Date?
+    let clearDate: Bool?
+    let detail: String?
+    let note: String?
+    let transport: String?
+    let clearTransport: Bool?
+    let transportDetail: String?
+    let latitude: Double?
+    let longitude: Double?
+}
+
+nonisolated struct PackingItemUpdateInput: Codable, Sendable {
+    let id: String
+    let title: String?
+    let quantity: Int?
+    let container: String?
+    /// Moves the item out of any container, back to the ungrouped pile.
+    let clearContainer: Bool?
+    let isPacked: Bool?
+}
+
+nonisolated struct TripUpdateInput: Codable, Sendable {
+    let title: String?
+    let startDate: Date?
+    let endDate: Date?
+}
+
+nonisolated struct LinkInput: Codable, Sendable {
+    let title: String?
+    let url: String
+    /// Pins the link to one stop; omit for a trip-level link.
+    let stopID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case title, url
+        case stopID = "stopId"
+    }
+}
+
+nonisolated struct ContactInput: Codable, Sendable {
+    let name: String
+    let value: String
+    /// Raw `ContactKind`; defaults to `phone`.
+    let kind: String?
+    let stopID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name, value, kind
+        case stopID = "stopId"
+    }
+}
+
+nonisolated struct AttachmentInput: Codable, Sendable {
+    let filename: String
+    /// The file's bytes, base64-encoded. The app is sandboxed and cannot read a
+    /// path on the caller's behalf, so the content has to travel with the request.
+    let dataBase64: String
+    let caption: String?
+    let stopID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case filename, dataBase64, caption
+        case stopID = "stopId"
+    }
+}
+
+nonisolated struct VisitUpdateInput: Codable, Sendable {
+    let id: String
+    let date: Date?
+    let notes: String?
+}
+
 /// One-shot trip construction — the composite that exists so building a journey
 /// is a single atomic write instead of a conversation. Either the whole trip
 /// lands or nothing does.
@@ -270,6 +424,12 @@ nonisolated enum APIError: Swift.Error, Sendable {
     case badValue(field: String, value: String, allowed: [String])
     case invalidDateRange
     case emptyValue(field: String)
+    case itemNotFound(String)
+    case visitNotFound(String)
+    case containerNotFound(String, available: [String])
+    case noteSectionNotFound(String, available: [String])
+    case badData(field: String, reason: String)
+    case attachmentTooLarge(megabytes: Int)
 
     var agentDescription: String {
         switch self {
@@ -304,6 +464,28 @@ nonisolated enum APIError: Swift.Error, Sendable {
             "endDate must be on or after startDate."
         case .emptyValue(let field):
             "\(field) must not be empty."
+        case .itemNotFound(let id):
+            """
+            No link, contact or attachment with id '\(id)'. Call get_trip for \
+            current ids.
+            """
+        case .visitNotFound(let id):
+            "No visit with id '\(id)'. Call list_visits for current ids."
+        case .containerNotFound(let name, let available):
+            available.isEmpty
+                ? "No packing container named '\(name)'. None exist yet."
+                : "No packing container named '\(name)'. Available: \(available.joined(separator: ", "))."
+        case .noteSectionNotFound(let heading, let available):
+            available.isEmpty
+                ? "The trip's notes have no '# \(heading)' section, and no sections at all yet."
+                : """
+                The trip's notes have no '# \(heading)' section. Existing sections: \
+                \(available.joined(separator: ", ")).
+                """
+        case .badData(let field, let reason):
+            "\(field) is invalid: \(reason)"
+        case .attachmentTooLarge(let megabytes):
+            "The file is too large. Attachments are limited to \(megabytes) MB."
         }
     }
 }

@@ -101,6 +101,33 @@ enum WorldwardAPI {
         if trip.assignStopIDs() { try context.save() }
     }
 
+    /// Finds one stop anywhere in the store by its `dedupID`. Stops are addressed
+    /// globally rather than per-trip because a caller holding an id from
+    /// `get_trip` shouldn't have to repeat which trip it came from.
+    private static func findStop(_ id: String, in context: ModelContext) throws -> ItineraryItem {
+        for trip in try context.fetch(FetchDescriptor<Trip>()) {
+            trip.assignStopIDs()
+            if let stop = (trip.itinerary ?? []).first(where: { $0.dedupID == id }) { return stop }
+        }
+        throw APIError.stopNotFound(id)
+    }
+
+    private static func findPackingItem(_ id: String, in context: ModelContext) throws -> PackingItem {
+        guard
+            let item = try context.fetch(FetchDescriptor<PackingItem>())
+                .first(where: { $0.dedupID == id })
+        else { throw APIError.packingItemNotFound(id) }
+        return item
+    }
+
+    private static func findVisit(_ id: String, in context: ModelContext) throws -> Visit {
+        for country in try context.fetch(FetchDescriptor<Country>()) {
+            country.assignVisitIDs()
+            if let visit = (country.visits ?? []).first(where: { $0.dedupID == id }) { return visit }
+        }
+        throw APIError.visitNotFound(id)
+    }
+
     // MARK: - Reads
 
     static func listTrips(scope: TripScope = .upcoming, limit: Int = 20) throws -> [TripDTO] {
@@ -173,11 +200,11 @@ enum WorldwardAPI {
     /// The shared container catalog. Worth calling before writing a packing list —
     /// filing items into containers the traveller already uses beats inventing
     /// new ones.
-    static func listContainers() throws -> [String] {
+    static func listContainers() throws -> [ContainerDTO] {
         try read { context in
             try context.fetch(FetchDescriptor<PackingContainer>())
                 .sorted { $0.sortOrder < $1.sortOrder }
-                .map(\.name)
+                .map(ContainerDTO.init)
         }
     }
 
@@ -202,6 +229,209 @@ enum WorldwardAPI {
                 notes: input.notes ?? "")
             context.insert(trip)
             return TripDTO(trip)
+        }
+    }
+
+    /// Changes a trip's title or dates. `nil` leaves a field alone.
+    static func updateTrip(tripID: String? = nil, _ input: TripUpdateInput) throws -> TripDTO {
+        try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            if let title = input.title {
+                let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { throw APIError.emptyValue(field: "title") }
+                trip.title = trimmed
+            }
+            // Validated against whatever the *other* end will be after this call,
+            // so moving a trip one date at a time can't be rejected halfway.
+            let start = input.startDate ?? trip.startDate
+            let end = input.endDate ?? trip.endDate
+            guard end >= start else { throw APIError.invalidDateRange }
+            trip.startDate = start
+            trip.endDate = end
+            return TripDTO(trip)
+        }
+    }
+
+    /// Deletes a trip and everything cascading from it. Reports what went, since
+    /// there is no undo to fall back on.
+    static func deleteTrip(tripID: String) throws -> DeletionDTO {
+        try mutate { context in
+            let trip = try findTrip(tripID, in: context)
+            let label = trip.title.isEmpty ? "Untitled trip" : trip.title
+            context.delete(trip)
+            return DeletionDTO(kind: "trip", id: tripID, label: label)
+        }
+    }
+
+    /// Edits existing stops — where flight numbers, notes and addresses go once a
+    /// trip is roughed out. Batched, and every field optional, so a caller can set
+    /// one thing on several stops in a single write.
+    static func updateStops(_ updates: [StopUpdateInput]) throws -> [StopDTO] {
+        try mutate { context in
+            var touched: [ItineraryItem] = []
+            for update in updates {
+                let stop = try findStop(update.id, in: context)
+                if let title = update.title {
+                    let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { throw APIError.emptyValue(field: "stop title") }
+                    stop.title = trimmed
+                }
+                if let detail = update.detail { stop.detail = detail }
+                if let note = update.note { stop.note = note }
+                if let transportDetail = update.transportDetail {
+                    stop.transportDetail = transportDetail
+                }
+                if update.clearDate == true { stop.date = nil } else if let date = update.date {
+                    stop.date = date
+                }
+                if update.clearCountry == true {
+                    stop.country = nil
+                } else if let country = update.country {
+                    stop.country = try CountryResolver.require(country, in: context)
+                }
+                if update.clearTransport == true {
+                    stop.transport = nil
+                } else if let transport = update.transport {
+                    guard let mode = TransportMode(rawValue: transport) else {
+                        throw APIError.badValue(
+                            field: "transport", value: transport,
+                            allowed: TransportMode.allCases.map(\.rawValue))
+                    }
+                    stop.transport = mode
+                }
+                if let latitude = update.latitude { stop.latitude = latitude }
+                if let longitude = update.longitude { stop.longitude = longitude }
+                touched.append(stop)
+            }
+            // Indices come from each stop's own trip, so they stay meaningful even
+            // when the batch spans more than one journey.
+            return touched.map { stop in
+                let siblings = stop.trip?.sortedStops ?? []
+                return StopDTO(stop, index: siblings.firstIndex(of: stop) ?? 0)
+            }
+        }
+    }
+
+    static func deleteStops(stopIDs: [String]) throws -> [DeletionDTO] {
+        try mutate { context in
+            try stopIDs.map { id in
+                let stop = try findStop(id, in: context)
+                let label = stop.displayTitle
+                context.delete(stop)
+                return DeletionDTO(kind: "stop", id: id, label: label)
+            }
+        }
+    }
+
+    /// Rearranges a trip's itinerary. `stopIDs` is the new order; any stop left out
+    /// keeps its relative position after the ones named, so a caller can move a
+    /// couple of stops without listing the whole trip.
+    static func reorderStops(tripID: String? = nil, stopIDs: [String]) throws -> [StopDTO] {
+        try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            trip.assignStopIDs()
+
+            var remaining = trip.sortedStops
+            var ordered: [ItineraryItem] = []
+            for id in stopIDs {
+                guard let index = remaining.firstIndex(where: { $0.dedupID == id }) else {
+                    throw APIError.stopNotFound(id)
+                }
+                ordered.append(remaining.remove(at: index))
+            }
+            for (index, stop) in (ordered + remaining).enumerated() { stop.order = index }
+            return TripDetailDTO(trip).stops
+        }
+    }
+
+    /// Edits packing items — rename, re-count, move between bags, tick off.
+    static func updatePackingItems(_ updates: [PackingItemUpdateInput]) throws -> [PackingItemDTO] {
+        try mutate { context in
+            var cache: [String: PackingContainer] = [:]
+            return try updates.map { update in
+                let item = try findPackingItem(update.id, in: context)
+                if let title = update.title {
+                    let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { throw APIError.emptyValue(field: "title") }
+                    item.title = trimmed
+                }
+                if let quantity = update.quantity { item.quantity = max(1, quantity) }
+                if let isPacked = update.isPacked { item.isPacked = isPacked }
+                if update.clearContainer == true {
+                    item.container = nil
+                } else if let container = update.container {
+                    item.container = try resolveContainer(
+                        named: container, in: context, cache: &cache)
+                }
+                return PackingItemDTO(item)
+            }
+        }
+    }
+
+    static func deletePackingItems(itemIDs: [String]) throws -> [DeletionDTO] {
+        try mutate { context in
+            try itemIDs.map { id in
+                let item = try findPackingItem(id, in: context)
+                let label = item.title
+                context.delete(item)
+                return DeletionDTO(kind: "packingItem", id: id, label: label)
+            }
+        }
+    }
+
+    // MARK: - Notes by section
+
+    /// Creates or replaces one `# Heading` section of a trip's notes, leaving every
+    /// other section byte for byte as it was.
+    ///
+    /// This is what `set_trip_notes` couldn't do: rewriting "Budget" through the
+    /// raw-text tool means reading the whole note, splicing, and writing it back —
+    /// three chances to lose the traveller's own prose. `NoteSection.parse` and
+    /// `.serialize` are exact inverses, so a section swap here is lossless.
+    static func setNoteSection(
+        tripID: String? = nil, heading: String, body: String, mode: TextMode = .replace
+    ) throws -> TripNotesChangeDTO {
+        let title = heading.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { throw APIError.emptyValue(field: "heading") }
+
+        return try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            let previous = trip.notes
+            var sections = NoteSection.parse(previous)
+
+            if let index = sections.firstIndex(where: { $0.title?.lowercased() == title.lowercased() }) {
+                sections[index].body =
+                    mode == .append && !sections[index].isBodyBlank
+                    ? sections[index].body + "\n\n" + body
+                    : body
+            } else {
+                // A brand-new section goes at the end, where a person writing the
+                // note by hand would have put it.
+                sections.append(NoteSection(title: title, bodyLines: body.components(separatedBy: "\n")))
+            }
+            trip.notes = NoteSection.serialize(sections)
+            return TripNotesChangeDTO(trip: TripDTO(trip), previousNotes: previous)
+        }
+    }
+
+    static func deleteNoteSection(tripID: String? = nil, heading: String) throws
+        -> TripNotesChangeDTO
+    {
+        try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            let previous = trip.notes
+            var sections = NoteSection.parse(previous)
+            guard
+                let index = sections.firstIndex(where: {
+                    $0.title?.lowercased() == heading.lowercased()
+                })
+            else {
+                throw APIError.noteSectionNotFound(
+                    heading, available: sections.compactMap(\.title))
+            }
+            sections.remove(at: index)
+            trip.notes = NoteSection.serialize(sections)
+            return TripNotesChangeDTO(trip: TripDTO(trip), previousNotes: previous)
         }
     }
 
@@ -321,6 +551,251 @@ enum WorldwardAPI {
             let trip = try resolveTrip(tripID, in: context)
             return try applyTemplate(named: template, to: trip, in: context)
         }
+    }
+
+    // MARK: - Links, contacts, attachments
+
+    /// Adds web links to a trip, or to one of its stops when `stopID` is set —
+    /// a booking page on the hotel stop, a timetable on the whole journey.
+    static func addLinks(tripID: String? = nil, links: [LinkInput]) throws -> [LinkDTO] {
+        try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            var order = nextOrder(trip.links, \.order)
+            return try links.map { input in
+                let url = input.url.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !url.isEmpty else { throw APIError.emptyValue(field: "url") }
+                let link = TripLink(
+                    title: input.title ?? "", url: url, order: order, trip: trip,
+                    item: try input.stopID.map { try findStop($0, in: context) })
+                // A URL the app can't open would render as dead text everywhere it
+                // appears, so it's rejected here rather than stored.
+                guard link.resolvedURL != nil else {
+                    throw APIError.badData(field: "url", reason: "'\(url)' isn't a usable URL.")
+                }
+                context.insert(link)
+                order += 1
+                return LinkDTO(link)
+            }
+        }
+    }
+
+    /// Adds people or desks to reach — trip-wide, or pinned to a stop.
+    static func addContacts(tripID: String? = nil, contacts: [ContactInput]) throws -> [ContactDTO] {
+        try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            var order = nextOrder(trip.contacts, \.order)
+            return try contacts.map { input in
+                let value = input.value.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !value.isEmpty else { throw APIError.emptyValue(field: "value") }
+                let kind: ContactKind
+                if let raw = input.kind {
+                    guard let parsed = ContactKind(rawValue: raw) else {
+                        throw APIError.badValue(
+                            field: "kind", value: raw,
+                            allowed: ContactKind.allCases.map(\.rawValue))
+                    }
+                    kind = parsed
+                } else {
+                    kind = .phone
+                }
+                let contact = TripContact(
+                    name: input.name, value: value, kind: kind, order: order, trip: trip,
+                    item: try input.stopID.map { try findStop($0, in: context) })
+                context.insert(contact)
+                order += 1
+                return ContactDTO(contact)
+            }
+        }
+    }
+
+    /// Largest file accepted, in megabytes. The bytes arrive base64-encoded inside
+    /// a JSON message, so this bounds the message too — big enough for boarding
+    /// passes, tickets and scans, which is what actually gets attached.
+    static let attachmentSizeLimitMB = 10
+
+    /// Attaches a file to a trip or one of its stops. The content comes in
+    /// base64: the app is sandboxed and cannot read a path on the caller's behalf,
+    /// so whoever has the file has to send it.
+    static func addAttachments(tripID: String? = nil, attachments: [AttachmentInput]) throws
+        -> [AttachmentDTO]
+    {
+        try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            var order = nextOrder(trip.attachments, \.order)
+            return try attachments.map { input in
+                let filename = input.filename.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !filename.isEmpty else { throw APIError.emptyValue(field: "filename") }
+                guard let data = Data(base64Encoded: input.dataBase64, options: .ignoreUnknownCharacters)
+                else {
+                    throw APIError.badData(field: "dataBase64", reason: "not valid base64.")
+                }
+                guard data.count <= attachmentSizeLimitMB * 1_000_000 else {
+                    throw APIError.attachmentTooLarge(megabytes: attachmentSizeLimitMB)
+                }
+                let attachment = TripAttachment(
+                    filename: filename, data: data, order: order, trip: trip,
+                    caption: input.caption ?? "",
+                    item: try input.stopID.map { try findStop($0, in: context) })
+                context.insert(attachment)
+                order += 1
+                return AttachmentDTO(attachment)
+            }
+        }
+    }
+
+    /// Removes links, contacts and attachments by id. One entry point for all
+    /// three because their ids are drawn from the same space and a caller holding
+    /// one from `get_trip` shouldn't have to work out which kind it is.
+    static func deleteTripItems(itemIDs: [String]) throws -> [DeletionDTO] {
+        try mutate { context in
+            let links = try context.fetch(FetchDescriptor<TripLink>())
+            let contacts = try context.fetch(FetchDescriptor<TripContact>())
+            let attachments = try context.fetch(FetchDescriptor<TripAttachment>())
+
+            return try itemIDs.map { id in
+                if let link = links.first(where: { $0.dedupID == id }) {
+                    let label = link.displayTitle
+                    context.delete(link)
+                    return DeletionDTO(kind: "link", id: id, label: label)
+                }
+                if let contact = contacts.first(where: { $0.dedupID == id }) {
+                    let label = contact.displayName
+                    context.delete(contact)
+                    return DeletionDTO(kind: "contact", id: id, label: label)
+                }
+                if let attachment = attachments.first(where: { $0.dedupID == id }) {
+                    let label = attachment.filename
+                    context.delete(attachment)
+                    return DeletionDTO(kind: "attachment", id: id, label: label)
+                }
+                throw APIError.itemNotFound(id)
+            }
+        }
+    }
+
+    // MARK: - Containers and templates
+
+    static func createContainer(name: String, symbolName: String? = nil) throws -> ContainerDTO {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { throw APIError.emptyValue(field: "name") }
+        return try mutate { context in
+            var cache: [String: PackingContainer] = [:]
+            guard let container = try resolveContainer(named: trimmed, in: context, cache: &cache)
+            else { throw APIError.emptyValue(field: "name") }
+            if let symbolName { container.symbolName = symbolName }
+            return ContainerDTO(container)
+        }
+    }
+
+    /// Renames a container everywhere at once — it's a shared catalog, so every
+    /// trip filing items into it follows automatically.
+    static func renameContainer(name: String, newName: String) throws -> ContainerDTO {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { throw APIError.emptyValue(field: "newName") }
+        return try mutate { context in
+            let container = try requireContainer(named: name, in: context)
+            container.name = trimmed
+            return ContainerDTO(container)
+        }
+    }
+
+    /// Deletes a container. Its items survive, ungrouped — the model's `.nullify`
+    /// rule, and the same thing the app's own container editor does.
+    static func deleteContainer(name: String) throws -> DeletionDTO {
+        try mutate { context in
+            let container = try requireContainer(named: name, in: context)
+            let label = container.name
+            let id = container.dedupID
+            context.delete(container)
+            return DeletionDTO(kind: "container", id: id, label: label)
+        }
+    }
+
+    /// Saves a trip's packing list as a reusable template, storing each item's
+    /// container by name so the template stays portable.
+    static func savePackingTemplate(tripID: String? = nil, name: String) throws -> TemplateDTO {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { throw APIError.emptyValue(field: "name") }
+        return try mutate { context in
+            let trip = try resolveTrip(tripID, in: context)
+            let existing = try context.fetch(FetchDescriptor<PackingTemplate>())
+            // Saving over a name replaces it, which is what "save as" means to the
+            // person doing it — two templates with one name would be unusable.
+            if let previous = existing.first(where: { $0.name.lowercased() == trimmed.lowercased() }) {
+                context.delete(previous)
+            }
+            let template = PackingTemplate(name: trimmed)
+            context.insert(template)
+            for (index, item) in trip.packingGroups.flatMap(\.items).enumerated() {
+                context.insert(
+                    PackingTemplateItem(
+                        title: item.title, quantity: item.quantity, order: index,
+                        containerName: item.container?.name ?? "", template: template))
+            }
+            return TemplateDTO(name: trimmed, itemCount: (trip.packing ?? []).count)
+        }
+    }
+
+    static func deletePackingTemplate(name: String) throws -> DeletionDTO {
+        try mutate { context in
+            let templates = try context.fetch(FetchDescriptor<PackingTemplate>())
+            guard let template = templates.first(where: { $0.name.lowercased() == name.lowercased() })
+            else {
+                throw APIError.templateNotFound(name, available: templates.map(\.name).sorted())
+            }
+            let id = template.dedupID
+            context.delete(template)
+            return DeletionDTO(kind: "packingTemplate", id: id, label: template.name)
+        }
+    }
+
+    // MARK: - Visits
+
+    /// Every recorded visit to a country, newest first.
+    static func listVisits(country: String) throws -> [VisitDTO] {
+        try read { context in
+            let model = try CountryResolver.require(country, in: context)
+            if model.assignVisitIDs() { try context.save() }
+            return (model.visits ?? [])
+                .sorted { $0.date > $1.date }
+                .map { VisitDTO($0, country: model.id) }
+        }
+    }
+
+    static func updateVisits(_ updates: [VisitUpdateInput]) throws -> [VisitDTO] {
+        try mutate { context in
+            try updates.map { update in
+                let visit = try findVisit(update.id, in: context)
+                if let date = update.date { visit.date = date }
+                if let notes = update.notes { visit.notes = notes }
+                return VisitDTO(visit, country: visit.country?.id ?? "")
+            }
+        }
+    }
+
+    /// Deletes visits. The country's status is deliberately left alone — someone
+    /// removing a mis-dated visit from a country they've been to twice hasn't
+    /// stopped having been there.
+    static func deleteVisits(visitIDs: [String]) throws -> [DeletionDTO] {
+        try mutate { context in
+            try visitIDs.map { id in
+                let visit = try findVisit(id, in: context)
+                let label =
+                    "\(visit.country?.name ?? "Unknown"), \(visit.date.formatted(date: .abbreviated, time: .omitted))"
+                context.delete(visit)
+                return DeletionDTO(kind: "visit", id: id, label: label)
+            }
+        }
+    }
+
+    private static func requireContainer(named name: String, in context: ModelContext) throws
+        -> PackingContainer
+    {
+        let all = try context.fetch(FetchDescriptor<PackingContainer>())
+        guard let match = all.first(where: { $0.name.lowercased() == name.lowercased() }) else {
+            throw APIError.containerNotFound(name, available: all.map(\.name).sorted())
+        }
+        return match
     }
 
     // MARK: - Composite
@@ -509,6 +984,46 @@ extension PackingItemDTO {
     }
 }
 
+extension LinkDTO {
+    init(_ link: TripLink) {
+        self.init(
+            id: link.dedupID, title: link.displayTitle, url: link.url,
+            stopID: link.item?.dedupID)
+    }
+}
+
+extension ContactDTO {
+    init(_ contact: TripContact) {
+        self.init(
+            id: contact.dedupID, name: contact.displayName, kind: contact.contactKind.rawValue,
+            value: contact.value, stopID: contact.item?.dedupID)
+    }
+}
+
+extension AttachmentDTO {
+    init(_ attachment: TripAttachment) {
+        self.init(
+            id: attachment.dedupID, filename: attachment.filename, caption: attachment.caption,
+            byteCount: attachment.byteCount, stopID: attachment.item?.dedupID)
+    }
+}
+
+extension VisitDTO {
+    init(_ visit: Visit, country: String) {
+        self.init(
+            id: visit.dedupID, country: country, date: visit.date, notes: visit.notes,
+            isImported: visit.isImported, photoCount: visit.photoIdentifiers.count)
+    }
+}
+
+extension ContainerDTO {
+    init(_ container: PackingContainer) {
+        self.init(
+            name: container.name, symbolName: container.symbolName,
+            itemCount: (container.items ?? []).count)
+    }
+}
+
 extension TripDetailDTO {
     init(_ trip: Trip) {
         let stops = trip.sortedStops
@@ -516,15 +1031,14 @@ extension TripDetailDTO {
             trip: TripDTO(trip),
             stops: stops.enumerated().map { StopDTO($1, index: $0) },
             packing: trip.packingGroups.flatMap(\.items).map(PackingItemDTO.init),
-            links: trip.sortedLinks.map {
-                LinkDTO(id: $0.dedupID, title: $0.displayTitle, url: $0.url, stopID: $0.item?.dedupID)
-            },
-            contacts: trip.sortedContacts.map {
-                ContactDTO(
-                    id: $0.dedupID, name: $0.displayName, kind: $0.contactKind.rawValue,
-                    value: $0.value, stopID: $0.item?.dedupID)
-            },
-            documents: trip.sortedAttachments.map(\.filename))
+            links: trip.sortedLinks.map(LinkDTO.init),
+            contacts: trip.sortedContacts.map(ContactDTO.init),
+            attachments: trip.sortedAttachments.map(AttachmentDTO.init),
+            // The lead chunk of a note that opens with prose has no heading and is
+            // often blank; carrying it would just be noise in the result.
+            noteSections: NoteSection.parse(trip.notes)
+                .filter { $0.title != nil || !$0.isBodyBlank }
+                .map { NoteSectionDTO(heading: $0.title, body: $0.body) })
     }
 }
 

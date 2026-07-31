@@ -19,6 +19,16 @@ final class Visit {
     /// without ever storing the image data itself.
     var photoIdentifiers: [String] = []
 
+    /// Per-row token for CloudKit de-duplication, mirroring `Country.dedupID`, and
+    /// the stable handle anything outside the app uses to name one visit.
+    ///
+    /// Defaults to `""` rather than a fresh UUID for the same reason as
+    /// `ItineraryItem.dedupID`: lightweight migration applies a single default to
+    /// every existing row, so a `UUID()` default would give every visit already in
+    /// the store the same token. `Country.assignVisitIDs()` fills the blanks in
+    /// when something first needs them.
+    var dedupID: String = ""
+
     init(date: Date = Date(), notes: String = "", country: Country? = nil, isImported: Bool = false) {
         self.date = date
         self.notes = notes
