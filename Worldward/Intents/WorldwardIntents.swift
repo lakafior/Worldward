@@ -204,19 +204,16 @@ struct MarkCountryStatusIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let context = ModelContext(Worldward.sharedModelContainer)
-        let targetID = country.id
-        let descriptor = FetchDescriptor<Country>(
-            predicate: #Predicate { $0.id == targetID }
-        )
-        guard let model = try context.fetch(descriptor).first else {
+        // `WorldwardAPI` owns the write (and the `statusIsImported` invariant that
+        // keeps a re-scan from clearing a hand-set status). Its errors are
+        // machine-facing by design, so they're translated back into this intent's
+        // own localized error before they can reach a person.
+        do {
+            _ = try WorldwardAPI.setCountryStatus(
+                country: country.id, status: status.domainStatus.rawValue)
+        } catch APIError.countryNotFound {
             throw Error.countryNotFound(id: country.id)
         }
-
-        model.status = status.domainStatus
-        model.statusIsImported = false
-        try context.save()
-        refreshWidgetSnapshot(using: context)
 
         return .result(
             value:
@@ -371,27 +368,15 @@ struct LogVisitIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let context = ModelContext(Worldward.sharedModelContainer)
-        let targetID = country.id
-        let descriptor = FetchDescriptor<Country>(
-            predicate: #Predicate { $0.id == targetID }
-        )
-        guard let model = try context.fetch(descriptor).first else {
+        // The insert, the "unvisited → visited" promotion and the widget refresh
+        // all live in `WorldwardAPI.logVisit` now, shared with every other caller.
+        let result: VisitResultDTO
+        do {
+            result = try WorldwardAPI.logVisit(country: country.id, date: date)
+        } catch APIError.countryNotFound {
             throw MarkCountryStatusIntent.Error.countryNotFound(id: country.id)
         }
-
-        let visitDate = date ?? Date()
-        let visit = Visit(date: visitDate, notes: "", country: model, isImported: false)
-        context.insert(visit)
-
-        // If the country was unvisited, bump it to "visited".
-        if model.status == .notVisited {
-            model.status = .visited
-            model.statusIsImported = false
-        }
-
-        try context.save()
-        refreshWidgetSnapshot(using: context)
+        let visitDate = result.visitDate
 
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

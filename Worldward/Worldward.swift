@@ -163,6 +163,15 @@ struct Worldward: App {
         #if canImport(WatchConnectivity)
             PackingDeltaSync.activate(container: Self.sharedModelContainer)
         #endif
+
+        #if os(macOS)
+            // Here rather than on a view's `.onAppear`: the app ships a
+            // MenuBarExtra, so it can be running with no window on screen at all,
+            // and the automation server has to be up whenever the app is. Costs a
+            // single `UserDefaults` bool read on every launch that doesn't use it,
+            // which is the default.
+            MCPServer.shared.applyPreference()
+        #endif
     }
 
     var body: some Scene {

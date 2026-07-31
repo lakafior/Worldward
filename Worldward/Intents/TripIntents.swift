@@ -135,21 +135,26 @@ struct AddPackingItemIntent: AppIntent {
         let title = item.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { throw $item.needsValueError() }
 
-        let context = ModelContext(Worldward.sharedModelContainer)
-        guard let target = resolveTrip(trip, in: context) else {
+        // The store work — resolve the trip, append in order, save, refresh the
+        // widgets — lives in `WorldwardAPI`. What's left here is what an intent is
+        // actually for: validating the spoken parameter and phrasing the reply.
+        guard let target = try? WorldwardAPI.getTrip(id: trip?.id) else {
             throw TripIntentError.noUpcomingTrip
         }
+        let added = try WorldwardAPI.addPackingItems(
+            tripID: target.trip.id,
+            items: [PackingItemInput(title: title, quantity: quantity, container: nil)])
 
-        // Append after the last ungrouped item so the new one lands at the bottom
-        // of the list rather than colliding with an existing order.
-        let maxOrder = (target.packing ?? []).map(\.order).max() ?? -1
-        let newItem = PackingItem(
-            title: title, quantity: max(1, quantity), order: maxOrder + 1, trip: target)
-        context.insert(newItem)
-        try context.save()
-        refreshWidgetSnapshot(using: context)
+        let tripName = target.trip.title.isEmpty
+            ? String(localized: "your trip") : target.trip.title
 
-        let tripName = target.title.isEmpty ? String(localized: "your trip") : target.title
+        // The API skips titles already on the list, so an empty result means the
+        // item was there all along — worth saying rather than claiming an add.
+        guard !added.isEmpty else {
+            return .result(
+                value: String(localized: "\(title) is already on \(tripName)'s packing list. 🧳"))
+        }
+
         let countSuffix = quantity > 1 ? " ×\(quantity)" : ""
         return .result(
             value: String(localized: "Added \(title)\(countSuffix) to \(tripName)'s packing list. 🧳"))

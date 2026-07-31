@@ -2157,6 +2157,186 @@
         }
       }
     },
+    "%@ is already on %@'s packing list. 🧳" : {
+      "comment" : "Spoken reply when the item asked for is already on the trip's packing list",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%@ is already on %@'s packing list. 🧳"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ вече е в списъка за пътуване на %@. 🧳"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ už je na %@ově balicím seznamu. 🧳"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ er allerede på %@s pakkeliste. 🧳"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ist bereits auf %@s Packliste. 🧳"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το %@ είναι ήδη στη λίστα συσκευασίας του %@. 🧳"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ jam estas en la paka listo de %@. 🧳"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ya está en la lista de equipaje de %@. 🧳"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ on juba %@ pakkimisnimekirjas. 🧳"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ on jo %@n pakkauslistalla. 🧳"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est déjà sur la liste de bagages de %@. 🧳"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tá %@ ar liosta pacála %@ cheana. 🧳"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ je već na %@ovom popisu za pakiranje. 🧳"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ már szerepel %@ csomagolási listáján. 🧳"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ è già nella lista di imballaggio di %@. 🧳"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@は%@のパッキングリストにすでにあります。🧳"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@는 이미 %@의 짐 목록에 있어요. 🧳"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ jau yra %@ pakavimo sąraše. 🧳"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ jau ir %@ iepakošanas sarakstā. 🧳"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ diġà hemm fil-lista tal-ippakkjar ta' %@. 🧳"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ staat al op de paklijst van %@. 🧳"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ jest już na liście do spakowania %@. 🧳"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ já está na lista de bagagem de %@. 🧳"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ já está na lista de bagagens de %@. 🧳"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ este deja pe lista de bagaje a lui %@. 🧳"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ už je na %@ovom baliacom zozname. 🧳"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ je že na %@ovem seznamu za pakiranje. 🧳"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ finns redan på %@s packlista. 🧳"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@已在%@的打包清单中。🧳"
+          }
+        }
+      }
+    },
     "%@ now" : {
       "localizations" : {
         "bg" : {
@@ -20093,6 +20273,186 @@
         }
       }
     },
+    "Allow Changes" : {
+      "comment" : "Toggle letting the automation server modify data, not just read it",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Allow Changes"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позволяване на промени"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Povolit změny"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillad ændringer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderungen erlauben"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Να επιτρέπονται οι αλλαγές"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesi ŝanĝojn"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir cambios"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luba muudatused"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salli muutokset"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autoriser les modifications"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceadaigh athruithe"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopusti promjene"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Változtatások engedélyezése"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti modifiche"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更を許可"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경 허용"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leisti pakeitimus"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atļaut izmaiņas"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ħalli l-Bidliet"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wijzigingen toestaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zezwalaj na zmiany"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir alterações"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir alterações"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite modificări"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Povoliť zmeny"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dovoli spremembe"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillåt ändringar"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许更改"
+          }
+        }
+      }
+    },
     "Allow full Calendar access for Worldward in Settings → Privacy & Security → Calendars, then turn sync on again." : {
       "comment" : "A message that appears when the user denies access to",
       "isCommentAutoGenerated" : true,
@@ -24758,6 +25118,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "作者"
+          }
+        }
+      }
+    },
+    "Automation" : {
+      "comment" : "Settings section header for the local automation server",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Automation"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматизация"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizace"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisering"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisierung"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτοματοποίηση"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aŭtomatigo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatización"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatiseerimine"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automaatio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisation"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uathoibriú"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizacija"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizálás"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動化"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동화"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizavimas"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizācija"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awtomazzjoni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisering"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatyzacja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automação"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automação"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizare"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatizácia"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avtomatizacija"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisering"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动化"
           }
         }
       }
@@ -31578,6 +32118,186 @@
         }
       }
     },
+    "Client" : {
+      "comment" : "Picker label: which assistant client the copied JSON config is for",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Client"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Клиент"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Πελάτης"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kliento"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asiakas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliant"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klijent"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kliens"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クライアント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클라이언트"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klientas"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klients"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klijent"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliente"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Client"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjemalec"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klient"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "客户端"
+          }
+        }
+      }
+    },
     "Closest unvisited" : {
       "comment" : "Section header above the nearest unvisited countries",
       "extractionState" : "manual",
@@ -34627,6 +35347,366 @@
         }
       }
     },
+    "Config file" : {
+      "comment" : "Label showing which config file the copied JSON snippet goes into",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Config file"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфигурационен файл"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurační soubor"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurationsfil"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurationsdatei"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αρχείο διαμόρφωσης"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agordodosiero"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo de configuración"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguratsioonifail"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguraatiotiedosto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichier de configuration"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comhad cumraíochta"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguracijska datoteka"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurációs fájl"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File di configurazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定ファイル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구성 파일"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigūracijos failas"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurācijas fails"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fajl ta' konfigurazzjoni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuratiebestand"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plik konfiguracyjny"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arquivo de configuração"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ficheiro de configuração"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fișier de configurare"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguračný súbor"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfiguracijska datoteka"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konfigurationsfil"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配置文件"
+          }
+        }
+      }
+    },
+    "Copied" : {
+      "comment" : "Confirmation shown on the copy button after copying",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copied"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копирано"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkopírováno"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieret"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiert"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντιγράφηκε"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiita"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopeeritud"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopioitu"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copié"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cóipeáilte"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopirano"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Másolva"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사됨"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nukopijuota"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nokopēts"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikkupjat"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gekopieerd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skopiowano"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiat"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skopírované"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopirano"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopierat"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制"
+          }
+        }
+      }
+    },
     "Copy from trip" : {
       "localizations" : {
         "bg" : {
@@ -34801,6 +35881,366 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "从旅行中复制"
+          }
+        }
+      }
+    },
+    "Copy JSON Config" : {
+      "comment" : "Button copying a JSON config snippet that connects an assistant to Worldward",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copy JSON Config"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копиране на JSON конфигурацията"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopírovat JSON konfiguraci"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopier JSON-konfiguration"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON-Konfiguration kopieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντιγραφή ρύθμισης JSON"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopii JSON-agordon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar configuración JSON"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopeeri JSON-konfiguratsioon"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopioi JSON-määritys"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier la configuration JSON"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cóipeáil cumraíocht JSON"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiraj JSON konfiguraciju"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON-konfiguráció másolása"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia configurazione JSON"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON設定をコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON 구성 복사"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopijuoti JSON konfigūraciją"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopēt JSON konfigurāciju"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikkopja l-konfigurazzjoni JSON"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON-configuratie kopiëren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiuj konfigurację JSON"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar configuração JSON"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar configuração JSON"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiază configurația JSON"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopírovať JSON konfiguráciu"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiraj JSON konfiguracijo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiera JSON-konfiguration"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制 JSON 配置"
+          }
+        }
+      }
+    },
+    "Copy Setup Command" : {
+      "comment" : "Button copying the command that connects an assistant to Worldward",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copy Setup Command"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копиране на командата за настройка"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkopírovat příkaz pro nastavení"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopier opsætningskommando"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setup-Befehl kopieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντιγραφή εντολής ρύθμισης"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopii agordan komandon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando de configuración"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopeeri seadistuskäsk"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopioi asennuskomento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier la commande de configuration"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cóipeáil ordú socraithe"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiraj naredbu za postavljanje"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beállítási parancs másolása"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia comando di configurazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "セットアップコマンドをコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설정 명령 복사"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopijuoti sąrankos komandą"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopēt iestatīšanas komandu"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikkopja l-Kmand tal-Installazzjoni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setupopdracht kopiëren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skopiuj polecenie konfiguracji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando de configuração"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar comando de configuração"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiază comanda de configurare"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skopírovať príkaz na nastavenie"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiraj ukaz za nastavitev"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiera installationskommando"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制设置命令"
           }
         }
       }
@@ -35345,6 +36785,186 @@
         }
       }
     },
+    "Couldn't listen on port %lld: %@" : {
+      "comment" : "Automation server error, with port and system reason",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Couldn't listen on port %lld: %@"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не можа да се слуша на порт %lld: %@"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nepodařilo se naslouchat na portu %lld: %@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunne ikke lytte på port %lld: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konnte nicht auf Port %lld lauschen: %@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ήταν δυνατή η ακρόαση στη θύρα %lld: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis aŭskulti sur pordo %lld: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo escuchar en el puerto %lld: %@"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pordil %lld ei saanud kuulata: %@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ei voitu kuunnella porttia %lld: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d'écouter sur le port %lld : %@"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níorbh fhéidir éisteacht ar phort %lld: %@"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nije se moglo slušati na portu %lld: %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nem sikerült figyelni a(z) %lld porton: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile ascoltare sulla porta %lld: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポート%lldで待機できませんでした：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포트 %lld에서 수신할 수 없습니다: %@"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nepavyko klausytis prie %lld prievado: %@"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neizdevās klausīties uz porta %lld: %@"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ma setgħux jisma' fuq il-port %lld: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan niet luisteren op poort %lld: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można nasłuchiwać na porcie %lld: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível escutar na porta %lld: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível escutar na porta %lld: %@"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu s-a putut asculta pe portul %lld: %@"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nepodarilo sa počúvať na porte %lld: %@"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ni bilo mogoče poslušati na vratih %lld: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunde inte lyssna på port %lld: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法在端口%lld上监听：%@"
+          }
+        }
+      }
+    },
     "Couldn't match" : {
       "comment" : "A section of a LogVisitsView that lists places that couldn't be matched to a country.",
       "isCommentAutoGenerated" : true,
@@ -35700,6 +37320,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法读取旅行文件。"
+          }
+        }
+      }
+    },
+    "Couldn't start the server: %@" : {
+      "comment" : "Automation server error, with the system reason",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Couldn't start the server: %@"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сървърът не можа да се стартира: %@"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server se nepodařilo spustit: %@"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunne ikke starte serveren: %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Server konnte nicht gestartet werden: %@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ήταν δυνατή η εκκίνηση του διακομιστή: %@"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne eblis starti la servilon: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar el servidor: %@"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serverit ei õnnestunud käivitada: %@"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palvelinta ei voitu käynnistää: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de démarrer le serveur : %@"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níorbh fhéidir an freastalaí a thosú: %@"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poslužitelj se nije mogao pokrenuti: %@"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A kiszolgálót nem sikerült elindítani: %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile avviare il server: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サーバーを起動できませんでした：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서버를 시작할 수 없습니다: %@"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nepavyko paleisti serverio: %@"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neizdevās startēt serveri: %@"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ma setgħux jibda s-server: %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan de server niet starten: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można uruchomić serwera: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível iniciar o servidor: %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível iniciar o servidor: %@"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nu s-a putut porni serverul: %@"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server sa nepodarilo spustiť: %@"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strežnika ni bilo mogoče zagnati: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunde inte starta servern: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法启动服务器：%@"
           }
         }
       }
@@ -36063,7 +37863,7 @@
       }
     },
     "countries" : {
-      "comment" : "Watch corner complication gauge label\nWrapped: plural countries word",
+      "comment" : "Wrapped: plural countries word",
       "localizations" : {
         "bg" : {
           "stringUnit" : {
@@ -65837,6 +67637,186 @@
         }
       }
     },
+    "Lets an AI assistant running on this Mac read your travel data and plan trips into Worldward, through a server that only accepts connections from this computer. Worldward never sends anything out by itself — but whatever you connect can see the data you ask it about, so leave this off unless you're using it. Turn off Allow Changes to make it read-only." : {
+      "comment" : "Explains what the local automation server does and its privacy trade-off",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lets an AI assistant running on this Mac read your travel data and plan trips into Worldward, through a server that only accepts connections from this computer. Worldward never sends anything out by itself — but whatever you connect can see the data you ask it about, so leave this off unless you're using it. Turn off Allow Changes to make it read-only."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позволява на AI асистент, работещ на този Mac, да чете данните ви за пътуване и да планира пътувания в Worldward чрез сървър, който приема само връзки от този компютър. Worldward никога не изпраща нищо сам по себе си — но каквото и да свържете, може да вижда данните, за които го питате, така че го дръжте изключено, освен ако не го използвате. Изключете „Позволяване на промени“, за да го направите само за четене."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umožní AI asistentovi běžícímu na tomto Macu číst vaše cestovní údaje a plánovat cesty do Worldwardu prostřednictvím serveru, který přijímá pouze připojení z tohoto počítače. Worldward nikdy nic sám neodesílá — ale cokoli připojíte, může vidět data, na která se ptáte, takže to nechte vypnuté, pokud to nepoužíváte. Vypněte „Povolit změny“, aby byl přístup pouze pro čtení."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lader en AI-assistent, der kører på denne Mac, læse dine rejsedata og planlægge ture i Worldward via en server, der kun accepterer forbindelser fra denne computer. Worldward sender aldrig noget ud af sig selv — men hvad end du tilslutter, kan se de data, du spørger om, så lad være med at slå det til, medmindre du bruger det. Slå „Tillad ændringer“ fra for at gøre det skrivebeskyttet."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lässt einen auf diesem Mac laufenden KI-Assistenten deine Reisedaten lesen und Reisen in Worldward planen — über einen Server, der nur Verbindungen von diesem Computer akzeptiert. Worldward sendet selbst nie etwas nach außen — aber egal, was du verbindest, es kann die Daten sehen, nach denen du fragst. Lass das also ausgeschaltet, wenn du es nicht nutzt. Deaktiviere „Änderungen erlauben“, um es schreibgeschützt zu machen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επιτρέπει σε έναν βοηθό AI που εκτελείται σε αυτό το Mac να διαβάζει τα ταξιδιωτικά σας δεδομένα και να προγραμματίζει ταξίδια στο Worldward, μέσω ενός διακομιστή που δέχεται μόνο συνδέσεις από αυτόν τον υπολογιστή. Το Worldward δεν στέλνει ποτέ τίποτα από μόνο του — αλλά ό,τι συνδέσετε μπορεί να δει τα δεδομένα για τα οποία το ρωτάτε, οπότε αφήστε το απενεργοποιημένο εκτός αν το χρησιμοποιείτε. Απενεργοποιήστε το «Να επιτρέπονται οι αλλαγές» για να γίνει μόνο για ανάγνωση."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permesas al AI-asistanto, kiu funkcias sur ĉi tiu Mac, legi viajn vojaĝajn datumojn kaj plani vojaĝojn en Worldward, per servilo kiu akceptas nur konektojn de ĉi tiu komputilo. Worldward neniam sendas ion ajn memstare — sed kion ajn vi konektas, povas vidi la datumojn pri kiuj vi demandas ĝin, do lasu ĝin malŝaltita krom se vi uzas ĝin. Malŝaltu «Permesi ŝanĝojn» por igi ĝin nurlegebla."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que un asistente de IA que se ejecuta en este Mac lea tus datos de viaje y planifique viajes en Worldward a través de un servidor que solo acepta conexiones de este ordenador. Worldward nunca envía nada por sí mismo — pero lo que conectes puede ver los datos sobre los que le preguntes, así que déjalo desactivado a menos que lo estés usando. Desactiva «Permitir cambios» para que sea de solo lectura."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Võimaldab sellel Macil töötaval AI-assistendil lugeda teie reisiandmeid ja planeerida reise Worldwardi, serveri kaudu, mis võtab vastu ainult selle arvuti ühendusi. Worldward ei saada kunagi ise midagi välja — kuid mida iganes ühendate, näeb andmeid, mille kohta te seda küsite, nii et hoidke see välja lülitatuna, kui te seda ei kasuta. Lülitage „Luba muudatused“ välja, et muuta see kirjutuskaitstuks."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antaa tällä Macilla toimivan tekoälyavustajan lukea matkatietosi ja suunnitella matkoja Worldwardiin palvelimen kautta, joka hyväksyy vain yhteyksiä tästä tietokoneesta. Worldward ei koskaan lähetä mitään itsestään — mutta mihin ikinä yhdistät, se voi nähdä tiedot, joista sille kysyt, joten pidä se pois päältä, ellet käytä sitä. Poista käytöstä ”Salli muutokset”, jotta siitä tulee vain luku -tila."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permet à un assistant IA exécuté sur ce Mac de lire vos données de voyage et de planifier des voyages dans Worldward, via un serveur qui n'accepte que les connexions depuis cet ordinateur. Worldward n'envoie jamais rien de lui-même — mais tout ce que vous connectez peut voir les données que vous lui demandez, alors laissez-le désactivé sauf si vous l'utilisez. Désactivez « Autoriser les modifications » pour le rendre en lecture seule."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligeann sé d'assistant AI atá ag rith ar an Mac seo do chuid sonraí taistil a léamh agus turais a phleanáil isteach i Worldward, trí fhreastalaí nach nglacann ach le naisc ón ríomhaire seo. Ní sheolann Worldward aon rud amach riamh uaidh féin — ach is féidir le cibé rud a nascann tú na sonraí a iarrann tú air a fheiceáil, mar sin fág as é mura bhfuil tú á úsáid. Múch “Ceadaigh athruithe” chun é a dhéanamh inléite amháin."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omogućuje AI asistentu koji radi na ovom Macu čitanje vaših podataka o putovanjima i planiranje putovanja u Worldward, putem poslužitelja koji prihvaća samo veze s ovog računala. Worldward nikada sam ne šalje ništa van — ali što god spojite, može vidjeti podatke o kojima ga pitate, pa ga ostavite isključenim osim ako ga ne koristite. Isključite „Dopusti promjene“ da biste ga učinili samo za čitanje."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lehetővé teszi, hogy az ezen a Macen futó AI-asszisztens elolvassa az utazási adatait, és utakat tervezzen a Worldwardba egy olyan kiszolgálón keresztül, amely csak erről a számítógépről fogad kapcsolatokat. A Worldward soha nem küld ki semmit magától — de bármit is csatlakoztat, láthatja azokat az adatokat, amelyekről kérdezi, ezért hagyja kikapcsolva, hacsak nem használja. Kapcsolja ki a „Változtatások engedélyezése“ beállítást, hogy csak olvasható legyen."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consente a un assistente AI in esecuzione su questo Mac di leggere i tuoi dati di viaggio e pianificare viaggi in Worldward, tramite un server che accetta solo connessioni da questo computer. Worldward non invia mai nulla da solo — ma qualsiasi cosa tu colleghi può vedere i dati su cui lo interroghi, quindi lascialo disattivato a meno che non lo stia usando. Disattiva «Consenti modifiche» per renderlo di sola lettura."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このMacで動作するAIアシスタントが、あなたの旅行データを読み取り、Worldwardへの旅行を計画できるようにします。このコンピューターからの接続のみを受け付けるサーバーを介して行われます。Worldwardが自ら外部に送信することは決してありません — ただし、接続したものは、あなたが尋ねたデータを見ることができるため、使用していないときはオフのままにしてください。「変更を許可」をオフにすると、読み取り専用になります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 Mac에서 실행되는 AI 어시스턴트가 여행 데이터를 읽고 Worldward에 여행을 계획할 수 있게 해 줍니다. 이 컴퓨터에서 오는 연결만 허용하는 서버를 통해서입니다. Worldward는 스스로 외부로 아무것도 보내지 않습니다 — 하지만 연결하는 무엇이든 당신이 묻는 데이터를 볼 수 있으므로, 사용하지 않을 때는 꺼 두세요. “변경 허용”을 끄면 읽기 전용으로 설정됩니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leidžia šiame Mac kompiuteryje veikiančiam AI asistentui skaityti jūsų kelionių duomenis ir planuoti keliones į Worldward per serverį, kuris priima tik ryšius iš šio kompiuterio. Worldward niekada nieko nesiunčia pats — bet prie ko tik prisijungsite, tas matys duomenis, apie kuriuos jo klausiate, todėl palikite jį išjungtą, nebent jį naudojate. Išjunkite „Leisti pakeitimus“, kad jis būtų tik skaitymo režimu."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ļauj šajā Mac datorā strādājošam AI asistentam lasīt jūsu ceļojumu datus un plānot ceļojumus uz Worldward, izmantojot serveri, kas pieņem tikai savienojumus no šī datora. Worldward pats nekad neko nesūta ārā — bet neatkarīgi no tā, ko pievienojat, tas var redzēt datus, par kuriem to jautājat, tāpēc atstājiet to izslēgtu, ja vien to neizmantojat. Izslēdziet opciju „Atļaut izmaiņas“, lai padarītu to tikai lasāmu."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jippermetti lil assistent AI li qed jaħdem fuq dan il-Mac jaqra d-dejta tal-ivvjaġġar tiegħek u jippjana vjaġġi fi Worldward, permezz ta' server li jaċċetta biss konnessjonijiet minn dan il-kompjuter. Worldward qatt ma jibgħat xi ħaġa waħdu — imma kulma tikkonnettja jista' jara d-dejta li titlob dwarha, għalhekk ħallih mitfi sakemm ma tkunx qed tużah. Itfi l-għażla “Ħalli l-Bidliet” biex tagħmlu biss għall-qari."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laat een AI-assistent die op deze Mac draait je reisgegevens lezen en reizen naar Worldward plannen, via een server die alleen verbindingen vanaf deze computer accepteert. Worldward stuurt zelf nooit iets naar buiten — maar wat je ook aansluit, kan de gegevens zien waar je het naar vraagt, dus laat dit uit staan tenzij je het gebruikt. Schakel „Wijzigingen toestaan“ uit om het alleen-lezen te maken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozwala asystentowi AI działającemu na tym Macu czytać dane podróżne i planować podróże do Worldward za pośrednictwem serwera, który akceptuje tylko połączenia z tego komputera. Worldward nigdy sam niczego nie wysyła — ale cokolwiek podłączysz, może zobaczyć dane, o które pytasz, więc pozostaw to wyłączone, jeśli tego nie używasz. Wyłącz opcję „Zezwalaj na zmiany“, aby nadać jej tylko odczyt."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que um assistente de IA em execução neste Mac leia seus dados de viagem e planeje viagens no Worldward, por meio de um servidor que só aceita conexões deste computador. O Worldward nunca envia nada por conta própria — mas o que você conectar poderá ver os dados sobre os quais você perguntar, então deixe-o desativado, a menos que esteja usando. Desative «Permitir alterações» para torná-lo somente leitura."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que um assistente de IA em execução neste Mac leia os seus dados de viagem e planeie viagens no Worldward, através de um servidor que só aceita ligações deste computador. O Worldward nunca envia nada por si próprio — mas o que ligar pode ver os dados sobre os quais lhe perguntar, por isso deixe-o desativado, a menos que o esteja a utilizar. Desative «Permitir alterações» para o tornar só de leitura."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite unui asistent AI care rulează pe acest Mac să vă citească datele de călătorie și să planifice călătorii în Worldward, printr-un server care acceptă doar conexiuni de pe acest computer. Worldward nu trimite niciodată nimic de unul singur — dar orice conectați poate vedea datele despre care îl întrebați, așa că lăsați-l dezactivat decât dacă îl folosiți. Dezactivați „Permite modificări“ pentru a-l face doar pentru citire."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umožňuje AI asistentovi bežiacemu na tomto Macu čítať vaše cestovné údaje a plánovať cesty do Worldwardu prostredníctvom servera, ktorý prijíma iba pripojenia z tohto počítača. Worldward nikdy nič sám neodošle — ale čokoľvek pripojíte, môže vidieť údaje, na ktoré sa ho pýtate, takže ho nechajte vypnutý, pokiaľ ho nepoužívate. Vypnite možnosť „Povoliť zmeny“, aby bola iba na čítanie."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omogoča AI asistentu, ki teče na tem Macu, branje vaših podatkov o potovanjih in načrtovanje potovanj v Worldward prek strežnika, ki sprejema samo povezave s tega računalnika. Worldward nikoli sam ne pošlje ničesar ven — toda karkoli povežete, lahko vidi podatke, o katerih ga sprašujete, zato ga pustite izklopljenega, razen če ga uporabljate. Izklopite možnost „Dovoli spremembe“, da bo samo za branje."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Låter en AI-assistent som körs på den här Mac-datorn läsa dina resedata och planera resor till Worldward, via en server som bara accepterar anslutningar från den här datorn. Worldward skickar aldrig ut något av sig självt — men vad du än ansluter kan se de data du frågar om, så låt det vara avstängt om du inte använder det. Stäng av ”Tillåt ändringar” för att göra den skrivskyddad."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许在此Mac上运行的AI助手读取您的旅行数据，并通过仅接受来自此计算机连接的服务器将旅行计划到Worldward。Worldward本身从不发送任何内容 — 但您连接的任何内容都可以看到您询问的数据，因此除非您正在使用它，否则请保持关闭状态。关闭“允许更改”使其变为只读。"
+          }
+        }
+      }
+    },
     "Library" : {
       "comment" : "The category of a library.",
       "isCommentAutoGenerated" : true,
@@ -67274,6 +69254,186 @@
         }
       }
     },
+    "Listening on 127.0.0.1, port %lld." : {
+      "comment" : "Automation server status: running on the given port",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Listening on 127.0.0.1, port %lld."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Слушане на 127.0.0.1, порт %lld."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naslouchá na 127.0.0.1, portu %lld."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lytter på 127.0.0.1, port %lld."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lauscht auf 127.0.0.1, Port %lld."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ακρόαση στη 127.0.0.1, θύρα %lld."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aŭskultas sur 127.0.0.1, pordo %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuchando en 127.0.0.1, puerto %lld."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kuulab 127.0.0.1, pordil %lld."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kuuntelee osoitteessa 127.0.0.1, portti %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écoute sur 127.0.0.1, port %lld."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ag éisteacht ar 127.0.0.1, port %lld."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluša na 127.0.0.1, portu %lld."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Figyel a(z) 127.0.0.1 címen, %lld porton."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In ascolto su 127.0.0.1, porta %lld."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "127.0.0.1、ポート%lldで待機中。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "127.0.0.1, 포트 %lld에서 수신 중입니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klausomasi 127.0.0.1, %lld prievade."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klausās 127.0.0.1, portā %lld."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qed jisma' fuq 127.0.0.1, port %lld."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luistert op 127.0.0.1, poort %lld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nasłuchiwanie na 127.0.0.1, porcie %lld."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escutando em 127.0.0.1, porta %lld."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A escutar em 127.0.0.1, porta %lld."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ascultă pe 127.0.0.1, portul %lld."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Počúva na 127.0.0.1, porte %lld."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posluša na 127.0.0.1, vratih %lld."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lyssnar på 127.0.0.1, port %lld."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在127.0.0.1、端口%lld上监听。"
+          }
+        }
+      }
+    },
     "lived" : {
       "comment" : "The travel status for a country that has been lived.",
       "isCommentAutoGenerated" : true,
@@ -67988,6 +70148,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在加载地图…"
+          }
+        }
+      }
+    },
+    "Local Automation Server" : {
+      "comment" : "Toggle for the local MCP server that lets an assistant drive the app",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Local Automation Server"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Локален сървър за автоматизация"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokální automatizační server"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokal automatiseringsserver"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokaler Automatisierungsserver"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Τοπικός διακομιστής αυτοματοποίησης"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loka aŭtomatiga servilo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servidor de automatización local"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kohalik automatiseerimisserver"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paikallinen automaatiopalvelin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveur d'automatisation local"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Freastalaí uathoibrithe áitiúil"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokalni poslužitelj za automatizaciju"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Helyi automatizálási kiszolgáló"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server di automazione locale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカル自動化サーバー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬 자동화 서버"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vietinis automatizavimo serveris"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokālais automatizācijas serveris"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server Lokali ta' Awtomazzjoni"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokale automatiseringsserver"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokalny serwer automatyzacji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servidor de automação local"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servidor de automatização local"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server local de automatizare"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokálny automatizačný server"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokalni strežnik za avtomatizacijo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokal automatiseringsserver"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地自动化服务器"
           }
         }
       }
@@ -84843,6 +87183,186 @@
         }
       }
     },
+    "Not listening yet." : {
+      "comment" : "Automation server status: enabled but not yet started",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not listening yet."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все още не слуша."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatím nenaslouchá."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lytter endnu ikke."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lauscht noch nicht."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δεν ακούει ακόμα."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ankoraŭ ne aŭskultas."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no está escuchando."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veel ei kuula."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ei vielä kuuntele."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "N'écoute pas encore."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níl sé ag éisteacht fós."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Još ne sluša."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Még nem figyel."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sta ancora ascoltando."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ待機していません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 수신하지 않습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dar neklausoma."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vēl neklausās."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Għadu mhux qed jisma'."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luistert nog niet."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeszcze nie nasłuchuje."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não está escutando."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não está a escutar."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Încă nu ascultă."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ešte nepočúva."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Še ne posluša."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lyssnar ännu inte."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未监听。"
+          }
+        }
+      }
+    },
     "Not packed" : {
       "comment" : "Accessibility value: packing item still open",
       "localizations" : {
@@ -87534,7 +90054,7 @@
       }
     },
     "Now" : {
-      "comment" : "Watch complication: trip is underway\nWatch tab: the at-a-glance page",
+      "comment" : "Watch tab: the at-a-glance page",
       "localizations" : {
         "bg" : {
           "stringUnit" : {
@@ -92551,7 +95071,7 @@
       }
     },
     "Packing" : {
-      "comment" : "Section header for packing list\nWatch complication rectangular header",
+      "comment" : "Section header for packing list",
       "localizations" : {
         "bg" : {
           "stringUnit" : {
@@ -97925,6 +100445,366 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "插头类型"
+          }
+        }
+      }
+    },
+    "Port" : {
+      "comment" : "Label for the automation server's network port",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Port"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Порт"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Θύρα"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pordo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puerto"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portti"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포트"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prievadas"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ports"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poort"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porta"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porta"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vrata"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端口"
+          }
+        }
+      }
+    },
+    "Port %lld isn't valid." : {
+      "comment" : "Automation server error: the configured port is out of range",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Port %lld isn't valid."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Порт %lld не е валиден."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld není platný."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld er ikke gyldig."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld ist nicht gültig."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Η θύρα %lld δεν είναι έγκυρη."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pordo %lld ne estas valida."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El puerto %lld no es válido."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld ei ole kehtiv."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portti %lld ei ole kelvollinen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le port %lld n'est pas valide."
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Níl port %lld bailí."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld nije važeći."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A(z) %lld port nem érvényes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La porta %lld non è valida."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ポート%lldは無効です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포트 %lld는 유효하지 않습니다."
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prievadas %lld nėra tinkamas."
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ports %lld nav derīgs."
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il-port %lld mhux validu."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poort %lld is niet geldig."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld jest nieprawidłowy."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A porta %lld não é válida."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A porta %lld não é válida."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portul %lld nu este valid."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld nie je platný."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vrata %lld niso veljavna."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port %lld är inte giltig."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端口%lld无效。"
           }
         }
       }
@@ -103661,6 +106541,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在请求访问…"
+          }
+        }
+      }
+    },
+    "Reset Access Token" : {
+      "comment" : "Button generating a new automation token, disconnecting existing clients",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Reset Access Token"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нулиране на токена за достъп"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obnovit přístupový token"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nulstil adgangstoken"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugriffstoken zurücksetzen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Επαναφορά διακριτικού πρόσβασης"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarigi alirĵetonon"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer token de acceso"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lähtesta juurdepääsuluba"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Palauta käyttöoikeustunnus"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser le jeton d'accès"
+          }
+        },
+        "ga" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Athshocraigh comhartha rochtana"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poništi token za pristup"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hozzáférési token visszaállítása"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reimposta token di accesso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アクセストークンをリセット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "액세스 토큰 재설정"
+          }
+        },
+        "lt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atstatyti prieigos raktą"
+          }
+        },
+        "lv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atiestatīt piekļuves pilnvaru"
+          }
+        },
+        "mt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Irrisettja t-Token ta' Aċċess"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toegangstoken opnieuw instellen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zresetuj token dostępu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir token de acesso"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repor token de acesso"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resetează tokenul de acces"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obnoviť prístupový token"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponastavi žeton za dostop"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Återställ åtkomsttoken"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置访问令牌"
           }
         }
       }
@@ -123580,7 +126640,7 @@
       }
     },
     "Today" : {
-      "comment" : "Watch complication: trip starts today\nWatch: label replacing the date on an itinerary stop happening today",
+      "comment" : "Watch: label replacing the date on an itinerary stop happening today",
       "localizations" : {
         "bg" : {
           "stringUnit" : {

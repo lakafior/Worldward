@@ -118,6 +118,21 @@ final class Trip {
         (itinerary ?? []).sorted { $0.order < $1.order }
     }
 
+    /// Gives every stop a `dedupID`, returning `true` when it had to assign any.
+    /// Stops created before the field existed carry `""` (see `ItineraryItem.dedupID`);
+    /// this is the lazy backfill, called only by the paths that hand stop ids out.
+    /// The caller saves — a read path that assigned ids must persist them, or the
+    /// ids it just returned won't match the ones it hands out next time.
+    @discardableResult
+    func assignStopIDs() -> Bool {
+        var assigned = false
+        for stop in itinerary ?? [] where stop.dedupID.isEmpty {
+            stop.dedupID = UUID().uuidString
+            assigned = true
+        }
+        return assigned
+    }
+
     /// Attachments in the order they were added.
     var sortedAttachments: [TripAttachment] {
         (attachments ?? []).sorted { $0.order < $1.order }
@@ -446,6 +461,17 @@ final class ItineraryItem {
     /// `attachments`.
     var transportMode: String = ""
     var transportDetail: String = ""
+
+    /// Per-row token for CloudKit de-duplication, mirroring `Trip.dedupID` — and
+    /// the stable handle anything outside the app uses to name a stop, which is
+    /// why it arrived later than the other models' tokens: until the automation
+    /// API, nothing ever had to point at one stop across a process boundary.
+    ///
+    /// Defaults to `""`, *not* to a fresh UUID: lightweight migration applies one
+    /// default value to every existing row, so a `UUID()` default would hand every
+    /// stop already in the store the same token. `Trip.assignStopIDs()` fills the
+    /// blanks in the first time something needs them, costing nothing at launch.
+    var dedupID: String = ""
 
     /// Identifier of this stop's event in the app-owned Worldward calendar, or
     /// empty when calendar sync is off or the stop has no date. See `CalendarSync`.

@@ -124,6 +124,9 @@ struct SettingsView: View {
             packingManagementSection
             calendarSection
             remindersSection
+            #if os(macOS)
+                AutomationSettingsSection()
+            #endif
             syncSection
             dataSection
             #if !os(macOS)
@@ -887,6 +890,132 @@ private enum SettingsSheet: Identifiable {
             ) { _, _ in
                 DispatchQueue.main.async { NSApp.terminate(nil) }
             }
+        }
+    }
+
+    /// Settings section for the local MCP server — the one place Worldward can be
+    /// driven from outside.
+    ///
+    /// Everything is behind a switch that starts off, and the section only ever
+    /// shows what the user needs to act on: whether it's listening, whether an
+    /// assistant may change anything, and the command or JSON snippet that
+    /// connects a client.
+    /// The token is never displayed — it's copied as part of that command or
+    /// snippet, so there's nothing on screen to shoulder-surf or leak into a
+    /// screenshot.
+    struct AutomationSettingsSection: View {
+        @AppStorage(MCPServer.enabledKey) private var serverEnabled = false
+        @AppStorage(MCPServer.writesAllowedKey) private var writesAllowed = true
+        @AppStorage(MCPServer.portKey) private var port = MCPServer.defaultPort
+        @State private var server = MCPServer.shared
+        @State private var selectedClient = MCPClient.claudeDesktop
+        @State private var didCopy = false
+        @State private var didCopyJSON = false
+
+        var body: some View {
+            Section {
+                Toggle(isOn: $serverEnabled) {
+                    Label("Local Automation Server", systemImage: "terminal")
+                }
+
+                if serverEnabled {
+                    statusRow
+
+                    Toggle(isOn: $writesAllowed) {
+                        Label("Allow Changes", systemImage: "square.and.pencil")
+                    }
+
+                    LabeledContent("Port") {
+                        TextField(
+                            "Port", value: $port,
+                            format: .number.grouping(.never)
+                        )
+                        .labelsHidden()
+                        .frame(width: 80)
+                        #if os(macOS)
+                            .textFieldStyle(.roundedBorder)
+                        #endif
+                    }
+
+                    Picker("Client", selection: $selectedClient) {
+                        ForEach(MCPClient.allCases) { client in
+                            Text(client.displayName).tag(client)
+                        }
+                    }
+
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(
+                            server.setupJSON(for: selectedClient), forType: .string)
+                        didCopyJSON = true
+                    } label: {
+                        Label(
+                            didCopyJSON ? "Copied" : "Copy JSON Config",
+                            systemImage: didCopyJSON ? "checkmark" : "curlybraces")
+                    }
+                    .disabled(!server.state.isRunning)
+
+                    LabeledContent("Config file") {
+                        Text(selectedClient.configFile)
+                            .monospaced()
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(server.setupCommand, forType: .string)
+                        didCopy = true
+                    } label: {
+                        Label(
+                            didCopy ? "Copied" : "Copy Setup Command",
+                            systemImage: didCopy ? "checkmark" : "doc.on.doc")
+                    }
+                    .disabled(!server.state.isRunning)
+
+                    Button {
+                        server.regenerateToken()
+                        didCopy = false
+                        didCopyJSON = false
+                    } label: {
+                        Label("Reset Access Token", systemImage: "key")
+                    }
+                }
+            } header: {
+                Text("Automation")
+            } footer: {
+                Text(
+                    "Lets an AI assistant running on this Mac read your travel data and plan trips into Worldward, through a server that only accepts connections from this computer. Worldward never sends anything out by itself — but whatever you connect can see the data you ask it about, so leave this off unless you're using it. Turn off Allow Changes to make it read-only."
+                )
+            }
+            .animation(.snappy, value: serverEnabled)
+            .onChange(of: serverEnabled) { server.applyPreference() }
+            // A new port means a new socket and a new setup command, so the copy
+            // buttons' "Copied" ticks have to stop claiming otherwise.
+            .onChange(of: port) {
+                didCopy = false
+                didCopyJSON = false
+                if serverEnabled { server.start() }
+            }
+            .onChange(of: selectedClient) { didCopyJSON = false }
+        }
+
+        @ViewBuilder private var statusRow: some View {
+            Label {
+                switch server.state {
+                case .running(let port):
+                    Text("Listening on 127.0.0.1, port \(Int(port)).")
+                case .failed(let message):
+                    Text(message)
+                case .stopped:
+                    Text("Not listening yet.")
+                }
+            } icon: {
+                Image(systemName: server.state.isRunning ? "checkmark.circle" : "exclamationmark.triangle")
+                    .foregroundStyle(server.state.isRunning ? Color.green : Color.orange)
+            }
+            .font(.callout)
+            // Symbol plus text is two VoiceOver stops otherwise.
+            .accessibilityElement(children: .combine)
         }
     }
 

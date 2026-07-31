@@ -61,6 +61,34 @@ Every country rendered as a tap-able map polygon from Natural Earth data (~250 c
 ### macOS
 
 - **Menu Bar Extra** — a globe icon showing your country count with quick actions: Open Worldward, Mark Current Location, and Quit.
+- **AI automation (MCP)** — an opt-in local server (Settings → Automation) that lets an AI assistant running on this Mac read your travels and plan trips into Worldward. See [AI Automation (MCP)](#ai-automation-mcp).
+
+### AI Automation (MCP)
+
+Worldward can be driven from an AI assistant on the same Mac over the [Model Context Protocol](https://modelcontextprotocol.io) — Claude Desktop, Claude Code, Cursor, VS Code or Zed can read your travels and, with permission, plan trips into the app. macOS only: iOS can't keep a listener alive in the background, and there's no client there to talk to it.
+
+- **Off by default.** Switch on *Settings → Automation* when you want it.
+- **Loopback only** — the server binds to `127.0.0.1` and is unreachable from the network, however the Mac is configured.
+- **Bearer token** — a per-install random token, compared in constant time, regenerated from the same settings pane. The token is only ever copied (as part of a setup command or JSON snippet), never shown on screen.
+- **Origin check** — requests from non-local web pages are rejected, stopping DNS-rebinding attacks.
+- **Read-only mode** — turn off *Allow Changes* and only read tools run.
+- **No dialing out.** Worldward never connects anywhere; a client connects in, or nothing happens.
+
+Settings offers a ready-to-paste setup command for Claude Code, or a JSON snippet for JSON-configured clients:
+
+```json
+{
+  "mcpServers": {
+    "worldward": {
+      "type": "http",
+      "url": "http://127.0.0.1:8787/mcp",
+      "headers": { "Authorization": "Bearer <your token>" }
+    }
+  }
+}
+```
+
+Other clients read different files (`.vscode/mcp.json` uses a `servers` key, `.zed/mcp.json` a `mcp` key); the settings pane copies the right shape for the client you pick.
 
 ### Trips (multi-country itineraries)
 
@@ -219,6 +247,7 @@ A lightweight companion app for the two moments a phone is inconvenient — pack
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
 | Intents | `AppIntents` framework (Shortcuts, Siri, Control Center) |
+| MCP | Local HTTP server over `Network` (loopback-only, bearer-token auth) |
 | Widgets | `WidgetKit` over an App Group |
 | Watch | watchOS companion app — SwiftData + CloudKit, `WatchConnectivity` deltas, `WidgetKit` complications |
 | Notifications | `UserNotifications` (local, opt-in) |
@@ -351,6 +380,7 @@ WorldwardWidgets/               # Widget extension target
 ### Data & Privacy
 
 - All travel data is stored **locally on-device** via SwiftData. Nothing is sent to a server.
+- The optional **AI automation server** (macOS, Settings → Automation) is off by default, binds to `127.0.0.1` only, and requires a per-install bearer token — the app itself still never connects out to anything.
 - AI inference runs entirely on-device via `FoundationModels` — no network calls.
 - Country geometry is loaded from the bundled `countries.wmgb` (Natural Earth data, public domain), pre-simplified at build time by `Tools/generate_geo.swift`. The app ships ~675 KB instead of a 14 MB GeoJSON, including outlying territories and islands down to ~25 km across (Hawaii, Kaliningrad, the Greek archipelagos, …). One deviation from the Natural Earth default view: Crimea is shown as part of Ukraine.
 - Photo identifiers (`PHAsset.localIdentifier`) are stored instead of image data — the library stays the source of truth.

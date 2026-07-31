@@ -34,7 +34,7 @@
 
   <div class="tldr">
     <p><strong>The short version:</strong> Worldward stores your travel data on
-    your device. It has no server, no accounts, no analytics, no ads and no
+    your device. It has no cloud server, no accounts, no analytics, no ads and no
     third-party SDKs. I never see your data — and I couldn't if I wanted to.</p>
   </div>
 
@@ -102,6 +102,30 @@
   <p>Travel Chat, year recaps and destination suggestions run through Apple
   Intelligence (Apple's Foundation Models framework) entirely on your device.
   Your travel data is not sent to any cloud AI service.</p>
+
+  <h2>Local automation (MCP)</h2>
+  <p>The macOS app can run an optional local server that lets an AI assistant
+  running on your Mac read your travels and, if you allow it, plan trips into
+  Worldward on your behalf. This is the Model Context Protocol (MCP), the open
+  standard used by coding assistants and desktop AI apps.</p>
+  <p>The server is <strong>off by default</strong>, and when you turn it on it is
+  deliberately locked down:</p>
+  <ul>
+    <li><strong>Loopback only</strong> — it listens on 127.0.0.1 and cannot be
+    reached from the network, however your Mac is configured.</li>
+    <li><strong>Token-protected</strong> — each install generates its own random
+    access token, which you can reset at any time to disconnect every client at
+    once.</li>
+    <li><strong>Origin-checked</strong> — requests that carry a non-local
+    <em>Origin</em> header are rejected, so a web page can't drive the app.</li>
+    <li><strong>Read-only option</strong> — turn off “Allow Changes” and the
+    server answers read requests only.</li>
+  </ul>
+  <p>Worldward never dials out: this is a listener, and nothing is sent anywhere
+  unless a client on your own Mac connects to it. Whatever you connect can see
+  the data you ask it about, so the feature stays off unless you're using it.
+  The server holds no history and keeps no connection state after a request
+  completes.</p>
 
   <h2>Apple system services</h2>
   <p>Like any app showing an Apple Map, Worldward displays map tiles that your
