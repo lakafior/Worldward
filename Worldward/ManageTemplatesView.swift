@@ -147,7 +147,11 @@ private struct TemplateItemRow: View {
 
             Menu {
                 Picker("Container", selection: $item.containerName) {
-                    Text("Ungrouped").tag("")
+                    // The same word the trip's own two pickers, the packing group
+                    // header and the Markdown/PDF exports all use for the
+                    // no-container pile — it was the last place still saying
+                    // "Ungrouped" for it.
+                    Text(Str.Trip.packingOther).tag("")
                     ForEach(containerNames, id: \.self) { name in
                         Text(name).tag(name)
                     }

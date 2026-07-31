@@ -81,8 +81,6 @@ struct SettingsView: View {
     @State private var csvExportDocument: CSVDocument?
     @State private var showCSVExporter = false
     @State private var showCSVImporter = false
-    /// The CSV text awaiting preview, set after the picked file is read.
-    @State private var csvPayload: CSVPayload?
     private var versionString: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
@@ -93,8 +91,12 @@ struct SettingsView: View {
     /// A picked backup held between validation and the user confirming the
     /// (irreversible) trip replacement.
     @State private var pendingImport: PendingImport?
-    @State private var showManageContainers = false
-    @State private var showManageTemplates = false
+    /// Which sheet this screen is presenting, if any. One piece of state and one
+    /// `.sheet` rather than a flag and a modifier per destination: SwiftUI honours
+    /// only *one* sheet presentation per view, so the three `.sheet` modifiers that
+    /// used to be chained here shadowed one another — "Manage Templates" set its
+    /// flag and presented nothing at all, leaving templates unreachable.
+    @State private var sheet: SettingsSheet?
     @State private var remindersAccessDenied = false
     @State private var calendarAccessDenied = false
     @State private var notificationsAccessDenied = false
@@ -128,11 +130,20 @@ struct SettingsView: View {
                 aboutSection
             #endif
         }
-        .sheet(isPresented: $showManageContainers) {
-            ManageContainersView()
-        }
-        .sheet(isPresented: $showManageTemplates) {
-            ManageTemplatesView()
+        .sheet(item: $sheet) { destination in
+            switch destination {
+            case .containers: ManageContainersView()
+            case .templates: ManageTemplatesView()
+            case .csvImport(let text):
+                CSVImportView(text: text) { countries, visits in
+                    transferAlert = TransferAlert(
+                        title: "Import Complete",
+                        message: String(
+                            localized: "Added \(visits) visits across \(countries) countries.",
+                            comment: "Alert after a CSV import")
+                    )
+                }
+            }
         }
         .formStyle(.grouped)
         #if os(macOS)
@@ -170,16 +181,6 @@ struct SettingsView: View {
             allowedContentTypes: [.commaSeparatedText, .tabSeparatedText, .plainText],
             onCompletion: handleCSVImport
         )
-        .sheet(item: $csvPayload) { payload in
-            CSVImportView(text: payload.text) { countries, visits in
-                transferAlert = TransferAlert(
-                    title: "Import Complete",
-                    message: String(
-                        localized: "Added \(visits) visits across \(countries) countries.",
-                        comment: "Alert after a CSV import")
-                )
-            }
-        }
         .confirmationDialog(
             "Import this backup?",
             isPresented: pendingImportIsPresented,
@@ -370,12 +371,12 @@ struct SettingsView: View {
     @ViewBuilder private var packingManagementSection: some View {
         Section {
             Button {
-                showManageContainers = true
+                sheet = .containers
             } label: {
                 Label("Manage Containers", systemImage: "bag")
             }
             Button {
-                showManageTemplates = true
+                sheet = .templates
             } label: {
                 Label("Manage Templates", systemImage: "list.bullet.rectangle.portrait")
             }
@@ -634,7 +635,7 @@ struct SettingsView: View {
                         message: String(localized: "The file couldn't be read as text."))
                     return
                 }
-                csvPayload = CSVPayload(text: text)
+                sheet = .csvImport(text: text)
             } catch {
                 transferAlert = TransferAlert(
                     title: "Import Failed", message: error.localizedDescription)
@@ -822,10 +823,26 @@ private struct TransferAlert: Identifiable {
     let message: String
 }
 
-/// The text of a picked CSV file, wrapped so `sheet(item:)` can present it.
-private struct CSVPayload: Identifiable {
-    let id = UUID()
-    let text: String
+/// Everything Settings can present as a sheet, in one type so the screen needs a
+/// single `.sheet(item:)`. Chaining one `.sheet` per destination silently drops
+/// all but one of them — SwiftUI honours only one sheet presentation per view.
+///
+/// `id` is a fresh UUID per value rather than the case name: a CSV import must
+/// re-present even when the same file is picked twice in a row, and identity is
+/// what `sheet(item:)` keys on.
+private enum SettingsSheet: Identifiable {
+    case containers
+    case templates
+    case csvImport(text: String)
+
+    var id: String {
+        switch self {
+        case .containers: "containers"
+        case .templates: "templates"
+        // Distinct per payload so picking a second file re-presents the preview.
+        case .csvImport(let text): "csv-\(text.hashValue)"
+        }
+    }
 }
 
 #Preview {

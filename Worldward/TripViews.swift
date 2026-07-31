@@ -510,12 +510,20 @@ struct TripDetailView: View {
     @State private var attachingToStop: ItineraryItem?
     /// How the itinerary is ordered on screen. Remembered across trips: someone
     /// who thinks in days keeps By date, someone touring one region keeps By
-    /// country. Stored as the raw value so `@AppStorage` can persist it.
-    @AppStorage("tripItinerarySort") private var itinerarySortRaw = ItinerarySort.country.rawValue
+    /// country. Stored as the raw value so `@AppStorage` can persist it. Defaults
+    /// to By date — an itinerary is a sequence of days before it's anything else,
+    /// and grouping a first trip's two stops under a country heading reads as a
+    /// structure the user didn't ask for. Anyone who already chose a sort keeps it.
+    @AppStorage("tripItinerarySort") private var itinerarySortRaw = ItinerarySort.date.rawValue
     private var itinerarySort: ItinerarySort {
         ItinerarySort(rawValue: itinerarySortRaw) ?? .date
     }
     @State private var newPackingTitle = ""
+    /// The container new items file into, stored by *name* rather than by
+    /// identifier so it survives the shared catalog changing underneath it, and
+    /// carried across trips — someone who always starts with the carry-on
+    /// shouldn't have to re-pick it every trip. Empty means ungrouped.
+    @AppStorage("packingAddContainer") private var addContainerName = ""
     @State private var calendarAlert: CalendarAlert?
     @State private var pdfExportError: String?
     /// A freshly written temp file — the exported PDF or an attachment —
@@ -527,7 +535,6 @@ struct TripDetailView: View {
     @State private var planner = TripPlanner()
     @State private var confirmClearPacking = false
     @State private var isAddingContainer = false
-    @State private var showManageContainers = false
     @State private var newContainerName = ""
     /// The item to file into the container being created, or `nil` when creating
     /// an empty container from the controls section.
@@ -664,8 +671,14 @@ struct TripDetailView: View {
             } message: {
                 Text("Bags and cases are shared across all your trips.")
             }
-            .sheet(isPresented: $showManageContainers) {
-                ManageContainersView()
+            // Lives on the list rather than on the button that raises it: that
+            // button is now inside the packing header's menu, and a dialog
+            // attached inside a menu goes down with the menu before it presents.
+            .confirmationDialog(
+                "Remove all \((trip.packing ?? []).count) packing items?",
+                isPresented: $confirmClearPacking, titleVisibility: .visible
+            ) {
+                Button("Clear list", role: .destructive, action: clearPacking)
             }
             .alert("Save as template", isPresented: $showSaveTemplate) {
                 TextField("Template name", text: $newTemplateName)
@@ -1092,19 +1105,30 @@ struct TripDetailView: View {
         HStack {
             leading
             Spacer()
-            Menu {
-                Picker("Sort", selection: sortSelection) {
-                    ForEach(ItinerarySort.allCases) { sort in
-                        Label(sort.label, systemImage: sort.symbol).tag(sort)
+            if showsItinerarySort {
+                Menu {
+                    Picker("Sort", selection: sortSelection) {
+                        ForEach(ItinerarySort.allCases) { sort in
+                            Label(sort.label, systemImage: sort.symbol).tag(sort)
+                        }
                     }
+                } label: {
+                    Label("Sort", systemImage: "arrow.up.arrow.down")
+                        .labelStyle(.iconOnly)
                 }
-            } label: {
-                Label("Sort", systemImage: "arrow.up.arrow.down")
-                    .labelStyle(.iconOnly)
+                .textCase(nil)
             }
-            .textCase(nil)
         }
         .textCase(nil)
+    }
+
+    /// Whether re-sorting is a meaningful thing to offer yet. The control used to
+    /// show from the very first stop, where all three orders produce the same list.
+    /// It earns its place once there are enough stops to lose track of, or a second
+    /// country to group by.
+    private var showsItinerarySort: Bool {
+        let stops = trip.sortedStops
+        return stops.count >= 4 || Set(stops.compactMap { $0.country?.id }).count >= 2
     }
 
     private var sortSelection: Binding<ItinerarySort> {
@@ -1292,57 +1316,110 @@ struct TripDetailView: View {
                     .disabled(newPackingTitle.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
-            Button {
-                showManageContainers = true
-            } label: {
-                // `bag.badge.plus` promised "add a bag"; this row opens an editor.
-                Label("Manage containers", systemImage: "bag")
-            }
-
-            packingStartFromMenu
+            addDestinationPicker
 
             if canUseAssistant {
                 fillButton(field: .packing, action: fillPacking)
             }
-
-            if !(trip.packing ?? []).isEmpty {
-                Button {
-                    newTemplateName = trip.title
-                    showSaveTemplate = true
-                } label: {
-                    // Was `square.and.arrow.down` — the *download* glyph, and the
-                    // mirror image of the Share icon a few rows up, so the two
-                    // opposite actions read as a matched pair. Saving a reusable
-                    // list is a stack-of-lists action.
-                    Label("Save as template…", systemImage: "rectangle.stack.badge.plus")
-                }
-
-                Button(role: .destructive) {
-                    confirmClearPacking = true
-                } label: {
-                    Label("Clear list", systemImage: "trash")
-                }
-                .confirmationDialog(
-                    "Remove all \((trip.packing ?? []).count) packing items?",
-                    isPresented: $confirmClearPacking, titleVisibility: .visible
-                ) {
-                    Button("Clear list", role: .destructive, action: clearPacking)
-                }
-            }
         } header: {
+            packingHeader
+        }
+    }
+
+    /// The header carries the list's own verbs on its trailing edge. They used to
+    /// be four full-weight rows stacked under the "Add item" field — at the same
+    /// visual weight as the field itself, which is the one row you touch on every
+    /// trip. Managing the container catalog isn't offered here at all: a container
+    /// is created in place from a packing row's own menu, and renamed or deleted in
+    /// Settings ▸ Packing, which is where templates have always been managed.
+    private var packingHeader: some View {
+        HStack {
             Text(
                 (trip.packing ?? []).isEmpty
                     ? "Packing" : "Packing · \(trip.packedCount)/\((trip.packing ?? []).count)")
+            Spacer()
+            if hasPackingOptions {
+                Menu {
+                    packingStartFromMenu
+                    if !(trip.packing ?? []).isEmpty {
+                        Button {
+                            newTemplateName = trip.title
+                            showSaveTemplate = true
+                        } label: {
+                            // Was `square.and.arrow.down` — the *download* glyph,
+                            // and the mirror image of the Share icon, so the two
+                            // opposite actions read as a matched pair. Saving a
+                            // reusable list is a stack-of-lists action.
+                            Label("Save as template…", systemImage: "rectangle.stack.badge.plus")
+                        }
+                        Divider()
+                        Button(role: .destructive) {
+                            confirmClearPacking = true
+                        } label: {
+                            Label("Clear list", systemImage: "trash")
+                        }
+                    }
+                } label: {
+                    Label("Packing options", systemImage: "ellipsis.circle")
+                        .labelStyle(.iconOnly)
+                }
+                .textCase(nil)
+            }
         }
+        .textCase(nil)
+    }
+
+    /// Which bag the next typed item goes into. Every added item used to land in
+    /// "Other" with no way to say otherwise — the only remedy was the per-row move
+    /// menu, after the fact, once per item. Naming the destination *before* you
+    /// type also holds it for a whole run of items, which is how a bag actually
+    /// gets packed.
+    ///
+    /// A plain `Picker` row rather than a control crowded onto the "Add item" line:
+    /// there it sat against the Add button with both rendered in grey, reading as
+    /// one ambiguous "Other Add". As a row it matches the Start/End pickers above
+    /// and states the destination in full.
+    @ViewBuilder private var addDestinationPicker: some View {
+        if !allContainers.isEmpty {
+            Picker(selection: $addContainerName) {
+                Text(Str.Trip.packingOther).tag("")
+                ForEach(allContainers) { container in
+                    Label(container.name, systemImage: container.symbolName).tag(container.name)
+                }
+            } label: {
+                // The icon tracks the selection, so the row shows the destination
+                // twice over — glyph and name — for a control read at arm's length
+                // over an open suitcase.
+                Label("Add to", systemImage: addContainer?.symbolName ?? "tray")
+            }
+        }
+    }
+
+    /// The container `addDestinationMenu` currently points at, or `nil` for the
+    /// ungrouped "Other" pile. Resolved by name each time rather than held as a
+    /// reference, so a container renamed or deleted from Settings just falls back
+    /// to ungrouped instead of dangling.
+    private var addContainer: PackingContainer? {
+        allContainers.first { $0.name == addContainerName }
+    }
+
+    /// Other trips whose packing lists could seed this one.
+    private var otherPackedTrips: [Trip] {
+        allTrips.filter {
+            $0.persistentModelID != trip.persistentModelID && !($0.packing ?? []).isEmpty
+        }
+    }
+
+    /// Whether the header's overflow menu has anything to offer — otherwise it's
+    /// hidden rather than opening onto nothing.
+    private var hasPackingOptions: Bool {
+        !(trip.packing ?? []).isEmpty || !templates.isEmpty || !otherPackedTrips.isEmpty
     }
 
     /// "Start from…" — applies a saved template or copies another trip's packing
     /// list. Hidden entirely when there's nothing to start from.
     @ViewBuilder private var packingStartFromMenu: some View {
-        let otherTrips = allTrips.filter {
-            $0.persistentModelID != trip.persistentModelID && !($0.packing ?? []).isEmpty
-        }
-        if !templates.isEmpty || !otherTrips.isEmpty {
+        if !templates.isEmpty || !otherPackedTrips.isEmpty {
             Menu {
                 if !templates.isEmpty {
                     Section("Templates") {
@@ -1353,9 +1430,9 @@ struct TripDetailView: View {
                         }
                     }
                 }
-                if !otherTrips.isEmpty {
+                if !otherPackedTrips.isEmpty {
                     Section("Copy from trip") {
-                        ForEach(otherTrips) { other in
+                        ForEach(otherPackedTrips) { other in
                             Button(other.title.isEmpty ? "Untitled Trip" : other.title) {
                                 copyPacking(from: other)
                             }
@@ -1367,7 +1444,7 @@ struct TripDetailView: View {
                 // menu, the "Other" group's icon, and the move-to-container
                 // button. The tray now belongs to containers alone; starting from
                 // a saved list is a stack-of-lists action, matching "Save as
-                // template…" above.
+                // template…" below.
                 Label("Start from…", systemImage: "rectangle.stack")
             }
         }
@@ -1399,10 +1476,6 @@ struct TripDetailView: View {
         }
         Section {
             addNoteSectionMenu
-        } footer: {
-            Text(
-                "Sections are Markdown headings — they show as headings in the shared file, and typing “# ” on its own line makes one here."
-            )
         }
     }
 
@@ -1741,6 +1814,7 @@ struct TripDetailView: View {
         let title = newPackingTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
         let item = PackingItem(title: title, order: nextPackingOrder, trip: trip)
+        item.container = addContainer
         // Animated so the new row slides into its group rather than popping in —
         // when you're adding a run of items, it's the only confirmation that each
         // one landed where you expected.
@@ -2213,7 +2287,9 @@ private struct PackingItemRow: View {
     private var containerMenu: some View {
         Menu {
             Picker("Container", selection: containerSelection) {
-                Text("Ungrouped").tag(nil as PersistentIdentifier?)
+                // Named for the group the item visibly lands in, matching the
+                // "Add item" row's destination menu and the group header itself.
+                Text(Str.Trip.packingOther).tag(nil as PersistentIdentifier?)
                 ForEach(containers) { container in
                     Label(container.name, systemImage: container.symbolName)
                         .tag(container.persistentModelID as PersistentIdentifier?)
