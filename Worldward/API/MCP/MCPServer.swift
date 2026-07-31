@@ -37,7 +37,10 @@
         /// Whether tools that change data may run. Read tools always may.
         static let writesAllowedKey = "mcpWritesAllowed"
         static let portKey = "mcpServerPort"
-        private static let tokenKey = "mcpServerToken"
+        /// Read back by `MCPStdioBridge`, which runs as this same executable and so
+        /// shares these preferences — which is how a client config file ends up
+        /// carrying no credential at all.
+        static let tokenKey = "mcpServerToken"
 
         static let defaultPort = 8787
 
@@ -121,6 +124,9 @@
                 }
                 listener.start(queue: .main)
                 self.listener = listener
+                // Touch the token so it exists on disk before any bridge process
+                // goes looking for it.
+                _ = token
             } catch {
                 state = .failed(
                     String(localized: "Couldn't start the server: \(error.localizedDescription)"))
@@ -149,6 +155,10 @@
 
         /// Replaces the token, cutting off every client configured with the old
         /// one. The user's way to revoke access without turning the server off.
+        ///
+        /// Clients need no re-configuring afterwards: they launch the bridge, which
+        /// reads the new token from these same preferences. That's the quiet benefit
+        /// of never putting it in their config files to begin with.
         func regenerateToken() {
             UserDefaults.standard.set(Self.makeToken(), forKey: Self.tokenKey)
         }
@@ -165,44 +175,41 @@
                 .replacingOccurrences(of: "=", with: "")
         }
 
+        /// Absolute path to this executable — what a client is told to launch, with
+        /// `MCPStdioBridge.launchFlag`, to get a bridge. Taken from the running
+        /// bundle rather than hard-coded, so it's correct whether the app lives in
+        /// /Applications, in a DerivedData build, or anywhere else.
+        var bridgePath: String {
+            Bundle.main.executableURL?.path
+                ?? "/Applications/Worldward.app/Contents/MacOS/Worldward"
+        }
+
         /// The command that registers this server with Claude Code, ready to paste.
         var setupCommand: String {
-            return """
-                claude mcp add --transport http worldward http://127.0.0.1:\(currentPort)/mcp \
-                --header "Authorization: Bearer \(token)"
-                """
+            "claude mcp add worldward -- \"\(bridgePath)\" \(MCPStdioBridge.launchFlag)"
         }
 
         /// The JSON config snippet that registers this server with a
         /// JSON-configured client, ready to paste into that client's config file.
-        /// Same deal as `setupCommand`: the token only ever leaves via the
-        /// pasteboard, never onto the screen.
+        ///
+        /// Every client is given the same thing: launch the bridge. Handing them
+        /// the HTTP endpoint directly doesn't work — Claude Desktop's config schema
+        /// takes stdio servers only and silently skips anything else — and the
+        /// bridge reads the port and token from the shared container, so none of
+        /// these snippets carries a credential at all.
         func setupJSON(for client: MCPClient) -> String {
-            let url = "http://127.0.0.1:\(currentPort)/mcp"
-            let headers = ["Authorization": "Bearer \(token)"]
-            let root: [String: Any]
-            switch client {
-            case .claudeDesktop:
-                root = [
-                    "mcpServers": [
-                        "worldward": ["type": "http", "url": url, "headers": headers]
-                    ]
-                ]
-            case .cursor:
-                // Cursor's `mcp.json` wants `url` and `headers`, no transport field.
-                root = [
-                    "mcpServers": [
-                        "worldward": ["url": url, "headers": headers]
-                    ]
-                ]
-            case .vsCode:
-                // VS Code's `.vscode/mcp.json` uses `servers`, not `mcpServers`.
-                root = [
-                    "servers": [
-                        "worldward": ["type": "http", "url": url, "headers": headers]
-                    ]
-                ]
-            }
+            let entry: [String: Any] = [
+                "command": bridgePath, "args": [MCPStdioBridge.launchFlag],
+            ]
+            let root: [String: Any] =
+                switch client {
+                case .claudeDesktop, .cursor:
+                    ["mcpServers": ["worldward": entry]]
+                case .vsCode:
+                    // VS Code's `.vscode/mcp.json` uses `servers`, not `mcpServers`,
+                    // and wants the transport named even for a launched process.
+                    ["servers": ["worldward": entry.merging(["type": "stdio"]) { a, _ in a }]]
+                }
             guard
                 let data = try? JSONSerialization.data(
                     withJSONObject: root,

@@ -4,7 +4,27 @@ import MapKit
 import SwiftData
 import SwiftUI
 
+/// The executable's real entry point.
+///
+/// Worldward is normally an app, but a client that wants to automate it launches
+/// this same binary with `--mcp-stdio` and talks MCP over the pipe (see
+/// `MCPStdioBridge`). That has to be decided *here*, before `App.main()` brings up
+/// AppKit, SwiftData and CloudKit — a bridge process needs none of it, and
+/// starting it would put a second app instance on screen every time a client
+/// connected.
 @main
+enum WorldwardMain {
+    static func main() {
+        #if os(macOS)
+            if CommandLine.arguments.contains(MCPStdioBridge.launchFlag) {
+                MCPStdioBridge.run()
+                return
+            }
+        #endif
+        Worldward.main()
+    }
+}
+
 struct Worldward: App {
     #if DEBUG
         #if os(macOS)
