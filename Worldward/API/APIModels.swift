@@ -141,6 +141,26 @@ nonisolated struct TripDetailDTO: Codable, Sendable {
     /// Markdown; this is the same text addressed by section, so a caller can
     /// rewrite one part without having to reconstruct the rest.
     let noteSections: [NoteSectionDTO]
+    /// Which sections were withheld because "Share personal details" is off —
+    /// `"contacts"`, `"attachments"`. Naming them matters: an empty `contacts`
+    /// array would otherwise read as "this trip has none", and a caller would
+    /// confidently tell the traveller something untrue.
+    let redacted: [String]
+}
+
+/// Which axis a country suggestion is ranked on.
+nonisolated enum CountrySuggestionMode: String, Codable, Sendable, CaseIterable {
+    /// Closest to somewhere already visited — the easy next hop.
+    case nearest
+    /// Unvisited countries that fill gaps in continents already started.
+    case gaps
+}
+
+/// Sets one country's place on either axis, for the bulk form.
+nonisolated struct CountryStatusInput: Codable, Sendable {
+    let country: String
+    let status: String?
+    let plan: String?
 }
 
 nonisolated struct CountryDTO: Codable, Sendable {
@@ -254,6 +274,47 @@ nonisolated struct VisitDTO: Codable, Sendable {
     /// `true` when the photo importer created this rather than the traveller.
     let isImported: Bool
     let photoCount: Int
+}
+
+/// A badge and how close it is. `title` and `detail` are the app's own display
+/// text and therefore follow the app's language — the one place this layer hands
+/// back localized strings, because an achievement has no raw form to hand back
+/// instead. `id` and `category` are stable across languages; key off those.
+nonisolated struct AchievementDTO: Codable, Sendable {
+    let id: String
+    /// Raw `Achievement.Category`.
+    let category: String
+    let title: String
+    let detail: String
+    let isUnlocked: Bool
+    /// 0…1.
+    let progress: Double
+}
+
+/// Somewhere the traveller hasn't been, and how far it is from where they have.
+nonisolated struct CountrySuggestionDTO: Codable, Sendable {
+    let id: String
+    let name: String
+    let continent: String
+    let distanceKM: Int
+    /// `"wishlist"` / `"planning"` when it's already on the plan, else `"none"`.
+    let plan: String
+}
+
+/// What the traveller told Settings about how they want trips planned.
+///
+/// `interests` and `packingPreferences` are free text written for exactly this
+/// purpose. `packingProfileHint` is not: it stands in for the traveller's gender,
+/// so it is only present when "Share personal details" is on, and it's returned as
+/// the packing instruction it exists to produce rather than as a demographic
+/// label.
+nonisolated struct TravelerProfileDTO: Codable, Sendable {
+    let sightseeingInterests: String
+    let packingPreferences: String
+    let packingProfileHint: String?
+    /// Names what was withheld, so a caller doesn't report an empty profile as a
+    /// complete one.
+    let redacted: [String]
 }
 
 nonisolated struct ContainerDTO: Codable, Sendable {

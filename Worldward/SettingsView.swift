@@ -906,6 +906,8 @@ private enum SettingsSheet: Identifiable {
     struct AutomationSettingsSection: View {
         @AppStorage(MCPServer.enabledKey) private var serverEnabled = false
         @AppStorage(MCPServer.writesAllowedKey) private var writesAllowed = true
+        @AppStorage(MCPServer.deletionsAllowedKey) private var deletionsAllowed = false
+        @AppStorage(MCPServer.personalAllowedKey) private var personalAllowed = false
         @AppStorage(MCPServer.portKey) private var port = MCPServer.defaultPort
         @State private var server = MCPServer.shared
         @State private var selectedClient = MCPClient.claudeDesktop
@@ -921,8 +923,23 @@ private enum SettingsSheet: Identifiable {
                 if serverEnabled {
                     statusRow
 
+                    // Three switches, not one per tool: these are the questions a
+                    // person can actually answer about their own data. Deletions
+                    // are their own because nothing in the app can undo one, and
+                    // personal details are their own because phone numbers and
+                    // document names are a different kind of disclosure from
+                    // "which countries have I been to".
                     Toggle(isOn: $writesAllowed) {
                         Label("Allow Changes", systemImage: "square.and.pencil")
+                    }
+
+                    Toggle(isOn: $deletionsAllowed) {
+                        Label("Allow Deletions", systemImage: "trash")
+                    }
+                    .disabled(!writesAllowed)
+
+                    Toggle(isOn: $personalAllowed) {
+                        Label("Share Personal Details", systemImage: "person.text.rectangle")
                     }
 
                     LabeledContent("Port") {
@@ -984,10 +1001,11 @@ private enum SettingsSheet: Identifiable {
                 Text("Automation")
             } footer: {
                 Text(
-                    "Lets an AI assistant running on this Mac read your travel data and plan trips into Worldward, through a server that only accepts connections from this computer. Worldward never sends anything out by itself — but whatever you connect can see the data you ask it about, so leave this off unless you're using it. Turn off Allow Changes to make it read-only."
+                    "Lets an AI assistant running on this Mac read your travel data and plan trips into Worldward, through a server that only accepts connections from this computer. Worldward never sends anything out by itself — but whatever you connect can see the data you ask it about, and if that assistant runs in the cloud, what it reads leaves your Mac. Leave this off unless you're using it.\n\nAllow Changes lets it edit your trips; Allow Deletions lets it remove them, which nothing can undo. Share Personal Details covers your contacts, the names of files you've attached, and the packing profile from Settings — planning works fine without it."
                 )
             }
             .animation(.snappy, value: serverEnabled)
+            .animation(.snappy, value: writesAllowed)
             .onChange(of: serverEnabled) { server.applyPreference() }
             // A new port means a new socket and a new setup command, so the copy
             // buttons' "Copied" ticks have to stop claiming otherwise.

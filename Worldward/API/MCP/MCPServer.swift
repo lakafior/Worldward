@@ -36,6 +36,14 @@
         static let enabledKey = "mcpServerEnabled"
         /// Whether tools that change data may run. Read tools always may.
         static let writesAllowedKey = "mcpWritesAllowed"
+        /// Whether the destructive tools may run. Separate from writes because
+        /// there is no UndoManager in this app — deletes are the only calls
+        /// nothing can walk back.
+        static let deletionsAllowedKey = "mcpDeletionsAllowed"
+        /// Whether contacts, attachment metadata and the traveller's profile are
+        /// disclosed. Off by default: these are phone numbers, document names and
+        /// a gender-derived hint, none of which a trip-planning conversation needs.
+        static let personalAllowedKey = "mcpPersonalAllowed"
         static let portKey = "mcpServerPort"
         /// Read back by `MCPStdioBridge`, which runs as this same executable and so
         /// shares these preferences — which is how a client config file ends up
@@ -435,9 +443,13 @@
                     Data("{}".utf8)
                 }
 
+            let defaults = UserDefaults.standard
             let result = ToolCatalog.call(
                 name, arguments: arguments,
-                writesAllowed: UserDefaults.standard.bool(forKey: writesAllowedKey))
+                permissions: ToolPermissions(
+                    writesAllowed: defaults.bool(forKey: writesAllowedKey),
+                    deletionsAllowed: defaults.bool(forKey: deletionsAllowedKey),
+                    personalAllowed: defaults.bool(forKey: personalAllowedKey)))
             return [
                 "content": [["type": "text", "text": result.text]],
                 "isError": result.isError,

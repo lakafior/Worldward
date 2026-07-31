@@ -83,8 +83,26 @@
         /// useless. Adding rows or replacing a value the result hands back is not
         /// destructive.
         var isDestructive: Bool = false
-        /// Raw `arguments` JSON in, any `Encodable` result out.
-        let handler: (Data) throws -> any Encodable
+        /// True when the tool discloses contacts, attachment metadata or the
+        /// traveller's profile. Gated by "Share personal details".
+        var isPersonal: Bool = false
+        /// Raw `arguments` JSON in, any `Encodable` result out. Receives the
+        /// permissions in force so a tool can narrow what it returns instead of
+        /// refusing outright — which is what `get_trip` does.
+        let handler: (Data, ToolPermissions) throws -> any Encodable
+    }
+
+    /// What the user has allowed, read once per call.
+    ///
+    /// Three switches rather than one per tool: the questions a person can actually
+    /// answer are "may it change things", "may it delete things" and "may it see my
+    /// personal details" — not whether some particular tool may run. A per-tool
+    /// list would grow with the catalog and go untuned, which reads as protection
+    /// without being any.
+    nonisolated struct ToolPermissions: Sendable {
+        var writesAllowed: Bool
+        var deletionsAllowed: Bool
+        var personalAllowed: Bool
     }
 
     /// The tools Worldward advertises, and the dispatch behind them.
@@ -212,7 +230,7 @@
                     ("limit", .integer("Maximum trips to return. Defaults to 20.")),
                 ]),
                 isReadOnly: true,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(ListTripsArgs.self, from: data)
                     return try WorldwardAPI.listTrips(
                         scope: args.scope ?? .upcoming, limit: args.limit ?? 20)
@@ -222,14 +240,19 @@
                 name: "get_trip",
                 title: "Get a trip",
                 description:
-                    "A trip in full: itinerary stops, packing list, links, contacts and "
-                    + "document names. Omit tripId for the trip underway, or the next one.",
+                    "A trip in full: itinerary stops, packing list, links, contacts, attached "
+                    + "files and the notes split into sections. Omit tripId for the trip "
+                    + "underway, or the next one. If the user hasn't shared personal details, "
+                    + "contacts and attachments come back empty and are named in 'redacted' — "
+                    + "that means withheld, not absent, so don't tell the user they have none.",
                 schema: .object(properties: [
                     ("tripId", .string("Trip id from list_trips. Omit for the current/next trip."))
                 ]),
-                isReadOnly: true,
-                handler: { data in
-                    try WorldwardAPI.getTrip(id: decoder.decode(TripIDArgs.self, from: data).tripID)
+                isReadOnly: true, isPersonal: true,
+                handler: { data, permissions in
+                    try WorldwardAPI.getTrip(
+                        id: decoder.decode(TripIDArgs.self, from: data).tripID,
+                        includePersonal: permissions.personalAllowed)
                 }),
 
             MCPTool(
@@ -258,7 +281,7 @@
                     ),
                 ]),
                 isReadOnly: true,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(ListCountriesArgs.self, from: data)
                     return try WorldwardAPI.listCountries(
                         status: args.status, plan: args.plan, continent: args.continent)
@@ -272,7 +295,7 @@
                     + "status and plan, per-continent and per-year breakdowns.",
                 schema: .object(properties: []),
                 isReadOnly: true,
-                handler: { _ in try WorldwardAPI.getStats() }),
+                handler: { _, _ in try WorldwardAPI.getStats() }),
 
             MCPTool(
                 name: "get_country_facts",
@@ -283,7 +306,7 @@
                 schema: .object(
                     required: ["country"], properties: [("country", countryParameter)]),
                 isReadOnly: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.getCountryFacts(
                         country: decoder.decode(CountryArgs.self, from: data).country)
                 }),
@@ -297,7 +320,7 @@
                     + "exist rather than inventing new ones.",
                 schema: .object(properties: []),
                 isReadOnly: true,
-                handler: { _ in try WorldwardAPI.listContainers() }),
+                handler: { _, _ in try WorldwardAPI.listContainers() }),
 
             MCPTool(
                 name: "list_packing_templates",
@@ -307,7 +330,7 @@
                     + "writing a list from scratch — it's what the traveller actually packs.",
                 schema: .object(properties: []),
                 isReadOnly: true,
-                handler: { _ in try WorldwardAPI.listTemplates() }),
+                handler: { _, _ in try WorldwardAPI.listTemplates() }),
 
             MCPTool(
                 name: "create_trip",
@@ -327,7 +350,7 @@
                         ("notes", .string("Markdown notes. '# Heading' lines start sections.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.createTrip(decoder.decode(CreateTripInput.self, from: data))
                 }),
 
@@ -345,7 +368,7 @@
                         ("stops", .array("Appended in array order, after existing stops.", of: stopSchema)),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(AddStopsArgs.self, from: data)
                     return try WorldwardAPI.addStops(tripID: args.tripID, stops: args.stops)
                 }),
@@ -364,7 +387,7 @@
                         ("items", .array("Items to add.", of: packingItemSchema)),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(AddPackingArgs.self, from: data)
                     return try WorldwardAPI.addPackingItems(tripID: args.tripID, items: args.items)
                 }),
@@ -380,7 +403,7 @@
                         ("isPacked", .boolean("true to mark packed, false to clear.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(SetPackedArgs.self, from: data)
                     return try WorldwardAPI.setPacked(
                         itemIDs: args.itemIDs, isPacked: args.isPacked)
@@ -406,7 +429,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(SetNotesArgs.self, from: data)
                     return try WorldwardAPI.setTripNotes(
                         tripID: args.tripID, notes: args.notes, mode: args.mode ?? .replace)
@@ -435,7 +458,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(SetCountryStatusArgs.self, from: data)
                     return try WorldwardAPI.setCountryStatus(
                         country: args.country, status: args.status, plan: args.plan)
@@ -455,7 +478,7 @@
                         ("notes", .string("Free-form note about the visit.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(LogVisitArgs.self, from: data)
                     return try WorldwardAPI.logVisit(
                         country: args.country, date: args.date, notes: args.notes ?? "")
@@ -474,7 +497,7 @@
                         ("template", .string("Template name.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(ApplyTemplateArgs.self, from: data)
                     return try WorldwardAPI.applyPackingTemplate(
                         tripID: args.tripID, template: args.template)
@@ -491,7 +514,7 @@
                     ("endDate", .string("New last day.", format: "date")),
                 ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(UpdateTripArgs.self, from: data)
                     return try WorldwardAPI.updateTrip(
                         tripID: args.tripID,
@@ -509,7 +532,7 @@
                     required: ["tripId"],
                     properties: [("tripId", .string("Trip id from list_trips."))]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deleteTrip(
                         tripID: decoder.decode(RequiredTripIDArgs.self, from: data).tripID)
                 }),
@@ -559,7 +582,7 @@
                         )
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.updateStops(
                         decoder.decode(UpdateStopsArgs.self, from: data).stops)
                 }),
@@ -576,7 +599,7 @@
                         ("stopIds", .array("Stop ids from get_trip.", of: .string("A stop id.")))
                     ]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deleteStops(
                         stopIDs: decoder.decode(StopIDsArgs.self, from: data).stopIDs)
                 }),
@@ -594,7 +617,7 @@
                         ("stopIds", .array("Stop ids in their new order.", of: .string("A stop id."))),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(ReorderStopsArgs.self, from: data)
                     return try WorldwardAPI.reorderStops(tripID: args.tripID, stopIDs: args.stopIDs)
                 }),
@@ -628,7 +651,7 @@
                         )
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.updatePackingItems(
                         decoder.decode(UpdatePackingArgs.self, from: data).items)
                 }),
@@ -643,7 +666,7 @@
                         ("itemIds", .array("Packing item ids from get_trip.", of: .string("An id.")))
                     ]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deletePackingItems(
                         itemIDs: decoder.decode(ItemIDsArgs.self, from: data).itemIDs)
                 }),
@@ -670,7 +693,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(NoteSectionArgs.self, from: data)
                     return try WorldwardAPI.setNoteSection(
                         tripID: args.tripID, heading: args.heading, body: args.body,
@@ -688,7 +711,7 @@
                         ("heading", .string("Section heading, without the '# '.")),
                     ]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(NoteSectionArgs.self, from: data)
                     return try WorldwardAPI.deleteNoteSection(
                         tripID: args.tripID, heading: args.heading)
@@ -718,7 +741,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(AddLinksArgs.self, from: data)
                     return try WorldwardAPI.addLinks(tripID: args.tripID, links: args.links)
                 }),
@@ -754,7 +777,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(AddContactsArgs.self, from: data)
                     return try WorldwardAPI.addContacts(tripID: args.tripID, contacts: args.contacts)
                 }),
@@ -790,7 +813,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(AddAttachmentsArgs.self, from: data)
                     return try WorldwardAPI.addAttachments(
                         tripID: args.tripID, attachments: args.attachments)
@@ -808,7 +831,7 @@
                         ("itemIds", .array("Ids from get_trip.", of: .string("An id.")))
                     ]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deleteTripItems(
                         itemIDs: decoder.decode(ItemIDsArgs.self, from: data).itemIDs)
                 }),
@@ -827,7 +850,7 @@
                         ("symbolName", .string("SF Symbol name. Defaults to 'bag.fill'.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(ContainerArgs.self, from: data)
                     return try WorldwardAPI.createContainer(
                         name: args.name, symbolName: args.symbolName)
@@ -846,7 +869,7 @@
                         ("newName", .string("New container name.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(ContainerArgs.self, from: data)
                     guard let newName = args.newName else {
                         throw APIError.emptyValue(field: "newName")
@@ -863,7 +886,7 @@
                 schema: .object(
                     required: ["name"], properties: [("name", .string("Container name."))]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deleteContainer(
                         name: decoder.decode(ContainerArgs.self, from: data).name)
                 }),
@@ -881,7 +904,7 @@
                         ("name", .string("Template name, e.g. 'City break'.")),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     let args = try decoder.decode(TemplateArgs.self, from: data)
                     return try WorldwardAPI.savePackingTemplate(tripID: args.tripID, name: args.name)
                 }),
@@ -893,23 +916,117 @@
                 schema: .object(
                     required: ["name"], properties: [("name", .string("Template name."))]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deletePackingTemplate(
                         name: decoder.decode(TemplateArgs.self, from: data).name)
                 }),
 
             MCPTool(
                 name: "list_visits",
-                title: "List visits to a country",
+                title: "List visits",
                 description:
-                    "Every recorded visit to one country, newest first, with the ids needed to "
-                    + "edit or remove them.",
-                schema: .object(
-                    required: ["country"], properties: [("country", countryParameter)]),
+                    "Recorded visits, newest first, with the ids needed to edit or remove them. "
+                    + "All filters are optional and combine — omit country to span every country, "
+                    + "which is how to answer 'where did I go in 2024?' in one call.",
+                schema: .object(properties: [
+                    ("country", countryParameter),
+                    ("from", .string("Earliest visit date to include.", format: "date")),
+                    ("to", .string("Latest visit date to include.", format: "date")),
+                    ("limit", .integer("Maximum visits to return. Defaults to 100.")),
+                ]),
                 isReadOnly: true,
-                handler: { data in
-                    try WorldwardAPI.listVisits(
-                        country: decoder.decode(CountryArgs.self, from: data).country)
+                handler: { data, _ in
+                    let args = try decoder.decode(ListVisitsArgs.self, from: data)
+                    return try WorldwardAPI.listVisits(
+                        country: args.country, from: args.from, to: args.to,
+                        limit: args.limit ?? 100)
+                }),
+
+            MCPTool(
+                name: "set_country_statuses",
+                title: "Set several countries' statuses",
+                description:
+                    "Sets the travel status and/or plan state on several countries at once. The "
+                    + "two axes are independent, and omitting one leaves it untouched. Previous "
+                    + "values come back for each country.",
+                schema: .object(
+                    required: ["countries"],
+                    properties: [
+                        (
+                            "countries",
+                            .array(
+                                "Countries to change.",
+                                of: .object(
+                                    required: ["country"],
+                                    properties: [
+                                        ("country", countryParameter),
+                                        (
+                                            "status",
+                                            .enumeration(
+                                                CountryStatus.allCases.map(\.rawValue),
+                                                "Travel status to set.")
+                                        ),
+                                        (
+                                            "plan",
+                                            .enumeration(
+                                                PlanStatus.allCases.map(\.rawValue),
+                                                "Plan state to set.")
+                                        ),
+                                    ]))
+                        )
+                    ]),
+                isReadOnly: false,
+                handler: { data, _ in
+                    try WorldwardAPI.setCountryStatuses(
+                        decoder.decode(SetStatusesArgs.self, from: data).countries)
+                }),
+
+            MCPTool(
+                name: "list_achievements",
+                title: "List achievements",
+                description:
+                    "Every travel badge with whether it's unlocked and how far along it is. "
+                    + "Titles follow the app's language; key off id and category instead.",
+                schema: .object(properties: []),
+                isReadOnly: true,
+                handler: { _, _ in try WorldwardAPI.listAchievements() }),
+
+            MCPTool(
+                name: "suggest_countries",
+                title: "Suggest where to go next",
+                description:
+                    "Unvisited countries ranked by real proximity to where the traveller has "
+                    + "already been. 'nearest' is the easy next hop; 'gaps' favours countries "
+                    + "that complete continents already started. Distances are in kilometres.",
+                schema: .object(properties: [
+                    (
+                        "mode",
+                        .enumeration(
+                            CountrySuggestionMode.allCases.map(\.rawValue),
+                            "'nearest' (default) or 'gaps'.")
+                    ),
+                    ("limit", .integer("How many to return. Defaults to 5.")),
+                ]),
+                isReadOnly: true,
+                handler: { data, _ in
+                    let args = try decoder.decode(SuggestArgs.self, from: data)
+                    return try WorldwardAPI.suggestCountries(
+                        mode: args.mode ?? .nearest, limit: args.limit ?? 5)
+                }),
+
+            MCPTool(
+                name: "get_traveler_profile",
+                title: "Get planning preferences",
+                description:
+                    "What the traveller set in Settings to steer planning: sightseeing interests "
+                    + "and free-text packing preferences. Worth reading before plan_trip — these "
+                    + "were written for exactly this. A gender-derived packing hint is included "
+                    + "only if the user has shared personal details; anything withheld is named "
+                    + "in 'redacted'.",
+                schema: .object(properties: []),
+                isReadOnly: true, isPersonal: true,
+                handler: { _, permissions in
+                    WorldwardAPI.getTravelerProfile(includePersonal: permissions.personalAllowed)
                 }),
 
             MCPTool(
@@ -933,7 +1050,7 @@
                         )
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.updateVisits(
                         decoder.decode(UpdateVisitsArgs.self, from: data).visits)
                 }),
@@ -951,7 +1068,7 @@
                         ("visitIds", .array("Visit ids from list_visits.", of: .string("An id.")))
                     ]),
                 isReadOnly: false, isDestructive: true,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.deleteVisits(
                         visitIDs: decoder.decode(VisitIDsArgs.self, from: data).visitIDs)
                 }),
@@ -987,7 +1104,7 @@
                         ),
                     ]),
                 isReadOnly: false,
-                handler: { data in
+                handler: { data, _ in
                     try WorldwardAPI.planTrip(decoder.decode(PlanTripInput.self, from: data))
                 }),
         ]
@@ -1006,21 +1123,39 @@
             let isError: Bool
         }
 
-        static func call(_ name: String, arguments: Data, writesAllowed: Bool) -> CallResult {
+        static func call(_ name: String, arguments: Data, permissions: ToolPermissions) -> CallResult {
             guard let tool = byName[name] else {
                 return CallResult(
                     text: "Unknown tool '\(name)'. Call tools/list for what's available.",
                     isError: true)
             }
-            guard tool.isReadOnly || writesAllowed else {
+            guard tool.isReadOnly || permissions.writesAllowed else {
                 return CallResult(
                     text:
                         "'\(name)' changes data, and Worldward is set to read-only. The user can "
                         + "allow changes in Worldward → Settings → Automation.",
                     isError: true)
             }
+            guard !tool.isDestructive || permissions.deletionsAllowed else {
+                return CallResult(
+                    text:
+                        "'\(name)' deletes data, which Worldward doesn't allow right now. The user "
+                        + "can switch on 'Allow Deletions' in Worldward → Settings → Automation. "
+                        + "Nothing has been changed.",
+                    isError: true)
+            }
+            // A personal *read* narrows itself (see `get_trip`); a personal write
+            // has nothing to narrow, so it stops here.
+            guard !tool.isPersonal || tool.isReadOnly || permissions.personalAllowed else {
+                return CallResult(
+                    text:
+                        "'\(name)' touches personal details, which the user hasn't shared. They "
+                        + "can switch on 'Share Personal Details' in Worldward → Settings → "
+                        + "Automation.",
+                    isError: true)
+            }
             do {
-                let value = try tool.handler(arguments)
+                let value = try tool.handler(arguments, permissions)
                 let encoded = try encoder.encode(value)
                 return CallResult(
                     text: String(decoding: encoded, as: UTF8.self), isError: false)
@@ -1254,6 +1389,22 @@
     private struct VisitIDsArgs: Decodable {
         let visitIDs: [String]
         enum CodingKeys: String, CodingKey { case visitIDs = "visitIds" }
+    }
+
+    private struct ListVisitsArgs: Decodable {
+        let country: String?
+        let from: Date?
+        let to: Date?
+        let limit: Int?
+    }
+
+    private struct SetStatusesArgs: Decodable {
+        let countries: [CountryStatusInput]
+    }
+
+    private struct SuggestArgs: Decodable {
+        let mode: CountrySuggestionMode?
+        let limit: Int?
     }
 
 #endif

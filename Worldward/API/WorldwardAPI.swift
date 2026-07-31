@@ -1,6 +1,8 @@
 /// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import CoreLocation
 import Foundation
+import MapKit
 import SwiftData
 
 /// The app's domain operations, in one place, in machine-facing form.
@@ -151,11 +153,16 @@ enum WorldwardAPI {
     }
 
     /// A trip and everything on it. `id` omitted means the current/next trip.
-    static func getTrip(id: String? = nil) throws -> TripDetailDTO {
+    ///
+    /// `includePersonal` withholds contacts and attachment metadata rather than
+    /// refusing the whole call — this is the tool a caller reaches for constantly,
+    /// and failing it outright would make "Share personal details: off" feel like
+    /// the feature is broken. What was withheld is named in `redacted`.
+    static func getTrip(id: String? = nil, includePersonal: Bool = true) throws -> TripDetailDTO {
         try read { context in
             let trip = try resolveTrip(id, in: context)
             try ensureStopIDs(trip, in: context)
-            return TripDetailDTO(trip)
+            return TripDetailDTO(trip, includePersonal: includePersonal)
         }
     }
 
@@ -751,14 +758,155 @@ enum WorldwardAPI {
 
     // MARK: - Visits
 
-    /// Every recorded visit to a country, newest first.
-    static func listVisits(country: String) throws -> [VisitDTO] {
+    /// Recorded visits, newest first.
+    ///
+    /// All three filters are optional and combine. Without `country` this spans
+    /// every country, which is what makes "where did I go in 2024?" a single call —
+    /// it used to require asking about each of 239 countries in turn.
+    static func listVisits(
+        country: String? = nil, from: Date? = nil, to: Date? = nil, limit: Int = 100
+    ) throws -> [VisitDTO] {
         try read { context in
-            let model = try CountryResolver.require(country, in: context)
-            if model.assignVisitIDs() { try context.save() }
-            return (model.visits ?? [])
-                .sorted { $0.date > $1.date }
-                .map { VisitDTO($0, country: model.id) }
+            let countries =
+                if let country {
+                    [try CountryResolver.require(country, in: context)]
+                } else {
+                    try context.fetch(FetchDescriptor<Country>()).filter { !($0.visits ?? []).isEmpty }
+                }
+
+            var assigned = false
+            var visits: [(Visit, String)] = []
+            for model in countries {
+                if model.assignVisitIDs() { assigned = true }
+                for visit in model.visits ?? [] {
+                    if let from, visit.date < from { continue }
+                    if let to, visit.date > to { continue }
+                    visits.append((visit, model.id))
+                }
+            }
+            if assigned { try context.save() }
+
+            return visits
+                .sorted { $0.0.date > $1.0.date }
+                .prefix(max(1, limit))
+                .map { VisitDTO($0.0, country: $0.1) }
+        }
+    }
+
+    /// Every badge with its progress, derived from the same `TravelStats` the
+    /// dashboard uses — so what a caller reports and what the app shows can't drift.
+    static func listAchievements() throws -> [AchievementDTO] {
+        try read { context in
+            let stats = TravelStats(countries: try context.fetch(FetchDescriptor<Country>()))
+            return Achievement.all(for: stats).map(AchievementDTO.init)
+        }
+    }
+
+    /// Where to go next: either the nearest unvisited countries, or ones that fill
+    /// gaps in continents already started.
+    static func suggestCountries(mode: CountrySuggestionMode = .nearest, limit: Int = 5) throws
+        -> [CountrySuggestionDTO]
+    {
+        try read { context in
+            let countries = try context.fetch(FetchDescriptor<Country>())
+            let centroids = countryCentroids()
+            guard !centroids.isEmpty else { return [] }
+            let ranked =
+                switch mode {
+                case .nearest:
+                    nearestUnvisited(countries: countries, centroids: centroids, limit: max(1, limit))
+                case .gaps:
+                    unvisitedFillingGaps(
+                        countries: countries, centroids: centroids, limit: max(1, limit))
+                }
+            return ranked.map {
+                CountrySuggestionDTO(
+                    id: $0.country.id, name: $0.country.name, continent: $0.country.continent,
+                    distanceKM: Int($0.distanceKM.rounded()), plan: $0.country.planStatus.rawValue)
+            }
+        }
+    }
+
+    /// Country centroids, decoded once and kept.
+    ///
+    /// Only the raw ring decode is needed — a min/max pass per country — not the
+    /// polygon, path and hit-rect construction the map pays for. That keeps this
+    /// off the launch path entirely: nothing loads until something asks where to
+    /// go next.
+    private static var cachedCentroids: [String: CLLocationCoordinate2D]?
+
+    private static func countryCentroids() -> [String: CLLocationCoordinate2D] {
+        if let cachedCentroids { return cachedCentroids }
+        guard let geo = loadBundledGeo() else { return [:] }
+        var result: [String: CLLocationCoordinate2D] = [:]
+        for (id, rings) in geo.rings {
+            var minX = Double.greatestFiniteMagnitude
+            var minY = Double.greatestFiniteMagnitude
+            var maxX = -Double.greatestFiniteMagnitude
+            var maxY = -Double.greatestFiniteMagnitude
+            for ring in rings {
+                for point in ring {
+                    minX = min(minX, point.x)
+                    minY = min(minY, point.y)
+                    maxX = max(maxX, point.x)
+                    maxY = max(maxY, point.y)
+                }
+            }
+            guard minX <= maxX else { continue }
+            result[id] = MKMapPoint(x: (minX + maxX) / 2, y: (minY + maxY) / 2).coordinate
+        }
+        cachedCentroids = result
+        return result
+    }
+
+    /// What Settings knows about how the traveller wants trips planned.
+    ///
+    /// The gender-derived hint is withheld unless `includePersonal` — see
+    /// `TravelerProfileDTO` for why that one is treated differently from the two
+    /// free-text fields beside it.
+    static func getTravelerProfile(includePersonal: Bool = false) -> TravelerProfileDTO {
+        let defaults = UserDefaults.standard
+        let profile =
+            PackingProfile(rawValue: defaults.string(forKey: TripPlanner.profileKey) ?? "")
+            ?? .unspecified
+        return TravelerProfileDTO(
+            sightseeingInterests: (defaults.string(forKey: TripPlanner.interestsKey) ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            packingPreferences: (defaults.string(forKey: TripPlanner.preferencesKey) ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            packingProfileHint: includePersonal ? profile.promptHint : nil,
+            redacted: includePersonal ? [] : ["packingProfileHint"])
+    }
+
+    /// Sets status and/or plan on several countries at once — "mark Spain,
+    /// Portugal and Morocco as visited" in one write rather than three.
+    static func setCountryStatuses(_ inputs: [CountryStatusInput]) throws -> [CountryChangeDTO] {
+        try mutate { context in
+            try inputs.map { input in
+                let model = try CountryResolver.require(input.country, in: context)
+                let previousStatus = model.status
+                let previousPlan = model.planStatus
+                if let status = input.status {
+                    guard let parsed = CountryStatus(rawValue: status) else {
+                        throw APIError.badValue(
+                            field: "status", value: status,
+                            allowed: CountryStatus.allCases.map(\.rawValue))
+                    }
+                    model.status = parsed
+                    model.statusIsImported = false
+                }
+                if let plan = input.plan {
+                    guard let parsed = PlanStatus(rawValue: plan) else {
+                        throw APIError.badValue(
+                            field: "plan", value: plan,
+                            allowed: PlanStatus.allCases.map(\.rawValue))
+                    }
+                    model.planStatus = parsed
+                }
+                return CountryChangeDTO(
+                    country: CountryDTO(model), previousStatus: previousStatus.rawValue,
+                    previousPlan: previousPlan.rawValue)
+            }
         }
     }
 
@@ -1025,20 +1173,38 @@ extension ContainerDTO {
 }
 
 extension TripDetailDTO {
-    init(_ trip: Trip) {
+    init(_ trip: Trip, includePersonal: Bool = true) {
         let stops = trip.sortedStops
         self.init(
             trip: TripDTO(trip),
             stops: stops.enumerated().map { StopDTO($1, index: $0) },
             packing: trip.packingGroups.flatMap(\.items).map(PackingItemDTO.init),
             links: trip.sortedLinks.map(LinkDTO.init),
-            contacts: trip.sortedContacts.map(ContactDTO.init),
-            attachments: trip.sortedAttachments.map(AttachmentDTO.init),
+            // Contacts are phone numbers and addresses; a filename like
+            // "passport-scan.pdf" tells you plenty on its own. Both wait for
+            // consent — links don't, being public pages the traveller saved.
+            contacts: includePersonal ? trip.sortedContacts.map(ContactDTO.init) : [],
+            attachments: includePersonal ? trip.sortedAttachments.map(AttachmentDTO.init) : [],
             // The lead chunk of a note that opens with prose has no heading and is
             // often blank; carrying it would just be noise in the result.
             noteSections: NoteSection.parse(trip.notes)
                 .filter { $0.title != nil || !$0.isBodyBlank }
-                .map { NoteSectionDTO(heading: $0.title, body: $0.body) })
+                .map { NoteSectionDTO(heading: $0.title, body: $0.body) },
+            redacted: includePersonal
+                ? []
+                : [
+                    trip.sortedContacts.isEmpty ? nil : "contacts",
+                    trip.sortedAttachments.isEmpty ? nil : "attachments",
+                ].compactMap { $0 })
+    }
+}
+
+extension AchievementDTO {
+    init(_ achievement: Achievement) {
+        self.init(
+            id: achievement.id, category: achievement.category.rawValue,
+            title: achievement.title, detail: achievement.detail,
+            isUnlocked: achievement.isUnlocked, progress: achievement.progress)
     }
 }
 
