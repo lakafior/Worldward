@@ -202,17 +202,14 @@
                         "worldward": ["type": "http", "url": url, "headers": headers]
                     ]
                 ]
-            case .zed:
-                // Zed's `mcp.json` uses `mcp`, and needs no transport field.
-                root = [
-                    "mcp": [
-                        "worldward": ["url": url, "headers": headers]
-                    ]
-                ]
             }
             guard
                 let data = try? JSONSerialization.data(
-                    withJSONObject: root, options: [.prettyPrinted, .sortedKeys]),
+                    withJSONObject: root,
+                    // Without this, every "/" in the URL is written "\/" — valid
+                    // JSON that parses identically, but it reads like a mistake to
+                    // anyone pasting it into a config file by hand.
+                    options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]),
                 let json = String(data: data, encoding: .utf8)
             else {
                 assertionFailure("The client config is a static dictionary — serialization cannot fail")
@@ -274,9 +271,9 @@
         // MARK: - HTTP
 
         private func respond(to request: HTTPRequest) -> HTTPResponse {
-            // A browser page can reach loopback; a non-local `Origin` means the
-            // request came from one, and no legitimate MCP client sends that.
-            if let origin = request.headers["origin"], !Self.isLocalOrigin(origin) {
+            // A browser page can reach loopback, so a web origin naming somewhere
+            // other than this machine is refused before anything else happens.
+            if let origin = request.headers["origin"], !Self.isAllowedOrigin(origin) {
                 return .status(403, "Forbidden")
             }
             guard Self.constantTimeEquals(request.bearerToken ?? "", token) else {
@@ -325,9 +322,27 @@
             }
         }
 
-        private static func isLocalOrigin(_ origin: String) -> Bool {
-            guard let host = URLComponents(string: origin)?.host else { return false }
-            return ["localhost", "127.0.0.1", "::1", "[::1]"].contains(host)
+        /// Whether an `Origin` is one a *web page* could have. Only those are
+        /// refused, and only when the host isn't local.
+        ///
+        /// The attack this guards against is DNS rebinding: a page served from
+        /// `evil.com`, whose name now resolves to 127.0.0.1, posting here. That
+        /// always arrives with an `http`/`https` origin naming the attacker's host,
+        /// so screening those covers it.
+        ///
+        /// Anything else is allowed through, because native clients are not
+        /// browsers and don't follow browser rules: an Electron app sends
+        /// `app://…`, a local file page sends `null`, a plain CLI sends nothing at
+        /// all. Rejecting those bought no safety and locked out real clients —
+        /// Claude Desktop among them. The token remains the actual gate, and no
+        /// browser can attach an `Authorization` header cross-origin without a
+        /// CORS preflight this server never approves.
+        private static func isAllowedOrigin(_ origin: String) -> Bool {
+            guard let components = URLComponents(string: origin),
+                let scheme = components.scheme?.lowercased(),
+                scheme == "http" || scheme == "https"
+            else { return true }
+            return ["localhost", "127.0.0.1", "::1", "[::1]"].contains(components.host ?? "")
         }
 
         /// Compares without leaking how much of the token matched through timing.
@@ -549,7 +564,6 @@
         case claudeDesktop
         case cursor
         case vsCode
-        case zed
 
         var id: Self { self }
 
@@ -559,7 +573,6 @@
             case .claudeDesktop: "Claude Desktop"
             case .cursor: "Cursor"
             case .vsCode: "VS Code"
-            case .zed: "Zed"
             }
         }
 
@@ -570,7 +583,6 @@
             case .claudeDesktop: "~/Library/Application Support/Claude/claude_desktop_config.json"
             case .cursor: ".cursor/mcp.json"
             case .vsCode: ".vscode/mcp.json"
-            case .zed: ".zed/mcp.json"
             }
         }
     }
