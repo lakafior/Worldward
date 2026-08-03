@@ -115,25 +115,7 @@ struct SettingsView: View {
     #endif
 
     var body: some View {
-        Form {
-            appearanceSection
-            #if os(macOS)
-                if AppLanguages.shipped.count > 1 { LanguageSettingsSection() }
-            #endif
-            notificationsSection
-            packingSection
-            packingManagementSection
-            calendarSection
-            remindersSection
-            #if os(macOS)
-                AutomationSettingsSection()
-            #endif
-            syncSection
-            dataSection
-            #if !os(macOS)
-                aboutSection
-            #endif
-        }
+        settingsContent
         .sheet(item: $sheet) { destination in
             switch destination {
             case .containers: ManageContainersView()
@@ -149,15 +131,9 @@ struct SettingsView: View {
                 }
             }
         }
-        .formStyle(.grouped)
         // macOS opens Settings in its own scene, which can outlive (or precede)
         // any main window, so the sync section can't rely on ContentView's copy.
         .background(CloudSyncWatcher())
-        #if os(macOS)
-            // Ideal, not fixed: nine sections of long-form footers overflow a
-            // hard 540pt at large Dynamic Type or in a wordier language.
-            .frame(minWidth: 480, idealWidth: 520, minHeight: 420, idealHeight: 560)
-        #endif
         .fileExporter(
             isPresented: $showExporter,
             document: exportDocument,
@@ -235,6 +211,71 @@ struct SettingsView: View {
     }
 
     #if os(macOS)
+        /// A Mac Settings window carries its categories in the window's own tab
+        /// strip, not in one long scroll — the same shape as System Settings and
+        /// every Apple app's preferences. Eleven groups never fit a fixed-size
+        /// window: the single `Form` this replaces conceded as much, asking for an
+        /// ideal 560pt that its own footers overflowed in a wordier language.
+        ///
+        /// The grouping follows what a person came here to change, not which
+        /// framework backs it: everything that mirrors data into another Apple app
+        /// sits together, and everything about copies of the data — iCloud, backup,
+        /// CSV — sits together.
+        private var settingsContent: some View {
+            TabView {
+                Tab("General", systemImage: "gearshape") {
+                    Form {
+                        appearanceSection
+                        if AppLanguages.shipped.count > 1 { LanguageSettingsSection() }
+                    }
+                }
+                Tab("Trips", systemImage: "suitcase") {
+                    Form {
+                        packingSection
+                        packingManagementSection
+                    }
+                }
+                Tab("Apple Apps", systemImage: "app.badge") {
+                    Form {
+                        notificationsSection
+                        calendarSection
+                        remindersSection
+                    }
+                }
+                Tab("Automation", systemImage: "terminal") {
+                    Form { AutomationSettingsSection() }
+                }
+                Tab("Sync & Data", systemImage: "icloud") {
+                    Form {
+                        syncSection
+                        dataSection
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            // Fixed, not ideal: a grouped Form is a scroll view with no intrinsic
+            // height, so the window has to state one. Sized for the roomiest tab
+            // that still reads as a Settings window rather than a document.
+            .frame(width: 540, height: 480)
+        }
+    #else
+        private var settingsContent: some View {
+            Form {
+                appearanceSection
+                notificationsSection
+                packingSection
+                packingManagementSection
+                calendarSection
+                remindersSection
+                syncSection
+                dataSection
+                aboutSection
+            }
+            .formStyle(.grouped)
+        }
+    #endif
+
+    #if os(macOS)
         /// Runs whichever File ▸ Import/Export menu command requested this
         /// window, mirroring the `dataSection` buttons below.
         private func consumePendingDataTransferRequests() {
@@ -309,8 +350,10 @@ struct SettingsView: View {
         } header: {
             Text("Notifications")
         } footer: {
+            // The switch's own off state already says "off by default"; a footer
+            // repeating it is a line of prose the reader pays for twice.
             Text(
-                "Occasional on-device reminders: “on this day” travel memories, a year-in-review nudge each December, and a gentle prompt if you haven't logged a trip in a while. Off by default; nothing is sent unless you turn this on."
+                "Occasional on-device reminders: “on this day” travel memories, a year-in-review nudge each December, and a gentle prompt if you haven't logged a trip in a while."
             )
         }
         .animation(.snappy, value: notificationsBusy)
@@ -429,8 +472,12 @@ struct SettingsView: View {
         } header: {
             Text("Apple Calendar")
         } footer: {
+            // What it does and what it can't touch. The access requirement lives
+            // in the denial alert below, where it's actionable rather than
+            // hypothetical, and the per-stop map and weather are self-evident the
+            // first time the user opens one of the events.
             Text(
-                "Mirrors your trips to a dedicated “Worldward” calendar: an event spanning each trip plus one per dated stop — with the map and weather shown where a stop has a place. Kept up to date as you edit the itinerary. Needs full calendar access to update its own events; it never touches your other calendars. Turning this off removes the Worldward calendar; your trips always stay in Worldward."
+                "Mirrors trips to a dedicated “Worldward” calendar — an event per trip and per dated stop — kept up to date as you edit. Never touches your other calendars; turning it off removes only the Worldward one."
             )
         }
         // The cleanup picker is a consequence of the toggle, so let it slide in
@@ -486,7 +533,7 @@ struct SettingsView: View {
             Text("Apple Reminders")
         } footer: {
             Text(
-                "Mirrors every upcoming trip's packing list to a Reminders list, two-way: tick items off in Reminders, via Siri, or on Apple Watch and they're marked packed here. Containers appear in each reminder's notes. Turning this off removes the lists from Reminders; your packing lists always stay in Worldward."
+                "Mirrors upcoming trips' packing lists to Reminders, two-way — tick an item off in Reminders, via Siri, or on Apple Watch and it's packed here. Turning it off removes only those Reminders lists."
             )
         }
         .animation(.snappy, value: remindersSyncEnabled)
@@ -613,7 +660,7 @@ struct SettingsView: View {
             Text("Backup")
         } footer: {
             Text(
-                "A complete backup of your travel data — statuses, visits, notes, plans, and trips — as a JSON file for safekeeping or moving between devices. Importing replaces the travel data of every country in the file."
+                "A complete JSON backup — statuses, visits, notes, plans, and trips — for safekeeping or moving between devices. Importing replaces the travel data of every country in the file."
             )
         }
 
@@ -628,7 +675,7 @@ struct SettingsView: View {
             Text("Spreadsheet (CSV)")
         } footer: {
             Text(
-                "For exchanging with spreadsheets and other trackers. Export lists your visited countries and their visits; import adds countries and visits without touching what's already recorded."
+                "For spreadsheets and other trackers. Export lists your visited countries and their visits; import only adds, never overwrites."
             )
         }
     }
