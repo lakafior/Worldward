@@ -1339,7 +1339,7 @@ struct ContentView: View {
         // Copy the bundled outline into the shared App Group container on a
         // background task so the widget extension (which can't read the bundle)
         // can draw the map. Re-copies only when the file changes between releases.
-        Task.detached(priority: .background) {
+        Task(priority: .background) { @concurrent in
             WorldMapStore.cacheFromAppBundle()
         }
 

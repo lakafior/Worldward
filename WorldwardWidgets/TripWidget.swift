@@ -48,15 +48,24 @@ struct WidgetTripEntity: AppEntity {
 
 /// Offers the snapshot's trips — upcoming and underway, soonest first, which is
 /// the order the writer already put them in.
+///
+/// `EntityQuery` refines `Sendable`, so these requirements stay nonisolated while
+/// `TripDetailSnapshotStore.read()` is main-actor-bound (its snapshot's `Codable`
+/// conformance is isolated in the app target — see `PackingSnapshotStore.write`).
+/// Hence the hop: reading the snapshot is the only main-actor work here.
 struct WidgetTripQuery: EntityQuery {
     func entities(for identifiers: [WidgetTripEntity.ID]) async throws -> [WidgetTripEntity] {
-        TripDetailSnapshotStore.read().trips
-            .filter { identifiers.contains($0.id) }
-            .map(WidgetTripEntity.init)
+        await MainActor.run {
+            TripDetailSnapshotStore.read().trips
+                .filter { identifiers.contains($0.id) }
+                .map(WidgetTripEntity.init)
+        }
     }
 
     func suggestedEntities() async throws -> [WidgetTripEntity] {
-        TripDetailSnapshotStore.read().trips.map(WidgetTripEntity.init)
+        await MainActor.run {
+            TripDetailSnapshotStore.read().trips.map(WidgetTripEntity.init)
+        }
     }
 }
 

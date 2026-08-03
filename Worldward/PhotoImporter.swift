@@ -210,7 +210,7 @@ class PhotoImporter {
         // Snapshot the geometry into the Task so the background scan never reads
         // the main-actor-bound stored properties across an isolation boundary.
         let rects = countryBoundingRects
-        let paths = countryPaths
+        let paths = CountryPaths(countryPaths)
 
         Task {
             let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
@@ -265,8 +265,8 @@ class PhotoImporter {
     /// stays responsive — on first run with 50K+ photos, the synchronous single-pass
     /// enumeration could block a background thread for multiple seconds without
     /// yielding, causing jitter in other concurrent work.
-    nonisolated private func scanPhotos(
-        settings: ImportSettings, rects: [String: MKMapRect], paths: [String: [CGPath]],
+    @concurrent nonisolated private func scanPhotos(
+        settings: ImportSettings, rects: [String: MKMapRect], paths: CountryPaths,
         addNewSince: Date?,
         onProgress: @MainActor @Sendable @escaping (String) -> Void
     ) async -> ScanResult {

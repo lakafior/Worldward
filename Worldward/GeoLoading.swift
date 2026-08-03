@@ -103,6 +103,27 @@ func loadBundledGeo() -> (
     }
 }
 
+/// The hit-test paths, in a form that can be handed to a `@concurrent` scan.
+///
+/// `CGPath` predates `Sendable` and isn't marked as such, so the table can't
+/// cross an isolation boundary on its own. Safe here: `buildGeo` copies each
+/// `CGMutablePath` into an immutable `CGPath` and never touches it again, and
+/// `contains(_:)` is a pure read — the same trade `ReminderSync.ReminderBatch`
+/// makes. Without this the photo scanners can't leave the main actor at all
+/// (see `PhotoImporter.scanPhotos`).
+///
+/// `nonisolated` because `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` would
+/// otherwise pin the members to the main actor, which is exactly what the box
+/// exists to escape.
+nonisolated struct CountryPaths: @unchecked Sendable {
+    let byCountry: [String: [CGPath]]
+
+    init(_ byCountry: [String: [CGPath]]) { self.byCountry = byCountry }
+
+    subscript(id: String) -> [CGPath]? { byCountry[id] }
+    var isEmpty: Bool { byCountry.isEmpty }
+}
+
 /// Rebuilds the drawable polygons, hit-test paths, and per-country bounding rects
 /// from simplified rings.
 ///

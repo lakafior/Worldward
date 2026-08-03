@@ -226,7 +226,8 @@ struct TripPhotoSuggestionsSheet: View {
             calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: trip.endDate))
             ?? trip.endDate
 
-        let result = await Self.scanLibrary(start: start, end: end, paths: paths, excluded: excluded)
+        let result = await Self.scanLibrary(
+            start: start, end: end, paths: CountryPaths(paths), excluded: excluded)
 
         // Resolve country ids back to models, keeping the itinerary's stop order.
         groups = countries.compactMap { country in
@@ -260,8 +261,8 @@ struct TripPhotoSuggestionsSheet: View {
     /// that country; elsewhere → skipped (counted); no location (or geometry not
     /// loaded yet) → the assignable "no location" bucket. Touches only
     /// `Sendable` value types, mirroring `PhotoImporter.scanPhotos`.
-    nonisolated private static func scanLibrary(
-        start: Date, end: Date, paths: [String: [CGPath]], excluded: Set<String>
+    @concurrent nonisolated private static func scanLibrary(
+        start: Date, end: Date, paths: CountryPaths, excluded: Set<String>
     ) async -> ScanResult {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(
@@ -270,7 +271,7 @@ struct TripPhotoSuggestionsSheet: View {
         options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         let fetch = PHAsset.fetchAssets(with: .image, options: options)
 
-        let geometryAvailable = paths.contains { !$0.value.isEmpty }
+        let geometryAvailable = paths.byCountry.contains { !$0.value.isEmpty }
         var byCountry: [String: [SuggestedPhoto]] = [:]
         var noLocation: [SuggestedPhoto] = []
         var skipped = 0
@@ -294,7 +295,7 @@ struct TripPhotoSuggestionsSheet: View {
                 let mapPoint = MKMapPoint(location.coordinate)
                 let cgPoint = CGPoint(x: mapPoint.x, y: mapPoint.y)
                 var matchedID: String?
-                outer: for (id, rings) in paths {
+                outer: for (id, rings) in paths.byCountry {
                     for ring in rings where ring.contains(cgPoint) {
                         matchedID = id
                         break outer

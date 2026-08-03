@@ -92,17 +92,17 @@ final class CloudSyncStatus {
 
         guard isEnabled else { return }
 
-        let settled = Task { @MainActor in
-            await withCheckedContinuation { continuation in
-                waiters.append(continuation)
-            }
-        }
         let deadline = Task { @MainActor in
             try? await Task.sleep(for: timeout)
             guard !Task.isCancelled else { return }
             resumeWaiters()
         }
-        await settled.value
+        // `withCheckedContinuation` runs its closure synchronously before it
+        // suspends, so the waiter is registered before this call can yield the
+        // main actor. Registering it from a child task instead would leave a
+        // window in which a finishing event sweeps an empty list and the caller
+        // then waits out the whole timeout for a sync that already landed.
+        await withCheckedContinuation { waiters.append($0) }
         deadline.cancel()
     }
 
