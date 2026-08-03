@@ -231,6 +231,8 @@ xcodebuild -project Worldward.xcodeproj -scheme Worldward \
 
 4. Build and run. The first launch seeds the database from the bundled geometry file — this happens once.
 
+> **Publishing a fork?** Change the display name, bundle identifier and app icon first — the Worldward name and icon aren't covered by the code license. See [TRADEMARK.md](TRADEMARK.md).
+
 > **Note:** Photo import needs Photo Library access. AI features need Apple Intelligence on a supported device. iCloud sync and the watch app need a paid developer account for the CloudKit container and App Group entitlements.
 
 ---
@@ -352,6 +354,8 @@ Pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). In short: 
 
 ## License
 
-Licensed under the **Mozilla Public License 2.0** — see [LICENSE](LICENSE).
+The **code** is licensed under the **Mozilla Public License 2.0** — see [LICENSE](LICENSE).
 
-You are free to use, modify and distribute this software, including commercially. Modifications to existing MPL-licensed files must be released under the same license; you may combine this code with proprietary code in separate files as part of a larger work.
+You are free to use, modify and distribute it, including commercially. Modifications to existing MPL-licensed files must be released under the same license; you may combine this code with proprietary code in separate files as part of a larger work.
+
+The **name "Worldward" and the app icon** are not part of that grant — MPL-2.0 §2.3 grants no trademark or logo rights. Fork freely and ship what you build, but ship it under your own name and your own icon. See [TRADEMARK.md](TRADEMARK.md) for the details, and email `worldward@smigi.net` if you want to use the brand for something.

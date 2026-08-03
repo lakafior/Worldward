@@ -1,3 +1,5 @@
+<!-- Worldward brand artwork. NOT covered by the MPL-2.0 licence that applies
+     to this repository's source code; see TRADEMARK.md. -->
 <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
 <path d="M 0 780 C 150 690 300 700 430 780 C 560 860 700 850 830 790 C 920 748 980 760 1024 800 L 1024 1024 L 0 1024 Z" fill="#C6E2FB"/>
 </svg>
