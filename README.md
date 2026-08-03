@@ -1,78 +1,195 @@
-# Worldward 🌍
+<div align="center">
+
+<img src="website/assets/icon.svg" width="128" alt="Worldward app icon">
+
+# Worldward
 
 **Track your travels. Explore your world.**
 
-![iOS Mockup](Assets/Mockups/ios-mockup.png)
-![macOS Mockup](Assets/Mockups/macos-mockup.png)
+Every country you've crossed, visited or lived in — on a beautiful interactive map.
+Log visits, plan trips, earn badges and watch your world fill with colour.
+Native on iPhone, iPad, Mac and Apple Watch.
 
-Worldward is a native macOS / iOS app that visualises every country you've visited — crossed, lived in, or simply passed through — on an interactive world map. Built entirely with SwiftUI, MapKit, and SwiftData.
+[![Download on the App Store](https://img.shields.io/badge/Download_on_the-App_Store-0D96F6?style=for-the-badge&logo=apple&logoColor=white)](https://apps.apple.com/app/id6792382389)
+[![Website](https://img.shields.io/badge/Website-worldward.smigi.net-2959D4?style=for-the-badge&logo=safari&logoColor=white)](https://worldward.smigi.net)
 
-![Swift 6.0](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift&logoColor=white)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-000000?logo=swift&logoColor=white)
-![macOS 26+](https://img.shields.io/badge/macOS-26+-000000?logo=apple&logoColor=white)
 ![iOS 26+](https://img.shields.io/badge/iOS-26+-000000?logo=apple&logoColor=white)
-[![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?logo=github)
+![macOS 26+](https://img.shields.io/badge/macOS-26+-000000?logo=apple&logoColor=white)
+![watchOS 26+](https://img.shields.io/badge/watchOS-26+-000000?logo=apple&logoColor=white)
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-2959D4?logo=swift&logoColor=white)
+![29 languages](https://img.shields.io/badge/29-languages-4C8DEA)
+![Zero dependencies](https://img.shields.io/badge/dependencies-zero-85CEFA)
+![No tracking](https://img.shields.io/badge/tracking-none-brightgreen)
+[![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen)](https://opensource.org/licenses/MPL-2.0)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?logo=github)](CONTRIBUTING.md)
+
+[Website](https://worldward.smigi.net) · [Privacy Policy](https://worldward.smigi.net/privacy) · [Contributing](CONTRIBUTING.md) · [Report a bug](https://github.com/lakafior/Worldward/issues)
+
+</div>
+
+![Worldward on iPhone](Assets/Mockups/ios-mockup.png)
 
 ---
 
-## Table of Contents
+## Private by design
 
-- [Features](#features)
-- [Screenshots](#screenshots)
-- [Tech Stack](#tech-stack)
-- [Localization](#localization)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Roadmap](#roadmap)
-- [License](#license)
+Worldward is built the way personal software should be.
+
+|  |  |
+|---|---|
+| 🔒 **Local-first** | Your travel data lives on your device. No server, no account, no sign-up. Optional iCloud sync uses *your* private CloudKit database. |
+| 🚫 **No tracking** | No analytics, no ads, no third-party SDKs. **Zero third-party dependencies** — Apple frameworks only. |
+| 🧠 **On-device AI** | Travel Chat, recaps and suggestions run through Apple Intelligence on your device. Nothing is sent to a cloud model. |
+| 📦 **Yours to keep** | Export everything as JSON or CSV at any time. Open source under MPL-2.0. |
 
 ---
 
-## Features
+## A look around
 
-### Interactive Map
+### iPhone
 
-Every country rendered as a tap-able map polygon from Natural Earth data (~250 countries), including outlying territories and islands — Hawaii, Kaliningrad, the Greek archipelagos. Warm yellow-to-orange fill per status (**Crossed → Visited → Lived → Living**), with a cool-blue **planning layer** for Wishlist and Planning destinations.
+| | | |
+|---|---|---|
+| ![Map](Assets/Screenshots/1.png) | ![Photo import](Assets/Screenshots/2.png) | ![Shortcuts](Assets/Screenshots/3.png) |
+| **Map** — tap any country to set its status, log visits and attach photos | **Photo import** — turn geotagged photos into visits automatically | **Shortcuts** — automate your travel workflows with Siri |
+| ![Achievements](Assets/Screenshots/4.png) | ![Share card](Assets/Screenshots/5.png) | ![Been](Assets/Screenshots/6.png) |
+| **Achievements** — earn badges as you travel | **Share** — a customisable card with your stats and tinted map | **Been** — every country you've visited, grouped by continent |
+| ![Trips](Assets/Screenshots/7.png) | ![Going](Assets/Screenshots/8.png) | ![Widgets](Assets/Screenshots/9.png) |
+| **Trips** — itineraries, packing lists, attachments | **Going** — wishlist, plans and suggestions | **Widgets** — Home Screen, Lock Screen and Control Center |
 
-- **Tap any country** to zoom in and open its detail sheet with visits, flag, and notes.
-- **Search & fly-to** — type a country name and tap a suggestion to animate the map directly to it.
-- **Status filter bar** — toggle between All, Visited only, or Planning only.
-- **Map style picker** (Settings → Appearance) — Standard, Hybrid, or Satellite.
+### Mac
+
+| |
+|---|
+| ![Map on macOS](Assets/Screenshots/macos-1.jpeg) |
+| **Map** — a resizable window with a real sidebar layout |
+| ![Achievements on macOS](Assets/Screenshots/macos-2.png) |
+| **Achievements** — the full badge grid |
+| ![Trips on macOS](Assets/Screenshots/macos-3.jpeg) |
+| **Trips** — plan itineraries with a keyboard and a big screen |
+
+---
+
+## What it does
+
+### 🗺️ Interactive map
+
+~250 tap-able countries from Natural Earth data, down to outlying territories and islands — Hawaii, Kaliningrad, the Greek archipelagos. Warm yellow-to-orange for where you've been (**Crossed → Visited → Lived → Living**), cool blue for where you're going (**Wishlist → Planning**).
+
+<details>
+<summary>More about the map</summary>
+
+- **Tap any country** to zoom in and open its detail sheet with visits, flag and notes.
+- **Search & fly-to** — type a country name and tap a suggestion to animate the map to it.
+- **Status filter bar** — All, Visited only, or Planning only.
+- **Map style picker** (Settings → Appearance) — Standard, Hybrid or Satellite.
 - **Flag annotations** float above selected countries.
 - **Trip routes** — dashed itinerary lines with numbered stop badges and pins.
-
-### Travel Log
-
-- Record visits with dates and notes for every country.
-- **Attach photos** from the system photo picker — thumbnails are fetched live from your library (only stable identifiers stored).
-- **Post-trip photo suggestions** — once a trip ends, its detail view offers the photos taken during the trip, grouped per country by location metadata, ready to attach to visits in one tap.
-- Multiple visits per country, each with its own date and photo set.
-- **Smart default date** — new visits default to one day after your most recent visit.
-
-### Country Lists (Been / Going)
-
-- **Been** tab: everywhere you've visited, with toolbar buttons for **Travel Chat** (AI) and **Statistics** (dashboard, timeline, charts, year recaps).
-- **Going** tab: split into **Trips**, **Wishlist**, and **Suggestions**.
-- Grouped by continent with sort by name or most recently visited, plus continent and year filters.
-- **Quick-add** countries from the toolbar.
 - **Fuzzy search** with diacritic and substring awareness ("cote" finds "Côte d'Ivoire").
 
-### macOS
+</details>
 
-- **Menu Bar Extra** — a globe icon showing your country count with quick actions: Open Worldward, Mark Current Location, and Quit.
-- **AI automation (MCP)** — an opt-in local server (Settings → Automation) that lets an AI assistant running on this Mac read your travels and plan trips into Worldward. See [AI Automation (MCP)](#ai-automation-mcp).
+### 📓 Travel log
 
-### AI Automation (MCP)
+Record visits with dates, notes and photos from your library. Multiple visits per country, each with its own story.
 
-Worldward can be driven from an AI assistant on the same Mac over the [Model Context Protocol](https://modelcontextprotocol.io) — Claude Desktop, Claude Code, Cursor, VS Code or Zed can read your travels and, with permission, plan trips into the app. macOS only: iOS can't keep a listener alive in the background, and there's no client there to talk to it.
+<details>
+<summary>More about the travel log</summary>
 
-- **Off by default.** Switch on *Settings → Automation* when you want it.
-- **Loopback only** — the server binds to `127.0.0.1` and is unreachable from the network, however the Mac is configured.
-- **Bearer token** — a per-install random token, compared in constant time, regenerated from the same settings pane. The token is only ever copied (as part of a setup command or JSON snippet), never shown on screen.
-- **Origin check** — requests from non-local web pages are rejected, stopping DNS-rebinding attacks.
-- **Read-only mode** — turn off *Allow Changes* and only read tools run.
-- **No dialing out.** Worldward never connects anywhere; a client connects in, or nothing happens.
+- **Attach photos** from the system picker — thumbnails are fetched live from your library; only stable identifiers (`PHAsset.localIdentifier`) are stored, never image data.
+- **Post-trip photo suggestions** — once a trip ends, its detail view offers the photos taken during it, grouped per country by location metadata, ready to attach in one tap.
+- **Smart default date** — new visits default to one day after your most recent visit.
+- **Been / Going tabs** — grouped by continent, sortable by name or recency, filterable by continent and year, with quick-add from the toolbar.
+
+</details>
+
+### 🧳 Trips & packing
+
+Multi-country itineraries with reorderable stops, packing lists with reusable templates, calendar export, PDF and Markdown sharing.
+
+<details>
+<summary>More about trips and packing</summary>
+
+- **Ordered stops**, each optionally tied to a country, with a date range and lightweight Markdown notes.
+- **File attachments** — tickets, confirmations and boarding passes stored inside the trip, always available offline, previewed with Quick Look, and included in JSON backups.
+- **Add to Apple Calendar** as an all-day event, or **two-way Calendar sync** (opt-in) into a dedicated "Worldward" calendar with an event per trip and per dated stop, `structuredLocation` set so Calendar shows maps and weather natively.
+- **Export a trip** as Markdown or a formatted PDF, both with localized headers.
+- **Send a trip to another Worldward user** as a `.wwtrip` file (AirDrop, Messages, Files). Re-sharing the same trip **updates** their copy instead of duplicating it, so a plan can bounce between two phones and improve on each pass.
+- **Packing containers** (bags/cases) shared across trips, with SF Symbol icons and drag-to-reorder; **templates** save and reuse whole lists.
+- **Two-way Apple Reminders sync** (opt-in) — tick an item off in Reminders, via Siri or on Apple Watch and it's packed in Worldward, and vice versa. Configurable auto-cleanup after a trip ends.
+
+</details>
+
+### 🏅 Achievements, stats & Wrapped
+
+Badges for countries, continents, streaks and depth — all computed on-device and celebrated with a toast when you earn them.
+
+<details>
+<summary>More about statistics</summary>
+
+- **Dashboard** — countries visited, continents covered, busiest year, per-year charts, cumulative countries-over-time line, new-country streak, continent completion.
+- **Travel Timeline** — a chronological history of every visit, grouped by year.
+- **Wrapped** — a full-screen, stories-style animated recap of any year, ending in a shareable card.
+- **Share card** — customisable headline, caption, metrics, gradient theme, optional tinted world map and QR code.
+
+</details>
+
+### ✨ Apple Intelligence
+
+Ask free-form questions about your travels ("Which European countries haven't I been to?"), get year recaps and destination picks — entirely on-device via Foundation Models.
+
+<details>
+<summary>How the translation pipeline works</summary>
+
+Apple's on-device models generate text exclusively in English, so Worldward bridges the gap with the **Translation framework**:
+
+1. Your input is translated from the device language **into English** before reaching the model.
+2. The model produces an English response.
+3. The response is translated **back into your language**.
+4. If the language pair isn't supported, the English text passes through unchanged.
+
+When the device language is already English, both steps are skipped.
+
+</details>
+
+### 📸 Photo import
+
+Scan your photo library to detect countries from geotagged photos and turn them into visits, with a configurable merge gap and "Lived" threshold. Your photos never leave the device.
+
+### 🧩 Widgets, Siri & Shortcuts
+
+Home Screen and desktop widgets (Travel Snapshot, Flags Visited, tinted World Map, Upcoming Trip countdown), Lock Screen accessories, an interactive packing checklist widget, a Control Center "Mark where I am" button, and a full set of App Intents for Shortcuts and Siri.
+
+### ⌚️ Apple Watch
+
+Check today's itinerary and tick off your packing list from your wrist, with complications for your country count, next-trip countdown and packing progress. Synced over iCloud, with a `WatchConnectivity` channel so each check-off appears on your iPhone instantly.
+
+### 🖥️ At home on the Mac
+
+Not a port — a real macOS app: a sidebar layout with a **Go** menu and keyboard shortcuts, a **menu bar globe** showing your country count with quick actions, desktop widgets, and drag-and-drop-friendly import/export.
+
+### 🌍 Country facts, reminders & data portability
+
+A bundled offline table of currency, languages, plug types, driving side and emergency number per country — shown in the detail sheet and used by the packing assistant. Optional local notifications ("on this day", trip-start reminders, year-in-review nudges), off by default. Full **JSON backup** and forgiving **CSV import/export** in Settings.
+
+---
+
+## AI automation (MCP) — macOS
+
+Worldward can be driven from an AI assistant on the same Mac over the [Model Context Protocol](https://modelcontextprotocol.io) — Claude Desktop, Claude Code, Cursor, VS Code or Zed can read your travels and, with permission, plan trips into the app.
+
+macOS only: iOS can't keep a listener alive in the background, and there's no client there to talk to it.
+
+- 🔴 **Off by default.** Switch it on in *Settings → Automation*.
+- 🔒 **Loopback only** — the server binds to `127.0.0.1` and is unreachable from the network, however the Mac is configured.
+- 🔑 **Bearer token** — a per-install random token, compared in constant time, regenerable from the same pane. It is only ever copied, never shown on screen.
+- 🛡️ **Origin check** — requests from non-local web pages are rejected, stopping DNS-rebinding attacks.
+- 👀 **Read-only mode** — turn off *Allow Changes* and only read tools run.
+- 📴 **No dialing out.** Worldward never connects anywhere; a client connects in, or nothing happens.
+
+<details>
+<summary>Client configuration</summary>
 
 Settings offers a ready-to-paste setup command for Claude Code, or a JSON snippet for JSON-configured clients:
 
@@ -88,179 +205,107 @@ Settings offers a ready-to-paste setup command for Claude Code, or a JSON snippe
 }
 ```
 
-Other clients read different files (`.vscode/mcp.json` uses a `servers` key, `.zed/mcp.json` a `mcp` key); the settings pane copies the right shape for the client you pick.
+Other clients read different files (`.vscode/mcp.json` uses a `servers` key, `.zed/mcp.json` an `mcp` key); the settings pane copies the right shape for the client you pick.
 
-### Trips (multi-country itineraries)
-
-- Multi-country trips through ordered **stops**, each optionally tied to a country.
-- **Date range**, reorderable **itinerary**, checkable **packing list**, and **notes** with lightweight Markdown rendering (tap to edit raw text).
-- **File attachments** — tickets, confirmations, boarding passes stored inside the trip (SwiftData `.externalStorage`), always available offline; previewed with Quick Look on iOS or the default app on macOS, and included in JSON backups.
-- **Add to Apple Calendar** as an all-day event (write-only EventKit).
-- **Sync with Apple Calendar** (opt-in, Settings) — a dedicated "Worldward" calendar with an event spanning each trip plus one per dated stop, `structuredLocation` set so Calendar shows maps and weather natively, kept updated as the itinerary changes.
-- **Share / export** a trip as **Markdown** via the system share sheet, or as a formatted **PDF** — both with localized section headers.
-- **Send a trip to another Worldward user** — share it as a `.wwtrip` file (AirDrop, Messages, Files); opening it on their device imports the whole plan: itinerary, packing list, attachments. Re-sharing the same trip **updates** their copy instead of duplicating it, so a plan can bounce between two phones and improve on each pass.
-
-### Achievements
-
-- Badge grid with categories (Countries, Continents, Depth & Roots, Travel Log, Continent Mastery) and a hero counter.
-- Every badge shows progress, computed on-device from `TravelStats`.
-- **Unlock toasts** — newly earned badges are celebrated with a floating toast.
-
-### Statistics & Timeline
-
-- Dashboard: countries visited, continents covered, busiest year, per-year charts, cumulative **countries-over-time** line chart, **new-country streak**, continent completion.
-- **Travel Timeline** — chronological history of every visit, grouped by year.
-- **Year-in-review** with an **AI recap** (on-device).
-- **Wrapped** — a full-screen, stories-style animated recap of any year: countries, first-time visits, continents, busiest month, most-visited country, and the AI recap, ending in the year share card.
-- **Year share card** — customizable card with that year's countries tinted on the map.
-
-### Suggestions
-
-- **Closest unvisited countries** sorted by geographic distance.
-- **Suggested for you** — Apple Intelligence picks with a one-line rationale, generated on-device.
-
-### Apple Intelligence
-
-- **Travel Chat** — free-form questions about your travels ("Which European countries haven't I been to?"). Runs on-device via Foundation Models.
-- **AI Insights** — auto-generated year recaps and smart destination recommendations.
-
-#### Translation Pipeline (LLM ↔ Device Language)
-
-Apple's on-device language models generate text exclusively in English. Worldward bridges this gap using the **Translation framework**:
-
-1. User input is translated from the device language **into English** before reaching the model.
-2. The model processes the request and produces an English response.
-3. The response is translated **back into the device language**.
-4. **Fallback**: if the language pair isn't supported, the original English text passes through unchanged.
-
-When the device language is already English, both translation steps are skipped entirely.
-
-### Photo Import
-
-- Scan your Photo Library to automatically detect countries from geotagged photos.
-- Configurable merge gap and "Lived" threshold.
-- Suggests statuses based on photo duration.
-- Mark your most-present country as "home."
-
-### Siri & Shortcuts
-
-- `MarkCountryStatusIntent`, `LogVisitIntent`, `LogVisitsFromDescriptionIntent`
-- `SearchCountriesIntent`, `GetVisitCountIntent`, `GetContinentProgressIntent`
-- `MarkCurrentLocationIntent`
-
-### Share
-
-- Generate a share card (rasterised image) with your travel stats.
-- Customisable headline, caption, metrics, gradient theme — optionally with your tinted world map and a **QR code**.
-- Share as image or plain-text summary.
-
-### Data Transfer
-
-Two flows in **Settings**:
-
-- **Backup (JSON)** — full-fidelity format: statuses, visits, notes, plans, trips. Restoring **replaces** travel data. For safekeeping between devices.
-- **Spreadsheet (CSV)** — outward-facing exchange format. Export lists every visited country. Import is forgiving (delimiter/column auto-detected, fuzzy country matching, lenient dates, preview before writing) and **additive** — never overwrites.
-
-### Widgets & Controls
-
-- **Home Screen / desktop widgets**: Travel Snapshot, Flags Visited, tinted World Map, Upcoming Trip countdown.
-- **Lock Screen accessories**: circular progress gauge, rectangular summary, inline count.
-- **Control Center / Action button**: "Mark where I am" control.
-- Widgets read a snapshot from a shared **App Group** — no SwiftData runs in the extension.
-
-### Apple Watch
-
-A lightweight companion app for the two moments a phone is inconvenient — packing, and checking today's plan on the move.
-
-- **Upcoming trips** on your wrist, soonest first, each with a packing-progress bar.
-- **Packing check-off** — tap any item to mark it packed; grouped by container with per-group counts.
-- **Today's itinerary** — the trip's stops with today's highlighted, plus its places to see.
-- **Watch face complications** — countries-visited count and share of the world, a next-trip countdown, and packing progress, in the circular, inline, rectangular, and corner families.
-- Data arrives over the same **iCloud (CloudKit)** sync the iPhone uses — no separate setup. A tiny `WatchConnectivity` channel makes each check-off appear on the other device instantly, rather than waiting on a CloudKit push.
-- Requires iCloud sync turned on (Settings) on your iPhone; otherwise the watch shows a gentle prompt to enable it.
-
-### Reminders
-
-- Optional on-device notifications: "on this day" memories, **trip start reminder** (24 hours before), December year-in-review nudge, gentle prompt if you haven't logged a trip lately.
-- **Off by default** — opt in from Settings.
-
-### Packing
-
-- Manage **packing containers** (bags/cases) and **packing templates** from Settings.
-- Containers are shared across all trips; templates let you save and reuse packing lists.
-- Customize with SF Symbol icons, drag to reorder, add items with quantities.
-- **Sync with Apple Reminders** (optional, off by default) — mirrors every upcoming trip's packing list to its own Reminders list, genuinely two-way: tick an item off in Reminders, via Siri, or on Apple Watch and it's marked packed in Worldward; edit or delete an item on either side and it mirrors across. Containers ride in each reminder's notes; quantities appear as "×N" in the title. Configurable auto-removal of a trip's list a set number of days after it ends (or never, keeping it until the trip itself is deleted).
-
-### Country Facts
-
-- Bundled offline table: currency, languages, plug types, driving side, emergency number.
-- Shown inline in the country detail sheet.
-- The packing assistant uses these facts to recommend locale-specific items.
-
-### Appearance
-
-- System / Light / Dark theme preference.
-- **Map style** picker (Standard / Hybrid / Satellite).
-- Unified sky-to-royal-blue brand palette throughout.
-
-### Data Portability
-
-- Export / Import your travel data as JSON.
-- Only your personal data (statuses, visits, notes, plans, trips) — the country catalog re-seeds from the bundled geometry file. Backups are versioned.
+</details>
 
 ---
 
-## Screenshots
+## Build from source
 
-### iOS
+```bash
+git clone https://github.com/lakafior/Worldward.git
+cd Worldward
+open Worldward.xcodeproj
+```
 
-| | | |
-|---|---|---|
-| ![Map View](Assets/Screenshots/1.png) | ![Country Detail](Assets/Screenshots/2.png) | ![Visit Logging](Assets/Screenshots/3.png) |
-| **Map** — Tap any country to view details, set status, and attach photos | **Photo Import** — Options for importing countries from Apple Photos | **Shortcuts** — Endpoints to automate your travel workflows |
-| ![Trip Planning](Assets/Screenshots/4.png) | ![Statistics Dashboard](Assets/Screenshots/5.png) | ![Achievements](Assets/Screenshots/6.png) |
-| **Achievements** — Earn badges by travelling and view your stats | **Share Summary** — Share image or text with your progress | **Been** — Summary of every country you've visited |
-| ![Settings](Assets/Screenshots/7.png) | ![Share Card](Assets/Screenshots/8.png) | ![Widgets](Assets/Screenshots/9.png) |
-| **Trips** — Details of your planned trips | **Going** — Summary of your travel plans | **Widgets** — Home/Lock Screen and Control Center with travel stats and map |
+1. Open `Worldward.xcodeproj` in **Xcode 16+**.
+2. Pick the `Worldward` scheme and a macOS or iOS destination.
+3. Set **Signing & Capabilities → Team** to your own Apple developer team (the checked-in team ID won't work for you), or build without signing:
 
-### macOS
+```bash
+xcodebuild -project Worldward.xcodeproj -scheme Worldward \
+  -destination 'platform=macOS' -configuration Debug \
+  CODE_SIGNING_ALLOWED=NO build
+```
 
-| |
-|---|
-| ![Map View](Assets/Screenshots/macos-1.jpeg) |
-| **Map** — Tap any country to view details, set status, and attach photos |
-| ![Achievements](Assets/Screenshots/macos-2.png) |
-| **Achievements** — Earn badges by travelling and view your stats |
-| ![Map View](Assets/Screenshots/macos-3.jpeg) |
-| **Trips** — Details of your planned trips |
+4. Build and run. The first launch seeds the database from the bundled geometry file — this happens once.
+
+> **Note:** Photo import needs Photo Library access. AI features need Apple Intelligence on a supported device. iCloud sync and the watch app need a paid developer account for the CloudKit container and App Group entitlements.
 
 ---
 
-## Tech Stack
+## Under the hood
+
+<details>
+<summary>Tech stack</summary>
 
 | Layer | Technology |
 |---|---|
 | UI | SwiftUI (Liquid Glass `TabView`, `.sidebarAdaptable`) |
 | Mapping | MapKit (`MKPolygon`, `MKMapView`) |
-| Persistence | SwiftData (`ModelContainer`, `@Model`) |
+| Persistence | SwiftData (`ModelContainer`, `@Model`) + CloudKit (private DB, opt-out) |
 | Geo data | Natural Earth, pre-simplified to `countries.wmgb` (~675 KB) |
 | PhotoKit | `PHAsset` / `PHImageManager` thumbnails |
 | AI | `FoundationModels` (on-device, Apple Intelligence) |
-| Intents | `AppIntents` framework (Shortcuts, Siri, Control Center) |
+| Intents | `AppIntents` (Shortcuts, Siri, Control Center) |
 | MCP | Local HTTP server over `Network` (loopback-only, bearer-token auth) |
 | Widgets | `WidgetKit` over an App Group |
-| Watch | watchOS companion app — SwiftData + CloudKit, `WatchConnectivity` deltas, `WidgetKit` complications |
+| Watch | watchOS companion — SwiftData + CloudKit, `WatchConnectivity` deltas, complications |
 | Notifications | `UserNotifications` (local, opt-in) |
-| Calendar | `EventKit` (write-only) |
+| Calendar | `EventKit` (Calendar + Reminders, two-way, opt-in) |
 | Share | `ImageRenderer` → `ShareLink`, `CIFilter` (QR codes) |
 | Localization | `String(localized:)` backed by Xcode String Catalogs |
-| Platforms | macOS 26+, iOS 26+, watchOS 26+ (companion) |
+| Platforms | iOS 26+, macOS 26+, watchOS 26+ |
 
----
+**Constraints:** Swift 6, `SWIFT_STRICT_CONCURRENCY = complete`, zero third-party dependencies.
 
-## Localization
+</details>
 
-Worldward is fully translated into **28 languages** (plus English as the source). All user-facing strings are centralized via Xcode String Catalogs — every `Text(…)` and `String(localized:)` is automatically discovered at build time.
+<details>
+<summary>Project structure</summary>
+
+```
+Worldward/                       # Main app target
+├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
+├── ContentView.swift            # Tabs (Map/Been/Going), map view, intents, sheets
+├── Country.swift · Visit.swift · Trip.swift   # SwiftData models
+├── CountryStatus.swift · PlanStatus.swift     # Status enums
+├── GeoLoading.swift             # Binary .wmgb decoder, polygon builder
+├── MapViews.swift · WorldMapView.swift        # Map polygons, legend, loading splash
+├── CountryListView.swift · CountryDetailViews.swift
+├── TripViews.swift · TripPlanner.swift · TripPDFExporter.swift
+├── TripFileTransfer.swift       # .wwtrip app-to-app trip sharing
+├── ManageContainersView.swift · ManageTemplatesView.swift
+├── CalendarSync.swift · CalendarExporter.swift · ReminderSync.swift
+├── TravelStats.swift · Achievement.swift · StatisticsView.swift · WrappedView.swift
+├── ShareCard.swift · ShareCustomizationView.swift
+├── PhotoImporter.swift · ImportPreviewView.swift · TripPhotoSuggestions.swift
+├── TravelDataTransfer.swift · CSVTransfer.swift    # JSON + CSV portability
+├── Translator.swift · Localization.swift
+├── SettingsView.swift · AboutView.swift · NotificationManager.swift
+├── API/                         # Shared API layer
+│   ├── WorldwardAPI.swift · APIModels.swift · CountryResolver.swift
+│   └── MCP/                     # MCPServer, stdio bridge, tool catalog
+├── Intents/                     # AppIntents, Siri, Shortcuts, chat, insights
+├── countries.wmgb               # Pre-simplified country geometry
+└── PrivacyInfo.xcprivacy
+
+WorldwardWidgets/                # Widget extension (stats, flags, map, trip, packing)
+WorldwardWatch/                  # watchOS companion app
+WorldwardWatchWidgets/           # watchOS complications
+Tools/                           # generate_geo.swift (geometry), locman.py (localization)
+website/                         # worldward.smigi.net (static, Cloudflare Workers)
+```
+
+The app and widget extension share data through an App Group (`group.net.smigi.worldward`): the app writes a `WidgetSnapshot` and a copy of the map geometry; widgets read them — no SwiftData runs in an extension.
+
+</details>
+
+<details>
+<summary>Localization — 29 languages</summary>
+
+English plus 28 translations. All user-facing strings go through `String(localized:)` and Xcode String Catalogs; the app follows the device language automatically.
 
 | Language | Code | | Language | Code |
 |---|---|---|---|---|
@@ -281,124 +326,32 @@ Worldward is fully translated into **28 languages** (plus English as the source)
 | Japanese | `ja` | | | |
 | Korean | `ko` | | | |
 
-The app detects the device language automatically — no manual selection needed.
+**Adding a language:** open `Localizable.xcstrings` in Xcode, click **+**, pick your language and translate. The key is the English string; the comment says where it appears. `Tools/locman.py` helps with bulk export/apply — see `python3 Tools/locman.py --help`.
 
-### Adding a New Language
-
-1. **Xcode → File → New → File → String Catalog** → name it `Localizable` and add it to the Worldward target.
-2. **Build the project** — Xcode scans every `Text(…)` and `String(localized:)` call and populates the catalog.
-3. **Click "+"** in the catalog to add your target language.
-4. **Translate each entry** — the key is the English string; the context comment tells the translator where it appears.
-
-For developers: write strings inline with `Text("Hello")` or `String(localized: "Hello", comment: "…")` — the catalog catches them on the next build.
-
----
-
-## Project Structure
-
-```
-Worldward/
-├── Worldward.swift              # App entry point, ModelContainer, ISO fallbacks
-├── ContentView.swift           # Tabs (Map/Been/Going), map view, intents, sheets
-├── CountryListView.swift       # Been/Going list with sort & filter
-├── CountryDetailViews.swift    # Country detail, visit row, detail/location sheets
-├── CountryFacts.swift          # Bundled offline facts (currency, plug types, …)
-├── MapViews.swift              # Map polygons, legend, loading splash, country row
-├── GeoLoading.swift            # Binary format decoder, polygon builder, CountrySeed
-├── Country.swift               # SwiftData model for a country
-├── Visit.swift                 # SwiftData model for a dated visit
-├── Trip.swift                  # SwiftData models: Trip, ItineraryItem, PackingItem
-├── TripPlanner.swift           # Traveler profile, packing prompt builder, AI suggestions
-├── TripViews.swift             # Going tab, trips list, trip editor, Markdown share
-├── TripPDFExporter.swift       # PDF trip report with timeline & photos
-├── ManageContainersView.swift  # Packing container list editor
-├── ManageTemplatesView.swift   # Packing template save/load/delete
-├── CalendarExporter.swift      # EventKit "Add to Apple Calendar" (write-only)
-├── CalendarSync.swift          # EventKit calendar event sync & update
-├── ReminderSync.swift          # EventKit two-way packing-list ↔ Apple Reminders sync
-├── CountryStatus.swift         # "Been there" status enum
-├── PlanStatus.swift            # "Going" plan enum
-├── Continents.swift            # ISO → continent lookup table
-├── TravelStats.swift           # All computed statistics + nearest-unvisited helper
-├── Achievement.swift           # Gamification badges, derived from TravelStats
-├── AchievementCelebration.swift# Unlock diffing + celebration toast
-├── CSVTransfer.swift           # CSV parser, additive import, export
-├── CSVImportView.swift         # CSV preview-and-confirm sheet
-├── BrandColor.swift            # Brand palette + ShareCardTheme gradients
-├── SettingsView.swift          # Appearance, notifications, Reminders sync, export/import
-├── AboutView.swift             # macOS custom About window (app menu)
-├── AchievementsView.swift      # Standalone badge grid (from Map toolbar)
-├── StatisticsView.swift        # Dashboard, timeline, charts, AI recaps
-├── WrappedView.swift           # Year-in-review recap ("Wrapped")
-├── ShareCard.swift             # Rasterised share-card view
-├── ShareCustomizationView.swift# Live card preview + share flow
-├── NotificationManager.swift   # Opt-in local travel reminders
-├── WidgetSharedSnapshot.swift  # Shared snapshot/geometry + control intent
-├── PhotoImporter.swift         # Photo Library scan → proposed trips
-├── ImportPreviewView.swift     # Scan configuration & results UI
-├── TripPhotoSuggestions.swift  # AI-suggested photos for trip journal entries
-├── VisitPhotosView.swift       # Photo thumbnail strip + full-size viewer
-├── Translator.swift            # On-device LLM translation pipeline
-├── Localization.swift          # String catalog helpers & language picker
-├── LaunchTiming.swift          # DEBUG-only launch performance instrumentation
-├── TravelDataTransfer.swift    # JSON backup/restore
-├── Intents/
-│   ├── WorldwardIntents.swift   # AppIntents + Shortcuts provider
-│   ├── CountryEntity.swift     # AppEntity for countries
-│   ├── IntentSnippets.swift    # Snippet views for intent results
-│   ├── LocationService.swift   # CoreLocation helper
-│   ├── LogVisitsView.swift     # Bulk log-visits sheet
-│   ├── TravelChatView.swift    # On-device AI chat sheet
-│   ├── TravelInsights.swift    # AI year recaps + destination picks
-│   ├── TravelIntelligence.swift# Conversational travel Q&A service
-│   └── VisitLogParser.swift    # Natural-language visit parser
-├── Assets.xcassets/            # App icon, launch screen, brand colors
-├── countries.wmgb             # Pre-simplified country geometry (~239 countries)
-├── PrivacyInfo.xcprivacy       # Privacy manifest
-└── Info.plist                  # Launch screen + usage descriptions
-
-WorldwardWidgets/               # Widget extension target
-├── WorldwardWidgetsBundle.swift # @main WidgetBundle
-├── WorldwardWidgets.swift      # Snapshot/Flags/Map/Trip widgets, accessories, control
-└── PackingWidget.swift         # Packing checklist widget
-```
-
-> The app and widget extension share data through an **App Group** (`group.net.smigi.worldward`): the app writes a `WidgetSnapshot` and a copy of the map geometry; widgets read them. `WidgetSharedSnapshot.swift` is a member of both targets.
-
----
-
-## Getting Started
-
-1. Open `Worldward.xcodeproj` in **Xcode 16+**.
-2. Select your target (macOS or iOS).
-3. Build and run.
-4. The first launch seeds the database from the bundled geometry file — this happens once.
-5. Tap a country on the map, set its status, and start tracking.
-
-> **Note**: Photo Import requires Photo Library access. AI features require Apple Intelligence on a supported device.
-
-### Data & Privacy
-
-- All travel data is stored **locally on-device** via SwiftData. Nothing is sent to a server.
-- The optional **AI automation server** (macOS, Settings → Automation) is off by default, binds to `127.0.0.1` only, and requires a per-install bearer token — the app itself still never connects out to anything.
-- AI inference runs entirely on-device via `FoundationModels` — no network calls.
-- Country geometry is loaded from the bundled `countries.wmgb` (Natural Earth data, public domain), pre-simplified at build time by `Tools/generate_geo.swift`. The app ships ~675 KB instead of a 14 MB GeoJSON, including outlying territories and islands down to ~25 km across (Hawaii, Kaliningrad, the Greek archipelagos, …). One deviation from the Natural Earth default view: Crimea is shown as part of Ukraine.
-- Photo identifiers (`PHAsset.localIdentifier`) are stored instead of image data — the library stays the source of truth.
-- Website: [worldward.smigi.net](https://worldward.smigi.net) · Privacy policy: [worldward.smigi.net/privacy](https://worldward.smigi.net/privacy)
+</details>
 
 ---
 
 ## Roadmap
 
-Planned next — everything stays native-only, lightweight, and local-first:
+Everything stays native-only, lightweight and local-first.
 
-- **WeatherKit forecasts** — forecast per itinerary stop, since stops already store coordinates and dates. 500k calls/month free with the developer program, no user permission needed; shown natively in the trip detail view.
+- **WeatherKit forecasts** — a forecast per itinerary stop, shown natively in the trip detail view. Stops already store coordinates and dates, and no user permission is needed.
+
+Have an idea? [Open an issue](https://github.com/lakafior/Worldward/issues).
 
 ---
 
+## Contributing
+
+Pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). In short: keep it native, keep it lightweight, add no third-party dependencies, and keep the MPL header on files you touch.
+
+## Credits
+
+- Country geometry from [Natural Earth](https://www.naturalearthdata.com) (public domain), pre-simplified by `Tools/generate_geo.swift` — ~675 KB shipped instead of a 14 MB GeoJSON. One deviation from the Natural Earth default view: Crimea is shown as part of Ukraine.
+
 ## License
 
-This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
-See the [LICENSE](LICENSE) file for the full text.
+Licensed under the **Mozilla Public License 2.0** — see [LICENSE](LICENSE).
 
-You are free to use, modify, and distribute this software, including for commercial purposes. Modifications to existing MPL-licensed files must be made available under the same license (MPL-2.0). You may combine this code with proprietary code in separate files as part of a larger work.
+You are free to use, modify and distribute this software, including commercially. Modifications to existing MPL-licensed files must be released under the same license; you may combine this code with proprietary code in separate files as part of a larger work.
