@@ -708,6 +708,7 @@ struct ContentView: View {
                     },
                     onAchievementsChanged: celebrateNewAchievements
                 )
+                .equatable()
             )
             // Same trick, different signal: CloudKit's mirroring events, so a
             // sync that dies mid-session is recorded rather than lost.
@@ -842,9 +843,10 @@ struct ContentView: View {
             .onChange(of: selectedTrip) {
                 if selectedTrip != nil { selectedCountry = nil }
             }
-            .onChange(of: mapFilter) {
-                rebuildVisibleCache()
-            }
+            // No `mapFilter` handler here on purpose: the cache holds the
+            // *unfiltered* visible set (visited / planned / selected) and
+            // `visibleCountries` narrows it per filter on read, so rebuilding on
+            // a filter change only recomputed the identical array.
             // The "Mark where I am" Control Center control writes a request to the
             // App Group's UserDefaults before opening the app (the OpenIntent runs
             // first), so it's always present when .active fires. If it somehow misses,

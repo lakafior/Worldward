@@ -501,10 +501,11 @@ struct TripDetailView: View {
     /// The shared container catalog, used for the move menu, the assistant, and
     /// first-run seeding. Sorted so groups appear in a stable order everywhere.
     @Query(sort: \PackingContainer.sortOrder) private var allContainers: [PackingContainer]
-    /// Saved packing templates, offered in the "Start from…" menu.
-    @Query(sort: \PackingTemplate.name) private var templates: [PackingTemplate]
-    /// Every trip, so the "Start from…" menu can copy another trip's packing list.
-    @Query private var allTrips: [Trip]
+    // Templates and the all-trips query live in `PackingOptionsMenu` instead:
+    // deciding whether another trip can seed this one means reading every trip's
+    // packing relationship, and holding that query here registered Observation
+    // on all of it — so a packing tick anywhere (widget, watch, Reminders sync)
+    // invalidated the open trip editor, and every render re-walked the store.
     /// Presents the MapKit place search for adding a stop to the itinerary.
     @State private var showPlaceSearch = false
     /// The stop a picked file should attach to, or `nil` to attach it as a
@@ -1341,33 +1342,17 @@ struct TripDetailView: View {
                 (trip.packing ?? []).isEmpty
                     ? "Packing" : "Packing · \(trip.packedCount)/\((trip.packing ?? []).count)")
             Spacer()
-            if hasPackingOptions {
-                Menu {
-                    packingStartFromMenu
-                    if !(trip.packing ?? []).isEmpty {
-                        Button {
-                            newTemplateName = trip.title
-                            showSaveTemplate = true
-                        } label: {
-                            // Was `square.and.arrow.down` — the *download* glyph,
-                            // and the mirror image of the Share icon, so the two
-                            // opposite actions read as a matched pair. Saving a
-                            // reusable list is a stack-of-lists action.
-                            Label("Save as template…", systemImage: "rectangle.stack.badge.plus")
-                        }
-                        Divider()
-                        Button(role: .destructive) {
-                            confirmClearPacking = true
-                        } label: {
-                            Label("Clear list", systemImage: "trash")
-                        }
-                    }
-                } label: {
-                    Label("Packing options", systemImage: "ellipsis.circle")
-                        .labelStyle(.iconOnly)
-                }
-                .textCase(nil)
-            }
+            PackingOptionsMenu(
+                trip: trip,
+                applyTemplate: applyTemplate,
+                copyPacking: copyPacking(from:),
+                saveAsTemplate: {
+                    newTemplateName = trip.title
+                    showSaveTemplate = true
+                },
+                clearList: { confirmClearPacking = true }
+            )
+            .equatable()
         }
         .textCase(nil)
     }
@@ -1404,53 +1389,6 @@ struct TripDetailView: View {
     /// to ungrouped instead of dangling.
     private var addContainer: PackingContainer? {
         allContainers.first { $0.name == addContainerName }
-    }
-
-    /// Other trips whose packing lists could seed this one.
-    private var otherPackedTrips: [Trip] {
-        allTrips.filter {
-            $0.persistentModelID != trip.persistentModelID && !($0.packing ?? []).isEmpty
-        }
-    }
-
-    /// Whether the header's overflow menu has anything to offer — otherwise it's
-    /// hidden rather than opening onto nothing.
-    private var hasPackingOptions: Bool {
-        !(trip.packing ?? []).isEmpty || !templates.isEmpty || !otherPackedTrips.isEmpty
-    }
-
-    /// "Start from…" — applies a saved template or copies another trip's packing
-    /// list. Hidden entirely when there's nothing to start from.
-    @ViewBuilder private var packingStartFromMenu: some View {
-        if !templates.isEmpty || !otherPackedTrips.isEmpty {
-            Menu {
-                if !templates.isEmpty {
-                    Section("Templates") {
-                        ForEach(templates) { template in
-                            Button(template.name.isEmpty ? "Untitled" : template.name) {
-                                applyTemplate(template)
-                            }
-                        }
-                    }
-                }
-                if !otherPackedTrips.isEmpty {
-                    Section("Copy from trip") {
-                        ForEach(otherPackedTrips) { other in
-                            Button(other.title.isEmpty ? "Untitled Trip" : other.title) {
-                                copyPacking(from: other)
-                            }
-                        }
-                    }
-                }
-            } label: {
-                // Three unrelated meanings used to share the tray metaphor: this
-                // menu, the "Other" group's icon, and the move-to-container
-                // button. The tray now belongs to containers alone; starting from
-                // a saved list is a stack-of-lists action, matching "Save as
-                // template…" below.
-                Label("Start from…", systemImage: "rectangle.stack")
-            }
-        }
     }
 
     /// Notes are one Markdown string, split on its `# ` headings into a field per
@@ -2107,6 +2045,114 @@ struct TripDetailView: View {
             trip.notes = text
         } else {
             trip.notes += "\n\n" + text
+        }
+    }
+}
+
+/// The packing header's overflow menu — "Start from…", "Save as template…" and
+/// "Clear list" — extracted from `TripDetailView` so the queries backing it stay
+/// out of the editor's body.
+///
+/// Working out whether another trip could seed this one means reading every
+/// trip's `packing` relationship. Done in `TripDetailView` that registered
+/// Observation on every trip's items, so ticking a box in *any* trip (widget,
+/// watch, Reminders sync) invalidated the open editor, and every editor render —
+/// each keystroke in the add-item field included — re-walked the whole store.
+/// Here the walk is confined to a menu button, and `Equatable` keeps it from
+/// re-running when the parent redraws for unrelated reasons.
+private struct PackingOptionsMenu: View, Equatable {
+    let trip: Trip
+    let applyTemplate: (PackingTemplate) -> Void
+    let copyPacking: (Trip) -> Void
+    let saveAsTemplate: () -> Void
+    let clearList: () -> Void
+
+    /// Saved packing templates, offered in the "Start from…" menu.
+    @Query(sort: \PackingTemplate.name) private var templates: [PackingTemplate]
+    /// Every trip, so the "Start from…" menu can copy another trip's packing list.
+    @Query private var allTrips: [Trip]
+
+    /// The callbacks are excluded deliberately: they reach `TripDetailView`'s
+    /// `@State` through its live storage, so an older copy still writes the
+    /// current value. Template and trip edits arrive through Observation on the
+    /// queries above, which re-runs `body` whatever this returns.
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.trip === rhs.trip
+    }
+
+    /// Other trips whose packing lists could seed this one.
+    private var otherPackedTrips: [Trip] {
+        allTrips.filter {
+            $0.persistentModelID != trip.persistentModelID && !($0.packing ?? []).isEmpty
+        }
+    }
+
+    /// Whether the menu has anything to offer — otherwise it's hidden rather
+    /// than opening onto nothing.
+    private var hasPackingOptions: Bool {
+        !(trip.packing ?? []).isEmpty || !templates.isEmpty || !otherPackedTrips.isEmpty
+    }
+
+    var body: some View {
+        if hasPackingOptions {
+            Menu {
+                startFromMenu
+                if !(trip.packing ?? []).isEmpty {
+                    Button {
+                        saveAsTemplate()
+                    } label: {
+                        // Was `square.and.arrow.down` — the *download* glyph,
+                        // and the mirror image of the Share icon, so the two
+                        // opposite actions read as a matched pair. Saving a
+                        // reusable list is a stack-of-lists action.
+                        Label("Save as template…", systemImage: "rectangle.stack.badge.plus")
+                    }
+                    Divider()
+                    Button(role: .destructive) {
+                        clearList()
+                    } label: {
+                        Label("Clear list", systemImage: "trash")
+                    }
+                }
+            } label: {
+                Label("Packing options", systemImage: "ellipsis.circle")
+                    .labelStyle(.iconOnly)
+            }
+            .textCase(nil)
+        }
+    }
+
+    /// "Start from…" — applies a saved template or copies another trip's packing
+    /// list. Hidden entirely when there's nothing to start from.
+    @ViewBuilder private var startFromMenu: some View {
+        if !templates.isEmpty || !otherPackedTrips.isEmpty {
+            Menu {
+                if !templates.isEmpty {
+                    Section("Templates") {
+                        ForEach(templates) { template in
+                            Button(template.name.isEmpty ? "Untitled" : template.name) {
+                                applyTemplate(template)
+                            }
+                        }
+                    }
+                }
+                if !otherPackedTrips.isEmpty {
+                    Section("Copy from trip") {
+                        ForEach(otherPackedTrips) { other in
+                            Button(other.title.isEmpty ? "Untitled Trip" : other.title) {
+                                copyPacking(other)
+                            }
+                        }
+                    }
+                }
+            } label: {
+                // Three unrelated meanings used to share the tray metaphor: this
+                // menu, the "Other" group's icon, and the move-to-container
+                // button. The tray now belongs to containers alone; starting from
+                // a saved list is a stack-of-lists action, matching "Save as
+                // template…" below.
+                Label("Start from…", systemImage: "rectangle.stack")
+            }
         }
     }
 }

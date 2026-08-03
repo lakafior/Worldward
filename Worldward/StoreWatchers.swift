@@ -11,7 +11,13 @@ import SwiftUI
 /// keys here means a packing tick or visit edit invalidates this tiny view, not
 /// the whole `ContentView` scene; the O(store) hashes also stop running on
 /// every parent render.
-struct StoreWatchers: View {
+///
+/// That second half only holds because of the `Equatable` conformance below:
+/// the keys are computed as arguments to `.onChange(of:)`, so without it every
+/// `ContentView` render — a map-search keystroke, a sheet toggle, the unlock
+/// toast — re-walked every country, every trip's packing list and itinerary,
+/// and every visit.
+struct StoreWatchers: View, Equatable {
     let allCountries: [Country]
     /// Catalog changed (a country added/removed, or a status/plan edited — by
     /// hand, by an intent, or by the photo importer). Fired once initially so a
@@ -27,6 +33,16 @@ struct StoreWatchers: View {
 
     @Query private var allTrips: [Trip]
     @Query(sort: \Visit.date) private var allVisits: [Visit]
+
+    /// Only the catalog identity matters for *skipping* a render. The callbacks
+    /// are deliberately excluded — they reach their state through `@State` /
+    /// `@Query` storage, which stays live even when SwiftUI keeps an older copy
+    /// of this view. The signals themselves don't depend on this comparison:
+    /// a status edit, a packing tick or a new visit invalidates this view
+    /// through Observation, which re-runs `body` regardless of `==`.
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.allCountries.elementsEqual(rhs.allCountries, by: ===)
+    }
 
     var body: some View {
         Color.clear
