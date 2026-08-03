@@ -709,6 +709,9 @@ struct ContentView: View {
                     onAchievementsChanged: celebrateNewAchievements
                 )
             )
+            // Same trick, different signal: CloudKit's mirroring events, so a
+            // sync that dies mid-session is recorded rather than lost.
+            .background(CloudSyncWatcher())
             .onChange(of: selectedCountry) {
                 // The selected country is part of the visible set even when
                 // unvisited/unplanned, so selection changes rebuild the cache too.

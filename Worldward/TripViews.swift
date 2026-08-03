@@ -241,6 +241,9 @@ private struct TripsListView: View {
                         tripRows(upcomingTrips)
                         pastTripsSection
                     }
+                    // A trip edited on another device is the classic reason this
+                    // list looks wrong, so pulling it down asks iCloud to catch up.
+                    .syncRefreshable(modelContext)
                 #endif
             }
         }

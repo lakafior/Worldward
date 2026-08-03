@@ -73,6 +73,7 @@ struct SettingsView: View {
     @AppStorage(CalendarSync.cleanupDaysKey) private var calendarCleanupDays =
         CalendarSync.cleanupDaysDefault
     @AppStorage(Worldward.syncEnabledKey) private var iCloudSyncEnabled = true
+    @State private var syncStatus = CloudSyncStatus.shared
     @Environment(\.modelContext) private var modelContext
 
     @State private var exportDocument: JSONDocument?
@@ -149,6 +150,9 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+        // macOS opens Settings in its own scene, which can outlive (or precede)
+        // any main window, so the sync section can't rely on ContentView's copy.
+        .background(CloudSyncWatcher())
         #if os(macOS)
             // Ideal, not fixed: nine sections of long-form footers overflow a
             // hard 540pt at large Dynamic Type or in a wordier language.
@@ -538,6 +542,47 @@ struct SettingsView: View {
                 .font(.callout)
                 // Symbol plus two text runs is three VoiceOver stops otherwise.
                 .accessibilityElement(children: .combine)
+
+                // Attaching to a container is only half the story: the mirror can
+                // attach cleanly and then die on the first export. These two rows
+                // report what actually happened, and give the Mac the manual
+                // trigger that pull-to-refresh provides on iOS.
+                if iCloudSyncActive {
+                    LabeledContent("Last synced") {
+                        Text(
+                            syncStatus.lastSyncDate.map {
+                                $0.formatted(date: .abbreviated, time: .shortened)
+                            } ?? String(localized: "Never", comment: "iCloud sync has never run"))
+                    }
+                    if let reason = syncStatus.failureReason {
+                        Label {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("iCloud rejected the last change.")
+                                Text(reason)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }
+                        } icon: {
+                            Image(systemName: "exclamationmark.icloud")
+                                .foregroundStyle(Color.orange)
+                        }
+                        .font(.callout)
+                    }
+                    Button {
+                        Task { await syncStatus.sync(modelContext) }
+                    } label: {
+                        if syncStatus.isSyncing {
+                            HStack(spacing: 6) {
+                                ProgressView().controlSize(.small)
+                                Text("Syncing…")
+                            }
+                        } else {
+                            Text("Sync Now")
+                        }
+                    }
+                    .disabled(syncStatus.isSyncing)
+                }
             }
         } header: {
             Text("iCloud")

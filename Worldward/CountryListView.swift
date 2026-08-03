@@ -316,6 +316,13 @@ struct CountryListView: View {
         .sheet(isPresented: $showTravelChat) {
             TravelChatView()
         }
+        // Pull-to-refresh asks iCloud to catch up, then rebuilds the summary so
+        // anything that arrived — or was already sitting in the store, unnoticed
+        // because no `@Query` change fired — shows up straight away.
+        .refreshable {
+            await CloudSyncStatus.shared.sync(modelContext)
+            rebuildSummary()
+        }
         .onAppear { rebuildSummary() }
         .task {
             #if DEBUG
