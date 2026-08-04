@@ -45,6 +45,11 @@ struct ManageTemplatesView: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
+        // The sibling of the containers sheet, and collapses the same way on a
+        // Mac without a stated size — see `ManageContainersView`.
+        #if os(macOS)
+            .frame(minWidth: 420, minHeight: 480)
+        #endif
     }
 
     private func delete(at offsets: IndexSet) {

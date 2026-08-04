@@ -54,6 +54,12 @@ struct ManageContainersView: View {
                 ContainerIconPicker(container: container)
             }
         }
+        // A `List` has no intrinsic height, so a Mac sheet built around one
+        // collapses to nothing — the containers were there, the rows just had
+        // no room to lay out, and the sheet read as an empty list.
+        #if os(macOS)
+            .frame(minWidth: 420, minHeight: 480)
+        #endif
     }
 
     private func add() {
@@ -155,5 +161,10 @@ private struct ContainerIconPicker: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
+        // Same reason as the containers sheet: a `ScrollView` around a lazy grid
+        // has no height of its own for a Mac sheet to size itself to.
+        #if os(macOS)
+            .frame(minWidth: 360, minHeight: 380)
+        #endif
     }
 }
