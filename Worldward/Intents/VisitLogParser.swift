@@ -38,8 +38,6 @@ struct VisitDraft: Identifiable {
     let country: Country?
     /// The parsed visit date, or nil when none was implied.
     let date: Date?
-
-    var isMatched: Bool { country != nil }
 }
 
 // MARK: - Parser
@@ -114,8 +112,6 @@ final class VisitLogParser {
             phase = .failed(error.localizedDescription)
         }
     }
-
-    func reset() { phase = .idle }
 
     // MARK: - Resolution helpers
 

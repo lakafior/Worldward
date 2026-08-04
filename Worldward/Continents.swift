@@ -40,11 +40,6 @@ enum Continents {
         byISO[isoAlpha2] ?? unknown
     }
 
-    /// The typed `Continent` for a given ISO alpha-2 code, if recognised.
-    nonisolated static func typed(for isoAlpha2: String) -> Continent? {
-        byISO[isoAlpha2].flatMap(Continent.init(rawValue:))
-    }
-
     /// The display name for a stored (English) continent string, in the user's
     /// language. `Country.continent` stores English because it's the grouping and
     /// sort key and travels in CSV/JSON exports, so localization happens only at

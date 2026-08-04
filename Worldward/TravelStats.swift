@@ -115,11 +115,7 @@ struct TravelStats {
             }
             buckets[country.continent] = bucket
 
-            // Gather every dated visit, including the legacy single `visitDate`.
-            var dates = (country.visits ?? []).map(\.date)
-            if let legacy = country.visitDate { dates.append(legacy) }
-
-            for date in dates {
+            for date in country.allVisitDates {
                 let year = calendar.component(.year, from: date)
                 visitsByYear[year, default: 0] += 1
                 countryIDsByYear[year, default: []].insert(country.id)
@@ -128,7 +124,11 @@ struct TravelStats {
                 if lastDate == nil || date > lastDate! { lastDate = date }
             }
 
-            let count = max((country.visits ?? []).count, country.visitDate != nil ? 1 : 0)
+            // Same tally as `totalVisits` above — a legacy `visitDate` is a visit
+            // in its own right. This used to take `max(visits.count, legacy ? 1 : 0)`,
+            // which disagreed with the timeline for anyone whose data predates the
+            // `visits` relationship.
+            let count = country.allVisitDates.count
             if status.isVisited, count > 0, count > (best?.count ?? 0) {
                 best = (country.name, country.flagEmoji, count)
             }
@@ -263,18 +263,6 @@ struct TravelStats {
 
     /// `true` when at least one country has been visited.
     var hasTravel: Bool { visitedCountries > 0 }
-
-    /// Countries flagged as a loose wishlist.
-    var wishlistCount: Int { planCounts[.wishlist] ?? 0 }
-
-    /// Countries you're actively planning to visit.
-    var planningCount: Int { planCounts[.planning] ?? 0 }
-
-    /// Countries on your plans at all (wishlist + planning).
-    var plannedCount: Int { wishlistCount + planningCount }
-
-    /// `true` when at least one country is on your plans.
-    var hasPlans: Bool { plannedCount > 0 }
 
     /// A friendly summary for sharing as plain text, leading with the headline
     /// figures and then listing every country visited.

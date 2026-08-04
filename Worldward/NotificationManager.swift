@@ -79,9 +79,7 @@ enum NotificationManager {
         // Group every recorded visit by its month/day.
         var byDay: [DayKey: [Anniversary]] = [:]
         for country in countries {
-            var dates = (country.visits ?? []).map(\.date)
-            if let legacy = country.visitDate { dates.append(legacy) }
-            for date in dates {
+            for date in country.allVisitDates {
                 let parts = calendar.dateComponents([.month, .day, .year], from: date)
                 guard let month = parts.month, let day = parts.day, let year = parts.year
                 else { continue }

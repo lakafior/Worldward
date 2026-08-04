@@ -79,3 +79,6 @@ docs
 .asc
 Tools/upload_screenshots.sh
 Tools/apply_metadata.sh
+
+# Internal testing
+.periphery.yml

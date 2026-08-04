@@ -407,9 +407,7 @@ enum CSVTransfer {
                 touched = true
             }
 
-            let existingDays = Set(
-                (country.visits ?? []).map { calendar.startOfDay(for: $0.date) }
-                    + (country.visitDate.map { [calendar.startOfDay(for: $0)] } ?? []))
+            let existingDays = Set(country.allVisitDates.map { calendar.startOfDay(for: $0) })
             for day in entry.dates where !existingDays.contains(day) {
                 let visit = Visit(
                     date: day, notes: entry.notesByDate[day] ?? "",

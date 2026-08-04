@@ -121,7 +121,6 @@ nonisolated struct CountryPaths: @unchecked Sendable {
     init(_ byCountry: [String: [CGPath]]) { self.byCountry = byCountry }
 
     subscript(id: String) -> [CGPath]? { byCountry[id] }
-    var isEmpty: Bool { byCountry.isEmpty }
 }
 
 /// Rebuilds the drawable polygons, hit-test paths, and per-country bounding rects

@@ -88,18 +88,11 @@ struct CountryListSummary {
             // "Recent" sort key. They used to walk it separately.
             var latestVisit: Date?
             var matchesSelectedYear = false
-            for visit in (country.visits ?? []) {
-                let year = calendar.component(.year, from: visit.date)
+            for date in country.allVisitDates {
+                let year = calendar.component(.year, from: date)
                 visitYears.insert(year)
                 if year == selectedYear { matchesSelectedYear = true }
-                latestVisit = latestVisit.map { Swift.max($0, visit.date) } ?? visit.date
-            }
-            // The legacy single `visitDate` counts everywhere the relationship does.
-            if let visitDate = country.visitDate {
-                let year = calendar.component(.year, from: visitDate)
-                visitYears.insert(year)
-                if year == selectedYear { matchesSelectedYear = true }
-                latestVisit = latestVisit.map { Swift.max($0, visitDate) } ?? visitDate
+                latestVisit = latestVisit.map { Swift.max($0, date) } ?? date
             }
 
             // Resolved once and reused for both the search match below and the

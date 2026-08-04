@@ -7,41 +7,6 @@ import Photos
 import SwiftData
 import SwiftUI
 
-/// Whether the country list is showing where you've **been** or where you're
-/// **going** (your wishlist/planning). Drives the segmented control and which
-/// countries the list shows when not searching.
-enum BrowseMode: String, CaseIterable, Identifiable {
-    case been = "Been"
-    case going = "Going"
-    var id: String { rawValue }
-}
-
-/// The app's top-level sections, shown as iOS tabs. macOS has no tab
-/// selection: the sidebar holds the lists and the map owns the detail column.
-enum AppTab: Hashable {
-    case map, been, going
-}
-
-#if os(macOS)
-    /// The in-window destinations that push over the map on macOS, replacing
-    /// the old auxiliary windows so everything lives in the main window.
-    enum MacDestination: Hashable {
-        /// Statistics + achievements dashboard (see `TravelsDashboardView`).
-        case travels
-        /// On-device travel Q&A.
-        case chat
-    }
-
-    /// Lets the macOS menu bar commands (see `WorldwardCommands`) drive the main
-    /// window's navigation stack without a shared model.
-    extension FocusedValues {
-        @Entry var macDestinations: Binding<[MacDestination]>?
-        /// Lets the "View ▸ Filter" menu commands (see `MapFilterCommands`) read
-        /// and change the map filter of whichever main window is key.
-        @Entry var mapFilter: Binding<MapFilter>?
-    }
-#endif
-
 /// Which countries to show on the map. `all` shows every visited/planned country;
 /// `visited` hides planned-only countries; `planning` hides visited-only countries.
 enum MapFilter: String, CaseIterable, Identifiable {
@@ -1636,4 +1601,3 @@ struct ContentView: View {
         if winner.planStatus == .none { winner.planStatus = loser.planStatus }
     }
 }
-

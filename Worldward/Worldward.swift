@@ -143,17 +143,6 @@ struct Worldward: App {
         "Clipperton Island": "CP",
     ]
 
-    /// The usable id for a GeoJSON feature, or `nil` for records that should be
-    /// dropped. A normal feature keys on its ISO alpha-2 value. A `-99` placeholder
-    /// keys on its fallback if it has one (France, Norway, Kosovo…); otherwise it's
-    /// a non-country the dataset ships with `-99` and no real code — a reef,
-    /// military base, glacier or disputed zone — and is filtered out so it can't
-    /// clutter the list or skew the statistics.
-    nonisolated static func resolvedID(isoA2: String, name: String) -> String? {
-        guard isoA2 == "-99" else { return isoA2 }
-        return isoFallbacks[name]
-    }
-
     /// Whether the store holds ids written by an older build that can't match a
     /// flag or polygon — a raw `-99` placeholder, or a country name used as the id
     /// (e.g. France saved as "France" instead of "FR"). When true, `ContentView`

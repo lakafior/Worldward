@@ -239,13 +239,10 @@ final class Trip {
         return groups
     }
 
-    /// A shareable Markdown summary of the trip — for the system share sheet
-    /// (Apple Notes, Messages, Mail) or pasting into any Markdown editor. The
-    /// default includes everything; the export sheet narrows it down.
-    var markdownSummary: String { markdown(options: .all) }
-
-    /// The trip as Markdown, carrying only the sections `options` selects, so an
-    /// organizer can hand out exactly what a group needs.
+    /// The trip as Markdown, carrying only the sections `options` selects — for
+    /// the system share sheet (Apple Notes, Messages, Mail) or pasting into any
+    /// Markdown editor. Pass `.all` for everything; the export sheet narrows it
+    /// down so an organizer can hand out exactly what a group needs.
     func markdown(options: TripExportOptions) -> String {
         let name = title.isEmpty ? Str.Trip.untitled : title
         let start = startDate.formatted(date: .abbreviated, time: .omitted)

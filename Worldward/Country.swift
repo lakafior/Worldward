@@ -65,6 +65,19 @@ final class Country {
     /// Convenience used by statistics and filtering.
     var isVisited: Bool { statusRaw != CountryStatus.notVisited.rawValue }
 
+    /// Every recorded visit date: the `visits` relationship plus the legacy single
+    /// `visitDate` when the row still carries one. Unordered.
+    ///
+    /// Use this anywhere visit dates are counted or bucketed. Reading `visits`
+    /// directly silently drops the legacy date, which is a whole class of bug —
+    /// years missing from the timeline, anniversaries never firing — that only
+    /// shows up for users whose data predates the relationship.
+    var allVisitDates: [Date] {
+        var dates = (visits ?? []).map(\.date)
+        if let visitDate { dates.append(visitDate) }
+        return dates
+    }
+
     /// The country's plan state. Writing it updates `planStatusRaw`, which SwiftData
     /// persists and publishes — driving live map, list, and stats updates.
     var planStatus: PlanStatus {
