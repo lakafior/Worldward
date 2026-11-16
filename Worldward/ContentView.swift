@@ -1278,6 +1278,11 @@ struct ContentView: View {
     }
 
     private func loadGeoJSON() async {
+        // `.task` re-fires whenever the scene root re-appears (seen on macOS when
+        // the window goes hidden → visible), which re-ran the whole launch load
+        // and swapped every MKPolygon for a new object — a full overlay rebuild.
+        // The geometry is load-once; a fresh window gets fresh state anyway.
+        guard countryPolygons.isEmpty else { return }
         LaunchClock.mark("loadGeoJSON: start")
         // Decide what database work is needed up front, on the main context, so the
         // background build knows whether it must also produce seed metadata. The

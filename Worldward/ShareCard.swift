@@ -190,13 +190,21 @@ private struct QRCodeView: View {
         }
     }
 
+    /// Generated codes by message. The card's QR content is constant, and the
+    /// customizer re-rasterizes the card on every edit: a fresh `CIContext` per
+    /// render cost ~20 ms (~180 ms the first time), against nothing for a hit.
+    private static var cache: [String: CGImage] = [:]
+
     private static func generateQRCode(from string: String) -> CGImage? {
+        if let cached = cache[string] { return cached }
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
         guard let output = filter.outputImage?
             .transformed(by: CGAffineTransform(scaleX: 6, y: 6))
         else { return nil }
-        return CIContext().createCGImage(output, from: output.extent)
+        let image = CIContext().createCGImage(output, from: output.extent)
+        cache[string] = image
+        return image
     }
 }
 

@@ -110,9 +110,16 @@ struct ShareCustomizationView: View {
             }
         }
         .frame(minWidth: 420, minHeight: 640)
-        .onAppear(perform: regenerate)
-        .onChange(of: headline) { _, _ in regenerate() }
-        .onChange(of: caption) { _, _ in regenerate() }
+        // A render rasterizes the whole card (map, QR, text) on the main actor,
+        // so typing a headline re-rendered on every keystroke. Render at once on
+        // appear; while typing, wait for a pause. Toggles stay immediate.
+        .task(id: [headline, caption]) {
+            if renderedImage != nil {
+                try? await Task.sleep(for: .milliseconds(250))
+                guard !Task.isCancelled else { return }
+            }
+            regenerate()
+        }
         .onChange(of: showMap) { _, _ in regenerate() }
         .onChange(of: showContinents) { _, _ in regenerate() }
         .onChange(of: showSecondMetric) { _, _ in regenerate() }
