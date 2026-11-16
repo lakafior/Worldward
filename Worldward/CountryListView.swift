@@ -195,8 +195,20 @@ struct CountryListView: View {
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
     @Binding var selectedCountry: Country?
+    /// iOS: `true` when this list is the sidebar of `ContentView`'s split view
+    /// at regular width. Passed in because the column itself always reports a
+    /// compact size class.
+    var usesDetailColumn = false
 
     @Environment(\.modelContext) private var modelContext
+    #if os(iOS)
+        /// At regular width the list is the split view's sidebar column, where
+        /// the automatic placement tucks the field away under the bar; pin it
+        /// there instead. Compact width keeps the familiar toolbar field.
+        private var searchPlacement: SearchFieldPlacement {
+            usesDetailColumn ? .navigationBarDrawer(displayMode: .always) : .automatic
+        }
+    #endif
 
     @State private var sortOrder: CountrySort = .name
     /// Cached filter/sort summary recomputed only when dependencies change,
@@ -256,7 +268,7 @@ struct CountryListView: View {
         #if os(macOS)
             .searchable(text: $searchText, placement: .sidebar, prompt: Str.List.searchPlaceholder)
         #else
-            .searchable(text: $searchText, prompt: Str.List.searchPlaceholder)
+            .searchable(text: $searchText, placement: searchPlacement, prompt: Str.List.searchPlaceholder)
         #endif
         .navigationTitle(browseMode == .been ? Str.Tab.been : Str.Tab.going)
         #if !os(macOS)
@@ -396,6 +408,11 @@ struct CountryListView: View {
         } label: {
             CountryRow(country: country)
         }
+        #if os(iOS)
+            // Marks the row whose detail sits beside the list at regular width.
+            .listRowBackground(
+                selectedCountry == country ? Color.accentColor.opacity(0.15) : nil)
+        #endif
     }
 
     /// One dismissible chip per active filter (continent, visit year).

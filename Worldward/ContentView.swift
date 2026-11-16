@@ -84,6 +84,14 @@ struct ContentView: View {
     @State private var hasCenteredOnHome = false
     /// The selected top-level tab (Map / Been / Going). iOS only.
     @State private var selectedTab: AppTab = .map
+    #if os(iOS)
+        /// Keeps the Been / Going split views on their list when collapsed, so
+        /// compact width looks exactly like a plain list (detail is a sheet there).
+        @State private var compactColumn: NavigationSplitViewColumn = .sidebar
+        /// Both columns stay up at regular width: hiding the list would leave
+        /// the detail with no way back to it (there's no back stack there).
+        @State private var splitVisibility: NavigationSplitViewVisibility = .all
+    #endif
     #if os(macOS)
         /// The in-window destinations pushed over the map (Your Travels, Chat).
         /// Published to the Go menu via `focusedSceneValue` in `macRoot`.
@@ -94,9 +102,10 @@ struct ContentView: View {
         /// stands in for `CountryListView`'s own "+" on macOS (see that file).
         @State private var showAddCountryPicker = false
     #endif
-    /// The trip shown in the macOS detail column. Mutually exclusive with
-    /// `selectedCountry` so the trailing pane always has one unambiguous
-    /// subject. Unused on iOS, where trips open as a sheet instead.
+    /// The trip shown in the detail column (macOS, and the Going tab at regular
+    /// width on iOS). Mutually exclusive with `selectedCountry` so the trailing
+    /// pane always has one unambiguous subject. At compact width trips open as
+    /// a sheet instead.
     @State private var selectedTrip: Trip?
     /// The trip whose itinerary route is drawn on the map, set via the trip
     /// editor's "View Route on Map" button. Cleared from the on-map chip.
@@ -125,6 +134,11 @@ struct ContentView: View {
     /// The map filter bar marks its selection by fill color alone; with
     /// Differentiate Without Color on it gains a checkmark.
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    #if os(iOS)
+        /// Regular width (iPad, the unfolded iPhone Duo) shows Been / Going as a
+        /// list beside a detail column instead of opening detail in a sheet.
+        @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    #endif
     @AppStorage(NotificationManager.enabledKey) private var notificationsEnabled = false
 
     // Map search & filters
@@ -241,7 +255,11 @@ struct ContentView: View {
             // load instead of starting only after the splash clears. On a cold
             // first launch the tile fetch dominates, and this overlaps it fully;
             // the overlays fill in when the geometry lands.
+            // On the iPhone Duo half-open like a book, the camera frames the
+            // selected country (and its flag) in the trailing half instead of
+            // across the fold. The tiles still fill the whole screen.
             mapView
+                .avoidingActiveFold()
 
             // Between the data load and MapKit's first render, cover the map
             // with an instant Canvas drawing of the user's world — so a cold
@@ -267,6 +285,7 @@ struct ContentView: View {
                     tripRouteChip(trip)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .padding(.top, 8)
+                        .avoidingActiveFold()
                 }
             }
         }
@@ -395,6 +414,8 @@ struct ContentView: View {
                         mapContent
                             .safeAreaInset(edge: .bottom) {
                                 mapFilterBar
+                                    .frame(maxWidth: .infinity)
+                                    .avoidingActiveFold()
                             }
                     }
                     .searchable(
@@ -412,11 +433,21 @@ struct ContentView: View {
                         }
                     }
                 }
+                // Been and Going are list → detail screens, so they sit in a
+                // split view: at regular width (iPad, the unfolded iPhone Duo)
+                // the selection opens beside the list; at compact width the
+                // split collapses to the list alone and detail stays a sheet.
                 Tab("Been", systemImage: "checkmark.seal", value: AppTab.been) {
-                    NavigationStack { countryList(.been) }
+                    NavigationSplitView(columnVisibility: $splitVisibility, preferredCompactColumn: $compactColumn) {
+                        countryList(.been, usesDetailColumn: usesDetailColumn)
+                            .toolbar(removing: .sidebarToggle)
+                    } detail: {
+                        detailColumn(for: .been)
+                    }
+                    .navigationSplitViewStyle(.balanced)
                 }
                 Tab("Going", systemImage: "airplane", value: AppTab.going) {
-                    NavigationStack {
+                    NavigationSplitView(columnVisibility: $splitVisibility, preferredCompactColumn: $compactColumn) {
                         GoingView(
                             allCountries: allCountries,
                             centroids: countryCentroids,
@@ -424,12 +455,26 @@ struct ContentView: View {
                             selectedContinent: $selectedContinent,
                             selectedYear: $selectedYear,
                             selectedCountry: $selectedCountry,
-                            selectedTrip: $selectedTrip)
+                            selectedTrip: $selectedTrip,
+                            usesDetailColumn: usesDetailColumn)
+                        .toolbar(removing: .sidebarToggle)
+                    } detail: {
+                        detailColumn(for: .going)
                     }
+                    .navigationSplitViewStyle(.balanced)
                 }
             }
             .tabViewStyle(.sidebarAdaptable)
             .tabBarMinimizeBehavior(.onScrollDown)
+            // Leaving regular width (folding the Duo, narrowing a window) drops
+            // the column-only selection, so the collapsed list is back on top
+            // and tapping the same row again opens its sheet.
+            .onChange(of: horizontalSizeClass) { _, sizeClass in
+                guard sizeClass == .compact, selectedTab != .map else { return }
+                selectedCountry = nil
+                selectedTrip = nil
+                compactColumn = .sidebar
+            }
         #endif
     }
 
@@ -617,14 +662,48 @@ struct ContentView: View {
         }
     #endif
 
-    private func countryList(_ mode: BrowseMode) -> some View {
+    #if os(iOS)
+        /// Whether a selection in the current tab opens in the split view's
+        /// detail column (regular width, Been or Going) rather than a sheet.
+        private var usesDetailColumn: Bool {
+            horizontalSizeClass == .regular && selectedTab != .map
+        }
+
+        /// The detail column beside the Been / Going list: the selected trip
+        /// (Going only) or country, or a prompt to pick one. Collapsed at
+        /// compact width, where the list presents sheets instead.
+        @ViewBuilder private func detailColumn(for tab: AppTab) -> some View {
+            NavigationStack {
+                if let trip = selectedTrip, tab == .going {
+                    TripDetailView(trip: trip, allCountries: allCountries)
+                        .navigationTitle(trip.title.isEmpty ? String(localized: "Trip") : trip.title)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .id(trip.persistentModelID)
+                } else if let country = selectedCountry {
+                    CountryDetailView(country: country)
+                        .navigationTitle(country.localizedName)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .id(country.id)
+                } else {
+                    ContentUnavailableView(
+                        tab == .going
+                            ? String(localized: "Select a trip or country")
+                            : String(localized: "Select a country"),
+                        systemImage: tab == .going ? "airplane" : "checkmark.seal")
+                }
+            }
+        }
+    #endif
+
+    private func countryList(_ mode: BrowseMode, usesDetailColumn: Bool = false) -> some View {
         CountryListView(
             allCountries: allCountries,
             browseMode: mode,
             searchText: $searchText,
             selectedContinent: $selectedContinent,
             selectedYear: $selectedYear,
-            selectedCountry: $selectedCountry
+            selectedCountry: $selectedCountry,
+            usesDetailColumn: usesDetailColumn
         )
     }
 
@@ -683,7 +762,14 @@ struct ContentView: View {
                 // unvisited/unplanned, so selection changes rebuild the cache too.
                 rebuildVisibleCache()
                 if let country = selectedCountry {
-                    detailCountry = country
+                    #if os(iOS)
+                        // At regular width the Been / Going split shows it in
+                        // its detail column; the sheet is for compact width
+                        // and the map.
+                        if !usesDetailColumn { detailCountry = country }
+                    #else
+                        detailCountry = country
+                    #endif
                     // A country selection claims the macOS detail column.
                     selectedTrip = nil
 
@@ -1168,7 +1254,9 @@ struct ContentView: View {
                     selectedTab = .going
                 case .countryDetail:
                     selectedTab = .been
-                    detailCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
+                    // Regular width shows it beside the list; compact opens the
+                    // sheet (`usesDetailColumn` decides in the selection handler).
+                    selectedCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
                 case .achievements:
                     selectedTab = .map
                     showAchievements = true
@@ -1606,3 +1694,4 @@ struct ContentView: View {
         if winner.planStatus == .none { winner.planStatus = loser.planStatus }
     }
 }
+

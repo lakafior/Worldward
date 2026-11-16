@@ -111,9 +111,12 @@ struct GoingView: View {
     @Binding var selectedContinent: String?
     @Binding var selectedYear: Int?
     @Binding var selectedCountry: Country?
-    /// The trip shown in the macOS detail column. Ignored on iOS, where the
-    /// trips list presents a sheet instead.
+    /// The trip shown in the detail column: always on macOS, and on iOS at
+    /// regular width (`usesDetailColumn`). Otherwise trips open a sheet.
     @Binding var selectedTrip: Trip?
+    /// iOS: `true` at regular width, where `ContentView`'s split view shows the
+    /// selected trip beside the list instead of in a sheet.
+    var usesDetailColumn = false
 
     enum Segment: String, CaseIterable, Identifiable {
         case trips = "Trips"
@@ -147,7 +150,9 @@ struct GoingView: View {
             Group {
                 switch segment {
                 case .trips:
-                    TripsListView(allCountries: allCountries, selectedTrip: $selectedTrip)
+                    TripsListView(
+                        allCountries: allCountries, selectedTrip: $selectedTrip,
+                        usesDetailColumn: usesDetailColumn)
                 case .wishlist:
                     CountryListView(
                         allCountries: allCountries,
@@ -155,7 +160,8 @@ struct GoingView: View {
                         searchText: $searchText,
                         selectedContinent: $selectedContinent,
                         selectedYear: $selectedYear,
-                        selectedCountry: $selectedCountry)
+                        selectedCountry: $selectedCountry,
+                        usesDetailColumn: usesDetailColumn)
                 case .suggestions:
                     SuggestionsView(
                         allCountries: allCountries,
@@ -182,8 +188,10 @@ struct GoingView: View {
 
 private struct TripsListView: View {
     let allCountries: [Country]
-    /// Drives the split view's detail column on macOS; unused on iOS.
+    /// Drives the split view's detail column on macOS, and on iOS at regular
+    /// width (`usesDetailColumn`).
     @Binding var selectedTrip: Trip?
+    var usesDetailColumn = false
 
     @Environment(\.modelContext) private var modelContext
     @Query private var trips: [Trip]
@@ -281,11 +289,7 @@ private struct TripsListView: View {
                 // which backs both the iOS sheet and the macOS inspector below).
                 if ScreenshotSupport.isCapturing(.trip) || ScreenshotSupport.isCapturing(.packing) {
                     let trip = upcomingTrips.first ?? trips.first
-                    #if os(macOS)
-                        selectedTrip = trip
-                    #else
-                        editingTrip = trip
-                    #endif
+                    if let trip { open(trip) }
                 }
             #endif
         }
@@ -308,10 +312,13 @@ private struct TripsListView: View {
         #else
             ForEach(bucket) { trip in
                 Button {
-                    editingTrip = trip
+                    open(trip)
                 } label: {
                     TripRow(trip: trip)
                 }
+                .listRowBackground(
+                    usesDetailColumn && selectedTrip == trip
+                        ? Color.accentColor.opacity(0.15) : nil)
             }
             .onDelete { offsets in
                 for index in offsets { delete(bucket[index]) }
@@ -337,7 +344,21 @@ private struct TripsListView: View {
     private func addTrip() {
         let trip = Trip.newUpcoming(title: "New Trip")
         modelContext.insert(trip)
-        editingTrip = trip
+        open(trip)
+    }
+
+    /// Shows a trip: the detail column on macOS and at regular width on iOS,
+    /// the editor sheet at compact width.
+    private func open(_ trip: Trip) {
+        #if os(macOS)
+            selectedTrip = trip
+        #else
+            if usesDetailColumn {
+                selectedTrip = trip
+            } else {
+                editingTrip = trip
+            }
+        #endif
     }
 
     /// Delete a single trip (macOS context menu / ⌫), clearing the detail
@@ -356,11 +377,7 @@ private struct TripsListView: View {
             let trip = trips.first(where: { $0.dedupID == id })
         else { return }
         intentRouter.pendingOpenTripID = nil
-        #if os(macOS)
-            selectedTrip = trip
-        #else
-            editingTrip = trip
-        #endif
+        open(trip)
     }
 
 }
