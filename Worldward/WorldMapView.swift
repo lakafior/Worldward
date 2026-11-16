@@ -106,7 +106,13 @@ struct WorldMapView: View, Equatable {
                     becameLive = true
                     onFirstLive()
                 }
-                if context.rect.width < MKMapSize.world.width / 4 {
+                // Hysteresis: enter detail below a quarter of the world, leave it
+                // only above a third, so a zoom ending near the boundary can't
+                // flip the whole minor-island set on and off.
+                let width = context.rect.width
+                let enter = MKMapSize.world.width / 4
+                let exit = MKMapSize.world.width / 3
+                if width < enter || (detailMapRect != nil && width < exit) {
                     detailMapRect = context.rect.insetBy(
                         dx: -context.rect.width * 0.25, dy: -context.rect.height * 0.25)
                 } else if detailMapRect != nil {

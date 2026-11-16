@@ -30,8 +30,12 @@ struct CountryMapPolygons: MapContent {
     private var lineWidth: CGFloat { planStatus.isPlanned ? 1.2 : 0.5 }
 
     var body: some MapContent {
-        ForEach(polygons.indices, id: \.self) { index in
-            MapPolygon(polygons[index])
+        // Keyed by the polygon object, not its index: when the zoomed-in island
+        // set changes, MapKit then adds/removes only the real deltas instead of
+        // rewriting every overlay after the first shifted index — churn that
+        // competed with tile loading and left parts of the base map blank.
+        ForEach(polygons, id: \.self) { polygon in
+            MapPolygon(polygon)
                 .foregroundStyle(fillColor)
                 .stroke(strokeColor, lineWidth: lineWidth)
         }
