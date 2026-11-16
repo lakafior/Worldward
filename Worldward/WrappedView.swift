@@ -509,6 +509,11 @@ struct WrappedView: View {
     /// into the device language. Failures fall back to `fallbackRecap`.
     private func generateRecap() async {
         guard insights.isAvailable, recapText == nil else { return }
+        #if DEBUG
+            // Screenshot capture: translating the recap raises the system Translate sheet,
+            // which the simulator can't serve (it shows an error over the page).
+            if ScreenshotSupport.isActive { return }
+        #endif
         do {
             let names = facts.countryNames.prefix(30).map { "\($0.flag) \($0.name)" }
             let recap = try await insights.yearInReview(
