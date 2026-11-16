@@ -788,13 +788,15 @@ struct SettingsView: View {
     }
 
     private func startExport() {
-        do {
-            let data = try TravelDataTransfer.export(from: modelContext)
-            exportDocument = JSONDocument(data: data)
-            showExporter = true
-        } catch {
-            transferAlert = TransferAlert(
-                title: "Export Failed", message: error.localizedDescription)
+        Task {
+            do {
+                let data = try await TravelDataTransfer.export(from: modelContext)
+                exportDocument = JSONDocument(data: data)
+                showExporter = true
+            } catch {
+                transferAlert = TransferAlert(
+                    title: "Export Failed", message: error.localizedDescription)
+            }
         }
     }
 
@@ -809,27 +811,26 @@ struct SettingsView: View {
     /// the one irreversible flow in the app doesn't fire straight off a file
     /// picker where a mis-tap costs the user their trips.
     private func performImport(from url: URL) {
-        // A file returned by the system picker is security-scoped on iOS; bracket
-        // the read so we keep access for exactly as long as we need it.
-        let needsAccess = url.startAccessingSecurityScopedResource()
-        defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
-
-        do {
-            let data = try Data(contentsOf: url)
-            pendingImport = PendingImport(
-                data: data,
-                summary: try TravelDataTransfer.summarize(data, in: modelContext))
-        } catch {
-            transferAlert = TransferAlert(
-                title: "Import Failed", message: error.localizedDescription)
+        Task {
+            do {
+                // Read + decode off the main actor (it brackets the picker's
+                // security-scoped access itself); only the store count is here.
+                let file = try await TravelDataTransfer.decode(contentsOf: url)
+                pendingImport = PendingImport(
+                    file: file,
+                    summary: try TravelDataTransfer.summarize(file, in: modelContext))
+            } catch {
+                transferAlert = TransferAlert(
+                    title: "Import Failed", message: error.localizedDescription)
+            }
         }
     }
 
-    /// Applies a backup the user has confirmed. The data was already decoded once
-    /// by `summarize`, so a failure here is a write failure, not a bad file.
+    /// Applies a backup the user has confirmed. The file was already decoded for
+    /// the summary, so a failure here is a write failure, not a bad file.
     private func applyImport(_ pending: PendingImport) {
         do {
-            let count = try TravelDataTransfer.importData(pending.data, into: modelContext)
+            let count = try TravelDataTransfer.importData(pending.file, into: modelContext)
             transferAlert = TransferAlert(
                 title: "Import Complete",
                 message: String(localized: "Updated \(count) countries from the backup.")
@@ -907,7 +908,7 @@ private struct CleanupDaysPicker: View {
 /// confirmation quotes back to them.
 private struct PendingImport: Identifiable {
     let id = UUID()
-    let data: Data
+    let file: TravelDataFile
     let summary: TravelDataTransfer.ImportSummary
 }
 

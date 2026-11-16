@@ -9,7 +9,9 @@ import UniformTypeIdentifiers
 /// actually theirs. The country catalog itself (names, continents, polygons) is
 /// re-seeded from the bundled GeoJSON, so it's deliberately left out; only the
 /// per-country status and visits are exported, keyed by ISO alpha-2 id.
-struct TravelDataFile: Codable {
+/// `nonisolated` (with its country records) so the backup can be encoded and
+/// decoded off the main actor — see `TravelDataTransfer.encode` / `decode`.
+nonisolated struct TravelDataFile: Codable {
     var version: Int
     var exportedAt: Date
     var countries: [CountryRecord]
@@ -17,7 +19,7 @@ struct TravelDataFile: Codable {
     var trips: [TripRecord] = []
 }
 
-extension TravelDataFile {
+nonisolated extension TravelDataFile {
     private enum CodingKeys: String, CodingKey {
         case version, exportedAt, countries, trips
     }
@@ -34,7 +36,7 @@ extension TravelDataFile {
     }
 }
 
-struct CountryRecord: Codable {
+nonisolated struct CountryRecord: Codable {
     var id: String  // ISO alpha-2
     var status: CountryStatus
     var statusIsImported: Bool
@@ -89,7 +91,7 @@ struct CountryRecord: Codable {
     }
 }
 
-struct VisitRecord: Codable {
+nonisolated struct VisitRecord: Codable {
     var date: Date
     var notes: String
     var isImported: Bool
@@ -279,30 +281,43 @@ enum TravelDataTransfer {
     /// older builds ignore the extra keys.
     static let currentVersion = 6
 
-    private static let encoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return encoder
-    }()
-
-    private static let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
-    }()
-
-    /// Serializes every country that has user data into a pretty-printed JSON backup.
+    /// Serializes every country that has user data into a pretty-printed JSON
+    /// backup. The model snapshot has to happen on the main actor; the encode —
+    /// pretty-printed, key-sorted, attachments as base64, so it grows with the
+    /// user's files — runs off it.
     @MainActor
-    static func export(from context: ModelContext) throws -> Data {
+    static func export(from context: ModelContext) async throws -> Data {
+        try await encode(snapshot(from: context))
+    }
+
+    /// Every country with user data, plus all trips, as plain value records.
+    @MainActor
+    static func snapshot(from context: ModelContext) throws -> TravelDataFile {
         let countries = try context.fetch(FetchDescriptor<Country>())
         let records = countries.compactMap(CountryRecord.init).sorted { $0.id < $1.id }
         let trips = try context.fetch(FetchDescriptor<Trip>())
             .sorted { $0.startDate < $1.startDate }
             .map(TripRecord.init)
-        let file = TravelDataFile(
+        return TravelDataFile(
             version: currentVersion, exportedAt: Date(), countries: records, trips: trips)
+    }
+
+    @concurrent nonisolated static func encode(_ file: TravelDataFile) async throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return try encoder.encode(file)
+    }
+
+    /// Reads and decodes a backup off the main actor. Brackets security-scoped
+    /// access itself (a file from the system picker needs it on iOS), so the
+    /// read stays inside the scope.
+    @concurrent nonisolated static func decode(contentsOf url: URL) async throws -> TravelDataFile {
+        let needsAccess = url.startAccessingSecurityScopedResource()
+        defer { if needsAccess { url.stopAccessingSecurityScopedResource() } }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(TravelDataFile.self, from: Data(contentsOf: url))
     }
 
     /// What importing a backup would cost, measured before anything is written.
@@ -314,13 +329,12 @@ enum TravelDataTransfer {
         let tripsReplaced: Int
     }
 
-    /// Decodes a backup and measures it against the current store without
-    /// mutating anything, so the confirmation can name real numbers. Throws the
-    /// same decoding errors `importData` would, which means a malformed file is
+    /// Measures a decoded backup against the current store without mutating
+    /// anything, so the confirmation can name real numbers. Decoding happens
+    /// first (in `decode(contentsOf:)`), which means a malformed file is
     /// rejected *before* the user is asked to approve a destructive write.
     @MainActor
-    static func summarize(_ data: Data, in context: ModelContext) throws -> ImportSummary {
-        let file = try decoder.decode(TravelDataFile.self, from: data)
+    static func summarize(_ file: TravelDataFile, in context: ModelContext) throws -> ImportSummary {
         // Mirrors `importData`'s matching rule so the count the user approves is
         // the count they're told about afterwards.
         let knownIDs = Set(try context.fetch(FetchDescriptor<Country>()).map(\.id))
@@ -336,8 +350,7 @@ enum TravelDataTransfer {
     /// countries updated.
     @discardableResult
     @MainActor
-    static func importData(_ data: Data, into context: ModelContext) throws -> Int {
-        let file = try decoder.decode(TravelDataFile.self, from: data)
+    static func importData(_ file: TravelDataFile, into context: ModelContext) throws -> Int {
 
         let existing = try context.fetch(FetchDescriptor<Country>())
         let byID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
