@@ -409,9 +409,13 @@ struct CountryListView: View {
             CountryRow(country: country)
         }
         #if os(iOS)
+            // A split view's list styles button rows in the primary colour;
+            // compact width keeps the tinted rows the phone always had.
+            .foregroundStyle(usesDetailColumn ? AnyShapeStyle(.primary) : AnyShapeStyle(.tint))
             // Marks the row whose detail sits beside the list at regular width.
             .listRowBackground(
-                selectedCountry == country ? Color.accentColor.opacity(0.15) : nil)
+                usesDetailColumn && selectedCountry == country
+                    ? Color.accentColor.opacity(0.15) : nil)
         #endif
     }
 

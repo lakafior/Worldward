@@ -316,6 +316,9 @@ private struct TripsListView: View {
                 } label: {
                     TripRow(trip: trip)
                 }
+                // A split view's list styles button rows in the primary
+                // colour; compact width keeps the tinted rows it always had.
+                .foregroundStyle(usesDetailColumn ? AnyShapeStyle(.primary) : AnyShapeStyle(.tint))
                 .listRowBackground(
                     usesDetailColumn && selectedTrip == trip
                         ? Color.accentColor.opacity(0.15) : nil)

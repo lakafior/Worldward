@@ -88,9 +88,15 @@ struct ContentView: View {
         /// Keeps the Been / Going split views on their list when collapsed, so
         /// compact width looks exactly like a plain list (detail is a sheet there).
         @State private var compactColumn: NavigationSplitViewColumn = .sidebar
-        /// Both columns stay up at regular width: hiding the list would leave
-        /// the detail with no way back to it (there's no back stack there).
+        /// Both columns start out visible at regular width. The system toggle
+        /// stays, so where the list has to overlay the detail (a narrow regular
+        /// width) it can always be brought back.
         @State private var splitVisibility: NavigationSplitViewVisibility = .all
+        /// The country shown in the Been / Going detail column. Kept apart from
+        /// `selectedCountry` (which drives the map camera and the compact sheet)
+        /// so a column selection never leaves the map holding a stale selection
+        /// that would stop the same country's sheet from opening there.
+        @State private var columnCountry: Country?
     #endif
     #if os(macOS)
         /// The in-window destinations pushed over the map (Your Travels, Chat).
@@ -439,8 +445,7 @@ struct ContentView: View {
                 // split collapses to the list alone and detail stays a sheet.
                 Tab("Been", systemImage: "checkmark.seal", value: AppTab.been) {
                     NavigationSplitView(columnVisibility: $splitVisibility, preferredCompactColumn: $compactColumn) {
-                        countryList(.been, usesDetailColumn: usesDetailColumn)
-                            .toolbar(removing: .sidebarToggle)
+                        countryList(.been)
                     } detail: {
                         detailColumn(for: .been)
                     }
@@ -454,10 +459,9 @@ struct ContentView: View {
                             searchText: $searchText,
                             selectedContinent: $selectedContinent,
                             selectedYear: $selectedYear,
-                            selectedCountry: $selectedCountry,
+                            selectedCountry: listSelection,
                             selectedTrip: $selectedTrip,
                             usesDetailColumn: usesDetailColumn)
-                        .toolbar(removing: .sidebarToggle)
                     } detail: {
                         detailColumn(for: .going)
                     }
@@ -470,8 +474,8 @@ struct ContentView: View {
             // the column-only selection, so the collapsed list is back on top
             // and tapping the same row again opens its sheet.
             .onChange(of: horizontalSizeClass) { _, sizeClass in
-                guard sizeClass == .compact, selectedTab != .map else { return }
-                selectedCountry = nil
+                guard sizeClass == .compact else { return }
+                columnCountry = nil
                 selectedTrip = nil
                 compactColumn = .sidebar
             }
@@ -666,7 +670,23 @@ struct ContentView: View {
         /// Whether a selection in the current tab opens in the split view's
         /// detail column (regular width, Been or Going) rather than a sheet.
         private var usesDetailColumn: Bool {
-            horizontalSizeClass == .regular && selectedTab != .map
+            horizontalSizeClass == .regular
+        }
+
+        /// What the Been / Going lists select: the detail column's country at
+        /// regular width, otherwise `selectedCountry` (→ the sheet). Picking a
+        /// country clears a selected trip so the column has one subject.
+        private var listSelection: Binding<Country?> {
+            Binding {
+                usesDetailColumn ? columnCountry : selectedCountry
+            } set: { country in
+                if usesDetailColumn {
+                    columnCountry = country
+                    if country != nil { selectedTrip = nil }
+                } else {
+                    selectedCountry = country
+                }
+            }
         }
 
         /// The detail column beside the Been / Going list: the selected trip
@@ -679,7 +699,7 @@ struct ContentView: View {
                         .navigationTitle(trip.title.isEmpty ? String(localized: "Trip") : trip.title)
                         .navigationBarTitleDisplayMode(.inline)
                         .id(trip.persistentModelID)
-                } else if let country = selectedCountry {
+                } else if let country = columnCountry {
                     CountryDetailView(country: country)
                         .navigationTitle(country.localizedName)
                         .navigationBarTitleDisplayMode(.inline)
@@ -695,16 +715,27 @@ struct ContentView: View {
         }
     #endif
 
-    private func countryList(_ mode: BrowseMode, usesDetailColumn: Bool = false) -> some View {
-        CountryListView(
-            allCountries: allCountries,
-            browseMode: mode,
-            searchText: $searchText,
-            selectedContinent: $selectedContinent,
-            selectedYear: $selectedYear,
-            selectedCountry: $selectedCountry,
-            usesDetailColumn: usesDetailColumn
-        )
+    private func countryList(_ mode: BrowseMode) -> some View {
+        #if os(iOS)
+            CountryListView(
+                allCountries: allCountries,
+                browseMode: mode,
+                searchText: $searchText,
+                selectedContinent: $selectedContinent,
+                selectedYear: $selectedYear,
+                selectedCountry: listSelection,
+                usesDetailColumn: usesDetailColumn
+            )
+        #else
+            CountryListView(
+                allCountries: allCountries,
+                browseMode: mode,
+                searchText: $searchText,
+                selectedContinent: $selectedContinent,
+                selectedYear: $selectedYear,
+                selectedCountry: $selectedCountry
+            )
+        #endif
     }
 
     var body: some View {
@@ -762,14 +793,7 @@ struct ContentView: View {
                 // unvisited/unplanned, so selection changes rebuild the cache too.
                 rebuildVisibleCache()
                 if let country = selectedCountry {
-                    #if os(iOS)
-                        // At regular width the Been / Going split shows it in
-                        // its detail column; the sheet is for compact width
-                        // and the map.
-                        if !usesDetailColumn { detailCountry = country }
-                    #else
-                        detailCountry = country
-                    #endif
+                    detailCountry = country
                     // A country selection claims the macOS detail column.
                     selectedTrip = nil
 
@@ -892,7 +916,12 @@ struct ContentView: View {
             // macOS detail column from the country. Setting the other side to
             // nil can't loop — each handler only acts on a non-nil value.
             .onChange(of: selectedTrip) {
-                if selectedTrip != nil { selectedCountry = nil }
+                if selectedTrip != nil {
+                    selectedCountry = nil
+                    #if os(iOS)
+                        columnCountry = nil
+                    #endif
+                }
             }
             // No `mapFilter` handler here on purpose: the cache holds the
             // *unfiltered* visible set (visited / planned / selected) and
@@ -1254,9 +1283,9 @@ struct ContentView: View {
                     selectedTab = .going
                 case .countryDetail:
                     selectedTab = .been
-                    // Regular width shows it beside the list; compact opens the
-                    // sheet (`usesDetailColumn` decides in the selection handler).
-                    selectedCountry = allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
+                    // Regular width shows it beside the list; compact opens the sheet.
+                    listSelection.wrappedValue =
+                        allCountries.first { $0.id == ScreenshotSupport.demoCountryID }
                 case .achievements:
                     selectedTab = .map
                     showAchievements = true
